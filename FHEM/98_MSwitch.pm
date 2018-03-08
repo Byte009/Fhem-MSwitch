@@ -61,8 +61,10 @@ sub MSwitch_Delete_Delay($$);
 sub MSwitch_Check_Event($$);
 sub MSwitch_makeAffected($);
 
+
 #sub MSwitch_checktrigger($$$$$$@);
 sub MSwitch_checktrigger(@);
+sub MSwitch_Cmd($@);
 
 my %sets = (
     "on"             => "noArg",
@@ -778,6 +780,10 @@ sub MSwitch_Set($@) {
     my $update = '';
     if ( $cmd eq "on" ) {
         ### ausführen des on befehls
+		
+		my @cmdpool; # beinhaltet alle befehle die ausgeführt werden müssen
+		
+		
         Log3( $name, 4,
             "$name  MSwitch_Set -> aufruf MSwitch_makeCmdHash L:" . __LINE__ );
         my %devicedetails = MSwitch_makeCmdHash($name);
@@ -940,25 +946,28 @@ sub MSwitch_Set($@) {
                 {
                     ########### teste auf condition
                     ### antwort $execute 1 oder 0 ;
-                    Log3( $name, 4,
-                        "$name MSwitch_Set: aufruf MSwitch_checkcondition L:"
-                          . __LINE__ );
-                    my $execute =
-                      MSwitch_checkcondition( $devicedetails{$conditionkey},
-                        $name, $args[0] );
+                    Log3( $name, 4, "$name MSwitch_Set: aufruf MSwitch_checkcondition L:". __LINE__ );
+                    my $execute = MSwitch_checkcondition( $devicedetails{$conditionkey},$name, $args[0] );
 
                     if ( $execute eq 'true' ) {
-                        Log3( $name, 3,
-                            "$name MSwitch_Set: Befehlsausfuehrung -> $cs L:"
-                              . __LINE__ );
-                        my $errors = AnalyzeCommandChain( undef, $cs );
+                        Log3( $name, 3,"$name MSwitch_Set: Befehlsausfuehrung -> $cs L:". __LINE__ );
+						
+						
+						
+						
+                        #my $errors = AnalyzeCommandChain( undef, $cs );
+						
+						
+						push @cmdpool, $cs;
+						
+						
+						
                         $update = $device . ',' . $update;
-                        if ( defined($errors) ) {
-                            Log3( $name, 1,
-"$name MSwitch_Set: ERROR im on-zweig -> $device: $errors "
-                                  . __LINE__ );
-                        }
-                        readingsSingleUpdate( $hash, "Exec_cmd", $cs, 1 );
+                        #if ( defined($errors) )
+						#{
+                        #    Log3( $name, 1,"$name MSwitch_Set: ERROR im on-zweig -> $device: $errors ". __LINE__ );
+                        #}
+                        #readingsSingleUpdate( $hash, "Exec_cmd", $cs, 1 );
                     }
                 }
                 else {
@@ -970,19 +979,20 @@ sub MSwitch_Set($@) {
                       . $conditionkey . ",,"
                       . $timecond;
 
-                    Log3( $name, 4,
-"$name MSwitch_Set: Timer fuer verzoegerten Befehl im on-zweig gesetzt -> $msg L:"
-                          . __LINE__ );
+                    Log3( $name, 4,"$name MSwitch_Set: Timer fuer verzoegerten Befehl im on-zweig gesetzt -> $msg L:". __LINE__ );
                     $hash->{helper}{timer}{$msg} = $timecond;
                     InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
                 }
             }
         }
         readingsSingleUpdate( $hash, "state", $cmd, 1 );
+		MSwitch_Cmd( $hash,@cmdpool );
         return;
     }
 
     if ( $cmd eq "off" ) {
+	
+	my @cmdpool;
         if ( defined( $args[0] ) ) {
             readingsSingleUpdate( $hash, "last_event", $args[0], 0 );
         }
@@ -1117,14 +1127,15 @@ sub MSwitch_Set($@) {
                         Log3( $name, 4,
 "$name MSwitch_Set: Befehl wird ausgefuehrt im off-zweig gesetzt -> $cs L:"
                               . __LINE__ );
-                        my $errors = AnalyzeCommandChain( undef, $cs );
-                        $update = $device . ',' . $update;
-                        if ( defined($errors) ) {
-                            Log3( $name, 1,
-                                "$name MSwitch_Set: ERROR $device: $errors "
-                                  . __LINE__ );
-                        }
-                        readingsSingleUpdate( $hash, "Exec_cmd", $cs, 1 );
+                       # my $errors = AnalyzeCommandChain( undef, $cs );
+						push @cmdpool, $cs;
+                        $update = $device . ',' . $update;   # kann ggf gelöscht werden 
+                        #if ( defined($errors) ) {
+                        #    Log3( $name, 1,
+                        #        "$name MSwitch_Set: ERROR $device: $errors "
+                        #          . __LINE__ );
+                        #}
+                       # readingsSingleUpdate( $hash, "Exec_cmd", $cs, 1 );
                     }
                 }
                 else {
@@ -1136,19 +1147,45 @@ sub MSwitch_Set($@) {
                       . $conditionkey . ",,"
                       . $timecond;
 
-                    Log3( $name, 4,
-"$name MSwitch_Set: Timer im off-zweig gesetzt -> $msg L:"
-                          . __LINE__ );
+                    Log3( $name, 4,"$name MSwitch_Set: Timer im off-zweig gesetzt -> $msg L:". __LINE__ );
                     $hash->{helper}{timer}{$msg} = $timecond;
                     InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
                 }
             }
         }
         readingsSingleUpdate( $hash, "state", $cmd, 1 );
+		MSwitch_Cmd($hash,@cmdpool);
         return;
     }
     return;
 }
+###################################
+
+sub MSwitch_Cmd(@) {
+
+    my ( $hash, @cmdpool) = @_;
+	my $Name = $hash->{NAME}; 
+	
+	Log3( $Name, 4,"$Name MSwitch_Cmd: cmdpool ->@cmdpool @cmdpool[0] @cmdpool[1]   L:". __LINE__ );
+	
+	foreach my $cmds (@cmdpool) {
+	
+	
+	     my $errors = AnalyzeCommandChain( undef, $cmds );
+			 
+        if ( defined($errors) ) {
+            Log3( $Name, 1,
+                "$Name MSwitch_Set: ERROR $cmds: $errors "
+                  . __LINE__ );
+        }
+	}
+	
+	
+	my $showpool = join( ',', @cmdpool );
+	readingsSingleUpdate( $hash, "Exec_cmd", $showpool, 1 );
+	
+	}
+	
 ####################
 sub MSwitch_Attr(@) {
 
@@ -1387,25 +1424,29 @@ sub MSwitch_Notify($$) {
                 $set = $testvar if $testvar ne 'undef';
             }
 
+			
+			
             if ( $triggeroff ne 'no_trigger' )    # && $set ne 'off'
             {
                 my $testvar =
                   MSwitch_checktrigger( $own_hash, $ownName, $eventstellen,
                     $triggeroff, $incommingdevice, 'off', $eventcopy,
                     @eventsplit );
-                Log3( $ownName, 5,
+                Log3( $ownName, 4,
                     "$ownName MSwitch_Notify: return -> $testvar    L:"
                       . __LINE__ );
                 $set = $testvar if $testvar ne 'undef';
             }
 
+			
+			
             if ( $triggercmdoff ne 'no_trigger' )    #
             {
                 my $testvar =
                   MSwitch_checktrigger( $own_hash, $ownName, $eventstellen,
                     $triggercmdoff, $incommingdevice, 'offonly', $eventcopy,
                     @eventsplit );
-                Log3( $ownName, 5,
+                Log3( $ownName, 4,
                     "$ownName MSwitch_Notify: return -> $testvar    L:"
                       . __LINE__ );
                 push @cmdarray, $own_hash . ',off,check,' . $eventcopy
@@ -1446,35 +1487,29 @@ sub MSwitch_Notify($$) {
     #my @cmdarray1;	#enthält auszuführende befehle nach conditiontest
     # schaltet zweig 3 und 4
             if ( $anzahl != 0 ) {
-              LOOP31: foreach (@cmdarray) {
+              LOOP31: foreach (@cmdarray) 
+				{
                     if ( $_ eq 'undef' ) { next LOOP31; }
                     my ( $ar1, $ar2, $ar3, $ar4 ) = split( /,/, $_ );
-                    Log3( $ownName, 5,
-"$ownName MSwitch_Notify: aufruf MSwitch_Exec_Notif -> $own_hash, $ar2, $ar3, $ar4  L:"
-                          . __LINE__ );
+                    Log3( $ownName, 5,"$ownName MSwitch_Notify: aufruf MSwitch_Exec_Notif -> $own_hash, $ar2, $ar3, $ar4  L:" . __LINE__ );
                     my $returncmd = 'undef';
                     $returncmd =
                       MSwitch_Exec_Notif( $own_hash, $ar2, $ar3, $ar4 );
-                    if ( $returncmd ne 'undef' ) {
+                    if ( $returncmd ne 'undef' )
+					{
                         chop $returncmd;    #CHANGE
                         push( @cmdarray1, $returncmd );
                     }
                 }
 
                 my $befehlssatz = join( ',', @cmdarray1 );
-                Log3( $ownName, 5,
-                    "$ownName MSwitch_Notify: Befehlsatz -> $befehlssatz  L:"
-                      . __LINE__ );
+                Log3( $ownName, 5,"$ownName MSwitch_Notify: Befehlsatz -> $befehlssatz  L:". __LINE__ );
                 foreach ( split( /,/, $befehlssatz ) ) {
-                    Log3( $ownName, 5,
-                        "$ownName MSwitch_Notify: Befehlsausfuehrung -> $_ L:"
-                          . __LINE__ );
+                    Log3( $ownName, 5,"$ownName MSwitch_Notify: Befehlsausfuehrung -> $_ L:" . __LINE__ );
                     my $ecec = $_;
                     my $errors = AnalyzeCommandChain( undef, $_ );
                     if ( defined($errors) ) {
-                        Log3( $ownName, 1,
-"$ownName MSwitch_Notify: Fehler bei Befehlsausführung $errors -> Comand: $_ "
-                              . __LINE__ );
+                        Log3( $ownName, 1,"$ownName MSwitch_Notify: Fehler bei Befehlsausführung $errors -> Comand: $_ " . __LINE__ );
                     }
                     readingsSingleUpdate( $own_hash, "Exec_cmd", $ecec, 1 );
                 }
@@ -4649,8 +4684,7 @@ sub MSwitch_checktrigger(@)
     my $triggeroff    = ReadingsVal( $ownName, '.Trigger_off', '' );
     my $triggercmdon  = ReadingsVal( $ownName, '.Trigger_cmd_on', '' );
     my $triggercmdoff = ReadingsVal( $ownName, '.Trigger_cmd_off', '' );
-    unshift( @eventsplit, $device )
-      if ReadingsVal( $ownName, 'Trigger_device', '' ) eq "all_events";
+    unshift( @eventsplit, $device )if ReadingsVal( $ownName, 'Trigger_device', '' ) eq "all_events";
     if ( $triggerfield eq "*"
         && ReadingsVal( $ownName, 'Trigger_device', '' ) eq "all_events" )
     {
@@ -4750,6 +4784,17 @@ sub MSwitch_checktrigger(@)
     Log3( $ownName, 5,
         "$ownName MSwitch_checktrigger: AnswerGESAMT -> $answer L:"
           . __LINE__ );
+		  
+		  
+		  
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: zweig -> $zweig L:" . __LINE__ );	
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: answer -> $answer L:" . __LINE__ );
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: eventcopy -> $eventcopy L:" . __LINE__ );	
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: triggercmdoff -> $triggercmdoff L:" . __LINE__ );	 
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: triggercmdon -> $triggercmdon L:" . __LINE__ );	  
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: triggeroff -> $triggeroff L:" . __LINE__ );	  
+	Log3( $ownName, 4,"$ownName MSwitch_checktrigger: eventcopy -> $eventcopy L:" . __LINE__ );	  
+		 
     return 'on'
       if $zweig eq 'on'
       && $answer eq 'wahr'
