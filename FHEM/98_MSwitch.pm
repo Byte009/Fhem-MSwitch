@@ -778,6 +778,8 @@ sub MSwitch_Set($@) {
 ####################
 
     my $update = '';
+	my @testdetails = ('_on','_off','_onarg','_offarg','_playback','_record','_timeon','_timeoff,','_conditionon','_conditionoff');
+	
     if ( $cmd eq "on" ) {
         ### ausführen des on befehls
 		
@@ -792,106 +794,26 @@ sub MSwitch_Set($@) {
       LOOP: foreach my $device (@devices) {
             my @devicesplit = split( /-AbsCmd/, $device );
             my $devicenamet = $devicesplit[0];
-            if ( !defined( $devicedetails{ $device . '_on' } ) ) {
+			
+		
+		
+		foreach my $testset (@testdetails)
+		{
+		
+		 if ( !defined( $devicedetails{ $device . $testset } ) ) {
                 Log3( $name, 5,
                     "$name - MSwitch_Set: found undefined setze standart fuer "
                       . $device
-                      . " _on ! L:"
+                      . " $testset ! L:"
                       . __LINE__ );
                 my $key = '';
-                $key = $device . "_on";
+                $key = $device . $testset;
                 $devicedetails{$key} = 'no_action';
-            }
-            if ( !defined( $devicedetails{ $device . '_off' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set: found undefined setze standart fuer"
-                      . $device
-                      . "_off ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_off";
-                $devicedetails{$key} = 'no_action';
-            }
-            if ( !defined( $devicedetails{ $device . '_onarg' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set: found undefined setze standart fuer "
-                      . $device
-                      . "_onarg  ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_onarg";
-                $devicedetails{$key} = '';
-            }
-            if ( !defined( $devicedetails{ $device . '_offarg' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set found undefined setze standart fuer "
-                      . $device
-                      . "_offarg ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_offarg";
-                $devicedetails{$key} = '';
-            }
-            if ( !defined( $devicedetails{ $device . '_playback' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set: found undefined setze standart fuer "
-                      . $device
-                      . "_playback ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_playback";
-                $devicedetails{$key} = 'nein';
-            }
-            if ( !defined( $devicedetails{ $device . '_record' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set: found undefined setze standart fuer "
-                      . $device
-                      . " _record ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_record";
-                $devicedetails{$key} = 'nein';
-            }
-            if ( !defined( $devicedetails{ $device . '_timeon' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set found undefined setze standart fuer "
-                      . $device
-                      . "_timeon ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_timeon";
-                $devicedetails{$key} = 0;
-            }
-            if ( !defined( $devicedetails{ $device . '_timeoff' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set: found undefined setze standart fuer "
-                      . $device
-                      . "_timeoff ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_timeoff";
-                $devicedetails{$key} = 0;
-            }
-            if ( !defined( $devicedetails{ $device . '_conditionon' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set found undefined setze standart fuer "
-                      . $device
-                      . "_conditionon ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_conditionon";
-                $devicedetails{$key} = '';
-            }
-            if ( !defined( $devicedetails{ $device . '_conditionoff' } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set found undefined setze standart fuer "
-                      . $device
-                      . "_conditionoff ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . "_conditionoff";
-                $devicedetails{$key} = '';
-            }
+			}
+		
+		}
+			
+			
 
             if ( AttrVal( $name, 'MSwitch_Delete_Delays', '0' ) eq '1' ) {
                 Log3( $name, 4,
@@ -1005,66 +927,26 @@ sub MSwitch_Set($@) {
       LOOP1: foreach my $device (@devices) {
             my @devicesplit = split( /-AbsCmd/, $device );
             my $devicenamet = $devicesplit[0];
-            if ( !defined( $devicedetails{ $device . '_on' } ) ) {
-
+			
+			
+			
+			foreach my $testset (@testdetails)
+		{
+		
+		 if ( !defined( $devicedetails{ $device . $testset } ) ) {
+                Log3( $name, 5,
+                    "$name - MSwitch_Set: found undefined setze standart fuer "
+                      . $device
+                      . " $testset ! L:"
+                      . __LINE__ );
                 my $key = '';
-                $key = $device . "_on";
+                $key = $device . $testset;
                 $devicedetails{$key} = 'no_action';
-            }
-            if ( !defined( $devicedetails{ $device . '_off' } ) ) {
-
-                my $key = '';
-                $key = $device . "_off";
-                $devicedetails{$key} = 'no_action';
-            }
-            if ( !defined( $devicedetails{ $device . '_onarg' } ) ) {
-
-                my $key = '';
-                $key = $device . "_onarg";
-                $devicedetails{$key} = '';
-            }
-            if ( !defined( $devicedetails{ $device . '_offarg' } ) ) {
-
-                my $key = '';
-                $key = $device . "_offarg";
-                $devicedetails{$key} = '';
-            }
-            if ( !defined( $devicedetails{ $device . '_playback' } ) ) {
-
-                my $key = '';
-                $key = $device . "_playback";
-                $devicedetails{$key} = 'nein';
-            }
-            if ( !defined( $devicedetails{ $device . '_record' } ) ) {
-
-                my $key = '';
-                $key = $device . "_record";
-                $devicedetails{$key} = 'nein';
-            }
-            if ( !defined( $devicedetails{ $device . '_timeon' } ) ) {
-
-                my $key = '';
-                $key = $device . "_timeon";
-                $devicedetails{$key} = 0;
-            }
-            if ( !defined( $devicedetails{ $device . '_timeoff' } ) ) {
-
-                my $key = '';
-                $key = $device . "_timeoff";
-                $devicedetails{$key} = 0;
-            }
-            if ( !defined( $devicedetails{ $device . '_conditionon' } ) ) {
-
-                my $key = '';
-                $key = $device . "_conditionon";
-                $devicedetails{$key} = '';
-            }
-            if ( !defined( $devicedetails{ $device . '_conditionoff' } ) ) {
-
-                my $key = '';
-                $key = $device . "_conditionoff";
-                $devicedetails{$key} = '';
-            }
+		}
+		
+		}
+			
+			
 
             # teste auf on kommando
             if ( $device eq "no_device" ) {
