@@ -779,15 +779,14 @@ sub MSwitch_Set($@) {
 
     my $update = '';
 	my @testdetails = ('_on','_off','_onarg','_offarg','_playback','_record','_timeon','_timeoff,','_conditionon','_conditionoff');
-	
+	my @testdetailsstandart = ('no_action','no:action','','','nein','nein',0,0,'','');
     if ( $cmd eq "on" ) {
         ### ausführen des on befehls
 		
 		my @cmdpool; # beinhaltet alle befehle die ausgeführt werden müssen
 		
 		
-        Log3( $name, 4,
-            "$name  MSwitch_Set -> aufruf MSwitch_makeCmdHash L:" . __LINE__ );
+        Log3( $name, 4, "$name  MSwitch_Set -> aufruf MSwitch_makeCmdHash L:" . __LINE__ );
         my %devicedetails = MSwitch_makeCmdHash($name);
         my @devices =
           split( /,/, ReadingsVal( $name, '.Device_Affected', '' ) );
@@ -796,21 +795,24 @@ sub MSwitch_Set($@) {
             my $devicenamet = $devicesplit[0];
 			
 		
-		
+		my $count=0;
 		foreach my $testset (@testdetails)
 		{
 		
-		 if ( !defined( $devicedetails{ $device . $testset } ) ) {
-                Log3( $name, 5,
+		 if ( !defined( $devicedetails{ $device . $testset } ) ) 
+		 {
+                Log3( $name, 4,
                     "$name - MSwitch_Set: found undefined setze standart fuer "
                       . $device
                       . " $testset ! L:"
                       . __LINE__ );
                 my $key = '';
                 $key = $device . $testset;
-                $devicedetails{$key} = 'no_action';
+                $devicedetails{$key} = $testdetailsstandart[$count];
+				
+			Log3( $name, 4, "$name  MSwitch_Set testset -> $key - $devicedetails{$key}  L:" . __LINE__ );	
 			}
-		
+		 $count++;
 		}
 			
 			
@@ -929,21 +931,21 @@ sub MSwitch_Set($@) {
             my $devicenamet = $devicesplit[0];
 			
 			
-			
-			foreach my $testset (@testdetails)
-		{
+			my $count=0;
+			 foreach my $testset (@testdetails)
+		 {
 		
-		 if ( !defined( $devicedetails{ $device . $testset } ) ) {
-                Log3( $name, 5,
-                    "$name - MSwitch_Set: found undefined setze standart fuer "
-                      . $device
-                      . " $testset ! L:"
-                      . __LINE__ );
-                my $key = '';
-                $key = $device . $testset;
-                $devicedetails{$key} = 'no_action';
-		}
-		
+		  if ( !defined( $devicedetails{ $device . $testset } ) ) {
+                 Log3( $name, 5,
+                     "$name - MSwitch_Set: found undefined setze standart fuer "
+                       . $device
+                       . " $testset ! L:"
+                       . __LINE__ );
+                 my $key = '';
+                 $key = $device . $testset;
+                 $devicedetails{$key} = $testdetailsstandart[$count];
+		 }
+		$count++;
 		}
 			
 			
@@ -3512,6 +3514,11 @@ sub MSwitch_checkcondition($$$) {
     # antwort execute 0 oder 1
 
     my ( $condition, $name, $event ) = @_;
+	
+	
+	Log3( $name, 4, "$name MSwitch_checkcondition: -> $condition " . __LINE__ );
+	
+	
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
     my $hash     = $modules{MSwitch}{defptr}{$name};
@@ -3704,7 +3711,7 @@ sub MSwitch_checkcondition($$$) {
     my @perlarray;
     ### perlteile trennen
 
-    Log3( $name, 5,
+    Log3( $name, 4,
         "$name MSwitch_checkcondition: vorersetzung $condition  L:"
           . __LINE__ );
     $condition =~ s/{!\$we}/{~!\$we~}/ig;
@@ -3724,7 +3731,7 @@ sub MSwitch_checkcondition($$$) {
 
       SUNSETTEST: for ( $i = 0 ; $i <= 10 ; $i++ ) {
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "$name MSwitch_checkcondition: condition $condition  L:"
                   . __LINE__ );
 
@@ -3732,7 +3739,7 @@ sub MSwitch_checkcondition($$$) {
             $pos = index( $condition, '{~', 0 );
             my $x = $pos;
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "$name MSwitch_checkcondition: x found : $x L:" . __LINE__ );
 
             if ( $x == '-1' ) { last SUNSETTEST; }
@@ -3740,7 +3747,7 @@ sub MSwitch_checkcondition($$$) {
             #$pos1 = index( $condition, "}", 0 );
             $pos1 = index( $condition, "~}", 0 );
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "$name MSwitch_checkcondition: pos1  : $pos1 L:" . __LINE__ );
 
             $perlarray[$arraycount] =
@@ -3754,15 +3761,15 @@ sub MSwitch_checkcondition($$$) {
             $part3 =
               substr( $condition, ( $pos1 + 2 ), ( $lenght - ( $pos1 + 2 ) ) );
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "$name MSwitch_checkcondition: p1 = $part1 L:" . __LINE__ );
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "$name MSwitch_checkcondition: p2 = $part2 L:" . __LINE__ );
-            Log3( $name, 5,
+            Log3( $name,4,
                 "$name MSwitch_checkcondition: p3 = $part3 L:" . __LINE__ );
             $condition = $part1 . $part2 . $part3;
 
-            Log3( $name, 5,
+            Log3( $name,4 ,
 "name MSwitch_checkcondition: argument = $perlarray[$arraycount] L:"
                   . __LINE__ );
             $arraycount++;
@@ -3774,7 +3781,7 @@ sub MSwitch_checkcondition($$$) {
 
             $checkarg = $args;
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "name MSwitch_checkcondition: eval arg return = $checkarg  } L:"
                   . __LINE__ );
 
@@ -3786,9 +3793,7 @@ sub MSwitch_checkcondition($$$) {
             if ( $pos > -1 ) {
                 $checkarg = eval $checkarg;
             }
-            Log3( $name, 5,
-"name MSwitch_checkcondition: eval arg return nach sunsettest = $checkarg  } L:"
-                  . __LINE__ );
+            Log3( $name, 4,"name MSwitch_checkcondition: eval arg return nach sunsettest = $checkarg  } L:". __LINE__ );
 
             # ersetze : , dann 6 zeichen lang und numerisch
             # nur bei numeischem wert ausfüheren
@@ -3850,12 +3855,12 @@ sub MSwitch_checkcondition($$$) {
         my @newargarray;
         foreach my $args (@argarray) {
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "name MSwitch_checkcondition: $args   L:" . __LINE__ );
             $testarg = $args;
             $testarg =~ s/[0-9]+//gs;
 
-            Log3( $name, 5,
+            Log3( $name, 4,
                 "name MSwitch_checkcondition: $testarg  L:" . __LINE__ );
 
             if ( $testarg eq '[:-:|]' || $testarg eq '[:-:]' ) {
@@ -3863,7 +3868,7 @@ sub MSwitch_checkcondition($$$) {
                 # timerformatierung erkannt - auswerten über sub
                 my $param = $argarray[$count];
 
-                Log3( $name, 5,
+                Log3( $name, 4,
                     "name MSwitch_checkcondition: aufruf checktime  -> $param:"
                       . __LINE__ );
 
@@ -3898,7 +3903,7 @@ sub MSwitch_checkcondition($$$) {
           $condition . " {\$answer = 'true';} else {\$answer = 'false';} ";
 
     }
-    Log3( $name, 5,
+    Log3( $name, 4,
         "name MSwitch_checkcondition: Finalstringt = $finalstring L:"
           . __LINE__ );
 
@@ -3912,7 +3917,7 @@ sub MSwitch_checkcondition($$$) {
     }
     my $test = ReadingsVal( $name, 'last_event', 'undef' );
     $hash->{helper}{conditioncheck} = $finalstring;
-    Log3( $name, 5,
+    Log3( $name, 4,
 "$name MSwitch_checkcondition: $test finalstring = $finalstring -> return: $ret L:"
           . __LINE__ );    # !!!!!!!!!!!!!!
 
