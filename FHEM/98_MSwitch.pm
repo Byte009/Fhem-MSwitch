@@ -881,7 +881,8 @@ sub MSwitch_Set($@) {
 						
                         #my $errors = AnalyzeCommandChain( undef, $cs );
 						
-						
+						  # variabelersetzung
+				  $cs =~ s/\$NAME/$hash->{helper}{eventfrom}/;
 						push @cmdpool, $cs;
 						
 						
@@ -903,6 +904,11 @@ sub MSwitch_Set($@) {
                       . $conditionkey . ",,"
                       . $timecond;
 
+					  
+					    # variabelersetzung
+				  $msg =~ s/\$NAME/$hash->{helper}{eventfrom}/;
+				  
+				  
                     Log3( $name, 5,"$name MSwitch_Set: Timer fuer verzoegerten Befehl im on-zweig gesetzt -> $msg L:". __LINE__ );
                     $hash->{helper}{timer}{$msg} = $timecond;
                     InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
@@ -1012,6 +1018,9 @@ sub MSwitch_Set($@) {
 "$name MSwitch_Set: Befehl wird ausgefuehrt im off-zweig gesetzt -> $cs L:"
                               . __LINE__ );
                        # my $errors = AnalyzeCommandChain( undef, $cs );
+					     # variabelersetzung
+				  $cs =~ s/\$NAME/$hash->{helper}{eventfrom}/;
+				  
 						push @cmdpool, $cs;
                         $update = $device . ',' . $update;   # kann ggf gelöscht werden 
                         #if ( defined($errors) ) {
@@ -1030,7 +1039,8 @@ sub MSwitch_Set($@) {
                       . $name . ","
                       . $conditionkey . ",,"
                       . $timecond;
-
+  # variabelersetzung
+				  $msg =~ s/\$NAME/$hash->{helper}{eventfrom}/;
                     Log3( $name, 5,"$name MSwitch_Set: Timer im off-zweig gesetzt -> $msg L:". __LINE__ );
                     $hash->{helper}{timer}{$msg} = $timecond;
                     InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
@@ -1206,6 +1216,9 @@ sub MSwitch_Notify($$) {
 
     # notify für eigenes device #
     my $devcopyname = $devName;
+	
+	
+	$own_hash->{helper}{eventfrom} = $devName;
 
     my @eventscopy;
     if ( defined( $own_hash->{helper}{testevent_event} ) ) {
@@ -1460,6 +1473,12 @@ sub MSwitch_Notify($$) {
             Log3( $ownName, 3,
                 "$ownName MSwitch_Notif: Befehlsausfuehrung -> $cs "
                   . __LINE__ );
+				  
+				  # variabelersetzung
+				  $cs =~ s/\$NAME/$own_hash->{helper}{eventfrom}/;
+				  
+				  
+				  
             my $errors = AnalyzeCommandChain( undef, $cs );
 
         }
@@ -2764,7 +2783,7 @@ sub MSwitch_fhemwebFn($$$$) {
 				   
 				   if (from == 'onoff')
 				   {
-				   text = 'Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.<br>Bei angebotenen Zusatzfeldern kann ein Verweis auf ein Reading eines anderen Devices gesetzt werden mit [Device:Reading] .';
+				   text = 'Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.<br>Bei angebotenen Zusatzfeldern kann ein Verweis auf ein Reading eines anderen Devices gesetzt werden mit [Device:Reading].<br>$NAME wird ersetzt durch den Namen des triggernden Devices.';
 				   }
 				   
 				   if (from == 'playback')
@@ -3355,6 +3374,14 @@ sub MSwitch_Exec_Notif($$$$) {
 "set $devicenamet $devicedetails{$device.'_'.$comand} $devicedetails{$device.'_'.$comand.'arg'}";
             }
 
+			
+			#Variabelersetzung
+			
+			$cs =~ s/\$NAME/$hash->{helper}{eventfrom}/;
+			
+			
+			
+			
             if (   $devicedetails{$timerkey} eq "0"
                 || $devicedetails{$timerkey} eq "" )
             {
