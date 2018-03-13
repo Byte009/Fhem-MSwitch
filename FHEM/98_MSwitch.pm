@@ -64,7 +64,7 @@ sub MSwitch_makeAffected($);
 
 #sub MSwitch_checktrigger($$$$$$@);
 sub MSwitch_checktrigger(@);
-sub MSwitch_Cmd($@);
+sub MSwitch_Cmd(@);
 
 my %sets = (
     "on"             => "noArg",
@@ -2783,7 +2783,7 @@ sub MSwitch_fhemwebFn($$$$) {
 				   
 				   if (from == 'onoff')
 				   {
-				   text = 'Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.<br>Bei angebotenen Zusatzfeldern kann ein Verweis auf ein Reading eines anderen Devices gesetzt werden mit [Device:Reading].<br>$NAME wird ersetzt durch den Namen des triggernden Devices.';
+				   text = 'Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.<br>Bei angebotenen Zusatzfeldern kann ein Verweis auf ein Reading eines anderen Devices gesetzt werden mit [Device:Reading].<br>\$NAME wird ersetzt durch den Namen des triggernden Devices.';
 				   }
 				   
 				   if (from == 'playback')
