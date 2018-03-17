@@ -5,3 +5,4 @@
 09.03.18 bugfix 'delete_device/datensatztrenner'
 12.03.18 add VAR $NAME in comands
 13.03.18 bugfix 'lost devices'
+17.03.18 add function backup/restore
