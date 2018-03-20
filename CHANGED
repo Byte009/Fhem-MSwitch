@@ -8,3 +8,4 @@
 17.03.18 add function backup/restore
 18.03.18 add function restore_all_devices
 20.03.18 bugfix 'not saved .Trigger_Whitelist/backup'
+20.03.18 bugfix 'restart all timers after restore'
