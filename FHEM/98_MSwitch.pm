@@ -3107,6 +3107,11 @@ sub MSwitch_fhemwebFn($$$$) {
 	
 	
 	
+	
+	
+	
+	
+	
 	\$(\"#aw_det\").click(function(){
 	
       var nm = \$(t).attr(\"nm\");
@@ -4937,7 +4942,7 @@ sub MSwitch_backup($) {
     Log3( $Name, 5, "starte Backup  . L:" . __LINE__ );
 
     my @areadings =
-      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state)
+      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state)
       ;    #alle readings
     my %keys;
     open( BACKUPDATEI, ">MSwitch_backup.cfg" );    # Datei zum Schreiben öffnen
@@ -4971,7 +4976,8 @@ sub MSwitch_backup($) {
         print BACKUPDATEI "\n";
     }
     close(BACKUPDATEI);
-
+#my $client_hash=$hash->{CL};
+	#asyncOutput($client_hash, 'Backup ready');
 }
 
 ################################
@@ -5019,6 +5025,9 @@ sub MSwitch_backup_this($) {
             }
         }
     }
+	
+	
+	MSwitch_Createtimer($hash);
     return "MSwitch $Name restored.\nPlease refresh device.";
 }
 
@@ -5028,7 +5037,6 @@ sub MSwitch_backup_all($) {
 
  my ($hash) = @_;
     my $Name = $hash->{NAME};
-	#my $client_hash=$hash->{CL};
 	
 	    
 
@@ -5081,7 +5089,7 @@ foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
         }
         if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
         {
-            my $cs = "attr $testdevice $1 $2";
+            my $cs = "get $testdevice $1 $2";
             Log3( $testdevice, 5, " write attribut $1 -> $2 " );
             my $errors = AnalyzeCommandChain( undef, $cs );
             if ( defined($errors) ) {
@@ -5090,6 +5098,17 @@ foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
         }
     }
     $answer = $answer. "MSwitch $testdevice restored. Please refresh device. [nl]";
+	
+	
+	 my $cs = "attr $testdevice $1 $2";
+            Log3( $testdevice, 5, " write attribut $1 -> $2 " );
+            my $errors = AnalyzeCommandChain( undef, $cs );
+            if ( defined($errors) ) {
+                Log3( $testdevice, 5, "ERROR $cs" );
+            }
+			
+			
+	
 }
     #
 	Log3( $Name, 5, "wblocking end $hash $answer . L:" . __LINE__ );
@@ -5119,6 +5138,20 @@ sub MSwitch_backup_done($) {
 	Log3( $Name, 5, "$Name wiederherstellung  abgeschlossen . $client_hash - $hash L:" . __LINE__ );
 	
 	$answer =~ s/\[nl\]/\n/g;
+	
+	
+	foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
+{
+       
+    Log3( $Name, 5, "restart timer  $testdevice . L:" . __LINE__ );
+	my $devhash = $defs{$testdevice};
+	
+	MSwitch_Createtimer($devhash);
+	}
+	
+	
+	
+	
 	asyncOutput($client_hash, $answer);
 	return;
 	
