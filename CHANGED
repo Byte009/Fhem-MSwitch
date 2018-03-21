@@ -1,11 +1,21 @@
-03.03.18 first commit
-08.03.18 bugfix 'undesirable toggle'
-08.03.18 code cleaned up
-09.03.18 bugfix 'Bareword'
-09.03.18 bugfix 'delete_device/datensatztrenner'
-12.03.18 add VAR $NAME in comands
-13.03.18 bugfix 'lost devices'
-17.03.18 add function backup/restore
-18.03.18 add function restore_all_devices
-20.03.18 bugfix 'not saved .Trigger_Whitelist/backup'
 20.03.18 bugfix 'restart all timers after restore'
+20.03.18 bugfix 'not saved .Trigger_Whitelist/backup'
+18.03.18 add function restore_all_devices
+17.03.18 add function backup/restore
+13.03.18 bugfix 'lost devices'
+12.03.18 add VAR $NAME in comands
+09.03.18 bugfix 'delete_device/datensatztrenner'
+09.03.18 bugfix 'Bareword'
+08.03.18 code cleaned up
+08.03.18 bugfix 'undesirable toggle'
+03.03.18 first commit
+
+
+
+
+
+
+
+
+
+
