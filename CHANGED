@@ -1,3 +1,4 @@
+23.03.18 remove function 'absorb'
 20.03.18 bugfix 'restart all timers after restore'
 20.03.18 bugfix 'not saved .Trigger_Whitelist/backup'
 18.03.18 add function restore_all_devices
@@ -9,13 +10,3 @@
 08.03.18 code cleaned up
 08.03.18 bugfix 'undesirable toggle'
 03.03.18 first commit
-
-
-
-
-
-
-
-
-
-
