@@ -65,8 +65,6 @@ sub MSwitch_backup_this($);
 sub MSwitch_backup_all($);
 sub MSwitch_backup_done($);
 
-
-
 #sub MSwitch_checktrigger($$$$$$@);
 sub MSwitch_checktrigger(@);
 sub MSwitch_Cmd(@);
@@ -97,7 +95,7 @@ sub MSwitch_Initialize($) {
     my ($hash) = @_;
     $hash->{SetFn} = "MSwitch_Set";
 
-    $hash->{AsyncOutput}= "MSwitch_AsyncOutput";
+    $hash->{AsyncOutput}       = "MSwitch_AsyncOutput";
     $hash->{GetFn}             = "MSwitch_Get";
     $hash->{DefFn}             = "MSwitch_Define";
     $hash->{UndefFn}           = "MSwitch_Undef";
@@ -252,10 +250,7 @@ sub MSwitch_LoadHelper($) {
     my ($hash)   = @_;
     my $Name     = $hash->{NAME};
     my $loglevel = 5;
-    if ( $Name eq 'device_absorb' ) {
-        $hash->{NOTIFYDEV} = 'no_trigger';
-        return;
-    }
+
     Log3( $Name, $loglevel, "MSwitch_LoadHelper: initialisiert L:" . __LINE__ );
     my $oldtrigger = ReadingsVal( $Name, 'Trigger_device', 'undef' );
     my $devhash    = undef;
@@ -385,9 +380,7 @@ sub MSwitch_Get($$@) {
     my ( $hash, $name, $opt, @args ) = @_;
     my $ret;
     my $loglevel = 5;
-    if ( $name eq 'device_absorb' ) {
-        return;
-    }
+
     return "\"get $name\" needs at least one argument" unless ( defined($opt) );
 
     #return "$hash, $name, $opt, @args";
@@ -399,16 +392,16 @@ sub MSwitch_Get($$@) {
 ####################
 ####################
     if ( $opt eq 'restore_MSwitch_Data' && $args[0] eq "all_Devices" ) {
-$hash->{helper}{RESTORE_ANSWER}=$hash->{CL};
-        $hash->{helper}{RUNNING_PID} =BlockingCall('MSwitch_backup_all', $hash, 'MSwitch_backup_done');
-		
-		
-		
-        return 'restoration in the background, this function is nonblocking.<br>A message will be sent when the restoration is complete';
-		
-		#$ret = MSwitch_backup_all( $hash );
-		
-		#return $ret;
+        $hash->{helper}{RESTORE_ANSWER} = $hash->{CL};
+        $hash->{helper}{RUNNING_PID} =
+          BlockingCall( 'MSwitch_backup_all', $hash, 'MSwitch_backup_done' );
+
+        return
+'restoration in the background, this function is nonblocking.<br>A message will be sent when the restoration is complete';
+
+        #$ret = MSwitch_backup_all( $hash );
+
+        #return $ret;
     }
 ####################
 
@@ -507,16 +500,6 @@ sub MSwitch_Set($@) {
 
     my ( $hash, $name, $cmd, @args ) = @_;
 
-    ####### absorb ###########
-    if ( $cmd eq 'Absent_absorb' ) {
-        absorb($hash);
-        return;
-    }
-    if ( $cmd eq 'Notify_absorb' ) {
-        $hash->{helper}{absorb} =
-          'Notify-Absorb wird in dieser Version nicht unterstützt.';
-        return;
-    }
 ###########################
 
     return ""
@@ -542,10 +525,7 @@ sub MSwitch_Set($@) {
                 push( @cList, $k );
             }
         }    # end foreach
-        if ( $name eq 'device_absorb' ) {
-            return
-"Unknown argument $cmd, choose one of Absent_absorb:noArg Notify_absorb:noArg";
-        }
+
         return
 "Unknown argument $cmd, choose one of on:noArg off:noArg backup_MSwitch:all_devices";
     }
@@ -741,7 +721,7 @@ sub MSwitch_Set($@) {
             return;
         }
         my @olddevices =
-          split( /,/, ReadingsVal( $name, '.Device_Affected', '' ) );
+          split( /,/, ReadingsVal( $name, '.Device_Affected', 'no_device' ) );
         my @devices = split( /,/, $args[0] );
         my $addolddevice = '';
         foreach (@devices) {
@@ -749,7 +729,13 @@ sub MSwitch_Set($@) {
           LOOP6: foreach my $olddev (@olddevices) {
                 my $oldcmd  = '';
                 my $oldname = '';
+				
+				#Log3( $name, 0, "debug -> $olddev L:" . __LINE__ );#debug
+				
+				
                 ( $oldname, $oldcmd ) = split( /-AbsCmd/, $olddev );
+				if (!defined $oldcmd) {$oldcmd =''};
+				
                 if ( $oldcmd eq '1' ) { next LOOP6 }
                 if ( $oldname eq $testdev ) {
                     $addolddevice = $addolddevice . $olddev . ',';
@@ -762,12 +748,21 @@ sub MSwitch_Set($@) {
         my @sortdevices = split( /,/, $devices );
         @sortdevices = sort @sortdevices;
         $devices = join( ',', @sortdevices );
-        readingsSingleUpdate( $hash, ".Device_Affected", $devices, 1 )
-          ;    # alle gesetzten geräte durch komma getrennt
-        $devices = MSwitch_makeAffected($hash);
+        readingsSingleUpdate( $hash, ".Device_Affected", $devices, 1 );    # alle gesetzten geräte durch komma getrennt
+       
+	   $devices = MSwitch_makeAffected($hash);
+	   
+	   if ( defined $hash->{DEF})
+	   {
         my $devhash = $hash->{DEF};
         my @dev = split( /#/, $devhash );
         $hash->{DEF} = $dev[0] . ' # ' . $devices;
+		}
+		else{
+		$hash->{DEF} =' # ' . $devices;
+		
+		}
+		
         return;
     }
 
@@ -797,23 +792,50 @@ sub MSwitch_Set($@) {
             Log3( $name, 5, "$name - $inputcmds[$counter] L:" . __LINE__ );
             my @devicecmds = split( /\|/, $inputcmds[$counter] );
 
-            $savedetails =
-                $savedetails
-              . $_ . ','
-              . $devicecmds[0] . ','
-              . $devicecmds[1] . ','
-              . $devicecmds[2] . ','
-              . $devicecmds[3] . ','
-              . $devicecmds[4] . ','
-              . $devicecmds[5] . ','
-              . $devicecmds[7] . ','
-              . $devicecmds[6] . ','
-              . $devicecmds[8] . ','
-              . $devicecmds[9] . '|';
+			
+			# Log3( $name, 0, "$name - $devicecmds[0] -> $devicecmds[0] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[1] -> $devicecmds[1] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[2] -> $devicecmds[2] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[3] -> $devicecmds[3] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[4] -> $devicecmds[4] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[5] -> $devicecmds[5] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[6] -> $devicecmds[6] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[7] -> $devicecmds[7] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[8] -> $devicecmds[8] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[9] -> $devicecmds[9] L:" . __LINE__ );
+			
+			
+            $savedetails =$savedetails. $_ . ',';
+            $savedetails =$savedetails . $devicecmds[0] . ',';
+            $savedetails =$savedetails . $devicecmds[1] . ',';
+            $savedetails =$savedetails . $devicecmds[2] . ',';
+            $savedetails =$savedetails . $devicecmds[3] . ',';
+            $savedetails =$savedetails . $devicecmds[4] . ',';
+            $savedetails =$savedetails . $devicecmds[5] . ',';
+            $savedetails =$savedetails . $devicecmds[7] . ',';
+            $savedetails =$savedetails . $devicecmds[6] . ',';
+			
+			if (defined $devicecmds[8]){
+            $savedetails =$savedetails . $devicecmds[8] . ',';
+			}
+			else 
+			{
+			$savedetails =$savedetails .''.',';
+			}
+			if (defined $devicecmds[9])
+			{
+            $savedetails =$savedetails . $devicecmds[9] . '|';
+			}
+			else{
+			$savedetails =$savedetails .''. '|';
+			}
+			
+			
+			
             $counter++;
         }
         chop($savedetails);
-        Log3( $name, 0, "$savedetails L:" . __LINE__ );
+        #Log3( $name, 0, "$savedetails L:" . __LINE__ );
         readingsSingleUpdate( $hash, ".Device_Affected_Details", $savedetails,
             0 );
         return;
@@ -1542,28 +1564,10 @@ sub MSwitch_fhemwebFn($$$$) {
     my $jsvarset = '';
     my $j1       = '';
     ### teste auf new defined device
-    my $absorb = '';
+
     my $hidden = '';
     if ( AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '2' ) { $hidden = '' }
     else                                                 { $hidden = 'hidden' }
-
-    #absorb
-    if ( defined $hash->{helper}{absorb} ) { $absorb = $hash->{helper}{absorb} }
-    my $ret = "";
-    if ( defined $absorb && $absorb ne '' ) {
-        delete( $hash->{helper}{absorb} );
-    }
-
-    if ( $Name eq 'device_absorb' ) {
-        $ret .= "<div class=\"col1\">
-			";
-        $ret .=
-"This is a Device to absorb old Absents and Notifys only and has no other Functions.<br>
-			<u>there will be changes to the fhem.cfg, please backup this file first.</u><br><br>";
-        $ret .= $absorb;
-        $ret .= "</div>";
-        return $ret;
-    }
 
     my $triggerdevices = '';
     my $events         = ReadingsVal( $Name, '.Device_Events', '' );
@@ -1759,6 +1763,9 @@ sub MSwitch_fhemwebFn($$$$) {
     }
 
   LOOP9: for my $name ( sort keys %defs ) {
+  
+  
+  
         my $selectedtrigger = '';
         my $devicealias = AttrVal( $name, 'alias', "" );
         my $devicewebcmd =
@@ -1802,6 +1809,9 @@ sub MSwitch_fhemwebFn($$$$) {
         $errors =~ s/\| //g;
         $errors =~ s/\|//g;
 
+		
+		
+		
         if ( $errors eq ''
             && AttrVal( $Name, 'MSwitch_Include_Webcmds', "1" ) eq '1' )
         {
@@ -1827,20 +1837,31 @@ sub MSwitch_fhemwebFn($$$$) {
         }
 
         my $usercmds = AttrVal( $name, 'MSwitchcmd', '' );
+		
+		
+		
+		
+		
+		
         if ( $usercmds ne ''
             && AttrVal( $Name, 'MSwitch_Include_MSwitchcmds', "1" ) eq '1' )
         {
-
             $usercmds =~ tr/:/ /;
             $errors .= ' ' . $usercmds;
         }
+		
+		
         if ( $errors ne '' ) {
+		
+		 
+		
             $selected = "";
-
+if (exists $usedevices{$name})
+{
             if ( $usedevices{$name} eq 'on' ) {
                 $selected = "selected=\"selected\" ";
             }
-
+}
             $deviceoption =
                 $deviceoption
               . "<option "
@@ -1944,13 +1965,13 @@ sub MSwitch_fhemwebFn($$$$) {
 
                 my $key = '';
                 $key = $aktdevice . "_timeon";
-                $savedetails{$key} = '00:00:00';
+                $savedetails{$key} = '000000'; #changed
             }
             if ( !defined( $savedetails{ $aktdevice . '_timeoff' } ) ) {
 
                 my $key = '';
                 $key = $aktdevice . "_timeoff";
-                $savedetails{$key} = '00:00:00';
+                $savedetails{$key} = '000000'; #changed
             }
             if ( !defined( $savedetails{ $aktdevice . '_conditionon' } ) ) {
 
@@ -2225,7 +2246,13 @@ sub MSwitch_fhemwebFn($$$$) {
             my $timestroff;
             my $testtimestroff = $savedetails{ $aktdevice . '_timeoff' };
 
+			#Log3( $Name, 0,"debug - testtimestroff -> $testtimestroff L:". __LINE__ );
+		
+			
             $testtimestroff =~ s/[A-Za-z0-9#\.\-_]//g;
+			
+			#Log3( $Name, 0,"debug - testtimestroff -> $testtimestroff L:". __LINE__ );
+			
             if ( $testtimestroff eq "[:]" ) {
                 $timestroff = $savedetails{ $aktdevice . '_timeoff' }; #sekunden
             }
@@ -2421,7 +2448,7 @@ sub MSwitch_fhemwebFn($$$$) {
         $timeoffonly = substr( $triggertimes[3], 7 );
     }
 
-    $ret .=
+    my $ret .=
 "<p id=\"triggerdevice\"><table class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}'>
 	<tr class=\"even\">
 	<td colspan=\"3\" id =\"savetrigger\">trigger device/time:&nbsp;&nbsp;&nbsp;";
@@ -3302,17 +3329,29 @@ sub MSwitch_makeCmdHash($) {
         $savedetails{$key} = $detailarray[7];
         $key               = $detailarray[0] . "_timeoff";
         $savedetails{$key} = $detailarray[8];
-		
-        $key               = $detailarray[0] . "_conditionon";
+
+        $key = $detailarray[0] . "_conditionon";
+        if (defined $detailarray[9])
+		{
 		$detailarray[9] =~ s/\(:\)/:/g;
-		
-        $savedetails{$key} = $detailarray[9];
-		
-        $key               = $detailarray[0] . "_conditionoff";
+		$savedetails{$key} = $detailarray[9];
+		}
+		else
+		{
+		$savedetails{$key} = '';
+		}
+        
+
+        $key = $detailarray[0] . "_conditionoff";
+        if (defined $detailarray[10])
+		{
 		$detailarray[10] =~ s/\(:\)/:/g;
-		
-		
-        $savedetails{$key} = $detailarray[10];
+		$savedetails{$key} = $detailarray[10];
+		}
+		else{
+		$savedetails{$key} = '';
+		}
+        
 
     }
 
@@ -4808,128 +4847,24 @@ sub MSwitch_checktrigger(@)
 
 }
 
-#########################################
-sub absorb($) {
-    my $loglevel = 5;
-    my ($hash)   = @_;
-    my $Name     = $hash->{NAME};
-    my $ret      = '';
-    my $tmp      = '';
-    my @areadings =
-      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time Trigger_device Trigger_log)
-      ;    #alle readings
-    my %keys;
-#########################################
-  LOOP22: foreach my $testdevice ( keys %{ $modules{Absent}{defptr} } )    #
-    {
-        my @areadingsvalue;
-        Log3( $Name, $loglevel, " Found  $testdevice " );
-#########################################
-        my $abname   = $testdevice;
-        my $makename = $abname;       #$'testdev'
-        $ret .= '<br>Found device:' . $abname . '<hr>';
-
-        # alle readings einlesen
-        foreach my $key (@areadings) {
-            $tmp = ReadingsVal( $abname, $key, 'undef' );
-            if ( $tmp eq '' ) { $tmp = 'undef'; }
-
-            push( @areadingsvalue, $tmp );
-        }
-        $ret .= 'sichern aller readings : ok<br>';
-## alle attribbut einlesen #$attr{$Name}{MSwitch_Inforoom}
-        my %keys;
-        foreach my $testdevice ( keys %{ $attr{$abname} } )    #geht
-        {
-            $keys{$testdevice} = AttrVal( $abname, $testdevice, '' );
-
-        }
-        $ret .= 'sichern aller Attribute : ok<br>';
-
-        #device löschen
-        my $cs = "delete $makename";
-        AnalyzeCommandChain( undef, $cs );
-        $ret .= 'altes Device gelöscht : ok<br>';
-
-        # device anlegen
-        my $errors = AnalyzeCommand( 0, 'define ' . $makename . ' MSwitch' );
-        if ( defined($errors) ) {
-            Log3( $Name, $loglevel,
-                " MSwitch_Absorb: ERROR $Name: $errors " . __LINE__ );
-        }
-        $ret .= 'Anlage ' . $abname . ' : ok<br>';
-
-        # readings schreiben
-        my $count = 0;
-      LOOP23: foreach my $key (@areadings) {
-            if (   $areadingsvalue[$count] eq 'undef'
-                || $areadingsvalue[$count] eq ''
-                || $areadingsvalue[$count] eq ' ' )
-            {
-                Log3( $Name, $loglevel,
-                    " no write reading $key - $areadingsvalue[$count] " );
-                $count++;
-                next LOOP23;
-            }
-            my $cm     = "setreading $makename $key $areadingsvalue[$count]";
-            my $errors = AnalyzeCommand( 0,
-                    'setreading '
-                  . $makename . ' '
-                  . $key . ' '
-                  . $areadingsvalue[$count] );
-            if ( defined($errors) ) {
-                Log3( $Name, 0, "ERROR $cm" );
-            }
-            Log3( $Name, $loglevel, " write reading  $cm" );
-            $count++;
-        }
-        $ret .= 'schreiben aller readings : ok<br>';
-
-        # alle attribbut schreiben $attrkey
-      LOOP23: foreach my $attrkey ( keys %keys ) {
-            $attrkey =~ s/Absent/MSwitch/;
-            my $cs = "attr $makename $attrkey $keys{$attrkey}";
-
-            AnalyzeCommandChain( undef, $cs );
-        }
-        $cs = "attr $makename disable 1";
-        AnalyzeCommandChain( undef, $cs );
-        $ret .= 'schreiben aller attribute : ok<br>';
-#################################
-    }
-
-    # teste auf globale attr
-    for my $name ( sort keys %defs ) {
-        my $globattr = AttrVal( $name, 'absentcmd', 'undef' );
-        if ( $globattr ne 'undef' ) {
-            my $cs = "attr $name MSwitchcmd $globattr";
-            AnalyzeCommandChain( undef, $cs );
-            $cs = "deleteattr $name absentcmd";
-            AnalyzeCommandChain( undef, $cs );
-        }
-    }
-    $ret .= 'Globale Attribute geändert : ok<br>';
-    $ret .=
-'<br><u>Alle Absent importiert , aus Sicherheitsgründen wurden alle MSwitch Devices auf \'Disable\' gesetzt! Zur abschliessenden Einrichtung ist ein Fhem Neustart erforderlich . </u>';
-    $hash->{helper}{absorb} = $ret;
-    return;
-}
+###############################
 
 ################################
 sub MSwitch_VUpdate($) {
-   # my ($hash) = @_;
-   # my $Name = $hash->{NAME};
-   # Log3( $Name, 5,
+
+# my ($hash) = @_;
+# my $Name = $hash->{NAME};
+# Log3( $Name, 5,
 #"MSwitch_VUpdate: Versionsupdate ( $vupdate ) gefunden, aenderung der Datenstruktur ( Datensatztrennzeichen Events ). Clear #aller Eventdatensätze.  . L:"
 #          . __LINE__ );
 
-   # my $cs = "set $Name del_trigger";
-   # Log3( $Name, 0, "Setze Befehl: $cs  L:" . __LINE__ );
+    # my $cs = "set $Name del_trigger";
+    # Log3( $Name, 0, "Setze Befehl: $cs  L:" . __LINE__ );
     #my $errors = AnalyzeCommandChain( undef, $cs );
 
     #if ( defined($errors) ) {
     #    Log3( $Name, 5, "ERROR: $errors" );
-   # }
+    # }
     #readingsSingleUpdate( $hash, ".V_Check", $vupdate, 0 );
     #Log3( $Name, 5, "--Aeenderung fur Device abgeschlossen L:" . __LINE__ );
     return;
@@ -4976,14 +4911,15 @@ sub MSwitch_backup($) {
         print BACKUPDATEI "\n";
     }
     close(BACKUPDATEI);
-#my $client_hash=$hash->{CL};
-	#asyncOutput($client_hash, 'Backup ready');
+
+    #my $client_hash=$hash->{CL};
+    #asyncOutput($client_hash, 'Backup ready');
 }
 
 ################################
 sub MSwitch_backup_this($) {
     my ($hash) = @_;
-    my $Name = $hash->{NAME};
+    my $Name   = $hash->{NAME};
     my $Zeilen = ("");
     open( BACKUPDATEI, "<MSwitch_backup.cfg" )
       || return "no Backupfile found\n";
@@ -5025,22 +4961,17 @@ sub MSwitch_backup_this($) {
             }
         }
     }
+
+    MSwitch_Createtimer($hash);
     return "MSwitch $Name restored.\nPlease refresh device.";
 }
-
 
 ################################
 sub MSwitch_backup_all($) {
 
- my ($hash) = @_;
+    my ($hash) = @_;
     my $Name = $hash->{NAME};
-	
-	    
 
-	
-	
-	
-	
     my $Zeilen = ("");
     open( BACKUPDATEI, "<MSwitch_backup.cfg" )
       || return "no Backupfile found\n";
@@ -5048,87 +4979,105 @@ sub MSwitch_backup_all($) {
         $Zeilen = $Zeilen . $_;
     }
     close(BACKUPDATEI);
-	
-	
-	my $answer;
-	
-foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
-{
-       
-    Log3( $testdevice, 5, "wiederherstellung  $testdevice . L:" . __LINE__ );
-	my $devhash = $defs{$testdevice};
-	
-	
-	
-    $Zeilen =~ s/\n/[nl]/g;
-    if ( $Zeilen !~ m/#N -> $testdevice\[nl\](.*)#E -> $testdevice\[nl\]/ ) {
-        $answer = $answer. "no Backupfile found for $testdevice [nl]";
-    }
-    my @found = split( /\[nl\]/, $1 );
-    foreach (@found) {
-        Log3( $testdevice, 5, "$_  . L:" . __LINE__ );
-        if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
+
+    my $answer;
+
+    foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
+    {
+
+        Log3( $testdevice, 5,
+            "wiederherstellung  $testdevice . L:" . __LINE__ );
+        my $devhash = $defs{$testdevice};
+
+        $Zeilen =~ s/\n/[nl]/g;
+        if ( $Zeilen !~ m/#N -> $testdevice\[nl\](.*)#E -> $testdevice\[nl\]/ )
         {
-            if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
-                Log3( $testdevice, 5, " no write reading $1 " );
-
-            }
-            else {
-                Log3( $testdevice, 5, " write reading $1 -> $2 " );
-
-    #my $cm     = "setstate $testdevice $1 $2";
-    #my $errors = AnalyzeCommand( 0, 'setreading '. $testdevice . ' '. $1 . ' '. $2 );
-    #if ( defined($errors) ) {
-    #Log3( $testdevice, 0, "ERROR $cm" );
-                readingsSingleUpdate( $devhash, "$1", $2, 0 );
-            }
-
+            $answer = $answer . "no Backupfile found for $testdevice [nl]";
         }
-        if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
-        {
-            my $cs = "attr $testdevice $1 $2";
-            Log3( $testdevice, 5, " write attribut $1 -> $2 " );
-            my $errors = AnalyzeCommandChain( undef, $cs );
-            if ( defined($errors) ) {
-                Log3( $testdevice, 5, "ERROR $cs" );
+        my @found = split( /\[nl\]/, $1 );
+        foreach (@found) {
+            Log3( $testdevice, 5, "$_  . L:" . __LINE__ );
+            if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
+            {
+                if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
+                    Log3( $testdevice, 5, " no write reading $1 " );
+
+                }
+                else {
+                    Log3( $testdevice, 5, " write reading $1 -> $2 " );
+
+#my $cm     = "setstate $testdevice $1 $2";
+#my $errors = AnalyzeCommand( 0, 'setreading '. $testdevice . ' '. $1 . ' '. $2 );
+#if ( defined($errors) ) {
+#Log3( $testdevice, 0, "ERROR $cm" );
+                    readingsSingleUpdate( $devhash, "$1", $2, 0 );
+                }
+
+            }
+            if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
+            {
+                my $cs = "get $testdevice $1 $2";
+                Log3( $testdevice, 5, " write attribut $1 -> $2 " );
+                my $errors = AnalyzeCommandChain( undef, $cs );
+                if ( defined($errors) ) {
+                    Log3( $testdevice, 5, "ERROR $cs" );
+                }
             }
         }
+        $answer = $answer . "MSwitch $testdevice restored.[nl]";
+
+        my $cs = "attr $testdevice $1 $2";
+        Log3( $testdevice, 5, " write attribut $1 -> $2 " );
+        my $errors = AnalyzeCommandChain( undef, $cs );
+        if ( defined($errors) ) {
+            Log3( $testdevice, 5, "ERROR $cs" );
+        }
+
     }
-    $answer = $answer. "MSwitch $testdevice restored. Please refresh device. [nl]";
-}
     #
-	Log3( $Name, 5, "wblocking end $hash $answer . L:" . __LINE__ );
-	
-	
-return "$Name|$answer";
-#return $answer;
+    Log3( $Name, 5, "wblocking end $hash $answer . L:" . __LINE__ );
+
+    return "$Name|$answer";
+
+    #return $answer;
 }
 
 ################################################
 sub MSwitch_backup_done($) {
 
- #my ($hash) = @_;
-   # 
-   
+    #my ($hash) = @_;
+    #
+
     my ($string) = @_;
 
- return unless(defined($string));
+    return unless ( defined($string) );
 
- my @a = split("\\|",$string);
- 
-  my $Name = $a[0];
-  my $answer = $a[1];
- my $hash = $defs{$Name};
-	delete($hash->{helper}{RUNNING_PID});
-	my $client_hash=$hash->{helper}{RESTORE_ANSWER};
-	Log3( $Name, 5, "$Name wiederherstellung  abgeschlossen . $client_hash - $hash L:" . __LINE__ );
-	
-	$answer =~ s/\[nl\]/\n/g;
-	asyncOutput($client_hash, $answer);
-	return;
-	
-	}
-	
-	
+    my @a = split( "\\|", $string );
+
+    my $Name   = $a[0];
+    my $answer = $a[1];
+    my $hash   = $defs{$Name};
+    delete( $hash->{helper}{RUNNING_PID} );
+    my $client_hash = $hash->{helper}{RESTORE_ANSWER};
+    Log3( $Name, 5,
+        "$Name wiederherstellung  abgeschlossen . $client_hash - $hash L:"
+          . __LINE__ );
+
+    $answer =~ s/\[nl\]/\n/g;
+
+    foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
+    {
+
+        Log3( $Name, 5, "restart timer  $testdevice . L:" . __LINE__ );
+        my $devhash = $defs{$testdevice};
+
+        MSwitch_Createtimer($devhash);
+    }
+
+    asyncOutput( $client_hash, $answer );
+    return;
+
+}
+
 1;
 
