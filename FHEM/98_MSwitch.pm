@@ -721,7 +721,7 @@ sub MSwitch_Set($@) {
             return;
         }
         my @olddevices =
-          split( /,/, ReadingsVal( $name, '.Device_Affected', '' ) );
+          split( /,/, ReadingsVal( $name, '.Device_Affected', 'no_device' ) );
         my @devices = split( /,/, $args[0] );
         my $addolddevice = '';
         foreach (@devices) {
@@ -729,7 +729,13 @@ sub MSwitch_Set($@) {
           LOOP6: foreach my $olddev (@olddevices) {
                 my $oldcmd  = '';
                 my $oldname = '';
+				
+				#Log3( $name, 0, "debug -> $olddev L:" . __LINE__ );#debug
+				
+				
                 ( $oldname, $oldcmd ) = split( /-AbsCmd/, $olddev );
+				if (!defined $oldcmd) {$oldcmd =''};
+				
                 if ( $oldcmd eq '1' ) { next LOOP6 }
                 if ( $oldname eq $testdev ) {
                     $addolddevice = $addolddevice . $olddev . ',';
@@ -742,12 +748,21 @@ sub MSwitch_Set($@) {
         my @sortdevices = split( /,/, $devices );
         @sortdevices = sort @sortdevices;
         $devices = join( ',', @sortdevices );
-        readingsSingleUpdate( $hash, ".Device_Affected", $devices, 1 )
-          ;    # alle gesetzten geräte durch komma getrennt
-        $devices = MSwitch_makeAffected($hash);
+        readingsSingleUpdate( $hash, ".Device_Affected", $devices, 1 );    # alle gesetzten geräte durch komma getrennt
+       
+	   $devices = MSwitch_makeAffected($hash);
+	   
+	   if ( defined $hash->{DEF})
+	   {
         my $devhash = $hash->{DEF};
         my @dev = split( /#/, $devhash );
         $hash->{DEF} = $dev[0] . ' # ' . $devices;
+		}
+		else{
+		$hash->{DEF} =' # ' . $devices;
+		
+		}
+		
         return;
     }
 
@@ -777,23 +792,50 @@ sub MSwitch_Set($@) {
             Log3( $name, 5, "$name - $inputcmds[$counter] L:" . __LINE__ );
             my @devicecmds = split( /\|/, $inputcmds[$counter] );
 
-            $savedetails =
-                $savedetails
-              . $_ . ','
-              . $devicecmds[0] . ','
-              . $devicecmds[1] . ','
-              . $devicecmds[2] . ','
-              . $devicecmds[3] . ','
-              . $devicecmds[4] . ','
-              . $devicecmds[5] . ','
-              . $devicecmds[7] . ','
-              . $devicecmds[6] . ','
-              . $devicecmds[8] . ','
-              . $devicecmds[9] . '|';
+			
+			# Log3( $name, 0, "$name - $devicecmds[0] -> $devicecmds[0] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[1] -> $devicecmds[1] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[2] -> $devicecmds[2] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[3] -> $devicecmds[3] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[4] -> $devicecmds[4] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[5] -> $devicecmds[5] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[6] -> $devicecmds[6] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[7] -> $devicecmds[7] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[8] -> $devicecmds[8] L:" . __LINE__ );
+			# Log3( $name, 0, "$name - $devicecmds[9] -> $devicecmds[9] L:" . __LINE__ );
+			
+			
+            $savedetails =$savedetails. $_ . ',';
+            $savedetails =$savedetails . $devicecmds[0] . ',';
+            $savedetails =$savedetails . $devicecmds[1] . ',';
+            $savedetails =$savedetails . $devicecmds[2] . ',';
+            $savedetails =$savedetails . $devicecmds[3] . ',';
+            $savedetails =$savedetails . $devicecmds[4] . ',';
+            $savedetails =$savedetails . $devicecmds[5] . ',';
+            $savedetails =$savedetails . $devicecmds[7] . ',';
+            $savedetails =$savedetails . $devicecmds[6] . ',';
+			
+			if (defined $devicecmds[8]){
+            $savedetails =$savedetails . $devicecmds[8] . ',';
+			}
+			else 
+			{
+			$savedetails =$savedetails .''.',';
+			}
+			if (defined $devicecmds[9])
+			{
+            $savedetails =$savedetails . $devicecmds[9] . '|';
+			}
+			else{
+			$savedetails =$savedetails .''. '|';
+			}
+			
+			
+			
             $counter++;
         }
         chop($savedetails);
-        Log3( $name, 0, "$savedetails L:" . __LINE__ );
+        #Log3( $name, 0, "$savedetails L:" . __LINE__ );
         readingsSingleUpdate( $hash, ".Device_Affected_Details", $savedetails,
             0 );
         return;
@@ -1721,6 +1763,9 @@ sub MSwitch_fhemwebFn($$$$) {
     }
 
   LOOP9: for my $name ( sort keys %defs ) {
+  
+  
+  
         my $selectedtrigger = '';
         my $devicealias = AttrVal( $name, 'alias', "" );
         my $devicewebcmd =
@@ -1764,6 +1809,9 @@ sub MSwitch_fhemwebFn($$$$) {
         $errors =~ s/\| //g;
         $errors =~ s/\|//g;
 
+		
+		
+		
         if ( $errors eq ''
             && AttrVal( $Name, 'MSwitch_Include_Webcmds', "1" ) eq '1' )
         {
@@ -1789,20 +1837,31 @@ sub MSwitch_fhemwebFn($$$$) {
         }
 
         my $usercmds = AttrVal( $name, 'MSwitchcmd', '' );
+		
+		
+		
+		
+		
+		
         if ( $usercmds ne ''
             && AttrVal( $Name, 'MSwitch_Include_MSwitchcmds', "1" ) eq '1' )
         {
-
             $usercmds =~ tr/:/ /;
             $errors .= ' ' . $usercmds;
         }
+		
+		
         if ( $errors ne '' ) {
+		
+		 
+		
             $selected = "";
-
+if (exists $usedevices{$name})
+{
             if ( $usedevices{$name} eq 'on' ) {
                 $selected = "selected=\"selected\" ";
             }
-
+}
             $deviceoption =
                 $deviceoption
               . "<option "
@@ -1906,13 +1965,13 @@ sub MSwitch_fhemwebFn($$$$) {
 
                 my $key = '';
                 $key = $aktdevice . "_timeon";
-                $savedetails{$key} = '00:00:00';
+                $savedetails{$key} = '000000'; #changed
             }
             if ( !defined( $savedetails{ $aktdevice . '_timeoff' } ) ) {
 
                 my $key = '';
                 $key = $aktdevice . "_timeoff";
-                $savedetails{$key} = '00:00:00';
+                $savedetails{$key} = '000000'; #changed
             }
             if ( !defined( $savedetails{ $aktdevice . '_conditionon' } ) ) {
 
@@ -2187,7 +2246,13 @@ sub MSwitch_fhemwebFn($$$$) {
             my $timestroff;
             my $testtimestroff = $savedetails{ $aktdevice . '_timeoff' };
 
+			#Log3( $Name, 0,"debug - testtimestroff -> $testtimestroff L:". __LINE__ );
+		
+			
             $testtimestroff =~ s/[A-Za-z0-9#\.\-_]//g;
+			
+			#Log3( $Name, 0,"debug - testtimestroff -> $testtimestroff L:". __LINE__ );
+			
             if ( $testtimestroff eq "[:]" ) {
                 $timestroff = $savedetails{ $aktdevice . '_timeoff' }; #sekunden
             }
@@ -3266,14 +3331,27 @@ sub MSwitch_makeCmdHash($) {
         $savedetails{$key} = $detailarray[8];
 
         $key = $detailarray[0] . "_conditionon";
-        $detailarray[9] =~ s/\(:\)/:/g;
-
-        $savedetails{$key} = $detailarray[9];
+        if (defined $detailarray[9])
+		{
+		$detailarray[9] =~ s/\(:\)/:/g;
+		$savedetails{$key} = $detailarray[9];
+		}
+		else
+		{
+		$savedetails{$key} = '';
+		}
+        
 
         $key = $detailarray[0] . "_conditionoff";
-        $detailarray[10] =~ s/\(:\)/:/g;
-
-        $savedetails{$key} = $detailarray[10];
+        if (defined $detailarray[10])
+		{
+		$detailarray[10] =~ s/\(:\)/:/g;
+		$savedetails{$key} = $detailarray[10];
+		}
+		else{
+		$savedetails{$key} = '';
+		}
+        
 
     }
 
