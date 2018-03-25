@@ -1,3 +1,4 @@
+25.03.18 fix some 'perl warnings'
 23.03.18 remove function 'absorb'
 20.03.18 bugfix 'restart all timers after restore'
 20.03.18 bugfix 'not saved .Trigger_Whitelist/backup'
