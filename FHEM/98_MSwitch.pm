@@ -414,13 +414,14 @@ sub MSwitch_Get($$@) {
 
         Log3( $name, 5, "$name condition args[0] -> $args[0] L:" . __LINE__ );
         my ( $condstring, $eventstring ) = split( /\|/, $args[0] );
-        Log3( $name, 5,
-"$name condition condstring, eventstring -> $condstring, $eventstring L:"
-              . __LINE__ );
-
+        Log3( $name, 5,"$name condition condstring, eventstring -> $condstring, $eventstring L:" . __LINE__ );
+		
+		
+		
         my $ret1 = MSwitch_checkcondition( $condstring, $name, $eventstring );
         my $condstring1 = $hash->{helper}{conditioncheck};
         my $errorstring = $hash->{helper}{conditionerror};
+		if (!defined $errorstring){$errorstring =''};
         $condstring1 =~ s/</\&lt\;/g;
         $condstring1 =~ s/>/\&gt\;/g;
         $errorstring =~ s/</\&lt\;/g;
@@ -1803,6 +1804,11 @@ sub MSwitch_fhemwebFn($$$$) {
             $errors = '';
         }
 
+		
+				if (!defined $errors){$errors =''};
+
+		
+		
         my @tmparg = split( /of /, $errors );
         if ( defined $tmparg[1] && $tmparg[1] ne '' ) { $errors = $tmparg[1]; }
         $errors = '|' . $errors;
