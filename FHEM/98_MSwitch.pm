@@ -392,16 +392,17 @@ sub MSwitch_Get($$@) {
 ####################
 ####################
     if ( $opt eq 'restore_MSwitch_Data' && $args[0] eq "all_Devices" ) {
+	
+	    open( BACKUPDATEI, "<MSwitch_backup.cfg" )
+		|| return  "no Backupfile found\n";
+		close(BACKUPDATEI);
+
         $hash->{helper}{RESTORE_ANSWER} = $hash->{CL};
         $hash->{helper}{RUNNING_PID} =
-          BlockingCall( 'MSwitch_backup_all', $hash, 'MSwitch_backup_done' );
+        BlockingCall( 'MSwitch_backup_all', $hash, 'MSwitch_backup_done' );
 
-        return
-'restoration in the background, this function is nonblocking.<br>A message will be sent when the restoration is complete';
+        return 'restoration in the background.<br>A message will be sent when the restoration is complete';
 
-        #$ret = MSwitch_backup_all( $hash );
-
-        #return $ret;
     }
 ####################
 
@@ -1584,6 +1585,13 @@ sub MSwitch_fhemwebFn($$$$) {
     if ( !defined $triggercmdoff ) { $triggercmdoff = "" }
     my $disable = "";
 
+	
+	
+	#Log3( $Name, 0, "$Name MSwitch_triggeron: $triggeron  " );
+	#Log3( $Name, 0, "$Name MSwitch_triggeroff: $triggeroff  " );
+	#Log3( $Name, 0, "$Name MSwitch_triggeroncmd: $triggercmdon  " );
+	#Log3( $Name, 0, "$Name MSwitch_triggeroffcmd: $triggercmdoff  " );
+	
     # if ( IsDisabled($Name) ) {
     #$disable =" disabled";
     #}
@@ -1597,6 +1605,9 @@ sub MSwitch_fhemwebFn($$$$) {
     my $toc           = '';
   LOOP12: foreach (@eventsall) {
 
+  #Log3( $Name, 0, "$Name MSwitch_testregex: $_  " );
+  
+  
         $alltriggers =
           $alltriggers . "<option value=\"$_\">" . $_ . "</option>";
 
@@ -4977,16 +4988,16 @@ sub MSwitch_backup_all($) {
 
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-
+my $answer;
     my $Zeilen = ("");
     open( BACKUPDATEI, "<MSwitch_backup.cfg" )
-      || return "no Backupfile found\n";
+      || return  "$Name|no Backupfile found\n";
     while (<BACKUPDATEI>) {
         $Zeilen = $Zeilen . $_;
     }
     close(BACKUPDATEI);
 
-    my $answer;
+    
 
     foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
     {
@@ -5007,18 +5018,11 @@ sub MSwitch_backup_all($) {
             {
                 if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
                     Log3( $testdevice, 5, " no write reading $1 " );
-
                 }
                 else {
                     Log3( $testdevice, 5, " write reading $1 -> $2 " );
-
-#my $cm     = "setstate $testdevice $1 $2";
-#my $errors = AnalyzeCommand( 0, 'setreading '. $testdevice . ' '. $1 . ' '. $2 );
-#if ( defined($errors) ) {
-#Log3( $testdevice, 0, "ERROR $cm" );
                     readingsSingleUpdate( $devhash, "$1", $2, 0 );
                 }
-
             }
             if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
             {
@@ -5040,12 +5044,8 @@ sub MSwitch_backup_all($) {
         }
 
     }
-    #
     Log3( $Name, 5, "wblocking end $hash $answer . L:" . __LINE__ );
-
     return "$Name|$answer";
-
-    #return $answer;
 }
 
 ################################################
