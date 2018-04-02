@@ -2294,9 +2294,9 @@ sub MSwitch_fhemwebFn($$$$) {
     }
 
 	
-	Log3( $Name, 0, "debug: ".ReadingsVal( $Name, '.Trigger_time', '' )." L:" . __LINE__ );
+	#Log3( $Name, 0, "debug: ".ReadingsVal( $Name, '.Trigger_time', '' )." L:" . __LINE__ );
 	
-	Log3( $Name, 0, "debug: $timeononly L:" . __LINE__ );
+	#Log3( $Name, 0, "debug: $timeononly L:" . __LINE__ );
 	
 	
 	
