@@ -126,6 +126,9 @@ sub MSwitch_summary($) {
     my $devtitle = '';
     my $option   = '';
     my $html     = '';
+	my $triggerc     = 1;
+	my $timer     = 1;
+	
 ###devices
     my $trigger = ReadingsVal( $name, 'Trigger_device', 'undef' );
     my @devaff = split( / /, MSwitch_makeAffected($hash) );
@@ -155,10 +158,12 @@ sub MSwitch_summary($) {
         $count++;
         $devtitletime .= $_ . ", ";
         $optiontime   .= "<option value=\"$_\">" . $_ . "</option>";
+
     }
 
     my $affectedtime = '';
     if ( $count == 0 ) {
+	$timer = 0;
         $affectedtime =
             "<select style='width: 12em;' title=\""
           . $devtitletime
@@ -189,9 +194,18 @@ sub MSwitch_summary($) {
           . "\" name='info' type='button'  value='Info' onclick =\"FW_okDialog('"
           . $info . "')\">";
     }
-    if ( $trigger eq 'no_trigger' ) {
-        $ret .=
-"<select style='width: 18em;' title=\"\" disabled ><option value=\"Triggercontrol:\">Triggercontrol: inaktiv</option></select>";
+	
+    if ( $trigger eq 'no_trigger' || $trigger eq 'undef' ) {
+	$triggerc = 0;
+	
+	if ($triggerc != 0 || $timer != 0){
+        $ret .= "<select style='width: 18em;' title=\"\" disabled ><option value=\"Triggercontrol:\">Triggercontrol: inaktiv</option></select>";
+		}
+		else{
+		$affectedtime="";
+		$ret .= "&nbsp;&nbsp;Multiswitchmode (no trigger / no timer)&nbsp;";
+		}
+	
     }
     else {
         $ret .= "<select style='width: 18em;' title=\"\" >";
@@ -219,13 +233,63 @@ sub MSwitch_summary($) {
     }
     $ret .= $affectedtime;
     $ret .= $affected;
-    $ret .= "<script>
+	
+	
+	#$ret .="</td><td informId=\"".$name."tmp\">".$triggerc." ".$timer.""; 
+	
+	
+	
+	if ( AttrVal( $name, 'disable', "0" ) eq '1' ) 
+	{
+		$ret .= "
+	</td><td informId=\"".$name."tmp\">State: 
+	</td><td informId=\"".$name."tmp\">
+	<div class=\"dval\" informid=\"".$name."-state\"></div>
+	</td><td informId=\"".$name."tmp\">
+	<div informid=\"".$name."-state-ts\">disabled</div>
+	 ";
+	}
+	else
+	{
+	$ret .= "
+	</td><td informId=\"".$name."tmp\">State: 
+	</td><td informId=\"".$name."tmp\">
+	<div class=\"dval\" informid=\"".$name."-state\">".ReadingsVal( $name, 'state', '' )."</div>
+	</td><td informId=\"".$name."tmp\">
+	<div informid=\"".$name."-state-ts\">".ReadingsTimestamp($name, 'state', '')."</div>
+	 ";
+	}
+	
+	
+	
+	
+	
+	 $ret .= "<script>
+	// \$( \"td[informId|=\'" . $name . "tmp\']\" ).html(test);
 	\$( \"td[informId|=\'" . $name . "\']\" ).attr(\"informId\", \'test\');
+	//\$( \"td[informId|=\'" . $name . "tmp\']\" ).attr(\"informId\", \'".$name."\');	
+	//\$( \"td[informId|=\'" . $name . "\']\" ).hide();
+	// var test = \$( \"td[informId|=\'" . $name . "\']\" ).html;
+	//alert(test);
+	//function set".$name."() {
+	//var test = \$( \"td[informId|=\'".$name."\']\" ).html;
+	//msg = '".$name."';
+	//if (msg == 'Terminal_Ctrl'){
+	//	alert(test);
+	//	window.setTimeout(\"set".$name."('".$name."');\", 2000);
+	//	}
+	//}
 	\$(document).ready(function(){
 	\$( \".col3\" ).text( \"\" );
 	\$( \".devType\" ).text( \"MSwitch Inforoom: Anzeige der Deviceinformationen, Änderungen sind nur in den Details möglich.\" );
+	// setInterval(\"alert('blubb');\", 9000);
+	//set".$name."('".$name."');
 	});
-	</script>";
+</script>";
+   
+   
+   
+   # alertmessage()
     return $ret;
 }
 
