@@ -58,6 +58,7 @@ sub MSwitch_backup_all($);
 sub MSwitch_backup_done($);
 sub MSwitch_checktrigger(@);
 sub MSwitch_Cmd(@);
+sub MSwitch_toggle($$);
 
 my %sets = (
     "on"             => "noArg",
@@ -109,6 +110,7 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Lock_Quickedit:0,1"
       . "  MSwitch_Ignore_Types"
       . "  MSwitch_Trigger_Filter"
+	  . "  MSwitch_Extensions:0,1"
       . "  MSwitch_Inforoom";
     $hash->{FW_addDetailToSummary} = 0;
 }
@@ -117,6 +119,14 @@ sub MSwitch_summary($) {
 
     my ( $wname, $name, $room ) = @_;
     my $hash = $defs{$name};
+	
+	# my $tvar = %ENV ;
+	
+	 # foreach my $testdevices ( keys %ENV )  {
+	 # my $tvar1 = $ENV{$testdevices} ;
+	 # Log3( $name, 0, " wname : $testdevices  - $tvar1  L:" . __LINE__ );
+	# }
+	
     my $testroom = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
     if ( $testroom ne $room ) { return; }
     my $test     = AttrVal( $name, 'comment', '0' );
@@ -265,25 +275,11 @@ sub MSwitch_summary($) {
 	
 	
 	 $ret .= "<script>
-	// \$( \"td[informId|=\'" . $name . "tmp\']\" ).html(test);
+
 	\$( \"td[informId|=\'" . $name . "\']\" ).attr(\"informId\", \'test\');
-	//\$( \"td[informId|=\'" . $name . "tmp\']\" ).attr(\"informId\", \'".$name."\');	
-	//\$( \"td[informId|=\'" . $name . "\']\" ).hide();
-	// var test = \$( \"td[informId|=\'" . $name . "\']\" ).html;
-	//alert(test);
-	//function set".$name."() {
-	//var test = \$( \"td[informId|=\'".$name."\']\" ).html;
-	//msg = '".$name."';
-	//if (msg == 'Terminal_Ctrl'){
-	//	alert(test);
-	//	window.setTimeout(\"set".$name."('".$name."');\", 2000);
-	//	}
-	//}
 	\$(document).ready(function(){
 	\$( \".col3\" ).text( \"\" );
 	\$( \".devType\" ).text( \"MSwitch Inforoom: Anzeige der Deviceinformationen, Änderungen sind nur in den Details möglich.\" );
-	// setInterval(\"alert('blubb');\", 9000);
-	//set".$name."('".$name."');
 	});
 </script>";
    
@@ -397,8 +393,9 @@ sub MSwitch_LoadHelper($) {
         $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
         $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
         $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
+		$attr{$Name}{MSwitch_Extensions}      = '0';
     }
-    MSwitch_Createtimer($hash); #Neustart aller timer
+    MSwitch_Createtimer($hash); #Neustart aller timer 
 }
 
 ####################
@@ -1011,6 +1008,16 @@ sub MSwitch_Cmd(@) {
     my $Name = $hash->{NAME};
     foreach my $cmds (@cmdpool) {
 
+  
+  
+  if( $cmds =~ m/set (.*)(MSwitchtoggle)(.*)/ )
+  {
+    Log3( $Name, 5,"$Name MSwitch_Set:  $cmds " . __LINE__ );
+   $cmds = MSwitch_toggle($hash,$cmds);
+  }
+  
+  Log3( $Name, 5,"$Name errechneter befehl:  $cmds " . __LINE__ );
+  
         my $errors = AnalyzeCommandChain( undef, $cmds );
         if ( defined($errors) ) {
             Log3( $Name, 1,
@@ -1021,6 +1028,47 @@ sub MSwitch_Cmd(@) {
     readingsSingleUpdate( $hash, "Exec_cmd", $showpool, 1 );
 }
 ####################
+
+sub MSwitch_toggle($$) {
+    my ( $hash, $cmds ) = @_;
+    my $Name = $hash->{NAME};
+	Log3( $Name, 5,"$Name MSwitch_toggle:  $cmds " . __LINE__ );
+	$cmds =~ m/(set) (.*)( )MSwitchtoggle (.*)\/(.*)/;
+	
+	
+	Log3( $Name, 5,"$Name MSwitch_toggle:  x$1x " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle:  x$2x " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle:  x$3x " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle:  x$4x " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle:  x$5x " . __LINE__ );
+	
+	
+	
+	
+	my $cmd1 = $1." ".$2." ".$4;
+	my $cmd2 = $1." ".$2." ".$5;
+	
+	my $chk1 = $4;
+	my $chk2 = $5;
+	
+	
+	
+	my $testnew = ReadingsVal( $2, 'state', 'undef' );
+	
+	if ($testnew eq $chk1){$cmds = $cmd2}
+	elsif ($testnew eq $chk2){$cmds = $cmd1}
+	else {$cmds = $cmd1}
+	
+	Log3( $Name, 5,"$Name MSwitch_toggle: testnew -> $testnew " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle: cmd1 -> $cmd1 " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle: cmd2 -> $cmd2 " . __LINE__ );
+	Log3( $Name, 5,"$Name MSwitch_toggle: neuer befehl -> $cmds " . __LINE__ );
+	
+	return $cmds;
+	}
+
+########################################
+
 sub MSwitch_Attr(@) {
     my ( $cmd, $name, $aName, $aVal ) = @_;
     my $hash = $defs{$name};
@@ -1554,6 +1602,19 @@ sub MSwitch_fhemwebFn($$$$) {
             $usercmds =~ tr/:/ /;
             $errors .= ' ' . $usercmds;
         }
+		######################################
+		# change
+		
+		my $extensions = AttrVal( $Name, 'MSwitch_Extensions', "0" ) ;
+		
+		# Log3( $Name, 0," $Name extension -> $extensions". __LINE__ );
+		
+		
+		if ( $extensions  eq '1' ) {
+		$errors .= ' ' . 'MSwitchtoggle';
+		}
+		######################################
+		
         if ( $errors ne '' ) {
             $selected = "";
 		if (exists $usedevices{$name} && $usedevices{$name} eq 'on' )
@@ -1672,6 +1733,8 @@ sub MSwitch_fhemwebFn($$$$) {
             # ACHTUNG CHANGE
             foreach (@befehlssatz)    #befehlssatz einfügen
             {
+#	Log3( $Name, 0, "debug: $_ L:" . __LINE__ );
+			
                 my @aktcmdset =
                   split( /:/, $_ );    # befehl von noarg etc. trennen
 
@@ -2997,10 +3060,22 @@ sub MSwitch_Restartcmd($) {
     my %devicedetails = MSwitch_makeCmdHash($name);
     ############ teste auf condition
     ### antwort $execute 1 oder 0 ;
-    Log3( $name, 5,"$name MSwitch_Restartcm: Aufruf MSwitch_checkcondition " . __LINE__ );
+    Log3( $name, 5,"$name MSwitch_Restartcm: Aufruf MSwitch_checkcondition $devicedetails{$conditionkey}, $name, $event" . __LINE__ );
     my $execute = MSwitch_checkcondition( $devicedetails{$conditionkey}, $name, $event );
+	Log3( $name, 5,"$name MSwitch_Restartcm: Aufruf MSwitch_checkcondition execute -> $execute " . __LINE__ );
     if ( $execute eq 'true' ) {
         Log3( $name, 3,"$name MSwitch_Restartcm: Befehlsausfuehrung -> $cs " . __LINE__ );
+		
+		
+		  if( $cs =~ m/set (.*)(MSwitchtoggle)(.*)/ )
+  {
+    Log3( $name, 5,"$name MSwitch_Set:  $cs " . __LINE__ );
+   $cs = MSwitch_toggle($hash,$cs);
+  }
+		
+		
+		
+		
         my $errors = AnalyzeCommandChain( undef, $cs );
         if ( defined($errors) ) {
             Log3( $name, 1,"$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors ". __LINE__ );
