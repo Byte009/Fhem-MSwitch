@@ -59,6 +59,8 @@ sub MSwitch_backup_done($);
 sub MSwitch_checktrigger(@);
 sub MSwitch_Cmd(@);
 sub MSwitch_toggle($$);
+sub MSwitch_Getconfig($);
+sub MSwitch_saveconf($$);
 
 my %sets = (
     "on"             => "noArg",
@@ -72,11 +74,14 @@ my %sets = (
     "del_device"     => "noArg",
     "addevent"       => "noArg",
     "backup_MSwitch" => "noArg",
+	"import_config"  => "noArg",
+	"saveconfig"  => "noArg",
     "set_trigger"    => "noArg"
 );
 my %gets = (
     "active_timer"         => "noArg",
     "restore_MSwitch_Data" => "noArg",
+	"get_config" => "noArg"
 );
 
 my @doignore =
@@ -439,6 +444,13 @@ sub MSwitch_Get($$@) {
         return $ret;
     }
 ####################
+    if ( $opt eq 'get_config' ) {
+        $ret = MSwitch_Getconfig( $hash );
+        return $ret;
+    }
+####################
+
+
     if ( $opt eq 'checkcondition' ) {
         Log3( $name, 5, "$name condition args[0] -> $args[0] L:" . __LINE__ );
         my ( $condstring, $eventstring ) = split( /\|/, $args[0] );
@@ -520,7 +532,7 @@ my $x =0; # exit secure
         if ( $ret ne "" ) { return $ret; }
         return "<span style=\"font-size: medium\"> no active timers found. <\/span>";
     }
-    return "Unknown argument $opt, choose one of active_timer:delete,show restore_MSwitch_Data:this_Device,all_Devices";
+    return "Unknown argument $opt, choose one of get_config:noArg active_timer:delete,show restore_MSwitch_Data:this_Device,all_Devices";
 }
 
 ####################
@@ -533,6 +545,16 @@ sub MSwitch_Set($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     return "" if ( IsDisabled($name) );    # Return without any further action if the module is disabled
 
+	
+	
+	#Log3( $name, 0,"DEVUG $hash, $name, $cmd, @args L:" . __LINE__ );
+	
+	#Log3( $name, 0,"DEVUG -$cmd- L:" . __LINE__ );
+	
+	
+	
+	
+	
     if ( AttrVal( $name, 'MSwitch_Debug', "0" ) eq '2' ) {
         MSwitch_Debug($hash);
     }
@@ -573,6 +595,30 @@ sub MSwitch_Set($@) {
         MSwitch_backup($hash);
         return;
     }
+	
+####################
+
+####################
+    if ( $cmd eq 'saveconfig' ) {
+      
+	  $args[0] =~ s/\[s\]/ /g;
+	   #Log3( $name, 0,"$name $args[0] $args[1]  saveconfig reached L:" . __LINE__ );
+	   MSwitch_saveconf($hash,$args[0]);
+	   
+	   
+	   
+       return;
+    }
+	
+####################
+
+
+    # if ( $cmd eq 'import_config' ) {
+       # MSwitch_import($hash);
+        # return ;
+    # }	
+	
+	
 ####################
     if ( $cmd eq "addevent" ) {
         my $devName = ReadingsVal( $name, 'Trigger_device', '' );
@@ -1670,6 +1716,9 @@ sub MSwitch_fhemwebFn($$$$) {
             my $devicenamet  = $devicesplit[0];
             my $devicenumber = $devicesplit[1];
             my @befehlssatz = '';
+	##################################		
+#if( !defined $cmdsatz{$devicenamet}){Log3( $Name, 0, "debug: v -> $_ Name->$Name devicenamet->$devicenamet L:" . __LINE__ );}
+	#####################################		
             @befehlssatz = split( / /, $cmdsatz{$devicenamet} );
             my $aktdevice = $_;
             ## optionen erzeugen
@@ -2396,6 +2445,8 @@ $triggerdevicehtml =~ s/\)//g;
  $j1 = "
 <script type=\"text/javascript\">
 {
+
+
  ";
  
 if ( AttrVal( $Name, 'MSwitch_Lock_Quickedit', "1" ) eq '0' ) {
@@ -2467,6 +2518,27 @@ document.getElementById(\"triggerwhitelist\").style.visibility = \"collapse\";
 ";
 
 $j1 .= "
+
+function saveconfig(conf){
+
+//alert(conf);
+
+conf = conf.replace(/ /g,'[s]');
+conf = conf.replace(/\\n/g,'[nl]');
+var nm = \$(t).attr(\"nm\");
+var  def = nm+\" saveconfig \"+encodeURIComponent(conf);
+location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
+
+//var nm = \$(t).attr(\"nm\");
+//var  def = nm+\" del_device \"+device;
+//location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
+
+
+}
+
+
+
+
 function checkcondition(condition,event){		
 var selected =document.getElementById(condition).value;
 if (selected == '')
@@ -3130,18 +3202,65 @@ sub MSwitch_checkcondition($$$) {
     #############################################
     ########################## wildcardcheck
     #############################################
-    my $we = AnalyzeCommand( 0, '{return $we}' );
+   # my $wekend = AnalyzeCommand( 0, '{return $we}' );
+	#my $wekend1 = AnalyzeCommand( 0, '{return !$we}' );
+	#my $we1 = AnalyzeCommand( 0, '{return $we}' );
+	#my $we2 = AnalyzeCommand( 0, '{return !$we}' );
+	
+	my $we = AnalyzeCommand( 0, '{return $we}' );
+	
+	#Log3( $name, 5,"name MSwitch_checkcondition: we1 = $we1 L:". __LINE__ );
+	#Log3( $name, 5,"name MSwitch_checkcondition: we2 = $we2 L:". __LINE__ );
+	#Log3( $name, 0,"name MSwitch_checkcondition: we = $wekend L:". __LINE__ );
+	#Log3( $name, 0,"name MSwitch_checkcondition: we1 = $wekend1 L:". __LINE__ );
+	
+	
+	# if ({$we})
+	# {Log3( $name, 0,"!weekend L:". __LINE__ );}
+	# else
+	# {Log3( $name, 0,"!no weekend L:". __LINE__ );}
+	
+	# if ({!$we})
+	# {Log3( $name, 0,"!weekend L:". __LINE__ );}
+	# else
+	# {Log3( $name, 0,"!no weekend L:". __LINE__ );}
+	
+	
+	
+	
     my @perlarray;
     ### perlteile trennen
-    $condition =~ s/{!\$we}/{~!\$we~}/ig;
-    $condition =~ s/{\$we}/{~\$we~}/ig;
+	
+	
+   # $condition =~ s/{!\$we}/{~!\$we~}/ig;
+   # $condition =~ s/{\$we}/{~\$we~}/ig;
+	
+	
+ $condition =~ s/{!\$we}/~!\$we~/ig;
+    $condition =~ s/{\$we}/~\$we~/ig;
+	 # $condition =~ s/{~\$we~}/~\$we~/ig;
+	
     $condition =~ s/{sunset\(\)}/{~sunset\(\)~}/ig;
     $condition =~ s/{sunrise\(\)}/{~sunrise\(\)~}/ig;
     $condition =~ s/\$EVENT/$name\:last_event/ig;
+	
+	
+	Log3( $name, 5,"cond -> $condition L:". __LINE__ );
+	
+	
+	
+	my $x =0; # exit secure
+	while( $condition =~ m/(.*)({~)(.*)(\$we)(~})(.*)/ )
+	{
+	last if $x > 20;# exit secure
+	$condition = $1." ".$3.$4." ".$6;
+	}
+	Log3( $name, 5,"cond -> $condition L:". __LINE__ );
+	
 	###################################################
 	# ersetzte sunset sunrise
 	# regex (.*[^~])(~{|{)(sunset\(|sunrise\()(.*\))(~}|})(.*)
-	my $x =0; # exit secure
+	$x =0; # exit secure
 	while( $condition =~ m/(.*)({~)(sunset\([^}]*\)|sunrise\([^}]*\))(~})(.*)/ )
 	{
 	$x++;# exit secure
@@ -3225,7 +3344,10 @@ sub MSwitch_checkcondition($$$) {
           . $condition
           . "){\$answer = 'true';} else {\$answer = 'false';} ";
     Log3( $name, 5,"name MSwitch_checkcondition: Finalstringt = $finalstring L:". __LINE__ );
+	
+	
     my $ret = eval $finalstring;
+	Log3( $name, 5,"name MSwitch_checkcondition: ret = $ret L:". __LINE__ );
     if ($@) {
         Log3( $name, 1, "ERROR: $@ " . __LINE__ );
         $hash->{helper}{conditionerror} = $@;
@@ -3233,9 +3355,7 @@ sub MSwitch_checkcondition($$$) {
     }
     my $test = ReadingsVal( $name, 'last_event', 'undef' );
     $hash->{helper}{conditioncheck} = $finalstring;
-    Log3( $name, 5,
-"$name MSwitch_checkcondition: $test finalstring = $finalstring -> return: $ret L:"
-          . __LINE__ );  
+    Log3( $name, 5,"$name MSwitch_checkcondition: $test finalstring = $finalstring -> return: $ret L:". __LINE__ );  
     return $ret;
 }
 ####################
@@ -3844,6 +3964,9 @@ sub MSwitch_backup($) {
         print BACKUPDATEI "\n";
     }
     close(BACKUPDATEI);
+	
+	
+		#asyncOutput($hash->{CL}, "Backup wurde erstellt ");
 }
 
 ################################
@@ -3887,6 +4010,58 @@ sub MSwitch_backup_this($) {
     MSwitch_Createtimer($hash);
     return "MSwitch $Name restored.\nPlease refresh device.";
 }
+
+
+
+
+
+
+# ################################
+# sub MSwitch_import($) {
+    # my ($hash) = @_;
+    # my $Name = $hash->{NAME};
+	
+	# $hash->{helper}{import} = 'on';
+	
+# return;
+# }
+
+################################
+sub MSwitch_Getconfig($) {
+    my ($hash) = @_;
+    my $Name = $hash->{NAME};
+
+	 Log3( $Name, 5, "starte Backup  . L:" . __LINE__ );
+    my @areadings =
+      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state)
+      ;    #alle readings
+ #   my %keys;
+
+	my $out ='';
+	my $testdevice = $Name;
+   
+       # $out.=  "#N -> $testdevice\\n";                      #
+        foreach my $key (@areadings) {
+            my $tmp = ReadingsVal( $testdevice, $key, 'undef' );
+            $out.=   "#S $key -> $tmp\\n";
+        }
+      #  my %keys;
+        foreach my $attrdevice ( keys %{ $attr{$testdevice} } )       #geht
+        {
+             $out.=   "#A $attrdevice -> ". AttrVal( $testdevice, $attrdevice, '' ) . "\\n";
+        }
+       # $out.=   "#E -> $testdevice\\n";
+        $out.=   "\\n";
+
+		my $client_hash =$hash->{CL};
+		
+	#asyncOutput($hash->{CL}, "<html><textarea name=\"edit1\" id=\"edit1\" rows=\"40\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">".$out."</textarea><input name\"edit\" type=\"button\" value=\"save changes\" onclick=\" javascript: saveconfig(document.querySelector(\\\'#edit1\\\').value) \"></html>");
+	
+	asyncOutput($hash->{CL}, "<html><textarea name=\"edit1\" id=\"edit1\" rows=\"40\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">".$out."</textarea></html>");
+	
+	return;
+	}
+
 ################################
 sub MSwitch_backup_all($) {
     my ($hash) = @_;
@@ -3944,6 +4119,42 @@ sub MSwitch_backup_all($) {
     return "$Name|$answer";
 }
 ################################################
+
+	  sub MSwitch_saveconf($$)
+	  {
+	  
+	  my ($hash,$cont) = @_;
+	   my $name = $hash->{NAME};
+	   Log3( $name, 0,"$name $cont  saveconfig reached L:" . __LINE__ );
+	  
+	     my @found = split( /\[nl\]/, $cont );
+        foreach (@found) {
+            Log3( $name, 0, "$_  . L:" . __LINE__ );
+            if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
+            {
+                if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
+                    Log3( $name, 0, " no write reading $1 " );
+                }
+                else {
+                    Log3( $name, 0, " write reading $1 -> $2 " );
+                    readingsSingleUpdate( $hash, "$1", $2, 0 );
+                }
+            }
+            if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
+            {
+                my $cs = "get $name $1 $2";
+                Log3( $name, 0, " write attribut $1 -> $2 " );
+                my $errors = AnalyzeCommandChain( undef, $cs );
+                if ( defined($errors) ) {
+                    Log3( $name, 0, "ERROR $cs" );
+                }
+            }
+        }
+	  
+	  return;
+	  }
+	   
+################################################
 sub MSwitch_backup_done($) {
     my ($string) = @_;
     return unless ( defined($string) );
@@ -3963,6 +4174,7 @@ sub MSwitch_backup_done($) {
         my $devhash = $defs{$testdevice};
         MSwitch_Createtimer($devhash);
     }
+	
     asyncOutput( $client_hash, $answer );
     return;
 }
