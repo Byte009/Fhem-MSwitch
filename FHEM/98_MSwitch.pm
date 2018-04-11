@@ -33,7 +33,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = '1';
+my $version = '1.1';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -68,6 +68,7 @@ my %sets = (
     "devices"        => "noArg",
     "details"        => "noArg",
     "del_trigger"    => "noArg",
+	"del_delays"     => "noArg",
     "trigger"        => "noArg",
     "filter_trigger" => "noArg",
     "add_device"     => "noArg",
@@ -434,9 +435,14 @@ sub MSwitch_Get($$@) {
 		|| return  "no Backupfile found\n";
 		close(BACKUPDATEI);
         $hash->{helper}{RESTORE_ANSWER} = $hash->{CL};
-        $hash->{helper}{RUNNING_PID} =
-        BlockingCall( 'MSwitch_backup_all', $hash, 'MSwitch_backup_done' );
-        return 'restoration in the background.<br>A message will be sent when the restoration is complete';
+        #$hash->{helper}{RUNNING_PID} =;
+        #BlockingCall( 'MSwitch_backup_all', $hash, 'MSwitch_backup_done' );
+		
+		my $ret = MSwitch_backup_all($hash);
+		
+		
+		
+        return $ret;
     }
 ####################
     if ( $opt eq 'checkevent' ) {
@@ -511,6 +517,8 @@ my $x =0; # exit secure
         $hash->{helper}{conditionerror} = '';
         return "<span style=\"font-size: medium\">" . $ret . "<\/span>";
     }
+	
+	
     if ( $opt eq 'active_timer' ) {
         my $timehash = $hash->{helper}{timer};
         foreach my $a ( keys %{$timehash} ) {
@@ -521,7 +529,10 @@ my $x =0; # exit secure
                 delete( $hash->{helper}{timer}{$a} );
             }
             else {
-                $ret .= $time . " - $a <br>";
+			
+			my @timers = split( /,/, $a );
+			
+                $ret .= $time . " - $timers[0] <br>";
             }
         }
         if ( $args[0] eq 'delete' ) {
@@ -532,7 +543,7 @@ my $x =0; # exit secure
         if ( $ret ne "" ) { return $ret; }
         return "<span style=\"font-size: medium\"> no active timers found. <\/span>";
     }
-    return "Unknown argument $opt, choose one of get_config:noArg active_timer:delete,show restore_MSwitch_Data:this_Device,all_Devices";
+    return "Unknown argument $opt, choose one of get_config:noArg active_timer:show,delete restore_MSwitch_Data:this_Device,all_Devices";
 }
 
 ####################
@@ -545,15 +556,6 @@ sub MSwitch_Set($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     return "" if ( IsDisabled($name) );    # Return without any further action if the module is disabled
 
-	
-	
-	#Log3( $name, 0,"DEVUG $hash, $name, $cmd, @args L:" . __LINE__ );
-	
-	#Log3( $name, 0,"DEVUG -$cmd- L:" . __LINE__ );
-	
-	
-	
-	
 	
     if ( AttrVal( $name, 'MSwitch_Debug', "0" ) eq '2' ) {
         MSwitch_Debug($hash);
@@ -575,7 +577,7 @@ sub MSwitch_Set($@) {
                 push( @cList, $k );
             }
         }    # end foreach
-        return "Unknown argument $cmd, choose one of on:noArg off:noArg backup_MSwitch:all_devices";
+        return "Unknown argument $cmd, choose one of on:noArg off:noArg del_delays:noArg backup_MSwitch:all_devices";
     }
 ###### teste auf new defined
 ###### umlegen auf define oder loadhelper !!!! TODO
@@ -595,6 +597,15 @@ sub MSwitch_Set($@) {
         MSwitch_backup($hash);
         return;
     }
+#################################################	
+	
+	    if ( $cmd eq 'del_delays' ) {
+       MSwitch_Delete_Delay($hash ,$name);
+	   MSwitch_Createtimer($hash);
+        return;
+    }
+	
+	
 	
 ####################
 
@@ -3993,7 +4004,7 @@ sub MSwitch_backup_this($) {
                 Log3( $Name, 5, " no write reading $1 " );
             }
             else {
-                Log3( $Name, 5, " write reading $1 -> $2 " );
+                Log3( $Name, 0, " write reading $hash, $1, $2, 0 " );
                 readingsSingleUpdate( $hash, "$1", $2, 0 );
             }
         }
@@ -4036,7 +4047,7 @@ sub MSwitch_Getconfig($) {
       qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state)
       ;    #alle readings
  #   my %keys;
-
+my $count =0;
 	my $out ='';
 	my $testdevice = $Name;
    
@@ -4044,29 +4055,33 @@ sub MSwitch_Getconfig($) {
         foreach my $key (@areadings) {
             my $tmp = ReadingsVal( $testdevice, $key, 'undef' );
             $out.=   "#S $key -> $tmp\\n";
+			$count++;
         }
       #  my %keys;
         foreach my $attrdevice ( keys %{ $attr{$testdevice} } )       #geht
         {
              $out.=   "#A $attrdevice -> ". AttrVal( $testdevice, $attrdevice, '' ) . "\\n";
+			 $count++;
         }
        # $out.=   "#E -> $testdevice\\n";
-        $out.=   "\\n";
-
+       # $out.=   "\\n";
+$count++;
+$count++;
 		my $client_hash =$hash->{CL};
 		
-	#asyncOutput($hash->{CL}, "<html><textarea name=\"edit1\" id=\"edit1\" rows=\"40\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">".$out."</textarea><input name\"edit\" type=\"button\" value=\"save changes\" onclick=\" javascript: saveconfig(document.querySelector(\\\'#edit1\\\').value) \"></html>");
+	asyncOutput($hash->{CL}, "<html><textarea name=\"edit1\" id=\"edit1\" rows=\"".$count."\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">".$out."</textarea><input name\"edit\" type=\"button\" value=\"save changes\" onclick=\" javascript: saveconfig(document.querySelector(\\\'#edit1\\\').value) \"></html>");
 	
-	asyncOutput($hash->{CL}, "<html><textarea name=\"edit1\" id=\"edit1\" rows=\"40\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">".$out."</textarea></html>");
+	#asyncOutput($hash->{CL}, "<html><textarea name=\"edit1\" id=\"edit1\" rows=\"40\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">".$out."</textarea></html>");
 	
 	return;
 	}
 
-################################
+	
+	################################
 sub MSwitch_backup_all($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-	my $answer;
+	my $answer ='';
     my $Zeilen = ("");
     open( BACKUPDATEI, "<MSwitch_backup.cfg" )
       || return  "$Name|no Backupfile found\n";
@@ -4074,15 +4089,25 @@ sub MSwitch_backup_all($) {
         $Zeilen = $Zeilen . $_;
     }
     close(BACKUPDATEI);
+	
+	
+	     Log3( $Name, 5,
+            "wiederherstellung  start . L:" . __LINE__ );
+	
+	
+	
+	
     foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
     {
+	
+	#if ($testdevice ne "Deko_Ctrl"){next;}
         Log3( $testdevice, 5,
             "wiederherstellung  $testdevice . L:" . __LINE__ );
         my $devhash = $defs{$testdevice};
         $Zeilen =~ s/\n/[nl]/g;
         if ( $Zeilen !~ m/#N -> $testdevice\[nl\](.*)#E -> $testdevice\[nl\]/ )
         {
-            $answer = $answer . "no Backupfile found for $testdevice [nl]";
+            $answer = $answer . "no Backupfile found for $testdevice\n";
         }
         my @found = split( /\[nl\]/, $1 );
         foreach (@found) {
@@ -4099,27 +4124,29 @@ sub MSwitch_backup_all($) {
             }
             if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
             {
-                my $cs = "get $testdevice $1 $2";
+                my $cs = "attr  $testdevice $1 $2";
                 Log3( $testdevice, 5, " write attribut $1 -> $2 " );
                 my $errors = AnalyzeCommandChain( undef, $cs );
                 if ( defined($errors) ) {
-                    Log3( $testdevice, 5, "ERROR $cs" );
+                    Log3( $testdevice, 1, "ERROR $cs" );
                 }
             }
         }
-        $answer = $answer . "MSwitch $testdevice restored.[nl]";
-        my $cs = "attr $testdevice $1 $2";
-        Log3( $testdevice, 5, " write attribut $1 -> $2 " );
-        my $errors = AnalyzeCommandChain( undef, $cs );
-        if ( defined($errors) ) {
-            Log3( $testdevice, 5, "ERROR $cs" );
-        }
+		MSwitch_Createtimer($devhash);
+        $answer = $answer . "MSwitch $testdevice restored.\n";
+        # my $cs = "attr $testdevice $1 $2";
+        # Log3( $testdevice, 0, " write attribut $1 -> $2 " );
+        # my $errors = AnalyzeCommandChain( undef, $cs );
+        # if ( defined($errors) ) {
+            # Log3( $testdevice, 0, "ERROR $cs" );
+        # }
     }
+	
+	
     Log3( $Name, 5, "wblocking end $hash $answer . L:" . __LINE__ );
-    return "$Name|$answer";
+    return $answer;
 }
 ################################################
-
 	  sub MSwitch_saveconf($$)
 	  {
 	  
@@ -4142,12 +4169,16 @@ sub MSwitch_backup_all($) {
             }
             if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
             {
-                my $cs = "get $name $1 $2";
-                Log3( $name, 0, " write attribut $1 -> $2 " );
-                my $errors = AnalyzeCommandChain( undef, $cs );
-                if ( defined($errors) ) {
-                    Log3( $name, 0, "ERROR $cs" );
-                }
+                # my $cs = "get $name $1 $2";
+                # Log3( $name, 0, " write attribut $1 -> $2 " );
+                # my $errors = AnalyzeCommandChain( undef, $cs );
+                # if ( defined($errors) ) {
+                    # Log3( $name, 0, "ERROR $cs" );
+                # }
+				
+					$attr{$name}{$1} = $2;
+					
+					
             }
         }
 	  
