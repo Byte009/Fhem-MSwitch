@@ -1065,7 +1065,7 @@ sub MSwitch_Cmd(@) {
     my $Name = $hash->{NAME};
     foreach my $cmds (@cmdpool) {
 
-  
+  Log3( $Name, 5,"$Name MSwitch_Set:  $cmds " . __LINE__ );
   
   if( $cmds =~ m/set (.*)(MSwitchtoggle)(.*)/ )
   {
@@ -1206,6 +1206,9 @@ sub MSwitch_Notify($$) {
     return ""
     if ( IsDisabled($ownName) );    # Return without any further action if the module is disabled
     my $events = deviceEvents( $dev_hash, 1 );
+	
+
+	
     my $incommingdevice = '';
     if ( defined( $own_hash->{helper}{testevent_device} ) ) {
         $events          = 'x';
@@ -1250,6 +1253,7 @@ sub MSwitch_Notify($$) {
       EVENT: foreach my $event (@eventscopy)
 
         {
+	
             $event = "" if ( !defined($event) );
             $eventcopy = $event;
             $eventcopy =~ s/: /:/s;    # BUG  !!!!!!!!!!!!!!!!!!!!!!!!
@@ -1829,16 +1833,26 @@ sub MSwitch_fhemwebFn($$$$) {
             $savedetails{ $aktdevice . '_conditionoff' } =~ s/~/ /g;
             $savedetails{ $aktdevice . '_onarg' } =~ s/~/ /g;
             $savedetails{ $aktdevice . '_offarg' } =~ s/~/ /g;
+			
+			
+			my $dalias="(a: ".AttrVal( $devicenamet, 'alias', "no" ).")" if AttrVal( $devicenamet, 'alias', "no" ) ne "no";
+			
+			
             ## block on
             $detailhtml = $detailhtml . "
 			<tr class='even'>";
             if ( $devicenumber == 1 ) {
+			
+			
+			
+			
+			
                 $detailhtml = $detailhtml
-                  . "<td rowspan='6'>$devicenamet&nbsp;&nbsp;&nbsp;";
+                  . "<td rowspan='6'>$devicenamet<br>$dalias";
             }
             else {
                 $detailhtml = $detailhtml
-                  . "<td rowspan='6'>$devicenamet&nbsp;&nbsp;&nbsp;";
+                 . "<td rowspan='6'>$devicenamet<br>$dalias";
             }
             if ( $devicenamet ne 'FreeCmd' ) {
                 $detailhtml = $detailhtml . "</td>
