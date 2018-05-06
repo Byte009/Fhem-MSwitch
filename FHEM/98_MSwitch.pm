@@ -33,7 +33,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = '1.1';
+my $version = '1.2';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -554,6 +554,13 @@ sub MSwitch_AsyncOutput ($) {
 #####################################
 sub MSwitch_Set($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
+	
+	Log3( $name, 5,"args  ". $args[0] );
+	
+	
+	Log3( $name, 5,"SUB  ". (caller(0))[3] );
+	
+	
     return "" if ( IsDisabled($name) );    # Return without any further action if the module is disabled
 
 	
@@ -929,9 +936,16 @@ sub MSwitch_Set($@) {
                 {
                     ########### teste auf condition
                     ### antwort $execute 1 oder 0 ;
+					
+					
+					
+                        Log3( $name, 3,
+                            "$name MSwitch_Set: aufruf MSwitch_checkcondition L:"
+                              . __LINE__ );
+					
+					
                     my $execute =
-                      MSwitch_checkcondition( $devicedetails{$conditionkey},
-                        $name, $args[0] );
+                      MSwitch_checkcondition( $devicedetails{$conditionkey},$name, $args[0] );
 
                     if ( $execute eq 'true' ) {
                         Log3( $name, 3,
@@ -1026,9 +1040,14 @@ sub MSwitch_Set($@) {
                     Log3( $name, 5,
                         "$name MSwitch_Set: aufruf MSwitch_Checkkondition L:"
                           . __LINE__ );
-                    my $execute =
-                      MSwitch_checkcondition( $devicedetails{$conditionkey},
-                        $name, '' );
+                    # my $execute =
+                      # MSwitch_checkcondition( $devicedetails{$conditionkey},
+                        # $name, '' );
+						
+					my $execute =
+                      MSwitch_checkcondition( $devicedetails{$conditionkey},$name, $args[0] );	
+						
+						
                     if ( $execute eq 'true' ) {
                         # my $errors = AnalyzeCommandChain( undef, $cs );
                         # variabelersetzung
@@ -1063,6 +1082,10 @@ sub MSwitch_Set($@) {
 sub MSwitch_Cmd(@) {
     my ( $hash, @cmdpool ) = @_;
     my $Name = $hash->{NAME};
+	
+	
+	Log3( $Name, 5,"SUB  ". (caller(0))[3] );
+	
     foreach my $cmds (@cmdpool) {
 
   Log3( $Name, 5,"$Name MSwitch_Set:  $cmds " . __LINE__ );
@@ -1201,6 +1224,13 @@ sub MSwitch_Notify($$) {
     my $testtoggle = '';
     my ( $own_hash, $dev_hash ) = @_;
     my $ownName = $own_hash->{NAME};    # own name / hash
+	
+	
+	Log3( $ownName, 5,"SUB  ". (caller(0))[3] );
+				
+	
+	
+	
     my @cmdarray;
     my @cmdarray1;    #enthält auszuführende befehle nach conditiontest
     return ""
@@ -1282,6 +1312,16 @@ sub MSwitch_Notify($$) {
                     $own_hash->{helper}{events}{$devName}{$eventcopy} = "on";
                 }
             }
+			
+			
+		my $eventcopy1 = $eventcopy;
+		 if ( $triggerdevice eq "all_events" ) 
+		 {
+           $eventcopy1 = "$devName:$eventcopy";       
+          }
+	
+			
+			
             my $direktswitch = 0;
             my @eventsplit = split( /\:/, $eventcopy );
             my $eventstellen = @eventsplit;
@@ -1308,7 +1348,7 @@ sub MSwitch_Notify($$) {
                   MSwitch_checktrigger( $own_hash, $ownName, $eventstellen,
                     $triggercmdoff, $incommingdevice, 'offonly', $eventcopy,
                     @eventsplit );
-                push @cmdarray, $own_hash . ',off,check,' . $eventcopy
+                push @cmdarray, $own_hash . ',off,check,' . $eventcopy1
                   if $testvar ne 'undef';
             }
             if ( $triggercmdon ne 'no_trigger' )    #
@@ -1316,7 +1356,7 @@ sub MSwitch_Notify($$) {
                 my $testvar =
                 MSwitch_checktrigger( $own_hash, $ownName, $eventstellen,$triggercmdon, $incommingdevice, 'ononly', $eventcopy,
                 @eventsplit );
-                push @cmdarray, $own_hash . ',on,check,' . $eventcopy
+                push @cmdarray, $own_hash . ',on,check,' . $eventcopy1
                 if $testvar ne 'undef';
             }
             #verlasse routine wenn keine werte im array
@@ -1387,7 +1427,22 @@ sub MSwitch_Notify($$) {
         }
         Log3( $ownName, 5,"$ownName MSwitch_Notif: var set für folgenden Befehlsaufruf ->  $set - $eventcopy ". __LINE__ );
         if ( $set ne "noset" ) {
-            my $cs = "set $ownName $set $eventcopy";
+		
+		my $cs ;
+		
+		 if ( $triggerdevice eq "all_events" ) 
+		 {
+                    $cs = "set $ownName $set $devName:$eventcopy";
+                     
+                }
+		else{
+		
+             $cs = "set $ownName $set $eventcopy";
+			}
+			
+			
+			
+			
             Log3( $ownName, 3, "$ownName MSwitch_Notif: Befehlsausfuehrung -> $cs ". __LINE__ );
             # variabelersetzung
             $cs =~ s/\$NAME/$own_hash->{helper}{eventfrom}/;
@@ -2883,6 +2938,9 @@ document.getElementById('textfie').innerHTML = result;
 sub MSwitch_makeCmdHash($) {
     my $loglevel = 5;
     my ($Name) = @_;
+	
+	Log3( $Name, 5,"SUB  ". (caller(0))[3] );
+	
     # detailsatz in scalar laden
     my @devicedatails =
     split( /\|/, ReadingsVal( $Name, '.Device_Affected_Details', '' ) );    #inhalt decice und cmds durch komma getrennt
@@ -2991,6 +3049,10 @@ sub MSwitch_Exec_Notif($$$$) {
     my $name = $hash->{NAME};
     my $protokoll = '';
     my $satz;
+	
+	Log3( $name, 5,"SUB  ". (caller(0))[3] );
+	
+	
     #### teste auf condition nur wenn nicht von timer
     if ( $check ne 'nocheck' ) {
         my $triggercondition = ReadingsVal( $name, '.Trigger_condition', '' );
@@ -3053,6 +3115,8 @@ sub MSwitch_Exec_Notif($$$$) {
                 ### antwort $execute 1 oder 0 ;
                 $conditionkey = $device . "_condition" . $comand;
                 Log3( $name, 5,"$name MSwitch_Notif: Aufruf MSwitch_checkcondition -> $cs ". __LINE__ );
+				
+				
                 my $execute = MSwitch_checkcondition( $devicedetails{$conditionkey},$name, $event );
                 $testtoggle = 'undef';
                 if ( $execute eq 'true' ) {
@@ -3094,6 +3158,8 @@ sub MSwitch_Exec_Notif($$$$) {
 sub MSwitch_Filter_Trigger($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
+	
+	Log3( $Name, 5,"SUB  ". (caller(0))[3] );
     if ( !exists $hash->{Trigger_device} ) { return; }    #CHANGE
     my $Triggerdevice = $hash->{Trigger_device};
     my $triggeron = ReadingsVal( $Name, '.Trigger_on', 'no_trigger' );
@@ -3187,6 +3253,9 @@ sub MSwitch_Restartcmd($) {
 sub MSwitch_checkcondition($$$) {
     # antwort execute 0 oder 1
     my ( $condition, $name, $event ) = @_;
+	
+	Log3( $name, 5,"SUB  ". (caller(0))[3] );
+	
     Log3( $name, 5, "$name MSwitch_checkcondition: -> $condition " . __LINE__ );
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
