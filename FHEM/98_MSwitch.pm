@@ -1773,9 +1773,9 @@ sub MSwitch_fhemwebFn($$$$) {
       split( /,/, ReadingsVal( $Name, '.Device_Affected', '' ) );
     if ( $affecteddevices[0] ne 'no_device' ) {
         $detailhtml =
-          "<table class='block wide' id='MSwitchDetails' nm='MSwitch'>
+          "<table border='0' class='block wide' id='MSwitchDetails' nm='MSwitch'>
 				<tr class='even'>
-				<td colspan='5'>device actions :
+				<td colspan='5'>device actions :<br>&nbsp;
 				<input type='hidden' id='affected' name='affected' size='40'  value ='"
           . ReadingsVal( $Name, '.Device_Affected', '' ) . "'>
 				</td>
@@ -1894,24 +1894,27 @@ sub MSwitch_fhemwebFn($$$$) {
 			
 			
             ## block on
-            $detailhtml = $detailhtml . "
-			<tr class='even'>";
+                      $detailhtml = $detailhtml . "
+			<tr class='odd'>
+			<td colspan='5' class='col1'>$devicenamet&nbsp&nbsp;&nbsp;$dalias
+			</td></tr>
+			<tr class=''>
+			";
+			
+			
+			
             if ( $devicenumber == 1 ) {
-			
-			
-			
-			
-			
+
                 $detailhtml = $detailhtml
-                  . "<td rowspan='6'>$devicenamet<br>$dalias";
+                  . "<td class='col2' rowspan='6'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             }
             else {
                 $detailhtml = $detailhtml
-                 . "<td rowspan='6'>$devicenamet<br>$dalias";
+                 . "<td rowspan='6' class='col2'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
             }
             if ( $devicenamet ne 'FreeCmd' ) {
                 $detailhtml = $detailhtml . "</td>
-			<td nowrap>MSwitch on cmd: 
+			<td nowrap class='col2' style='text-align: left;'>&nbsp;<br>MSwitch on cmd: 
 			Set <select id='"
                   . $_
                   . "_on' name='cmdon"
@@ -1932,7 +1935,7 @@ sub MSwitch_fhemwebFn($$$$) {
 			<td nowrap id='" . $_ . "_on_sel'>&nbsp;</td>
 			<td nowrap>
 			</td>
-			<td style=\"width: 100%\"><input type='$hidden' id='cmdseton"
+			<td  class='col2' style=\"width: 100%\">&nbsp;<br><input type='$hidden' id='cmdseton"
                   . $_
                   . "' name='cmdseton"
                   . $_
@@ -1950,7 +1953,7 @@ sub MSwitch_fhemwebFn($$$$) {
             else {
 
                 $detailhtml = $detailhtml . "</td>
-			<td nowrap>MSwitch on cmd: 
+			<td  class='col2' nowrap style='text-align: left;'>&nbsp;<br>MSwitch on cmd: 
 			<input type='' id='cmdonopt"
                   . $_
                   . "1' name='cmdonopt"
@@ -1958,12 +1961,12 @@ sub MSwitch_fhemwebFn($$$$) {
                   . "' size='40'  value ='"
                   . $savedetails{ $aktdevice . '_onarg' }
                   . "'&nbsp;&nbsp: onClick=\"javascript:bigwindow(this.id);\">
-			<input type='$hidden' id='"
+			&nbsp;<br><input type='$hidden' id='"
                   . $_ . "_on' name='cmdon" . $_ . "' size='20'  value ='cmd'>
-			<td nowrap id='" . $_ . "_on_sel'>&nbsp;</td>
+			<td  class='col2' nowrap id='" . $_ . "_on_sel'>&nbsp;</td>
 			<td nowrap>
 			</td>
-			<td style=\"width: 100%\"><input type='$hidden' id='cmdseton"
+			<td  class='col2' style=\"width: 100%\">&nbsp;<br><input type='$hidden' id='cmdseton"
                   . $_ . "' name='cmdseton" . $_ . "' size='10'  value ='cmd'>
 			";
             }
@@ -1981,7 +1984,7 @@ sub MSwitch_fhemwebFn($$$$) {
             if ( $devicenamet ne 'FreeCmd' ) {
                 $detailhtml = $detailhtml . "		
 			<tr class='even'>
-			<td nowrap>MSwitch off cmd:
+			<td  class='col2' nowrap style='text-align: left;'>MSwitch off cmd:
 			Set <select id='"
                   . $_
                   . "_off' name='cmdoff"
@@ -2001,10 +2004,10 @@ sub MSwitch_fhemwebFn($$$$) {
                 $detailhtml = $detailhtml . "
 			</select>
 			</td>
-			<td nowrap id='" . $_ . "_off_sel' >&nbsp;</td>
+			<td  class='col2' nowrap id='" . $_ . "_off_sel' >&nbsp;</td>
 			<td>
 			</td>
-			<td nowrap>
+			<td  class='col2' nowrap>
 			<input type='$hidden' id='cmdsetoff"
                   . $_
                   . "' name='cmdsetoff"
@@ -2022,7 +2025,7 @@ sub MSwitch_fhemwebFn($$$$) {
             else {
                 $detailhtml = $detailhtml . "		
 			<tr class='even'>
-			<td nowrap>MSwitch off cmd:
+			<td  class='col2' nowrap style='text-align: left;'>MSwitch off cmd:
 			<input type=''   id='cmdoffopt"
                   . $_
                   . "1' name='cmdoffopt"
@@ -2034,10 +2037,10 @@ sub MSwitch_fhemwebFn($$$$) {
 			<input type='$hidden' id='"
                   . $_ . "_off' name='cmdoff" . $_ . "' size='20'  value ='cmd'>
 			</td>
-			<td nowrap id='" . $_ . "_off_sel' >&nbsp;</td>
+			<td  class='col2' nowrap id='" . $_ . "_off_sel' >&nbsp;</td>
 			<td>
 			</td>
-			<td nowrap>
+			<td  class='col2' nowrap>
 			<input type='$hidden' id='cmdsetoff"
                   . $_
                   . "' name='cmdsetoff"
@@ -2053,7 +2056,7 @@ sub MSwitch_fhemwebFn($$$$) {
 		";
             $detailhtml = $detailhtml . "	
 		<tr class='even'>
-		<td colspan='4'>
+		<td  class='col2' colspan='4' nowrap style='text-align: left;'>
 		on condition: <input type='text' id='conditionon"
               . $_
               . "' name='conditionon"
@@ -2082,9 +2085,11 @@ sub MSwitch_fhemwebFn($$$$) {
                   . "<input name='info' type='button' value='?' onclick=\"javascript: info('condition')\">";
             }
             $detailhtml = $detailhtml . "</td>
+			
+			
 		</tr>
 		<tr class='even'>
-		<td colspan='4'>
+		<td  class='col2' colspan='4' nowrap style='text-align: left;'>
 		off condition: <input type='text' id='conditionoff"
               . $_
               . "' name='conditionoff"
@@ -2147,9 +2152,10 @@ sub MSwitch_fhemwebFn($$$$) {
                   . "<input name='info' type='button' value='?' onclick=\"javascript: info('condition')\">";
             }
             $detailhtml = $detailhtml . "</td>
+	
 		</tr>
 		<tr class='even'>
-		<td colspan='4'>
+		<td  class='col2' colspan='4' nowrap style='text-align: left;'>
 		on delay: +<input type='text' id='timeseton"
               . $_
               . "' name='timeseton"
@@ -2168,7 +2174,8 @@ sub MSwitch_fhemwebFn($$$$) {
                 $detailhtml = $detailhtml
                   . "<input name='info' type='button' value='?' onclick=\"javascript: info('timer')\">";
             }
-            $detailhtml = $detailhtml . "</td>
+            $detailhtml = $detailhtml . "</td>	
+			
 		</tr>";
 
 # if ($devicenumber == 1)
@@ -2185,14 +2192,14 @@ sub MSwitch_fhemwebFn($$$$) {
 # </tr>";
 # }
             $detailhtml = $detailhtml . "<tr class='even'>
-		<td colspan='4'>";
+		<td  class='col2' colspan='4' style='text-align: left;'>";
             if ( $devicenumber == 1 ) {
                 $detailhtml = $detailhtml
                   . "<input name='info' type='button' value='add action for $devicenamet' onclick=\"javascript: addevice('$devicenamet')\">";
             }
             $detailhtml = $detailhtml
               . "<input name='info' type='button' value='delete this action for $devicenamet' onclick=\"javascript: deletedevice('$_')\">";
-            $detailhtml = $detailhtml . "</td>
+            $detailhtml = $detailhtml . "<br>&nbsp;</td>
 		</tr>
 		";
 
@@ -2688,7 +2695,7 @@ return;}
 
 function slider(first,step,last,target,copytofield){
 var selected =document.getElementById(copytofield).value;
-var selectfield = \"<input type='text' id='\" + target +\"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;\" + first +\"<input type='range' min='\" + first +\"' max='\" + last + \"' value='\" + selected +\"' step='\" + step + \"' onchange=\\\"javascript: showValue(this.value,'\" + copytofield + \"','\" + target + \"')\\\">\" + last  ;
+var selectfield = \"&nbsp;<br><input type='text' id='\" + target +\"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;\" + first +\"<input type='range' min='\" + first +\"' max='\" + last + \"' value='\" + selected +\"' step='\" + step + \"' onchange=\\\"javascript: showValue(this.value,'\" + copytofield + \"','\" + target + \"')\\\">\" + last  ;
 document.getElementById(target).innerHTML = selectfield + '<br>';
 var opt = target + '_opt';
 document.getElementById(opt).value=selected;
@@ -2706,9 +2713,23 @@ document.getElementById(copytofield).value = newValue;
 }
 
 function textfield(copytofield,target){
+//alert(copytofield,target);
 var selected =document.getElementById(copytofield).value;
-var selectfield = \"<input type='text' size='10' value='\" + selected +\"' onchange=\\\"javascript: showtextfield(this.value,'\" + copytofield + \"','\" + target + \"')\\\">\"  ;
+if (copytofield.indexOf('cmdonopt') != -1) {
+
+var selectfield = \"&nbsp;<br><input type='text' size='10' value='\" + selected +\"' onchange=\\\"javascript: showtextfield(this.value,'\" + copytofield + \"','\" + target + \"')\\\">\"  ;
 document.getElementById(target).innerHTML = selectfield + '<br>';	
+   }
+   else{
+   var selectfield = \"<input type='text' size='10' value='\" + selected +\"' onchange=\\\"javascript: showtextfield(this.value,'\" + copytofield + \"','\" + target + \"')\\\">\"  ;
+document.getElementById(target).innerHTML = selectfield + '<br>';
+   
+   
+   
+   }
+
+
+
 return;
 }
 
