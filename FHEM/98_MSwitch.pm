@@ -61,7 +61,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = '1.31';
+my $version = '1.4';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -146,7 +146,8 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Ignore_Types"
       . "  MSwitch_Trigger_Filter"
       . "  MSwitch_Extensions:0,1"
-      . "  MSwitch_Inforoom";
+      . "  MSwitch_Inforoom"
+	  . "  MSwitch_Mode:Full,Notify";
     $hash->{FW_addDetailToSummary} = 0;
 }
 ####################
@@ -289,12 +290,18 @@ sub MSwitch_summary($) {
           . $name
           . "-state\">"
           . ReadingsVal( $name, 'state', '' ) . "</div>
-	</td><td informId=\"" . $name . "tmp\">
-	<div informid=\""
+	</td><td informId=\"" . $name . "tmp\">";
+	
+	if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) ne "Notify")
+	{
+	$ret.="<div informid=\""
           . $name
           . "-state-ts\">"
-          . ReadingsTimestamp( $name, 'state', '' ) . "</div>
-	 ";
+          . ReadingsTimestamp( $name, 'state', '' ) . "</div>";
+		}  
+		  
+		  
+	 
     }
 
     $ret .= "<script>
@@ -414,6 +421,8 @@ sub MSwitch_LoadHelper($) {
         $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
         $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
         $attr{$Name}{MSwitch_Extensions}          = '0';
+		$attr{$Name}{MSwitch_Mode}				  = 'Full';
+	
     }
     MSwitch_Createtimer($hash);    #Neustart aller timer
 }
@@ -597,8 +606,14 @@ sub MSwitch_Set($@) {
                 push( @cList, $k );
             }
         }    # end foreach
-        return
-"Unknown argument $cmd, choose one of on:noArg off:noArg del_delays:noArg backup_MSwitch:all_devices";
+if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
+	{
+         return "Unknown argument $cmd, choose one of del_delays:noArg backup_MSwitch:all_devices";
+    }
+	else
+	{
+	return "Unknown argument $cmd, choose one of on:noArg off:noArg del_delays:noArg backup_MSwitch:all_devices";
+	}
     }
 ###### teste auf new defined
 ###### umlegen auf define oder loadhelper !!!! TODO
@@ -1268,6 +1283,34 @@ sub MSwitch_Attr(@) {
             $attr{$testdevices}{MSwitch_Inforoom} = $testarg;
         }
     }
+	
+	
+	
+			 if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Full' ) 
+	 {
+	 my $cs ="setstate $name ???";
+     my $errors = AnalyzeCommandChain( undef, $cs );
+    }
+	if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' ) 
+	 {
+	 
+	 readingsSingleUpdate( $hash, "state", 'active', 1 );
+	 
+        my $cs ="setstate $name active";
+     my $errors = AnalyzeCommandChain( undef, $cs );
+	 
+	        if ( defined($errors) ) {
+                            Log3( $name, 1,
+"$name MSwitch_Notify: Fehler bei Befehlsausführung $errors -> Comand: $_ "
+                                  . __LINE__ );
+                        }
+						
+						
+    }
+	
+	
+	
+	
 ###############ende set
     if ( $cmd eq 'del' ) {
         my $testarg = $aName;
@@ -1320,8 +1363,7 @@ sub MSwitch_Notify($$) {
     else {
         $incommingdevice = $dev_hash->{NAME};    # aufrufendes device
     }
-    my $triggerdevice = ReadingsVal( $ownName, 'Trigger_device', '' )
-      ;    # device welches das modul an/aus schaltet
+    my $triggerdevice = ReadingsVal( $ownName, 'Trigger_device', '' );    # device welches das modul an/aus schaltet
     my $devName = $dev_hash->{NAME};    # Device that created the event
     if ( $devName eq "global"
         && grep( m/^INITIALIZED|REREADCFG$/, @{$events} ) )
@@ -1334,6 +1376,11 @@ sub MSwitch_Notify($$) {
     my $triggeroff    = ReadingsVal( $ownName, '.Trigger_off',     '' );
     my $triggercmdon  = ReadingsVal( $ownName, '.Trigger_cmd_on',  '' );
     my $triggercmdoff = ReadingsVal( $ownName, '.Trigger_cmd_off', '' );
+	if (AttrVal( $ownName, 'MSwitch_Mode', 'Full' ) eq "Notify")
+	{
+	$triggeron ='no_trigger';
+	$triggeroff ='no_trigger';
+	}
 ##############################
     my $triggerlog = ReadingsVal( $ownName, 'Trigger_log', 'off' );
     my $set        = "noset";
@@ -2523,6 +2570,30 @@ devices += ',';
           . "&nbsp;<input name='info' type='button' value='?' onclick=\"javascript: info('triggercondition')\">";
     }
 
+	
+	
+		my $displaynot;		
+if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Notify") 
+{		
+$displaynot="style='display:none;'";
+}
+	
+	
+	my $inhalt ="execute 'on' commands only at :";
+	my $inhalt1 ="execute 'off' commands only at :";
+	
+	my $inhalt2 ="execute 'on' commands only";
+	my $inhalt3 ="execute 'off' commands only";
+	
+	if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Notify")
+	{
+	
+	 $inhalt ="execute 'on' commands at :";
+	 $inhalt1 ="execute 'off' commands at :";
+	 $inhalt2 ="execute 'on' commands";
+	$inhalt3 ="execute 'off' commands";
+	}
+	
     $ret = $ret . "</td>
 	</tr>
 	<tr class=\"even\">
@@ -2532,13 +2603,13 @@ devices += ',';
 	</td>
 	</tr>
 
-	<tr class=\"even\">
+	<tr " . $displaynot ." class=\"even\">
 	<td></td>
 	<td>switch MSwitch on + execute 'on' commands at :</td>
 	<td><input type='text' id='timeon' name='timeon' size='60'  value ='"
       . $timeon . "'></td>
 	</tr>
-	<tr class=\"even\">
+	<tr  " . $displaynot ." class=\"even\">
 	<td></td>
 	<td>switch MSwitch off + execute 'off' commands at :</td>
 	<td><input type='text' id='timeoff' name='timeoff' size='60'  value ='"
@@ -2546,13 +2617,13 @@ devices += ',';
 	</tr>
 	<tr class=\"even\">
 	<td></td>
-	<td>execute 'on' commands only at :</td>
+	<td>" .$inhalt. "</td>
 	<td><input type='text' id='timeononly' name='timeononly' size='60'  value ='"
       . $timeononly . "'></td>
 	</tr>
 	<tr class=\"even\">
 	<td></td>
-	<td>execute 'off' commands only at :</td>
+	<td>". $inhalt1 ."</td>
 	<td><input type='text' id='timeoffonly' name='timeoffonly' size='60'  value ='"
       . $timeoffonly . "'></td>
 	</tr>
@@ -2582,8 +2653,13 @@ devices += ',';
 				<td></td>
 				<td></td>
 				<td></td>
-			</tr>
-			<tr class=\"even\">
+			</tr>";
+			
+			
+
+
+
+			$ret .="<tr " . $displaynot ." class=\"even\">
 				<td>switch " . $Name . " on + execute 'on' commands</td>
 				<td>
 				Trigger " . $Triggerdevice . " :
@@ -2592,7 +2668,7 @@ devices += ',';
 					<select id = \"trigon\" name=\"trigon\">" . $optionon . "</select>
 				</td>
 			</tr>
-			<tr class=\"even\">
+			<tr " . $displaynot ."class=\"even\">
 				<td>switch " . $Name . " off + execute 'off' commands</td>
 				<td>
 				Trigger " . $Triggerdevice . " :
@@ -2600,12 +2676,14 @@ devices += ',';
 				<td>
 					<select id = \"trigoff\" name=\"trigoff\">" . $optionoff . "</select>
 				</td>
-			</tr>
-			<tr class=\"even\">
+			</tr>";
+			
+			
+			$ret .="<tr  " . $displaynot ." class=\"even\">
 			<td colspan=\"3\" >&nbsp</td>
 			</tr>
 			<tr class=\"even\">
-				<td>execute 'on' commands only</td>
+				<td>". $inhalt2."</td>
 				<td>
 				Trigger " . $Triggerdevice . " :
 				</td>
@@ -2614,7 +2692,7 @@ devices += ',';
 				</td>
 			</tr>
 			<tr class=\"even\">
-				<td>execute 'off' commands only</td>
+				<td>". $inhalt3 ."</td>
 				<td>
 				Trigger " . $Triggerdevice . " :
 				</td>
@@ -3574,7 +3652,36 @@ sub MSwitch_checkcondition($$$) {
     Log3( $name, 5, "$name EVENT: -> $event " . __LINE__ );
     $event =~ s/ //ig;
     $event =~ s/~/ /g;
-    readingsSingleUpdate( $hash, "last_event", $event, 1 );
+	
+	
+	
+	
+	
+	
+	my @evtparts = split( /:/, $event );
+	my $evtsanzahl = @evtparts;
+	if ($evtsanzahl < 3) 
+	{
+	my $eventfrom =  $hash->{helper}{eventfrom};
+	unshift (@evtparts,$eventfrom );
+	$evtsanzahl = @evtparts;
+	}
+	my $evtfull= join( ':', @evtparts ); 
+	
+	Log3( $name, 0, "$name EVENT $evtsanzahl teile: -> $evtparts[0] $evtparts[1] $evtparts[2] " . __LINE__ );
+	
+	
+	readingsBeginUpdate($hash);
+
+   
+	readingsBulkUpdate( $hash, "EVENT", $event );
+	readingsBulkUpdate( $hash, "EVTFULL", $evtfull );
+	readingsBulkUpdate( $hash, "EVTPART1", $evtparts[0] );
+	readingsBulkUpdate( $hash, "EVTPART2", $evtparts[1] );
+	readingsBulkUpdate( $hash, "EVTPART3", $evtparts[2] );
+    readingsBulkUpdate( $hash, "last_event", $event );
+
+	 readingsEndUpdate( $hash, 1 );
     my $arraycount = '0';
     my $finalstring;
     my $answer;
@@ -3594,12 +3701,19 @@ sub MSwitch_checkcondition($$$) {
     my @perlarray;
     ### perlteile trennen
 
-    $condition =~ s/{!\$we}/~!\$we~/ig;
+  $condition =~ s/{!\$we}/~!\$we~/ig;
     $condition =~ s/{\$we}/~\$we~/ig;
 
     $condition =~ s/{sunset\(\)}/{~sunset\(\)~}/ig;
     $condition =~ s/{sunrise\(\)}/{~sunrise\(\)~}/ig;
+	Log3( $name, 0, "cond -> $condition L:" . __LINE__ );
+	
     $condition =~ s/\$EVENT/$name\:last_event/ig;
+	$condition =~ s/\$EVTFULL/$name\:EVTFULL/ig;
+	$condition =~ s/\$EVTPART1/$name\:EVTPART1/ig;
+	$condition =~ s/\$EVTPART2/$name\:EVTPART2/ig;
+	$condition =~ s/\$EVTPART3/$name\:EVTPART3/ig;
+	
 
     Log3( $name, 5, "cond -> $condition L:" . __LINE__ );
 
@@ -3853,7 +3967,10 @@ sub MSwitch_Settimecontrol($) {
     Log3( $Name, 5,
         "$Name MSwitch_Settimecontrol: loesche alle delays L:" . __LINE__ );
     RemoveInternalTimer($hash);
-    my $timeoptions = ReadingsVal( $Name, '.Trigger_time', '' );
+   
+
+#evtl nicht nötig
+   my $timeoptions = ReadingsVal( $Name, '.Trigger_time', '' );
 
     #berechner erneutes holen der timer um 00:00:02
     my $akttimeunix      = gettimeofday();
@@ -3901,6 +4018,18 @@ sub MSwitch_Createtimer($) {
     $key = 'ly';
     $condition =~ s/$key//ig;
     my @timer = split /~/, $condition;
+	
+	$timer[0]='' if (!defined $timer[0]) ;
+	$timer[1]='' if (!defined $timer[1]) ;
+	$timer[2]='' if (!defined $timer[2]) ;
+	$timer[3]='' if (!defined $timer[3]) ;
+
+	if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Notify")
+	{
+	$timer[0]='';
+	$timer[1]='';
+	}
+	
     my $time = localtime;
     $time =~ s/\s+/ /g;
     my ( $day, $month, $date, $n, $time1 ) =
@@ -3940,8 +4069,10 @@ sub MSwitch_Createtimer($) {
                 $option1 = $newoption1;
             }
             my ( $time, $days ) = split /\|/, $option1;
-            Log3( $Name, 5,
-                "$Name MSwitch_createtimer: days -> $days L:" . __LINE__ );
+			$time = '' if (!defined $time) ;
+			$days = '' if (!defined $days) ;
+			
+  Log3( $Name, 5,"$Name MSwitch_createtimer: days -> $days L:" . __LINE__ );
             if ( $days eq '!$we' || $days eq '$we' )
 
               #!$we
