@@ -3781,7 +3781,7 @@ sub MSwitch_checkcondition($$$) {
 
     $condition =~ s/{sunset\(\)}/{~sunset\(\)~}/ig;
     $condition =~ s/{sunrise\(\)}/{~sunrise\(\)~}/ig;
-	Log3( $name, 0, "cond -> $condition L:" . __LINE__ );
+	Log3( $name, 5, "cond -> $condition L:" . __LINE__ );
 	
     $condition =~ s/\$EVENT/$name\:last_event/ig;
 	$condition =~ s/\$EVTFULL/$name\:EVTFULL/ig;
