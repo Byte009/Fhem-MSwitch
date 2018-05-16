@@ -61,7 +61,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = '1.4';
+my $version = '1.42';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -1244,35 +1244,101 @@ sub MSwitch_Cmd(@) {
 ####################
 
 sub MSwitch_toggle($$) {
-    my ( $hash, $cmds ) = @_;
+    # my ( $hash, $cmds ) = @_;
+    # my $Name = $hash->{NAME};
+    # Log3( $Name, 5, "$Name MSwitch_toggle:  $cmds " . __LINE__ );
+    # $cmds =~ m/(set) (.*)( )MSwitchtoggle (.*)\/(.*)/;
+
+    # Log3( $Name, 5, "$Name MSwitch_toggle:  x$1x " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle:  x$2x " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle:  x$3x " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle:  x$4x " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle:  x$5x " . __LINE__ );
+
+    # my $cmd1 = $1 . " " . $2 . " " . $4;
+    # my $cmd2 = $1 . " " . $2 . " " . $5;
+
+    # my $chk1 = $4;
+    # my $chk2 = $5;
+
+    # my $testnew = ReadingsVal( $2, 'state', 'undef' );
+
+    # if    ( $testnew eq $chk1 ) { $cmds = $cmd2 }
+    # elsif ( $testnew eq $chk2 ) { $cmds = $cmd1 }
+    # else                        { $cmds = $cmd1 }
+
+    # Log3( $Name, 5, "$Name MSwitch_toggle: testnew -> $testnew " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle: cmd1 -> $cmd1 " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle: cmd2 -> $cmd2 " . __LINE__ );
+    # Log3( $Name, 5, "$Name MSwitch_toggle: neuer befehl -> $cmds " . __LINE__ );
+
+    # return $cmds;
+	
+	
+	my ( $hash, $cmds ) = @_;
     my $Name = $hash->{NAME};
     Log3( $Name, 5, "$Name MSwitch_toggle:  $cmds " . __LINE__ );
-    $cmds =~ m/(set) (.*)( )MSwitchtoggle (.*)\/(.*)/;
+    $cmds =~ m/(set) (.*)( )MSwitchtoggle (.*)/;
 
-    Log3( $Name, 5, "$Name MSwitch_toggle:  x$1x " . __LINE__ );
-    Log3( $Name, 5, "$Name MSwitch_toggle:  x$2x " . __LINE__ );
-    Log3( $Name, 5, "$Name MSwitch_toggle:  x$3x " . __LINE__ );
-    Log3( $Name, 5, "$Name MSwitch_toggle:  x$4x " . __LINE__ );
-    Log3( $Name, 5, "$Name MSwitch_toggle:  x$5x " . __LINE__ );
+   # Log3( $Name, 5, "$Name MSwitch_toggle 0:  $0 " . __LINE__ );
+    Log3( $Name, 5, "$Name MSwitch_toggle 1:  $1 " . __LINE__ );
+    Log3( $Name, 5, "$Name MSwitch_toggle 2:  $2 " . __LINE__ );
+    Log3( $Name, 5, "$Name MSwitch_toggle 3:  $3 " . __LINE__ );
+    Log3( $Name, 5, "$Name MSwitch_toggle 4:  $4 " . __LINE__ );
 
-    my $cmd1 = $1 . " " . $2 . " " . $4;
-    my $cmd2 = $1 . " " . $2 . " " . $5;
-
-    my $chk1 = $4;
-    my $chk2 = $5;
-
-    my $testnew = ReadingsVal( $2, 'state', 'undef' );
-
-    if    ( $testnew eq $chk1 ) { $cmds = $cmd2 }
-    elsif ( $testnew eq $chk2 ) { $cmds = $cmd1 }
-    else                        { $cmds = $cmd1 }
-
-    Log3( $Name, 5, "$Name MSwitch_toggle: testnew -> $testnew " . __LINE__ );
+	
+	my @tcmd=  split( /\//, $4 );
+	if (!defined $tcmd[2] ){$tcmd[2]='state'};
+	
+	if (!defined $tcmd[3] ){$tcmd[3]=$tcmd[0]};
+	if (!defined $tcmd[4] ){$tcmd[4]=$tcmd[1]};
+	
+	Log3( $Name, 5, "$Name MSwitch_toggle cmd0:  $tcmd[0] " . __LINE__ );
+	Log3( $Name, 5, "$Name MSwitch_toggle cmd1:  $tcmd[1] " . __LINE__ );
+	Log3( $Name, 5, "$Name MSwitch_toggle cmd2:  $tcmd[2] " . __LINE__ );
+	Log3( $Name, 5, "$Name MSwitch_toggle cmd3:  $tcmd[3] " . __LINE__ );
+	Log3( $Name, 5, "$Name MSwitch_toggle cmd4:  $tcmd[4] " . __LINE__ );
+		
+		
+		
+    my $cmd1 = $1 . " " . $2 . " " . $tcmd[0];
+    my $cmd2 = $1 . " " . $2 . " " . $tcmd[1];
+	
     Log3( $Name, 5, "$Name MSwitch_toggle: cmd1 -> $cmd1 " . __LINE__ );
     Log3( $Name, 5, "$Name MSwitch_toggle: cmd2 -> $cmd2 " . __LINE__ );
+	
+    my $chk1 = $tcmd[0];
+    my $chk2 = $tcmd[1];
+
+    my $testnew = ReadingsVal( $2, $tcmd[2], 'undef' );
+	Log3( $Name, 5, "$Name MSwitch_toggle: test reading $tcmd[2] -> $testnew " . __LINE__ );
+	
+	
+	
+    if    ( $testnew =~ m/$tcmd[3]/ )
+	{ 
+	$cmds = $cmd2 ;
+	}
+    elsif 
+	( $testnew =~ m/$tcmd[4]/ ) 
+	{ 
+	$cmds = $cmd1 ;
+	}
+    else
+	{
+	$cmds = $cmd1;
+	}
+
+    
+
     Log3( $Name, 5, "$Name MSwitch_toggle: neuer befehl -> $cmds " . __LINE__ );
 
     return $cmds;
+	
+	
+	
+	
+	
 }
 
 ########################################
@@ -4617,7 +4683,7 @@ sub MSwitch_backup_this($) {
                 Log3( $Name, 5, " no write reading $1 " );
             }
             else {
-                Log3( $Name, 0, " write reading $hash, $1, $2, 0 " );
+                Log3( $Name, 5, " write reading $hash, $1, $2, 0 " );
                 readingsSingleUpdate( $hash, "$1", $2, 0 );
             }
         }
@@ -4747,18 +4813,18 @@ sub MSwitch_saveconf($$) {
 
     my ( $hash, $cont ) = @_;
     my $name = $hash->{NAME};
-    Log3( $name, 0, "$name $cont  saveconfig reached L:" . __LINE__ );
+    Log3( $name, 5, "$name $cont  saveconfig reached L:" . __LINE__ );
 
     my @found = split( /\[nl\]/, $cont );
     foreach (@found) {
-        Log3( $name, 0, "$_  . L:" . __LINE__ );
+        Log3( $name, 5, "$_  . L:" . __LINE__ );
         if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
         {
             if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
-                Log3( $name, 0, " no write reading $1 " );
+                Log3( $name, 5, " no write reading $1 " );
             }
             else {
-                Log3( $name, 0, " write reading $1 -> $2 " );
+                Log3( $name, 5, " write reading $1 -> $2 " );
                 readingsSingleUpdate( $hash, "$1", $2, 0 );
             }
         }
