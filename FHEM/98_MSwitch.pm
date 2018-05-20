@@ -4567,23 +4567,63 @@ sub MSwitch_checktrigger(@) {
     my $answer  = 'wahr';
     my $count   = 0;
   LOOP44: foreach (@trigger) {
+  
+  Log3( $ownName, 5, "Trigger: $_  . L:" . __LINE__ );
+  
+  
         my $test = $_;
         if ( $test =~ m/(.*)\((.*)\)(.*)/ ) {
             my $var1new = $1;
             my $var2new = $2;
-            my $var3new = $3;
+			
+			my $var3new = $3;
+			
+			Log3( $ownName, 5, "Trigger: var2new  $var2new  . L:" . __LINE__ );
+			
+			if ( $test =~ m/\// ) 
+			{
+			 Log3( $ownName, 5, "Trigger: var2new  FOUND STRING  . L:" . __LINE__ );
+			
+            
             $var2new =~ s/\//|/g;
+			
+			Log3( $ownName, 5, "Trigger: var1new  $var1new . L:" . __LINE__ );
+			Log3( $ownName, 5, "Trigger: var2new  $var2new  . L:" . __LINE__ );
+			Log3( $ownName, 5, "Trigger: var3new  $var3new  . L:" . __LINE__ );
+			#Log3( $ownName, 5, "Trigger: var1new nicht wahr] . L:" . __LINE__ );
+
+			
+			
             $_ = $var1new . "(" . $var2new . ")" . $var3new;
+			
+			}
+			else
+			{
+			 Log3( $ownName, 5, "Trigger: var2new  NOT FOUND STRING  . L:" . __LINE__ );
+			 }
+			
         }
-        if ( $eventsplit[$count] =~ m/^$_$/i ) {
+		
+Log3( $ownName, 5, "Trigger: $_  . L:" . __LINE__ );	
+Log3( $ownName, 5, "Trigger: $  . L:" . __LINE__ );	
+Log3( $ownName, 5, "Trigger: $eventsplit[$count] . L:" . __LINE__ );
+		
+		
+       # if ( $eventsplit[$count] =~ m/^$_$/i ) 
+	   if ( $eventsplit[$count] =~ m/^$_$/i || $eventsplit[$count] eq $_ )
+	   {
             $answer = 'wahr';
+			Log3( $ownName, 5, "Trigger-$_-$eventsplit[$count]-: wahr . L:" . __LINE__ );
         }
         else {
+		
             $answer = 'unwahr';
+			Log3( $ownName, 5, "Trigger -$_-$eventsplit[$count]-: nicht wahr . L:" . __LINE__ );
             last LOOP44;
         }
         $count++;
     }
+	
     return 'on'
       if $zweig eq 'on'
       && $answer eq 'wahr'
