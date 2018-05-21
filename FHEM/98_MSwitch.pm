@@ -61,7 +61,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = '1.43';
+my $version = '1.44';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -1529,11 +1529,11 @@ sub MSwitch_Notify($$) {
     my $triggercmdon  = ReadingsVal( $ownName, '.Trigger_cmd_on',  '' );
     my $triggercmdoff = ReadingsVal( $ownName, '.Trigger_cmd_off', '' );
 	
-	if (AttrVal( $ownName, 'MSwitch_Mode', 'Full' ) eq "Notify")
-	{
-	$triggeron ='no_trigger';
-	$triggeroff ='no_trigger';
-	}
+	 if (AttrVal( $ownName, 'MSwitch_Mode', 'Full' ) eq "Notify")
+	 {
+	 $triggeron ='no_trigger';
+	 $triggeroff ='no_trigger';
+	 }
 	
 	if (AttrVal( $ownName, 'MSwitch_Mode', 'Full' ) eq "Toggle")
 	{
@@ -1843,9 +1843,12 @@ sub MSwitch_fhemwebFn($$$$) {
 		if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Notify")
 	{
         readingsSingleUpdate( $hash, "state", 'active', 1 );
+	$triggeroff = "" ;
+	   $triggeron = "" ;
+	  
 	}
 	
-		if (AttrVal( $Name, 'MSwitch_Mode', 'Toggle' ) eq "Notify")
+		if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Toggle")
 	{
        $triggeroff = "" ;
 	   $triggercmdoff = "" ;
@@ -1877,6 +1880,10 @@ sub MSwitch_fhemwebFn($$$$) {
             $optionon = $optionon . "<option value=\"$_\">" . $_ . "</option>";
         }
 
+		
+# Log3( $Name, 0, "$Name MSwitch_testregex:  -$_-  " );
+ #Log3( $Name, 0, "$Name MSwitch_testregex:  -$triggercmdon-  " );		
+		
         if ( $triggercmdon eq $_ ) {
             $optioncmdon =
                 $optioncmdon
@@ -1889,7 +1896,7 @@ sub MSwitch_fhemwebFn($$$$) {
             $optioncmdon =
               $optioncmdon . "<option value=\"$_\">" . $_ . "</option>";
         }
-
+#Log3( $Name, 0, "$optioncmdon  " );
         ####################  nur bei entsprechender regex
         Log3( $Name, 5, "$Name MSwitch_testregex: $_  " );
         my $test = $_;
@@ -2829,19 +2836,19 @@ devices += ',';
 		
 if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Notify") 
 {		
-$displaynot="style='display:none;'";
-$inhalt ="execute 'on' commands at :";
+ $displaynot="style='display:none;'";
+ $inhalt ="execute 'on' commands at :";
 $inhalt1 ="execute 'off' commands at :";
 $inhalt2 ="execute 'on' commands";
-$inhalt3 ="execute 'off' commands";
+ $inhalt3 ="execute 'off' commands";
 
 }
 
 if (AttrVal( $Name, 'MSwitch_Mode', 'Full' ) eq "Toggle") 
 {		
 $displayntog="style='display:none;'";
-$inhalt4 ="toggle $Name + execute command at :";
-$inhalt5 ="toggle $Name + execute commands";
+ $inhalt4 ="toggle $Name + execute command at :";
+ $inhalt5 ="toggle $Name + execute commands";
 }	
 	
     $ret = $ret . "</td>
