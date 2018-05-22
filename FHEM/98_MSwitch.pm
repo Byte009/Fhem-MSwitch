@@ -869,7 +869,7 @@ if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
           ; # formfelder für geräte durch | getrennt , devices durch komma getrennt
 		  
 		  
-		Log3( $name, 0, "args[0] -> $args[0] L:". __LINE__ );
+		Log3( $name, 5, "args[0] -> $args[0] L:". __LINE__ );
 		  
 		  
         my $counter     = 0;
@@ -3490,16 +3490,16 @@ sub MSwitch_makeCmdHash($) {
         my @detailarray = split( /,/, $_ )
           ;    #enthält daten 0-5 0 - name 1-5 daten 7 und9 sind zeitangaben
         ## ersetzung für delayangaben
-        Log3( $Name, 0, "MSwitch_makeCmdHash: @detailarray L:" . __LINE__ );
+        Log3( $Name, 5, "MSwitch_makeCmdHash: @detailarray L:" . __LINE__ );
 
-		Log3( $Name, 0, "MSwitch_makeCmdHash: 3 $detailarray[3] L:" . __LINE__ );
-			Log3( $Name, 0, "MSwitch_makeCmdHash: 4 $detailarray[4] L:" . __LINE__ );
+		Log3( $Name, 5, "MSwitch_makeCmdHash: 3 $detailarray[3] L:" . __LINE__ );
+			Log3( $Name, 5, "MSwitch_makeCmdHash: 4 $detailarray[4] L:" . __LINE__ );
 	
 		$detailarray[3] =~ s/##/,/g;
 		$detailarray[4] =~ s/##/,/g;
 		
-			Log3( $Name, 0, "MSwitch_makeCmdHash: 3 $detailarray[3] L:" . __LINE__ );
-			Log3( $Name, 0, "MSwitch_makeCmdHash: 4 $detailarray[4] L:" . __LINE__ );
+			Log3( $Name, 5, "MSwitch_makeCmdHash: 3 $detailarray[3] L:" . __LINE__ );
+			Log3( $Name, 5, "MSwitch_makeCmdHash: 4 $detailarray[4] L:" . __LINE__ );
 		
         my $key = '';
 
