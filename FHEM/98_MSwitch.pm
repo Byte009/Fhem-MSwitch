@@ -858,7 +858,7 @@ if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
         }
         return;
     }
-
+#####################################################################################
     # setze devices details
     if ( $cmd eq "details" ) {
         $args[0] = urlDecode( $args[0] );
@@ -869,7 +869,7 @@ if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
           ; # formfelder für geräte durch | getrennt , devices durch komma getrennt
 		  
 		  
-		          Log3( $name, 5, "args[0] -> $args[0] L:". __LINE__ );
+		Log3( $name, 0, "args[0] -> $args[0] L:". __LINE__ );
 		  
 		  
         my $counter     = 0;
@@ -948,6 +948,11 @@ if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
       qw(_on _off _onarg _offarg _playback _record _timeon _timeoff _conditionon _conditionoff);
     my @testdetailsstandart =
       ( 'no_action', 'no:action', '', '', 'nein', 'nein', 0, 0, '', '' );
+	  
+	  
+	  
+	  
+	  
     if ( $cmd eq "on" ) {
         ### ausführen des on befehls
         my @cmdpool;    # beinhaltet alle befehle die ausgeführt werden müssen
@@ -1066,6 +1071,10 @@ if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
                             $conditionkey = 'nocheck';
                         }
 
+						
+						
+						$cs =~ s/,/##/g;
+						
                         my $msg =
                             $cs . ","
                           . $name . ","
@@ -1206,7 +1215,7 @@ if (AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify")
                         {
                             $conditionkey = 'nocheck';
                         }
-
+$cs =~ s/,/##/g;
                         my $msg =
                             $cs . ","
                           . $name . ","
@@ -1299,31 +1308,24 @@ Log3( $Name, 5, "$Name MSwitch_Exec_Notif:Repeater $devicedetails{ $device . '_r
 	 }
 }					
 	# ########################################	
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+	 Log3( $Name, 5, "$Name Command: $cmds". __LINE__ );
+	 
+	 ############################
+	 if ( $cmds =~ m/{.*}/ )
+	 {
+	 eval($cmds);
+	 if($@) { Log3( $Name, 1,
+                "$Name MSwitch_Set: ERROR $cmds: $@ " . __LINE__ );}
+	 }
+	 else
+	 {
         my $errors = AnalyzeCommandChain( undef, $cmds );
         if ( defined($errors) ) {
             Log3( $Name, 1,
                 "$Name MSwitch_Set: ERROR $cmds: $errors " . __LINE__ );
         }
+	}	
+	#############################		
     }
     my $showpool = join( ',', @cmdpool );
     readingsSingleUpdate( $hash, "Exec_cmd", $showpool, 1 ) if $showpool ne '';
@@ -2687,7 +2689,12 @@ $detailhtml = $detailhtml . "<tr $rephide class='even'>
 devices += \$(\"[name=cmdon$_]\").val()+'|';
 devices += \$(\"[name=cmdoff$_]\").val()+'|';
 change = \$(\"[name=cmdonopt$_]\").val();
+
 change1 = change.replace(/ /g,'~');
+change1 = change.replace(/,/g,'##');
+
+
+
 change1 =  encodeURIComponent(change1);
 devices += change1+'|';;
 change = \$(\"[name=cmdoffopt$_]\").val();
@@ -2735,6 +2742,10 @@ devices += \$(\"[name=repeattime$_]\").val();
 
 
 devices += ',';
+
+
+//alert(devices);
+//return;
 ";
         }
 ####################
@@ -3174,7 +3185,7 @@ if (from == 'condition'){
 text = 'Hier kann die Angabe von Bedingungen erfolgen, die erfüllt sein müssen um den Schaltbefehl auszuführen.<br>Diese Bedingunge sind eng an DOIF- Bedingungen angelehnt.<br><br>Zeitabhängiges schalten: [19.10-23:00] - Schaltbefehl erfolgt nur in angegebenem Zeitraum<br>Readingabhängiges schalten [Devicename:Reading] =/>/< X oder [Devicename:Reading] eq \"x\" - Schaltbefehl erfolgt nur bei erfüllter Bedingung.<br>Achtung! Bei der Abfrage von Readings nach Strings ( on,off,etc. ) ist statt \"=\" \"eq\" zu nutzen und der String muss in \"x\" gesetzt werden!<br> Die Kombination mehrerer Bedingungen und Zeiten ist durch AND oder OR möglich:<br> [19.10-23:00] AND [Devicename:Reading] = 10 - beide Bedingungen müssen erfüllt sein<br>[19.10-23:00] OR [Devicename:Reading] = 10 - eine der Bedingungen muss erfüllt sein.<br>Es ist auf korrekte Eingabe der Leerzeichen zu achten.<br><br>sunset - Bedingungen werden mit zusätzlichen {} eingefügt z.B. : [{ sunset() }-23:00].<br><br>Variable \$we:<br>Die globlae Variable \$we ist nutzbar und muss {} gesetzt werden .<br>{ !\$we } löst den Schaltvorgang nur Werktagen aus<br>{ \$we } löst den Schaltvorgang nur Wochenenden, Feiertagen aus<br><br>Soll nur an bestimmten Wochentagen geschaltet werden, muss eine Zeitangsbe gemacht werden und durch z.B. |135 ergänzt werden.<br>[10:00-11:00|13] würde den Schaltvorgang z.B nur Montag und Mitwoch zwischen 10 uhr und 11 uhr auslösen. Hierbei zählen die Wochentage von 1-7 für Montag-Sonntag.<br>Achtung: Bei Anwendung der geschweiften Klammern zur einletung eines Perlasdrucks ist unbedingt auf die Leerzeichen hinter und vor der Klammer zu achten !<br>Überschreitet die Zeitangabe die Tagesgrenze (24.00 Uhr ), so gelten die angegebenen Tage noch bis zum ende der angegebenen Schaltzeit , d.H. es würde auch am Mitwoch noch der schaltvorgang erfolgen, obwohl als Tagesvorgabe Dienstag gesetzt wurde.<br><br>\$EVENT Variable: Die Variable EVENT enthält den auslösenden Trigger, d.H. es kann eine Reaktion in direkter Abhängigkeit zum auslösenden Trigger erfolgen.<br>[\$EVENT] eq \"state:on\" würde den Kommandozweig nur dann ausführen, wenn der auslösende Trigger \"state:on\" war.<br>Wichtig ist dieses, wenn bei den Triggerdetails nicht schon auf ein bestimmtes Event getriggert wird, sondern hier durch die Nutzung eines wildcards (*) auf alle Events getriggert wird, oder auf alle Events eines Readings z.B. (state:*)<br><br>Bei eingestellter Delayfunktion werden die Bedingungen erst nach Ablauf des Delay geprüft, d.H hiermit sind verzögerte Ein-, und Ausschaltbefehle möglich die z.B Nachlauffunktionen oder verzögerte Einschaltfunktionen ermöglichen, die sich selbst überprüfen. z.B. [wenn Licht im Bad an -> schalte Lüfter 2 Min später an -> nur wenn Licht im Bad noch an ist]';}
 				   
 if (from == 'onoff'){
-text = 'Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.<br>Bei angebotenen Zusatzfeldern kann ein Verweis auf ein Reading eines anderen Devices gesetzt werden mit [Device:Reading].<br>\$NAME wird ersetzt durch den Namen des triggernden Devices.';}
+text = 'Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.<br>Bei angebotenen Zusatzfeldern kann ein Verweis auf ein Reading eines anderen Devices gesetzt werden mit [Device:Reading].<br>\$NAME wird ersetzt durch den Namen des triggernden Devices.<br><br>Bei Nutzung von FreeCmd kann hier entweder reiner FhemCode, oder reiner Perlcode verwendet werden. Perlcode muss mit geschweiften Klammern beginnen und enden. Das Mischen beider Codes ist nicht zulässig.';}
 				   
 if (from == 'playback'){
 text = 'Diese Funktion ist noch nicht verfügbar ';}
@@ -3479,8 +3490,17 @@ sub MSwitch_makeCmdHash($) {
         my @detailarray = split( /,/, $_ )
           ;    #enthält daten 0-5 0 - name 1-5 daten 7 und9 sind zeitangaben
         ## ersetzung für delayangaben
-        Log3( $Name, 5, "MSwitch_makeCmdHash: @detailarray L:" . __LINE__ );
+        Log3( $Name, 0, "MSwitch_makeCmdHash: @detailarray L:" . __LINE__ );
 
+		Log3( $Name, 0, "MSwitch_makeCmdHash: 3 $detailarray[3] L:" . __LINE__ );
+			Log3( $Name, 0, "MSwitch_makeCmdHash: 4 $detailarray[4] L:" . __LINE__ );
+	
+		$detailarray[3] =~ s/##/,/g;
+		$detailarray[4] =~ s/##/,/g;
+		
+			Log3( $Name, 0, "MSwitch_makeCmdHash: 3 $detailarray[3] L:" . __LINE__ );
+			Log3( $Name, 0, "MSwitch_makeCmdHash: 4 $detailarray[4] L:" . __LINE__ );
+		
         my $key = '';
 
         my $testtimestroff = $detailarray[7];
@@ -3722,15 +3742,12 @@ my $toggle ='';
 
 					# 
 ######################################			
-#Log3( $name, 0, "$name MSwitch_Exec_Notif:Repeater $devicedetails{ $device . '_repeatcount'} " . __LINE__ );
-#Log3( $name, 0, "$name MSwitch_Exec_Notif:Repeater $devicedetails{ $device . '_repeattime'} " . __LINE__ );	
+
 
 if ( AttrVal( $name, 'MSwitch_Expert', "0" ) eq '1' && $devicedetails{ $device . '_repeatcount'} > 0 && $devicedetails{ $device . '_repeattime'} > 0)
 {
 
-#Log3( $name, 0, "$name MSwitch_Exec_Notif:Repeater found " . __LINE__ );
-#Log3( $name, 0, "$name MSwitch_Exec_Notif: ".gettimeofday()  . __LINE__ );
-#Log3( $name, 0, "$name MSwitch_Exec_Notif: ".localtime  . __LINE__ );
+
 
 my $i;
 for ( $i = 0 ; $i <= $devicedetails{ $device . '_repeatcount'} ; $i++ ) 
@@ -3750,11 +3767,30 @@ for ( $i = 0 ; $i <= $devicedetails{ $device . '_repeatcount'} ; $i++ )
 	########################################				
 					
 					
+					
+					
+			############################
+	 if ( $cs =~ m/{.*}/ )
+	 {
+	 eval($cs);
+	 if($@) { Log3( $name, 1,
+                "$name MSwitch_Set: ERROR $cs: $@ " . __LINE__ );}
+	 }
+	 else
+	 {
+        my $errors = AnalyzeCommandChain( undef, $cs );
+		if ( defined($errors) ) {
+       Log3( $name, 1,"$name Absent_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs");
+        }
+	}	
+#############################			
+
+		
 				
-                    my $errors = AnalyzeCommandChain( undef, $cs );
-                    if ( defined($errors) ) {
-                        Log3( $name, 1,"$name Absent_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs");
-                    }
+                   #  my $errors = AnalyzeCommandChain( undef, $cs );
+                     #if ( defined($errors) ) {
+                     #   Log3( $name, 1,"$name Absent_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs");
+                     #}
                     my $msg = $cs;
                     readingsSingleUpdate( $hash, "Exec_cmd", $msg, 1 ) if $msg ne '';
                     ############
@@ -3777,7 +3813,7 @@ for ( $i = 0 ; $i <= $devicedetails{ $device . '_repeatcount'} ; $i++ )
                 if ( $delayinhalt eq 'at1' || $delayinhalt eq 'delay0' ) {
                     $conditionkey = "nocheck";
                 }
-
+$cs =~ s/,/##/g;
                 my $msg = $cs . ",". $name . ",". $conditionkey . ",". $event . ",". $timecond  . ",". $device;
                 $hash->{helper}{timer}{$msg} = $timecond;
                 Log3( $name, 5, "$name MSwitch_Notif: Timer wird gesetzt -> $cs ". __LINE__ );
@@ -3857,8 +3893,14 @@ sub MSwitch_Filter_Trigger($) {
 sub MSwitch_Restartcmd($) {
     my $incomming     = $_[0];
     my @msgarray      = split( /,/, $incomming );
+	
+	
+	
+	
+	
     my $name          = $msgarray[1];
     my $cs            = $msgarray[0];
+	$cs =~ s/##/,/g;
     my $conditionkey  = $msgarray[2];
     my $event         = $msgarray[2];
 	my $device        = $msgarray[5];
@@ -3946,18 +3988,37 @@ for ( $i = 0 ; $i <= $devicedetails{ $device . '_repeatcount'} ; $i++ )
 		
 		
 		
-		
-		
-		
-		
-		
-		
-		
-		
+	 ############################
+	 if ( $cs =~ m/{.*}/ )
+	 {
+	 
+	 Log3( $name, 5,"$name MSwitch_Restartcmd :found perlcode - $cs ". __LINE__ );
+	 eval($cs);
+	 if($@) { Log3( $name, 1,
+                "$name MSwitch_Set: ERROR $cs: $@ " . __LINE__ );}
+	 }
+	 else
+	 {
+	 
+	 Log3( $name, 5,"$name MSwitch_Restartcmd :found fhemcode - $cs ". __LINE__ );
+	 
         my $errors = AnalyzeCommandChain( undef, $cs );
-        if ( defined($errors) ) {
-            Log3( $name, 1,"$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors ". __LINE__ );
+		if ( defined($errors) ) {
+       Log3( $name, 1,"$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors ". __LINE__ );
         }
+	}	
+	#############################	
+		
+		
+		
+		
+		
+		
+		
+        # my $errors = AnalyzeCommandChain( undef, $cs );
+        # if ( defined($errors) ) {
+            # Log3( $name, 1,"$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors ". __LINE__ );
+        # }
         readingsSingleUpdate( $hash, "Exec_cmd", $cs, 1 ) if $cs ne '';
     }
 	#return;
