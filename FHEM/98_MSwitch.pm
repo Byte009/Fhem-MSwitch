@@ -67,7 +67,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.5';
+my $version = 'V1.51';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -101,6 +101,7 @@ sub MSwitch_Execute_randomtimer($);
 sub MSwitch_Clear_timer($);
 sub MSwitch_Createnumber($);
 sub MSwitch_Createnumber1($);
+sub MSwitch_Savemode($);
 #sub MSwitch_Notify($$);
 
 
@@ -166,8 +167,11 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Condition_Time:0,1"
       . "  MSwitch_RandomTime"
       . "  MSwitch_RandomNumber"
+	  . "  MSwitch_Safemode:0,1"
       . "  MSwitch_Wait";
 
+	  
+	  
     $hash->{FW_addDetailToSummary} = 0;
 }
 ####################
@@ -977,7 +981,7 @@ if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1
 	
 
 	
-	
+	MSwitch_Safemode($hash);
 	
         ### ausführen des on befehls
         my @cmdpool;    # beinhaltet alle befehle die ausgeführt werden müssen
@@ -1142,7 +1146,7 @@ if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1
 	
 	
 	
-	
+	MSwitch_Safemode($hash);
 	
 	
 	
@@ -1439,6 +1443,18 @@ sub MSwitch_Attr(@) {
     if ( $cmd eq 'set' && $aName eq 'disable' && $aVal == 1 ) {
         $hash->{NOTIFYDEV} = 'no_trigger';
     }
+	
+	
+	 if (   $cmd eq 'set' && $aName eq 'disable' && $aVal == 0 )
+    {
+	delete( $hash->{helper}{savemodeblock} );
+	delete( $hash->{READINGS}{Safemode} );
+		
+	}
+	
+	
+	
+	
     if (   $cmd eq 'set'
         && $aName eq 'disable'
         && $aVal == 0
@@ -1523,6 +1539,8 @@ sub MSwitch_Notify($$) {
     my ( $own_hash, $dev_hash ) = @_;
     my $ownName = $own_hash->{NAME};    # own name / hash
 
+	return "" if ( IsDisabled($ownName) );    # Return without any further action if the module is disabled
+	MSwitch_Safemode($own_hash);
 	
 	if ( AttrVal( $ownName, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1($own_hash);}
 	
@@ -1530,9 +1548,7 @@ sub MSwitch_Notify($$) {
 	
     my @cmdarray;
     my @cmdarray1;    #enthält auszuführende befehle nach conditiontest
-    return ""
-      if ( IsDisabled($ownName) )
-      ;    # Return without any further action if the module is disabled
+    
 
     ## teste auf waiting
     my $testwait = ReadingsVal( $ownName, "waiting", '0' );
@@ -2357,6 +2373,8 @@ sub MSwitch_fhemwebFn($$$$) {
               if AttrVal( $devicenamet, 'alias', "no" ) ne "no";
 
             ## block on
+			
+			
             $detailhtml = $detailhtml . "
 			<tr class='odd'>
 			<td colspan='5' class='col1'>$devicenamet&nbsp&nbsp;&nbsp;$dalias
@@ -2860,10 +2878,41 @@ devices += ',';
         $timeononly  = substr( $triggertimes[2], 6 );
         $timeoffonly = substr( $triggertimes[3], 7 );
     }
-    my $ret .=
-"<p id=\"triggerdevice\"><table class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}'>
-	<tr class=\"even\">
-	<td colspan=\"3\" id =\"savetrigger\">trigger device/time:&nbsp;&nbsp;&nbsp;";
+	
+	
+	
+	my $ret ='';
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+    $ret .=
+"<p id=\"triggerdevice\">";
+
+
+ 	########################
+			
+			if ($hash->{helper}{savemodeblock}{blocking} eq 'on'){
+			 $ret .="<table class='block wide' id='MSwitchWebTR'>
+			<tr class='even'>
+			<td>ACHTUNG: Das Device wurde aufgrund des Safemodes automatisch deaktiviert ( ATTR 'disable') !
+			</td></tr></table><br>&nbsp;<br>
+			";
+			}
+			####################
+
+ $ret .="<table class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}'>";
+ 
+
+ 
+ $ret .="	<tr class=\"even\">
+	<td colspan=\"3\" id =\"savetrigger\">trigger  device/time:&nbsp;&nbsp;&nbsp;";
     if ( AttrVal( $Name, 'MSwitch_Help', "0" ) eq '1' ) {
         $ret = $ret
           . "<input name='info' type='button' value='?' onclick=\"javascript: info('trigger')\">";
@@ -5514,6 +5563,54 @@ sub MSwitch_Createnumber($) {
 			
 	}
 
+	
+	###############################	
+	
+	sub MSwitch_Safemode($) {
+    my ($hash) = @_;
+    my $Name = $hash->{NAME};
+	if (AttrVal( $Name, 'MSwitch_Safemode', '0' ) == 0){ return;}
+	my $time = gettimeofday();
+	
+	
+	$time =~ s/\.//g;
+	
+	
+	#$time = substr($time,0,10);
+	
+	$hash->{helper}{savemode}{$time} =$time;
+	
+	
+	my $count =0;
+		my $timehash = $hash->{helper}{savemode};
+		foreach my $a ( keys %{$timehash} ) 
+			{
+			$count++;
+			
+			#
+			if ($a < $time-1000000)  # für 10 sekunden
+				{
+				delete( $hash->{helper}{savemode}{$a} );
+				$count = $count-1;
+				}
+			}
+	if ($count >10)
+		{
+		
+		
+		Log3( $Name, 0, "Das Device ".$Name." wurde automatisch deaktiviert ( Safemode )" );
+		
+		$hash->{helper}{savemodeblock}{blocking} ='on';
+		readingsSingleUpdate( $hash, "Safemode", 'on', 1 );  
+		$attr{$Name}{disable}       = '1'; 
+		  
+		#exit;
+		}
+	
+	return;	
+	
+	
+	}
 
 =pod
 =item device
