@@ -5532,8 +5532,7 @@ sub MSwitch_backup_this($) {
 sub MSwitch_Getconfig($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-   # my @areadings =
-      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state);
+ 
 
 	  
 	  my @areadings =
