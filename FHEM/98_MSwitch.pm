@@ -4362,7 +4362,7 @@ sub MSwitch_checkcondition($$$) {
     my $searchstring;
     $x = 0;
     while ( $condition =~
-m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9]{0,30}:[a-zA-Z0-9]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9]{0,30}:[a-zA-Z0-9]{0,30}\]\])(.*)?/
+m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]\])(.*)?/
       )
     {
         my $firstpart = $1;
@@ -4377,7 +4377,7 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9]{0,30}:[a-zA-Z0-9]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9]{
 
         # Searchstring -> [[t1:state]-[t2:state]]
         while ( $searchstring =~
-            m/(.*?)(\[[a-zA-Z][a-zA-Z0-9]{0,30}:[a-zA-Z0-9]{0,30}\])(.*)?/ )
+            m/(.*?)(\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\])(.*)?/ )
         {
             my $read1           = '';
             my $firstpart       = $1;
