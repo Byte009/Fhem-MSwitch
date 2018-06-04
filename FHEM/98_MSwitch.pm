@@ -71,7 +71,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.53';
+my $version = 'V1.54';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -462,36 +462,17 @@ sub MSwitch_Define($$) {
     my $name       = $a[0];
     my $devpointer = $name;
     my $devhash    = '';
-	
-   # Log3( $name, 0,"$name". __LINE__ );
+
 	my $old=$hash->{OLDDEF};
 	$old = '' if !defined $old;
-	
-	#Log3( 'test', 0,"OLDDEF ->  $old " );
-	
     $modules{MSwitch}{defptr}{$devpointer} = $hash;
     $hash->{Version} = $version;
     
-
-	
-	
-	
-	if ($init_done)
-	{
-	if ($old ne '')
-	{
-	my $timecond = gettimeofday() + 5;
-    InternalTimer( $timecond, "MSwitch_LoadHelper", $hash);
-    #
+	if ($init_done && $old ne '')
+	 {
+	 my $timecond = gettimeofday() + 5;
+     InternalTimer( $timecond, "MSwitch_LoadHelper", $hash);
 	}
-	else{
-	MSwitch_LoadHelper($hash)  ;
-	}
-	}
-	
-	
-	
-	
     return;
 }
 
@@ -1632,11 +1613,62 @@ sub MSwitch_Notify($$) {
     my $testtoggle = '';
     my ( $own_hash, $dev_hash ) = @_;
     my $ownName = $own_hash->{NAME};    # own name / hash
+	
+	
+	my $devName = $dev_hash->{NAME};
+	my $events = deviceEvents( $dev_hash, 1 );
+	
+	# Log3( $ownName, 0, " $ownName - $events" );
+	# Log3( $ownName, 0, @{$events}[0] );
+	# Log3( $ownName, 0, @{$events}[1] );
+	# Log3( $ownName, 0, @{$events}[2] );MODIFIED
+	
+	
+	if ($init_done && $devName eq "global" && grep( m/^MODIFIED $ownName$/, @{$events} ) )
+     {
+	 Log3( $ownName, 5, 'FOUND MODIFIED' );
+	 #MSwitch_LoadHelper($own_hash);
+	 my $timecond = gettimeofday() + 4;
+	 InternalTimer( $timecond, "MSwitch_LoadHelper", $own_hash);
+	 return;
+     }
 
+	 if ($init_done && $devName eq "global" && grep( m/^DEFINED $ownName$/, @{$events} ) )
+     {
+	 Log3( $ownName, 5, 'FOUND DEFINED' );
+	 #MSwitch_LoadHelper($own_hash);
+	 my $timecond = gettimeofday() + 4;
+	 InternalTimer( $timecond, "MSwitch_LoadHelper", $own_hash);
+	 return;
+     }
+	
+# Device that created the event
+    if ( $devName eq "global" && grep( m/^INITIALIZED|REREADCFG$/, @{$events} ) )
+    {
+	
+	Log3( $ownName, 5, 'FOUND INITIALIZED|REREADCF' );
+     MSwitch_LoadHelper($own_hash);
+	 return;
+    }
+	
+#Log3( $ownName, 0, "aufruf safemode 1545" );
 	return "" if ( IsDisabled($ownName) );    # Return without any further action if the module is disabled
 	
-	# Log3( $ownName, 0, "aufruf safemode 1545" );
+	# 
 	# MSwitch_Safemode($own_hash);
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	 if ( AttrVal( $ownName, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1($own_hash);}
 	
@@ -1658,7 +1690,14 @@ sub MSwitch_Notify($$) {
         delete( $own_hash->{READINGS}{waiting} );
     }
 
-    my $events = deviceEvents( $dev_hash, 1 );
+
+
+	
+	
+	
+	
+	
+	
 
     my $incommingdevice = '';
     if ( defined( $own_hash->{helper}{testevent_device} ) ) {
@@ -1670,16 +1709,7 @@ sub MSwitch_Notify($$) {
     }
     my $triggerdevice = ReadingsVal( $ownName, 'Trigger_device', '' );    # device welches das modul an/aus schaltet
 	
-    my $devName = $dev_hash->{NAME};    # Device that created the event
-	
-	
-	
-    if ( $devName eq "global" && grep( m/^INITIALIZED|REREADCFG$/, @{$events} ) )
-    {
-        MSwitch_LoadHelper($own_hash);
-    }
-	
-	
+
 	
     return if ( !$events );
 
@@ -3606,7 +3636,9 @@ var devicecmd = new Array();
 if (typeof werte[state] === 'undefined') {werte[state]='textField';}
 devicecmd = werte[state].split(\",\");
 if (devicecmd[0] == 'noArg'){noarg(target,copytofield);return;}
-else if (devicecmd[0] == 'slider'){slider(devicecmd[1],devicecmd[2],devicecmd[3],target,copytofield);return;}
+//else if (devicecmd[0] == 'slider'){slider(devicecmd[1],devicecmd[2],devicecmd[3],target,copytofield);return;}
+
+else if (devicecmd[0] == 'slider'){textfield(copytofield,target);return;}
 else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);return;}
 else if (devicecmd[0] == 'textField'){textfield(copytofield,target);return;}
 else if (devicecmd[0] == 'colorpicker'){textfield(copytofield,target);return;}
@@ -3798,11 +3830,14 @@ sub MSwitch_makeCmdHash($) {
     my ($Name) = @_;
 
     # detailsatz in scalar laden
-    my @devicedatails =
-      split( /\|/, ReadingsVal( $Name, '.Device_Affected_Details', 'no_device' ) )
-      ;    #inhalt decice und cmds durch komma getrennt
+	
+	my @devicedatails ;
+	
+	    @devicedatails = split( /\|/, ReadingsVal( $Name, '.Device_Affected_Details', 'no_device' ) ) if defined ReadingsVal( $Name, '.Device_Affected_Details', 'no_device' );    #inhalt decice und cmds durch komma getrennt
   
     my %savedetails;
+
+	
     foreach (@devicedatails) {
         my @detailarray = split( /,/, $_ )
           ;    #enthält daten 0-5 0 - name 1-5 daten 7 und9 sind zeitangaben
