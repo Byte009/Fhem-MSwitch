@@ -1,3 +1,4 @@
+23.06.18 v1.6
 13.06.18 v1.54
 03.06.18 v1.53 change sub MSwitch_Define($$),sub MSwitch_Loedhelper($), change regex
 02.06.18 v1.52 change regex (events) add 'set fakeevent' fix timer-regex
