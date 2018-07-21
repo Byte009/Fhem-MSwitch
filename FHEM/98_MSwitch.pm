@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.62';
+my $version = 'V1.63';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -113,6 +113,7 @@ sub MSwitch_Initialize($) {
     $hash->{NotifyOrderPrefix} = "45-";
     $hash->{AttrList} =
         " disable:0,1"
+		. " disabledForIntervals"
       . "  MSwitch_Help:0,1"
       . "  MSwitch_Debug:0,1,2"
       . "  MSwitch_Expert:0,1"
@@ -1032,13 +1033,8 @@ sub MSwitch_Set($@) {
 	{
 	# setze devices details
 	
-	
-	Log3( $name, 5,"@args[0] ");
-	
-	
     $args[0] = urlDecode( $args[0] );
-	Log3( $name, 5,"@args[0] ");	
-		
+
         chop( $args[0] );
         my @devices =split( /,/, ReadingsVal( $name, '.Device_Affected', '' ) );
         my @inputcmds = split( /,/, $args[0] );# formfelder für geräte durch | getrennt , devices durch komma getrennt
