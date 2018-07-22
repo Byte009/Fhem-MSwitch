@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.64';
+my $version = 'V1.65';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
@@ -4997,6 +4997,13 @@ sub MSwitch_Execute_Timer($) {
     my ( $Name, $timecond, $param ) = split( / /, $input );
     my $hash = $defs{$Name};
 	return "" if ( IsDisabled($Name) );
+	
+	
+	
+	
+	
+	
+	
 	if ( AttrVal( $Name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1($hash);}
     if ( $param eq '5' )
 	{
@@ -5018,6 +5025,17 @@ sub MSwitch_Execute_Timer($) {
         }
     }
 
+	readingsBeginUpdate($hash);
+    readingsBulkUpdate( $hash, "EVENT", $Name.":execute_timer:P".$param );
+	readingsBulkUpdate( $hash, "EVTFULL", $Name.":execute_timer:P".$param );
+	readingsBulkUpdate( $hash, "EVTPART1", $Name );
+	readingsBulkUpdate( $hash, "EVTPART2","execute_timer" );
+	readingsBulkUpdate( $hash, "EVTPART3","P".$param );
+    readingsEndUpdate( $hash, 1 );
+	
+	
+	
+	
     if ( $param eq '1' )
 	{
         my $cs = "set $Name on";
