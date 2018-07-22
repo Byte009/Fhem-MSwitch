@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.65';
+my $version = 'V1.66';
 my $vupdate = 'V 0.3';
 
 sub MSwitch_Checkcond_time($$);
