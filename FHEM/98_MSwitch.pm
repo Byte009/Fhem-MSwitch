@@ -4748,6 +4748,37 @@ sub MSwitch_Createtimer($) {
     $condition =~ s/$key//ig;
     $key = 'ly';
     $condition =~ s/$key//ig;
+	
+	#Log3( $Name, 0, "$condition" . __LINE__ );
+	
+	my $x =0;
+	  while ($condition =~ m/(.*).{(.*)}.(.*)/ )
+    {
+        $x++;    # notausstieg
+        last if $x > 20;    # notausstieg
+        if ( defined $2 )
+		{
+		#Log3( $Name, 0, "$2 " . __LINE__ );
+		
+		
+		my $part2 = "[".substr( (eval $2)  , 0, 5 )."]";
+		
+		
+		my $test = substr( (eval $2)  , 0, 2 ) *1;
+		
+		#Log3( $Name, 0, "$test " . __LINE__ );
+		$part2 ="" if $test > 23 ;
+		
+		#Log3( $Name, 0, "$part2 " . __LINE__ );
+		
+		$condition = $1.$part2.$3;
+		
+        }
+    }
+	
+	#Log3( $Name, 0, "$condition " . __LINE__ );
+	
+	
     my @timer = split /~/, $condition;
 
     $timer[0] = '' if ( !defined $timer[0] );
@@ -4769,6 +4800,18 @@ sub MSwitch_Createtimer($) {
         $timer[3] = '';
     }
 
+	
+	#Log3( $Name, 0, "$timer[0]" . __LINE__ );
+	#Log3( $Name, 0, "$timer[1]" . __LINE__ );
+	#Log3( $Name, 0, "$timer[2]" . __LINE__ );
+	#Log3( $Name, 0, "$timer[3]" . __LINE__ );
+	
+	
+	
+	
+	
+	
+	
     my $akttimestamp = TimeNow();
 
     my ( $aktdate, $akttime ) = split / /, $akttimestamp;
@@ -4883,6 +4926,24 @@ sub MSwitch_Createtimer($) {
             }
 
             $time = $time . ':00';
+			
+			#Log3( $Name, 0, substr( $time, 0, 2 )." " . __LINE__ );
+			#Log3( $Name, 0, substr( $time, 3, 2 )." " . __LINE__ );
+			#Log3( $Name, 0, substr( $time, 6, 2 )." " . __LINE__ );
+			
+			#if (substr( $time, 0, 2 ) > 23)
+			#{
+			#Log3( $Name, 1, substr( $time, 0, 2 )."ERROR: wrong timespec at comand (at) - $time");
+			#}
+			
+			if ( $time !~ m/(.*[0-2][0-3]):(.*[0-6][0-9]):(.*[0-6][0-9])/ )
+			{
+			Log3( $Name, 1,"ERROR: wrong timespec at comand (at) - $time");
+			return;
+			}
+			
+			
+			
             my $timecond = timelocal( substr( $time, 6, 2 ),substr( $time, 3, 2 ),substr( $time, 0, 2 ),$date, $aktmonth, $aktyear);
             my $test = FmtDateTime($timecond);
             my $sectowait = $timecond - $jetzt;
@@ -5739,8 +5800,13 @@ sub MSwitch_Createnumber($) {
 #################################################################
 sub MSwitch_EventBulk($$$){
 	my ( $hash, $event, $update ) = @_;
+	
+	
+	
 	my $name = $hash->{NAME};
 	return if !defined $event;
+	return if !defined $hash;
+	if ($hash eq ""){return;}
 	my @evtparts = split( /:/, $event );
 	$update ='1';
 	
