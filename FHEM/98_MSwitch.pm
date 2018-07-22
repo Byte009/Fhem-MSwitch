@@ -3148,12 +3148,27 @@ sub MSwitch_fhemwebFn($$$$) {
 	$blocking =$hash->{helper}{savemodeblock}{blocking} if ( defined $hash->{helper}{savemodeblock}{blocking}) ;
 	if ($blocking eq 'on')
 	{
-		$ret .="<table border='$border' class='block wide' id='MSwitchWebTR'>
+		$ret .="<table border='$border' class='block wide' id=''>
 		<tr class='even'>
 		<td><center>&nbsp;<br>ACHTUNG: Der Safemodus hat eine Endlosschleife erkannt, welche zum Fhemabsturz führen könnte.<br>Dieses Device wurde automatisch deaktiviert ( ATTR 'disable') !<br>&nbsp;
 		</td></tr></table><br>&nbsp;<br>
 		";
 	}
+	
+	my $errortest="";
+	$errortest = $hash->{helper}{error} if ( defined $hash->{helper}{error}) ;
+	
+	if ($errortest ne "")
+	{
+		 $ret .="<table border='$border' class='block wide' id=''>
+		 <tr class='even'>
+		 <td><center>&nbsp;<br>AT-Kommandos können nicht ausgeführt werden !<br>".$errortest."<br>&nbsp;
+		 </td></tr></table><br>&nbsp;<br>
+		 ";
+	}
+	
+	
+	
 ####################
 	$ret .="<table border='$border' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}'>";
 	$ret .="	<tr class=\"even\">
@@ -4935,10 +4950,12 @@ sub MSwitch_Createtimer($) {
 			#{
 			#Log3( $Name, 1, substr( $time, 0, 2 )."ERROR: wrong timespec at comand (at) - $time");
 			#}
-			
-			if ( $time !~ m/(.*[0-2][0-3]):(.*[0-6][0-9]):(.*[0-6][0-9])/ )
+			delete( $hash->{helper}{error} );
+			if ( $time !~ m/([0-2][0-3]|[0-1][0-9]):([0-5][0-9]):([0-5][0-9])/ )
 			{
-			Log3( $Name, 1,"ERROR: wrong timespec at comand (at) - $time");
+			Log3( $Name, 1,"ERROR: ($Name) wrong timespec at comand (at) - $time");
+			
+			$hash->{helper}{error}='Devicefehler erkannt: Ergebniss der AT - Schaltzeiten enthält ein falsches Format. Bitte prüfen. ('.$time.')';
 			return;
 			}
 			
