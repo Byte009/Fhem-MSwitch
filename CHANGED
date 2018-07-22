@@ -1,4 +1,5 @@
-23.06.18 v1.63 add ATTR disabledForIntervals
+22.07.18 v1.64 fix wrong-timespec bug at at-comands (fhem-crash)
+21.07.18 v1.63 add ATTR disabledForIntervals
 23.06.18 v1.62 fix some errors / change freecmd textfield 
 23.06.18 v1.6
 13.06.18 v1.54
