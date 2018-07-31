@@ -1738,7 +1738,7 @@ sub MSwitch_Notify($$) {
 	return "" if ( IsDisabled($ownName) );# Return without any further action if the module is disabled
 	
 	
-	if ( ReadingsVal( $ownName, '.V_Check', '' ) ne $vupdate )
+	if ( ReadingsVal( $ownName, '.V_Check', $vupdate ) ne $vupdate )
 	{
 	my $ver = ReadingsVal( $ownName, '.V_Check', '' );
 	Log3( $ownName, 0, $ownName.' Versionskonflikt, aktion abgebrochen !  erwartet:'.$vupdate.' vorhanden:'.$ver );
@@ -3270,7 +3270,7 @@ sub MSwitch_fhemwebFn($$$$) {
 		 ";
 	}
 	
-	if ( ReadingsVal( $Name, '.V_Check', '' ) ne $vupdate )
+	if ( ReadingsVal( $Name, '.V_Check', $vupdate ) ne $vupdate )
 	{
 	
 	my $ver = ReadingsVal( $Name, '.V_Check', '' );
@@ -4450,7 +4450,7 @@ sub MSwitch_Restartcmd($) {
 	
 	return "" if ( IsDisabled($name) );
 	
-	if ( ReadingsVal( $name, '.V_Check', '' ) ne $vupdate )
+	if ( ReadingsVal( $name, '.V_Check', $vupdate ) ne $vupdate )
 	{
 	my $ver = ReadingsVal( $name, '.V_Check', '' );
 	Log3( $name, 0, $name.' Versionskonflikt, aktion abgebrochen !  erwartet:'.$vupdate.' vorhanden:'.$ver );
@@ -5167,7 +5167,7 @@ sub MSwitch_Execute_Timer($) {
     my $hash = $defs{$Name};
 	return "" if ( IsDisabled($Name) );
 	
-	if ( ReadingsVal( $Name, '.V_Check', '' ) ne $vupdate )
+	if ( ReadingsVal( $Name, '.V_Check', $vupdate ) ne $vupdate )
 	{
 	my $ver = ReadingsVal( $Name, '.V_Check', '' );
 	Log3( $Name, 0, $Name.' Versionskonflikt, aktion abgebrochen !  erwartet:'.$vupdate.' vorhanden:'.$ver );
