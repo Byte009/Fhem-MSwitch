@@ -1,3 +1,4 @@
+31.07.18 v1.67 change all conditions format / change data structure to V 0.5
 22.07.18 v1.66 bugfix timespec regex
 22.07.18 v1.65 add EVENT readings - ececute timer or at-comands
 22.07.18 v1.64 fix wrong-timespec bug at at-comands (fhem-crash)
