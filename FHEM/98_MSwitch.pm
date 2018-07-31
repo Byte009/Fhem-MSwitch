@@ -4550,7 +4550,7 @@ sub MSwitch_checkcondition($$$) {
 	my $hash     = $modules{MSwitch}{defptr}{$name};
 	
 	
-	Log3( $name, 5,"Aufruf Checkcondition - Parameter condition, name, event: $condition, $name, $event ");
+	#Log3( $name, 5,"Aufruf Checkcondition - Parameter condition, name, event: $condition, $name, $event ");
 	
 	
 	
@@ -6032,7 +6032,7 @@ sub MSwitch_Createnumber($) {
 	return;	
 	}
 
-#################################################################
+###############################################################
 sub MSwitch_EventBulk($$$){
 	my ( $hash, $event, $update ) = @_;
 	
@@ -6041,7 +6041,7 @@ sub MSwitch_EventBulk($$$){
 	my $name = $hash->{NAME};
 	
 	
-	Log3( $name, 5, "start bulkupdate $event, $update" );
+	#Log3( $name, 5, "start bulkupdate $event, $update" );
 	
 	
 	return if !defined $event;
