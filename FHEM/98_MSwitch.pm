@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.67';
+my $version = 'V1.68';
 my $vupdate = 'V 0.4';
 
 sub MSwitch_Checkcond_time($$);
@@ -2399,6 +2399,12 @@ sub MSwitch_fhemwebFn($$$$) {
         $usedevices{$a} = 'on';
     }
 	
+	
+	
+	
+	
+	
+	
 	LOOP9: for my $name ( sort keys %defs ) 
 	{
         my $selectedtrigger = '';
@@ -2430,6 +2436,9 @@ sub MSwitch_fhemwebFn($$$$) {
         if ( AttrVal( $Name, 'MSwitch_Include_Devicecmds', "1" ) eq '1' ) 
 		{
             $errors = AnalyzeCommandChain( undef, $cs );
+			
+			#Log3( $name, 0,"CMDSatz $name: - $errors ". __LINE__ ) if $name eq  'XMI_0x000b57fffe9c2c77';
+			#Log3( $name, 0,"CMDSatz $name: - $errors ". __LINE__ ) if $name eq  'Test1';
             if ($errors) { }
         }
         else 
@@ -2440,11 +2449,32 @@ sub MSwitch_fhemwebFn($$$$) {
         if ( !defined $errors ) { $errors = '' }
 		
         my @tmparg = split( /of /, $errors );
-        if ( defined $tmparg[1] && $tmparg[1] ne '' ) { $errors = $tmparg[1]; }
+		
+		if (!defined $tmparg[1]){$tmparg[1]=""};
+        #if ( defined $tmparg[1] && $tmparg[1] ne '' ) { $errors = $tmparg[1]; }
+		if ( $tmparg[1] ne '' ) 
+		{ 
+		$errors = $tmparg[1]; 
+		}
+		else{
+		$errors = ''; 
+		}
+		
+		
+		
+		#Log3( $name, 0,"CMDSatz $name: - $tmparg[1] ". __LINE__ ) if $name eq  'XMI_0x000b57fffe9c2c77';
+		#Log3( $name, 0,"CMDSatz $name: - $tmparg[1] ". __LINE__ ) if $name eq  'Test1';
+		
         $errors = '|' . $errors;
         $errors =~ s/\| //g;
         $errors =~ s/\|//g;
 
+		#Log3( $name, 0,"CMDSatz $name: - $errors ". __LINE__ ) if $name eq  'XMI_0x000b57fffe9c2c77';
+		#Log3( $name, 0,"CMDSatz $name: - $errors ". __LINE__ ) if $name eq  'Test1';
+		
+		
+		
+		
         if ( $errors eq '' && AttrVal( $Name, 'MSwitch_Include_Webcmds', "1" ) eq '1' )
         {
             if ( $devicewebcmd ne "noArg" )
@@ -5565,7 +5595,7 @@ sub MSwitch_VUpdate($) {
 	my $Name = $hash->{NAME};
 	
 	my $test = "";
-	my $test=-e "MSwitch_backup_V03.cfg";
+	$test=-e "MSwitch_backup_V03.cfg";
 	if ($test ne "1")
 	{
 	
