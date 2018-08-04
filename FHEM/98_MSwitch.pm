@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.69';
+my $version = 'V1.70';
 my $vupdate = 'V 0.4';
 
 sub MSwitch_Checkcond_time($$);
@@ -1198,7 +1198,14 @@ sub MSwitch_Set($@) {
                     $cs = "$devicedetails{$device.'_onarg'}";
 						
 				# setmagic
-				$cs =~ s/\n//g;				
+				$cs =~ s/\n//g;
+				
+				$cs =~ s/#\[ti\]/~/g;
+				
+				
+				
+#$cs =~ s/\$EVENT/event/ig;
+				
 				my $x =0;
 				while ( $cs =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) 
 					{
@@ -1373,6 +1380,7 @@ sub MSwitch_Set($@) {
                     $cs = "$devicedetails{$device.'_offarg'}";
 					# setmagic	
 					$cs =~ s/\n//g;
+					$cs =~ s/#\[ti\]/~/g;
 					my $x =0;
 					while ( $cs =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) 
 						{
@@ -1853,7 +1861,7 @@ sub MSwitch_Notify($$) {
 		EVENT: foreach my $event (@eventscopy)
         {
 		# durchlauf für jedes ankommende event
-		Log3( $ownName, 5, "event -> $event" );
+		#Log3( $ownName, 0, "event -> $event" );
             $event = "" if ( !defined($event) );
 			
             $eventcopy = $event;
@@ -1965,9 +1973,19 @@ sub MSwitch_Notify($$) {
 			Log3( $ownName, 5, "testvar -> $testvar" );	
 	
         $anzahl = @cmdarray;
-		$event =~ s/ //ig;    #?
+		
+		
+		
+		readingsSingleUpdate( $own_hash, ".inc_event", $event, 0 );
+		
+		
+		
+		$event =~ s/ //ig;
+		
+		#$event =~ s/ /~/ig;    #?
 		$event =~ s/~/ /g;		#?	
-          
+		
+        #Log3( $ownName, 0, "event -> $event" );
 
 			if ( AttrVal( $ownName, 'MSwitch_Mode', 'Full' ) eq "Notify" and $activecount == 0 ) 
 				{
@@ -1976,14 +1994,19 @@ sub MSwitch_Notify($$) {
 					$activecount = 1;
 				}  
 			 
-				
-				if (ReadingsVal( $ownName, 'last_event', '' ) ne $event && $event ne '' && $anzahl > 0 && $check ==1 && $anzahl > 0)
-				{#Readings aktualisieren, wenn gleiches event nicht schom gesetzt
-				
-				Log3( $ownName, 5, "aufruf bulkupdate" );
-				
-					MSwitch_EventBulk($own_hash ,$event ,'0')
-				}
+			#Readings aktualisieren, wenn gleiches event nicht schom gesetzt	
+			
+			#Log3( $ownName, 0, "anzahl ".$anzahl );
+			#Log3( $ownName, 0, "check ".$check );
+			
+			if (ReadingsVal( $ownName, 'last_event', '' ) ne $event && $event ne '' && $anzahl > 0 && $check ==1 && $anzahl > 0)
+			{	
+			Log3( $ownName, 5, "aufruf bulkupdate ".$event );
+			MSwitch_EventBulk($own_hash ,$event ,'0')
+			} 
+			#else{
+			#MSwitch_EventBulk($own_hash ,$event ,'0')
+			#}
 			
 		# abfrage und setzten von blocking
 		#schalte blocking an , wenn anzahl grösser 0 und MSwitch_Wait gesetzt
@@ -2721,13 +2744,20 @@ sub MSwitch_fhemwebFn($$$$) {
 			
             #$savedetails{ $aktdevice . '_conditionon' } =~ s/~/ /g;
             #$savedetails{ $aktdevice . '_conditionoff' } =~ s/~/ /g;
+			
+			
+			
+			
             $savedetails{ $aktdevice . '_onarg' } =~ s/~/ /g;
             $savedetails{ $aktdevice . '_offarg' } =~ s/~/ /g;
+			
+			$savedetails{ $aktdevice . '_onarg' } =~ s/#\[ti\]/~/g;;
+            $savedetails{ $aktdevice . '_offarg' } =~ s/#\[ti\]/~/g;;
 			
 			$savedetails{ $aktdevice . '_onarg' } =~ s/#\[wa\]/|/g; #neu
             $savedetails{ $aktdevice . '_offarg' } =~ s/#\[wa\]/|/g; #neu
 			
-
+          
 			my $dalias='';
 			if ($devicenamet ne "FreeCmd")
 			{
@@ -3178,12 +3208,14 @@ sub MSwitch_fhemwebFn($$$$) {
 			devices += \$(\"[name=cmdoff$_]\").val()+'|';
 			
 			change = \$(\"[name=cmdonopt$_]\").val();
+			
+			change= change.replace(/~/g,'#[ti]');
 			change = change.replace(/ /g,'~');
 			change = change.replace(/,/g,'#[ko]');
 			
 			//	change = change.replace(/\\./g,'#[pt]');
 			//	change = change.replace(/:/g,'#[dp]');
-			//	change= change.replace(/~/g,'#[ti]');
+			//	
 			//	change = change.replace(/ /g,'#[sp]');
 				change = change.replace(/\\|/g,'#[wa]');
 			
@@ -3191,12 +3223,13 @@ sub MSwitch_fhemwebFn($$$$) {
 			devices += change+'|';;
 
 			change = \$(\"[name=cmdoffopt$_]\").val();
+			change= change.replace(/~/g,'#[ti]');
 			change = change.replace(/ /g,'~');
 			change = change.replace(/,/g,'#[ko]');
 			
 				//change = change.replace(/\\./g,'#[pt]');
 				//change = change.replace(/:/g,'#[dp]');
-				//change= change.replace(/~/g,'#[ti]');
+				//
 				//change = change.replace(/ /g,'#[sp]');
 				change = change.replace(/\\|/g,'#[wa]');
 				
@@ -4049,6 +4082,9 @@ sub MSwitch_makeCmdHash($) {
 		$detailarray[4] =~ s/\[k\]/,/g; #alt
 		$detailarray[3] =~ s/#\[ko\]/,/g; #neu
 		$detailarray[4] =~ s/#\[ko\]/,/g; #neu
+		
+		#$detailarray[3] =~ s/#\[ti\]/~/g;
+		#$detailarray[4] =~ s/#\[ti\]/~/g;
 
         my $key = '';
         my $testtimestroff = $detailarray[7];
@@ -4294,6 +4330,7 @@ sub MSwitch_Exec_Notif($$$$) {
 				
 				# setmagic	
 				$cs =~ s/\n//g;
+				$cs =~ s/#\[ti\]/~/g;
 				my $x =0;
 				while ( $cs =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) 
 					{
