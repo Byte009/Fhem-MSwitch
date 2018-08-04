@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.68';
+my $version = 'V1.69';
 my $vupdate = 'V 0.4';
 
 sub MSwitch_Checkcond_time($$);
@@ -1196,10 +1196,19 @@ sub MSwitch_Set($@) {
                 if ( $devicenamet eq 'FreeCmd' )
 				{
                     $cs = "$devicedetails{$device.'_onarg'}";
-					
-					#Log3( $name, 0,"$cs". __LINE__ );
-					
-					
+						
+				# setmagic
+				$cs =~ s/\n//g;				
+				my $x =0;
+				while ( $cs =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) 
+					{
+					$x++;                        # notausstieg notausstieg
+					last if $x > 20;             # notausstieg notausstieg
+					my $setmagic = ReadingsVal( $2, $3, 0 );
+					$cs = $1.$setmagic.$4;
+					}
+			
+		
                 }
 
                 if ($devicedetails{$timerkey} eq "0"|| $devicedetails{$timerkey} eq "")
@@ -1362,6 +1371,16 @@ sub MSwitch_Set($@) {
                 if ( $devicenamet eq 'FreeCmd' ) 
 				{
                     $cs = "$devicedetails{$device.'_offarg'}";
+					# setmagic	
+					$cs =~ s/\n//g;
+					my $x =0;
+					while ( $cs =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) 
+						{
+						$x++;                        # notausstieg notausstieg
+						last if $x > 20;             # notausstieg notausstieg
+						my $setmagic = ReadingsVal( $2, $3, 0 );
+						$cs = $1.$setmagic.$4;
+						}
                 }
 
                 #my $conditionkey;
@@ -1510,9 +1529,13 @@ Log3( $Name, 5,"schreibe repeat -> $timecond - $msg ". __LINE__ );
 
 		
 		$cmds =~ s/\n//g;
+		
+		#Log3( $Name, 0,"$Name MSwitch_Set: $cmds" . __LINE__ );
         ############################
         if ( $cmds =~ m/{.*}/ ) 
 		{
+		
+		
             eval($cmds);
             if ($@) 
 			{
@@ -3694,7 +3717,7 @@ sub MSwitch_fhemwebFn($$$$) {
 	text = 'Hier kann entweder eine direkte Angabe einer Verzögerungszeit (delay with Cond_check) angegeben werden, oder es kann eine Ausführungszeit (at with Cond-check) für den Befehl angegeben werden<br> Bei der Angabe einer Ausführungszeit wird der Schaltbefehl beim nächsten erreichen der angegebenen Zeit ausgeführt. Ist die Zeit am aktuellen Tag bereits überschritten , wird der angegebene Zeitpunkt am Folgetag gesetzt.<br>Die Auswahl \"with Conf-check\" oder \"without Conf-check\" legt fest, ob unmittelbar vor Befehlsausführung nochmals die Condition für den Befehl geprüft wird oder nicht.<br><brAlternativ kann hier auch ein Verweis auf ein beliebiges Reading eines Devices erfolgen, das entsprechenden Wert enthält. Dieser Verweis muss in folgendem Format erfolgen:<br><br>[NAME.reading] des Devices  ->z.B.  [dummy.state]<br>Das Reading muss in folgendem Format vorliegen: hh:mm:ss ';}
 					   
 	if (from == 'trigger'){
-	text = 'Trigger ist das Gerät, oder die Zeit, auf die das Modul reagiert, um andere devices anzusprechen.<br>Das Gerät kann aus der angebotenen Liste ausgewählt werden, sobald dieses ausgewählt ist werden  weitere Optionen angeboten.<br>Auch Zeitangaben können als Trigger genutzt werden, das Format muss wie folgt lauten:<br><br> [STUNDEN:MINUTEN|TAGE] - Tage werden von 1-7 gezählt, wobei 1 für Montag steht, 7 für Sonntag.<br>Die Variable \$we ist anstatt der Tagesangabe verwendbar<br> [STUNDEN:MINUTEN|\$we] - Schaltvorgang nur an Wochenenden.<br>[STUNDEN:MINUTEN|!\$we] - Schaltvorgang nur an Werktagen.<br>Mehrere Zeitvorgaben können aneinandergereiht werden.<br><br>[17:00|1][18:30|23] würde den Trigger Montags um 17 Uhr auslösen und Dienstags,Mittwochs um 18 Uhr 30.<br><br>Es ist eine gleichzeitige Nutzung für Trigger durch Zeitangaben und Trigger durch Deviceevents möglich.<br>Sunset - Zeitangaben können mit folgender Sytax eingebunden werden: z.B [{sunset()}] , [{sunrise(+1800)}].';}
+	text = 'Trigger ist das Gerät, oder die Zeit, auf die das Modul reagiert, um andere devices anzusprechen.<br>Das Gerät kann aus der angebotenen Liste ausgewählt werden, sobald dieses ausgewählt ist werden weitere Optionen angeboten.<br>Auch Zeitangaben können als Trigger genutzt werden, das Format muss wie folgt lauten:<br><br> [STUNDEN:MINUTEN|TAGE] - Tage werden von 1-7 gezählt, wobei 1 für Montag steht, 7 für Sonntag.<br /><br>Die Variable \$we ist anstatt der Tagesangabe verwendbar<br> [STUNDEN:MINUTEN|\$we] - Schaltvorgang nur an Wochenenden.<br>[STUNDEN:MINUTEN|!\$we] - Schaltvorgang nur an Werktagen.<br><br>Mehrere Zeitvorgaben können aneinandergereiht werden.<br>[17:00|1][18:30|23] würde den Trigger Montags um 17 Uhr auslösen und Dienstags,Mittwochs um 18 Uhr 30.<br><br>Sunset - Zeitangaben können mit folgender Sytax eingebunden werden: z.B [{sunset()}] , [{sunrise(+1800)}].<br><br>Es ist eine gleichzeitige Nutzung für Trigger durch Zeitangaben und Trigger durch Deviceevents möglich.<br><br>Sonderformate:<br>[?20:00-21:00|5] - Zufälliger Schaltvorgang zwischen 20 Uhr und 21 Uhr am Freitag<br>[00:02*04:10-06:30] - Schaltvorgang alle 2 Minuten zwischen 4.10 Uhr und 6.30 Uhr';}
 					   
 	if (from == 'triggercondition'){
 	text = 'Hier kann die Angabe von Bedingungen erfolgen, die zusätzlich zu dem triggernden Device erfuellt sein müssen.<br> Diese Bedingunge sind eng an DOIF- Bedingungen angelehnt .<br>Zeitabhängigkeit: [19.10-23:00] - Trigger des Devices erfolgt nur in angegebenem Zeitraum<br>Readingabhängige Trigger [Devicename:Reading] =/>/< X oder [Devicename:Reading] eq \"x\" - Trigger des Devicec erfolgt nur bei erfüllter Bedingung.<br>Achtung ! Bei der Abfrage von Readings nach Strings ( on,off,etc. ) ist statt \"=\" \"eq\" zu nutzen und der String muss in \"\" gesetzt werden!<br>Die Kombination mehrerer Bedingungen und Zeiten ist durch AND oder OR möglich.<br>[19.10-23:00] AND [Devicename:Reading] = 10 - beide Bedingungen müssen erfüllt sein<br>[19.10-23:00] OR [Devicename:Reading] = 10 - eine der Bedingungen muss erfüllt sein.<br>Es ist auf korrekte Eingabe der Leerzeichen zu achten.<br><br>sunset - Bedingungen werden mit zusätzlichen {} eingefügt z.B. : [{ sunset() }-23:00].<br><br>Variable \$we:<br>Die globlae Variable \$we ist nutzbar und muss in {} gesetzt werden .<br>{ !\$we } löst den Schaltvorgang nur Werktagen an aus<br>{ \$we } löst den Schaltvorgang nur an Wochenenden, Feiertagen aus<br><br>Soll nur an bestimmten Wochentagen geschaltet werden, muss eine Zeitangsbe gemacht werden und durch z.B. |135 ergänzt werden.<br>[10:00-11:00|13] würde den Schaltvorgang z.B nur Montag und Mitwoch zwischen 10 uhr und 11 uhr auslösen. Hierbei zählen die Wochentage von 1-7 für Montag-Sonntag.<br>Achtung: Bei Anwendung der geschweiften Klammern zur einletung eines Perlasdrucks ist unbedingt auf die Leerzeichen hinter und vor der Klammer zu achten !<br> Überschreitet die Zeitangabe die Tagesgrenze (24.00 Uhr ), so gelten die angegebenen Tage noch bis zum ende der angegebenen Schaltzeit,<br> d.H. es würde auch am Mitwoch noch der schaltvorgang erfolgen, obwohl als Tagesvorgabe Dienstag gesetzt wurde.<br><br>Wird in diesem Feld keine Angabe gemacht , so erfolgt der Schaltvorgang nur durch das triggernde Device ohne weitere Bedingungen.<br><br>Achtung: Conditions gelten nur für auslösende Trigger eines Devices und habe keinen Einfluss auf zeitgesteuerte Auslöser.';}
@@ -4267,6 +4290,23 @@ sub MSwitch_Exec_Notif($$$$) {
             if ( $devicenamet eq 'FreeCmd' )
 			{
                 $cs = "  $devicedetails{$device.'_'.$comand.'arg'}";
+				
+				
+				# setmagic	
+				$cs =~ s/\n//g;
+				my $x =0;
+				while ( $cs =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) 
+					{
+					$x++;                        # notausstieg notausstieg
+					last if $x > 20;             # notausstieg notausstieg
+					my $setmagic = ReadingsVal( $2, $3, 0 );
+					$cs = $1.$setmagic.$4;
+					}
+				
+				
+				
+				
+				
             }
             else 
 			{
