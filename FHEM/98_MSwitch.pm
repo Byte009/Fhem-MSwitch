@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.70';
+my $version = 'V1.71';
 my $vupdate = 'V 0.4';
 
 sub MSwitch_Checkcond_time($$);
@@ -826,7 +826,18 @@ sub MSwitch_Set($@) {
 	{
 	# configfile speichern
         $args[0] =~ s/\[s\]/ /g;
+		
+		
+		#Log3( $name, 0, "aufruf save $cmd" );
+		
+		
         MSwitch_saveconf( $hash, $args[0] );
+		
+		#Log3( $name, 0, "return save" );
+		
+		#Log3( $name, 0, "cmd ->  $args[0]" );
+		#Log3( $name, 0, "cmd ->  $cmd" );
+		#exit;
         return;
     }
 ##############################
@@ -1561,6 +1572,12 @@ Log3( $Name, 5,"schreibe repeat -> $timecond - $msg ". __LINE__ );
         #############################
     }
     my $showpool = join( ',', @cmdpool );
+	
+	
+	
+	
+	
+	if (length($showpool) > 100 ){ $showpool = substr($showpool,0,100).'....';}
     readingsSingleUpdate( $hash, "Exec_cmd", $showpool, 1 ) if $showpool ne '';
 }
 ####################
@@ -2085,6 +2102,8 @@ sub MSwitch_Notify($$) {
 							{
                             Log3( $ownName, 1,"$ownName MSwitch_Notify: Fehler bei Befehlsausführung $errors -> Comand: $_ ". __LINE__ );
 							}
+							
+								if (length($ecec) > 100 ){ $ecec = substr($ecec,0,100).'....';}
                         readingsSingleUpdate( $own_hash, "Exec_cmd", $ecec, 1 ) if $ecec ne '';
 					}
                     else 
@@ -4419,6 +4438,7 @@ Log3( $name, 5,"schreibe repeat -> $timecond - $msg ". __LINE__ );
                     }
 
                     my $msg = $cs;
+					if (length($msg) > 100 ){ $msg = substr($msg,0,100).'....';}
                     readingsSingleUpdate( $hash, "Exec_cmd", $msg, 1 ) if $msg ne '';
                    
                 }
@@ -4643,6 +4663,7 @@ sub MSwitch_Restartcmd($) {
                 Log3( $name, 1,"$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors ". __LINE__ );
             }
         }
+		if (length($cs) > 100 ){ $cs = substr($cs,0,100).'....';}
         readingsSingleUpdate( $hash, "Exec_cmd", $cs, 1 ) if $cs ne '';
     }
     RemoveInternalTimer($incomming);
@@ -5766,6 +5787,21 @@ sub MSwitch_backup($) {
         foreach my $key (@areadings) 
 		{
             my $tmp = ReadingsVal( $testdevice, $key, 'undef' );
+		
+		
+		if ($key eq ".Device_Affected_Details")
+		{
+		$tmp =~ s/\n/[cnl]/g;
+		$tmp =~ s/;/[se]/g;
+		$tmp =~ s/\\/[bs]/g;
+		$tmp =~ s/(.*?)\t/$1~~~~/g;
+		}
+		
+		
+		#$newstring =~ s/\[se\]/;/g;
+		#$newstring =~ s/\[cnl\]/\n/g;
+		#$newstring =~ s/\[bs\]/\\/g;
+			
             print BACKUPDATEI "#S $key -> $tmp\n";
         }
         my %keys;
@@ -5784,6 +5820,7 @@ sub MSwitch_backup_this($) {
     my ($hash) = @_;
     my $Name   = $hash->{NAME};
     my $Zeilen = ("");
+	my $Zeilen1 ="";
     open( BACKUPDATEI, "<MSwitch_backup.cfg" ) || return "no Backupfile found\n";
     while (<BACKUPDATEI>)
 	{
@@ -5791,6 +5828,10 @@ sub MSwitch_backup_this($) {
     }
     close(BACKUPDATEI);
     $Zeilen =~ s/\n/[nl]/g;
+	
+	
+	
+	
     if ( $Zeilen !~ m/#N -> $Name\[nl\](.*)#E -> $Name\[nl\]/ ) 
 	{
         return "no Backupfile found\n";
@@ -5798,14 +5839,31 @@ sub MSwitch_backup_this($) {
     my @found = split( /\[nl\]/, $1 );
     foreach (@found) 
 	{
+	
+	 #Log3( $Name, 0, "$_" );
+	
         if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
         {
+		 #Log3( $Name, 0, "$1" );
+		 #Log3( $Name, 0, "$2" );
+		
             if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) 
 			{
             }
             else
 			{
-                readingsSingleUpdate( $hash, "$1", $2, 0 );
+			$Zeilen1 = $2;
+			if ($1 eq ".Device_Affected_Details")
+			{
+			#Log3( $Name, 0, "found details" );
+			
+			$Zeilen1 =~ s/\[se\]/;/g;
+			$Zeilen1 =~ s/\[cnl\]/\n/g;
+			$Zeilen1 =~ s/\[bs\]/\\/g;
+			}
+			
+			
+                readingsSingleUpdate( $hash, "$1", $Zeilen1, 0 );
             }
         }
         if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
@@ -5840,6 +5898,10 @@ sub MSwitch_Getconfig($) {
 		my $tmp = ReadingsVal( $testdevice, $key, 'undef' );
 		if ($key eq ".Device_Affected_Details")
 		{
+		$tmp =~ s/\n/[cnl]/g;
+		$tmp =~ s/;/[se]/g;
+		$tmp =~ s/\\/[bs]/g;
+		$tmp =~ s/(.*?)\t/$1~~~~/g;
 			my $x          = 0;              # notausstieg
 			while ( $tmp =~ m/(.*?)(\[.*)(\:)(.*\])(.*)?/ ) 
 			{
@@ -5848,13 +5910,16 @@ sub MSwitch_Getconfig($) {
 				$tmp = $1.$2.'.'.$4.$5;
 			}
 			
-			$x          = 0;              # notausstieg
-			while ( $tmp =~ m/(.*?)(\;)(.*)?/ ) 
-			{
-				$x++;                        # notausstieg notausstieg
-				last if $x > 20;             # notausstieg notausstieg
-				$tmp = $1.'[S]'.$3;
-			}
+			#$x          = 0;              # notausstieg
+			#while ( $tmp =~ m/(.*?)(\;)(.*)?/ ) 
+			#{
+			#	$x++;                        # notausstieg notausstieg
+			#	last if $x > 20;             # notausstieg notausstieg
+			#	$tmp = $1.'[S]'.$3;
+			#}
+			
+			
+			
 		}
         $out .= "#S $key -> $tmp\\n";
         $count++;
@@ -5895,6 +5960,18 @@ sub MSwitch_backup_all($) {
     {
         my $devhash = $defs{$testdevice};
         $Zeilen =~ s/\n/[nl]/g;
+		
+		
+		#$Zeilen =~ s/\n/[cnl]/g;
+		#$Zeilen =~ s/;/[se]/g;
+		#$Zeilen =~ s/\\/[bs]/g;
+		#$Zeilen =~ s/(.*?)\t/$1~~~~/g;
+		
+		#$newstring =~ s/\[se\]/;/g;
+		#$newstring =~ s/\[cnl\]/\n/g;
+		#$newstring =~ s/\[bs\]/\\/g;	
+		
+		
         if ( $Zeilen !~ m/#N -> $testdevice\[nl\](.*)#E -> $testdevice\[nl\]/ )
         {
             $answer = $answer . "no Backupfile found for $testdevice\n";
@@ -5959,6 +6036,11 @@ sub MSwitch_saveconf($$) {
 				my $newstring =$2;
 				if ($1 eq ".Device_Affected_Details")
 					{
+					
+					
+					#Log3( $name, 0, "event -> $newstring" );
+					
+					
 						my $x          = 0;              # notausstieg
 						while ( $newstring =~ m/(.*?)(\[.*)(\.)(.*\])(.*)?/ ) 
 						{
@@ -5966,14 +6048,22 @@ sub MSwitch_saveconf($$) {
 							last if $x > 20;             # notausstieg notausstieg
 							$newstring = $1.$2.':'.$4.$5;
 						}
-						$x          = 0;              # notausstieg
-						while ( $newstring =~ m/(.*?)(\[S\])(.*)?/ ) 
-						{
-							$x++;                        # notausstieg notausstieg
-							last if $x > 20;             # notausstieg notausstieg
-							$newstring = $1.';'.$3;
-						}
+						
+						
+						#$x          = 0;              # notausstieg
+						#while ( $newstring =~ m/(.*?)(\[S\])(.*)?/ ) 
+						#{
+						#	$x++;                        # notausstieg notausstieg
+						#	last if $x > 20;             # notausstieg notausstieg
+						#	$newstring = $1.';'.$3;
+						#}
+					$newstring =~ s/\[se\]/;/g;
+					$newstring =~ s/\[cnl\]/\n/g;
+					$newstring =~ s/\[bs\]/\\/g;					
 					}
+					
+				
+				   
 				   readingsSingleUpdate( $hash, "$1", $newstring, 0 );
 				}
 			}
@@ -5983,6 +6073,8 @@ sub MSwitch_saveconf($$) {
 			}
     }
 	MSwitch_set_dev($hash);
+	
+	#Log3( $name, 0, "fertig" );
     return;
 }
 
