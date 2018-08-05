@@ -1,5 +1,6 @@
-31.07.18 v1.70 preparation monitoring rename defices
-31.07.18 v1.69 setmagic now avaible at freecmds
+05.08.18 v1.71 monitoring rename devices
+05.08.18 v1.70 preparation monitoring rename devices
+04.08.18 v1.69 setmagic now avaible at freecmds
 03.08.18 v1.68 bugfix (DeviceCMD/WebCMD) MQTT
 31.07.18 v1.67 change all conditions format / change data structure to V 0.5
 22.07.18 v1.66 bugfix timespec regex
