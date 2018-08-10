@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.71a';
+my $version = 'V1.71b';
 my $vupdate = 'V 0.4';
 
 sub MSwitch_Checkcond_time($$);
@@ -4643,6 +4643,7 @@ sub MSwitch_Restartcmd($) {
 		
 		
 		$cs =~ s/\n//g;
+		$cs =~ s/#\[wa\]/|/g;
         ############################
         if ( $cs =~ m/{.*}/ ) 
 		{
@@ -6041,14 +6042,14 @@ sub MSwitch_saveconf($$) {
 					
 					#Log3( $name, 0, "event -> $newstring" );
 					
-					
-						my $x          = 0;              # notausstieg
-						while ( $newstring =~ m/(.*?)(\[.*)(\.)(.*\])(.*)?/ ) 
-						{
-							$x++;                        # notausstieg notausstieg
-							last if $x > 20;             # notausstieg notausstieg
-							$newstring = $1.$2.':'.$4.$5;
-						}
+					## ggf. wiedr anschalten
+					#	my $x          = 0;              # notausstieg
+					#	while ( $newstring =~ m/(.*?)(\[.*)(\.)(.*\])(.*)?/ ) 
+					#	{
+					#		$x++;                        # notausstieg notausstieg
+					#		last if $x > 20;             # notausstieg notausstieg
+					#		$newstring = $1.$2.':'.$4.$5;
+					#	}
 						
 						
 						#$x          = 0;              # notausstieg
