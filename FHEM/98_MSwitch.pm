@@ -22,7 +22,7 @@ use strict;
 use warnings;
 use POSIX;
 
-my $version = 'V1.71';
+my $version = 'V1.71a';
 my $vupdate = 'V 0.4';
 
 sub MSwitch_Checkcond_time($$);
@@ -4417,6 +4417,7 @@ Log3( $name, 5,"schreibe repeat -> $timecond - $msg ". __LINE__ );
 
 					
 					$cs =~ s/\n//g;
+					$cs =~ s/#\[wa\]/|/g; #neu
                     ############################
                     if ( $cs =~ m/{.*}/ ) 
 					{
