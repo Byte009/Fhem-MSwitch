@@ -1350,6 +1350,8 @@ sub MSwitch_Set($@) {
 	MSwitch_LOG( $name, 5, "----------------------------------------"  );
 	MSwitch_LOG( $name, 5, "$name: aufruf on/off -> $cmd"  ); 
 	MSwitch_LOG( $name, 5, "----------------------------------------"  );
+	
+	
 
         my @cmdpool;
         my %devicedetails = MSwitch_makeCmdHash($name);
@@ -1360,8 +1362,8 @@ sub MSwitch_Set($@) {
 		
 		LOOP1: foreach my $device (@devices) 
 		{
-		MSwitch_LOG( $name, 0, "$name: angesprochener zweig ".$zweig." -> device -> -".$device."-"  ); 
-	 
+		MSwitch_LOG( $name, 5, "$name: angesprochener zweig ".$zweig." -> device -> -".$device."-"  ); 
+	   # MSwitch_LOG( $name, 5,"$name: ----------------- Delay -> ".$devicedetails{$timerkey} );
 		# teste auf on kommando
 			next LOOP1 if  $device eq "no_device" ;
 		
@@ -1380,7 +1382,7 @@ sub MSwitch_Set($@) {
             }
 
             my $key      = $device . "_".$cmd;
-            my $timerkey = $device . "_timeoff";
+            my $timerkey = $device . "_time".$cmd;
             #$devicedetails{ $device . '_onarg' } =~ s/~/ /g;
             #$devicedetails{ $device . '_offarg' } =~ s/~/ /g;
             my $testtstate = $devicedetails{$timerkey};
@@ -1414,6 +1416,11 @@ sub MSwitch_Set($@) {
 				
 			MSwitch_LOG( $name, 5, "$name: befehl gefunden -> ".$cs  ); 
 			MSwitch_LOG( $name, 5, "$name: teste auf delay -> ".$devicedetails{$timerkey}  ); 
+			
+			
+			
+			
+			
 			
 			my $conditionkey = $device . "_condition".$cmd; 
 			
@@ -1455,6 +1462,9 @@ sub MSwitch_Set($@) {
 					
 # ??????????				
  my $execute ="true";
+ 
+ 
+ 
 					# conditiontest nur dann, wenn cond-test nicht nur nach verzögerung
 					if ($devicedetails{$device . "_delayat".$cmd} ne "delay2" && $devicedetails{$device . "_delayat".$cmd} ne "at02")
 					{
@@ -1462,6 +1472,15 @@ sub MSwitch_Set($@) {
 					$execute = MSwitch_checkcondition( $devicedetails{$conditionkey},$name, $args[0] ) ;
 					MSwitch_LOG( $name, 5, "$name: ergebniss checkcondition für delay-> ".$execute );
 					}
+					
+					
+					
+					MSwitch_LOG( $name, 5,"$name: ----------------- Delay -> ".$devicedetails{$timerkey} );
+					
+					
+					
+					
+					
 					
                     if ( $execute eq 'true' ) 
 					{
@@ -1769,7 +1788,7 @@ sub MSwitch_Attr(@) {
        unlink ("./log/MSwitch_debug_$name.log") ;
     }
 	
-	 if ($aName eq 'MSwitch_Debug' && $aVal == 2 || $aVal == 3  ) 
+	if ($aName eq 'MSwitch_Debug' && $aVal == 2 || $aVal == 3  ) 
 	{
        MSwitch_clearlog($hash);
     }
