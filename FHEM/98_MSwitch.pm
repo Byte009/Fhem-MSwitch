@@ -38,7 +38,7 @@ use POSIX;
 
 # Version #######################################################
 my $autoupdate = 'off'; #off/on
-my $version = 'V2.00_Beta';
+my $version = 'V2.00_Beta_1';
 my $vupdate = 'V2.00';
 my $savecount = 30;
 my $standartstartdelay =60;
@@ -1515,7 +1515,7 @@ sub MSwitch_Set($@) {
                             $cs . "#[tr]"
                           . $name . "#[tr]"
                           . $conditionkey . "#[tr]#[tr]"
-                          . $timecond . "#[tr]#[tr]"
+                          . $timecond . "#[tr]"
                           . $device;
 
                         # variabelersetzung
@@ -5276,6 +5276,19 @@ sub MSwitch_Exec_Notif($$$$$) {
 					  . $device;
 					$hash->{helper}{delays}{$msg} = $timecond;
 					$testtoggle = 'undef';
+					
+					
+					MSwitch_LOG( $name, 5,"$name:     timer gesetzt -> ".$cs);
+					
+					MSwitch_LOG( $name, 5,"$name:     timer gesetzt name -> ".$name);
+					MSwitch_LOG( $name, 5,"$name:     timer gesetzt conditionkey-> ".$conditionkey);
+					MSwitch_LOG( $name, 5,"$name:     timer gesetzt event-> ".$event);
+					MSwitch_LOG( $name, 5,"$name:     timer gesetzt timecond-> ".$timecond);
+					MSwitch_LOG( $name, 5,"$name:     timer gesetzt -> device ".$device);
+					
+					
+					
+					
 					InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
 				}
             }
@@ -5377,10 +5390,22 @@ sub MSwitch_Restartcmd($) {
     my $conditionkey = $msgarray[2];
     my $event        = $msgarray[2];
     my $device       = $msgarray[5];
+	
     my $hash = $modules{MSwitch}{defptr}{$name};
 	
+	MSwitch_LOG( $name, 5, "$name: msga4 -> ".$msgarray[4]);
+	MSwitch_LOG( $name, 5, "$name: msga5 -> ".$msgarray[5]);
+	MSwitch_LOG( $name, 5, "$name: msga6 -> ".$msgarray[6]);
+	
 	MSwitch_LOG( $name, 5, "$name: befehl -> ".$cs);
+	MSwitch_LOG( $name, 5, "$name: event -> ".$event);
+	MSwitch_LOG( $name, 5, "$name: device -> ".$device);
+	#MSwitch_LOG( $name, 5, "$name: befehl -> ".$cs);
+	
+	MSwitch_LOG( $name, 5, "$name: erstelle cmdhash -> ".$name);
     my %devicedetails = MSwitch_makeCmdHash($name);
+	
+	
 	if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) 
 	{
 		MSwitch_Createnumber1($hash);
@@ -5414,7 +5439,10 @@ sub MSwitch_Restartcmd($) {
             $cs = MSwitch_toggle( $hash, $cs );
         }
 		
-		MSwitch_LOG( $name, 5, "$name: teste repeat ");
+		
+		
+		
+		MSwitch_LOG( $name, 5, "$name: teste repeat -> ".$devicedetails{ $device . '_repeatcount' });
 			my $x =0;
 				while ( $devicedetails{ $device . '_repeatcount' } =~ m/\[(.*)\:(.*)\]/ ) 
 					{
@@ -7121,19 +7149,33 @@ sub MSwitch_repeat($) {
     my $cs        = $msgarray[0];
     my $hash      = $defs{$name};
 	$cs =~ s/\n//g;
-	#Log3( $name, 5,"repeat incomming -> $incomming". __LINE__ );
+	
+	
+	MSwitch_LOG( $name, 5, "----------------------------------------"  );
+	MSwitch_LOG( $name, 5, "$name: Repeat -> ".$cs  ); 
+	MSwitch_LOG( $name, 5, "----------------------------------------"  );
+	
 	
     if ( $cs =~ m/set (.*)(MSwitchtoggle)(.*)/ ) 
 	{
-        $cs = MSwitch_toggle( $hash, $cs );
+		$cs = MSwitch_toggle( $hash, $cs );
+		MSwitch_LOG( $name, 5, "$name: fround toggle -> ".$cs  ); 
+        
     }
+	
+	
+	
+	MSwitch_LOG( $name, 5, "$name: execute repeat $time -> ".$cs  ); 
+	if ( AttrVal( $name, 'MSwitch_Debug', "0" ) ne '2' )
+					{
+	
 	
 	if ( $cs =~ m/{.*}/ ) 
 		{
             eval($cs);
             if ($@) 
 			{
-                Log3( $name, 1,"$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
+                MSwitch_LOG( $name, 1,"$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
             }
         }
         else 
@@ -7141,8 +7183,11 @@ sub MSwitch_repeat($) {
 			my $errors = AnalyzeCommandChain( undef, $cs );
 			if ( defined($errors) ) 
 				{
-					Log3( $name, 1, "$name Absent_repeat $cs: ERROR : $errors -> Comand: $cs" );
+					MSwitch_LOG( $name, 1, "$name Absent_repeat $cs: ERROR : $errors -> Comand: $cs" );
 				}
+		}
+		
+		
 		}
 	
 	 delete( $hash->{helper}{repeats}{$time} );
