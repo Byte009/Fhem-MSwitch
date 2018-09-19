@@ -38,7 +38,7 @@ use POSIX;
 
 # Version #######################################################
 my $autoupdate = 'off'; #off/on
-my $version = 'V2.00_Beta_1';
+my $version = 'V2.00_Beta_2';
 my $vupdate = 'V2.00';
 my $savecount = 30;
 my $standartstartdelay =60;
@@ -760,7 +760,7 @@ sub MSwitch_Set($@) {
 	
 	
 	
-    return "" if ( IsDisabled($name) );# Return without any further action if the module is disabled
+    return "" if ( IsDisabled($name) && ($cmd eq 'on' || $cmd eq 'off') );# Return without any further action if the module is disabled
 
 	
 	my $execids = "0";
@@ -775,7 +775,6 @@ sub MSwitch_Set($@) {
 	{
 
 	$cs =~ s/#\[wa\]/|/g;
-	
 	$cs =~ s/#\[sp\]/ /g;
 	$cs =~ s/#\[nl\]/\n/g;
 	$cs =~ s/#\[se\]/;/g;
@@ -786,6 +785,9 @@ sub MSwitch_Set($@) {
 	$cs =~ s/#\[ko\]/,/g;
 	$cs =~ s/#.*\n//g;	
 	$cs =~ s/\n//g;
+	
+	
+	
 	
 
 	eval($cs);
@@ -1783,7 +1785,7 @@ sub MSwitch_Attr(@) {
 	
 	
 
-	 if ($aName eq 'MSwitch_Debug' && $aVal == 0 ) 
+	if ($aName eq 'MSwitch_Debug' && $aVal == 0 ) 
 	{
        unlink ("./log/MSwitch_debug_$name.log") ;
     }
@@ -3596,7 +3598,7 @@ sub MSwitch_fhemwebFn($$$$) {
 	
 	$text = "Das Device befindet sich im Debug 3 Mode. Alle Aktionen werden protokolliert." if AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '3';
 	
-	my $out = "tesxt";
+
 	 $ret .="<table border='$border' class='block wide' id=''>
 		 <tr class='even'>
 		 <td><center>&nbsp;<br>
@@ -3672,6 +3674,13 @@ sub MSwitch_fhemwebFn($$$$) {
 		 
 	return "$ret"."$j1";
 	}
+	
+	
+	
+	 $ret .="<table border='$border' class='block wide' id=''>
+		 <tr class='even'>
+		 <td><center>&nbsp;<br>Device is disabled, configuration avaible<br>&nbsp;<br>
+		 </td></tr></table><br>" if ( IsDisabled($Name));
 	
 ####################
 	$ret .="<table border='$border' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}'>";
@@ -4283,9 +4292,9 @@ sub MSwitch_fhemwebFn($$$$) {
 	#####################
 	
     $j1 .= "function saveconfig(conf){
-	conf = conf.replace(/:/g,'#[dp]');
-	conf = conf.replace(/;/g,'#[se]');
-	conf = conf.replace(/ /g,'#[sp]');
+	conf = conf.replace(/:/g,'#c[dp]');
+	conf = conf.replace(/;/g,'#c[se]');
+	conf = conf.replace(/ /g,'#c[sp]');
 	conf = conf.replace(/\\n/g,'#[EOL]');
 	var nm = \$(t).attr(\"nm\");
 	var  def = nm+\" saveconfig \"+encodeURIComponent(conf);
@@ -4315,6 +4324,8 @@ sub MSwitch_fhemwebFn($$$$) {
 	conf = conf.replace(/;/g,'#[se]');
 	conf = conf.replace(/ /g,'#[sp]');
 	conf = conf.replace(/'/g,'#[st]');
+	
+	
 	
 	
 	var nm = \$(t).attr(\"nm\");
@@ -4785,8 +4796,7 @@ sub MSwitch_makeCmdHash($) {
 		$_ =~ s/#\[dp\]/:/g;
 		$_ =~ s/\(DAYS\)/|/g;
 	    $_ =~ s/#\[ko\]/,/g; #neu
-		
-		  $_ =~ s/#\[bs\]/\\/g; #neu
+		$_ =~ s/#\[bs\]/\\/g; #neu
 	
 	#Log3( $Name, 5,"makecmdhash readingin device $_ " . __LINE__ );
         my @detailarray = split( /#\[NF\]/, $_ );    #enthält daten 0-5 0 - name 1-5 daten 7 und9 sind zeitangaben
@@ -6758,16 +6768,21 @@ sub MSwitch_Getconfig($) {
 		
 		if ($key eq ".sysconf")
 		{
-		$tmp =~ s/#\[nl\]/;;/g;
 		
-		$tmp =~ s/#\[sp\]/ /g;
-		$tmp =~ s/#\[nl\]/\\n/g;
-		$tmp =~ s/#\[se\]/;/g;
-		$tmp =~ s/#\[dp\]/:/g;
-		$tmp =~ s/\(DAYS\)/|/g;
-	    $tmp =~ s/#\[ko\]/,/g; #neu
-		$tmp =~ s/#\[st\]/\\'/g;
-		$tmp =~ s/#\[wa\]/|/g;
+		#Log3( $Name, 0, 'value ist: '.$tmp );
+		
+		
+	 # $tmp =~ s/#\[nl\]/;;/g;
+	# $tmp =~ s/#\[sp\]/ /g;
+	# $tmp =~ s/#\[bs\]/\\\\/g;
+	# $tmp =~ s/#\[ko\]/,/g;
+	# $tmp =~ s/#\[se\]/;/g;
+	# $tmp =~ s/#\[dp\]/:/g;
+	# $tmp =~ s/#\[dst\]/\"/g;
+	# $tmp =~ s/#\[wa\]/|/g;
+	# $tmp =~ s/#\[tab\]/    /g;
+	
+
 		}
 		
 		if ($key eq ".Device_Events")
@@ -6933,7 +6948,7 @@ my ( $hash, $cont ) = @_;
 	
 	
 	
-#Log3( $name, 5,"$cont" . __LINE__ );
+Log3( $name, 0,"$cont" . __LINE__ );
         
 
 	if (!defined $cont){$cont ="";};
@@ -6986,12 +7001,19 @@ sub MSwitch_saveconf($$) {
     my ( $hash, $cont ) = @_;
     my $name = $hash->{NAME};
 	
-	$cont =~ s/#\[sp\]/ /g;
-	$cont =~ s/#\[sp\]/ /g;
-	$cont =~ s/#\[nl\]/\n/g;
-	$cont =~ s/#\[dp\]/:/g;
-	$cont =~ s/\(DAYS\)/|/g;
-	$cont =~ s/#\[ko\]/,/g; 	
+	
+	
+	
+	
+	
+	
+	
+	
+	$cont =~ s/#c\[sp\]/ /g;
+	$cont =~ s/#c\[se\]/;/g;
+	$cont =~ s/#c\[dp\]/:/g;
+	#$cont =~ s/\(DAYS\)/|/g;
+	#$cont =~ s/#\[ko\]/,/g; 	
 	
     #Log3( $name, 0, $cont );
 
@@ -6999,13 +7021,13 @@ sub MSwitch_saveconf($$) {
     my @found = split( /#\[EOL\]/, $cont );
     foreach (@found) 
 	{
-	
+	Log3( $name, 0, "found ".$_ );
 	#Log3( $name, 0, $_ );
 	
         if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
 			{
 			
-			Log3( $name, 0, $_ );
+			Log3( $name, 0, "s1 ".$1 );
 			
 			
 			if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) 
@@ -7020,6 +7042,13 @@ sub MSwitch_saveconf($$) {
 					{
 				#Log3( $name, 5,"newstring in  $newstring " . __LINE__ );	
 					
+					
+					
+	
+	
+	$newstring =~ s/;/#[se]/g; 
+	$newstring =~ s/:/#[dp]/g; 
+	
 					$newstring =~ s/\t/    /g; 
 					$newstring =~ s/ /#[sp]/g; 
 					$newstring =~ s/\\/#[bs]/g; 
@@ -7039,18 +7068,27 @@ sub MSwitch_saveconf($$) {
 					{
 				#Log3( $name, 5,"newstring in  $newstring " . __LINE__ );	
 					
-					$newstring =~ s/\t/    /g; 
-					$newstring =~ s/ /#[sp]/g; 
-					$newstring =~ s/\\/#[bs]/g; 
-					$newstring =~ s/,/#[ko]/g;
-					$newstring =~ s/^#\[/#[eo]/g;
-					$newstring =~ s/^#\]/#[ec]/g;
-					$newstring =~ s/\|/#[wa]/g;
+			
+
+					 # $newstring =~ s/\t/    /g; 
+					 # $newstring =~ s/ /#[sp]/g; 
+					 # $newstring =~ s/\\/#[bs]/g; 
+					 # $newstring =~ s/,/#[ko]/g;
+					 # $newstring =~ s/\:/#[dp]/g;
+					 # $newstring =~ s/'/#[st]/g;
+					 # $newstring =~ s/"/#[dst]/g;
+					 # $newstring =~ s/\|/#[wa]/g;
+					 
+					 
 					
+		
+				 
+	
+		
 					
-					$newstring =~ s/#\[se\]#\[se\]#\[se\]/#[se]#[nl]/g;
-					$newstring =~ s/#\[se\]#\[se\]/#[nl]/g;
-				#Log3( $name, 5,"newstring out  $newstring " . __LINE__ );	
+				#Log3( $name, 5,"newstring out  $newstring " . __LINE__ );
+
+        #Log3( $name, 0, 'value wird: '.$newstring );  				
 					}
 					
 					
@@ -7070,7 +7108,7 @@ sub MSwitch_saveconf($$) {
 			
         if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
 			{
-				#$attr{$name}{$1} = $2;
+				$attr{$name}{$1} = $2;
 			}
     }
 	MSwitch_set_dev($hash);
