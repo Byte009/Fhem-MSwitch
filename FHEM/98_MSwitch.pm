@@ -47,7 +47,7 @@ use POSIX;
 
 # Version #######################################################
 my $autoupdate = 'on'; #off/on
-my $version = '2.02_Test';
+my $version = '2.02a_Test';
 my $vupdate = 'V2.00'; 			# versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30; 			# anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $standartstartdelay =60; 	# zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
@@ -94,6 +94,7 @@ sub MSwitch_Savemode($);
 sub MSwitch_set_dev($);
 sub MSwitch_EventBulk($$$$);
 sub MSwitch_priority ;
+sub MSwitch_sort ;
 sub MSwitch_dec($$);
 sub MSwitch_makefreecmd($$);
 sub MSwitch_clearlog($);
@@ -121,6 +122,7 @@ my %sets = (
     "import_config"  => "noArg",
     "saveconfig"     => "noArg",
 	"savesys"     => "noArg",
+	"sort_device"     => "noArg",
 	"fakeevent"       => "noArg",
 	"exec_cmd1"       => "noArg",
 	"exec_cmd2"       => "noArg",
@@ -957,6 +959,13 @@ sub MSwitch_Set($@) {
                  readingsSingleUpdate( $hash, "waiting", ( time + $args[0] ),0 );
 				 return;
         }
+###############################		
+		if ( $cmd eq 'sort_device' )
+		{
+  
+                 readingsSingleUpdate( $hash, ".sortby", $args[0],0 );
+				 return;
+        }
 ##############################
 
     if ( $cmd eq 'inactive' )
@@ -1268,21 +1277,38 @@ sub MSwitch_Set($@) {
 	# setze devices details
     $args[0] = urlDecode( $args[0] );
 	$args[0] =~ s/#\[pr\]/%/g; 
-        my @devices =split( /,/, ReadingsVal( $name, '.Device_Affected', '' ) );
+       
+		
+		
+		#devicehasch
+		my %devhash = split( /#\[DN\]/, $args[0] );
+		
+		
+		#foreach  (keys %devhash)
+		#{
+		#MSwitch_LOG( $name, 0, "$_ - ".$devhash{$_});
+		#}
+		
+		#return;
+		
+		my @devices =split( /,/, ReadingsVal( $name, '.Device_Affected', '' ) );
 		my @inputcmds = split( /#\[ND\]/, $args[0] );
-		my $counter     = 0;
+		
+		
+		#my $counter     = 0;
         my $error       = '';
         my $key         = '';
         my $savedetails = '';
 		LOOP10: foreach (@devices)
 		{
-            if ( $inputcmds[$counter] eq '' ) { next LOOP10; }
+            #if ( $inputcmds[$counter] eq '' ) { next LOOP10; }
 			#new 
 			
 			
 	
 			
-			my @devicecmds = split( /#\[NF\]/, $inputcmds[$counter] );
+			#my @devicecmds = split( /#\[NF\]/, $inputcmds[$counter] );
+			my @devicecmds = split( /#\[NF\]/, $devhash{$_} );
 			
             $savedetails = $savedetails . $_ . '#[NF]';
             $savedetails = $savedetails . $devicecmds[0] . '#[NF]';
@@ -1378,15 +1404,26 @@ sub MSwitch_Set($@) {
 			# exit2
 			if ( defined $devicecmds[16]  && $devicecmds[16] ne 'undefined')
 			{
-                $savedetails = $savedetails . $devicecmds[16] . '#[ND]';
+                $savedetails = $savedetails . $devicecmds[16] . '#[NF]';
             }
             else 
 			{
-                $savedetails = $savedetails . '0' . '#[ND]';
+                $savedetails = $savedetails . '0' . '#[NF]';
+            }
+			
+			# show
+			if ( defined $devicecmds[17]  && $devicecmds[17] ne 'undefined')
+			{
+                $savedetails = $savedetails . $devicecmds[17] . '#[ND]';
+            }
+            else 
+			{
+                $savedetails = $savedetails . '1' . '#[ND]';
             }
 			
 			
-            $counter++;
+			
+           # $counter++;
 
         }
         chop($savedetails);
@@ -1633,19 +1670,7 @@ sub MSwitch_Set($@) {
                     }
                 }
             }
-			
-			
-		#my $ekey = '';
-        #$ekey = $device ."_exit". $exittest;
-		
-		
-        #if ($out eq '1')
-		#{	
-		#MSwitch_LOG( $name, 0,"$name: Abbruchbefehl erhalten" );
-		#MSwitch_LOG( $name, 0,"$name: LOOPENDE key-> ".$ekey." : " );
-		#MSwitch_LOG( $name, 0,"$name: LOOPENDE -> ".$device." : ".$out );	
-		#last LOOP1
-		#}
+
 			
         }
 
@@ -2694,26 +2719,95 @@ sub MSwitch_fhemwebFn($$$$) {
 
     # affected devices to hash
     my %usedevices;
+	
+	
+	
     my @deftoarray = split( /,/, $affecteddevices );
 	my $anzahl = @deftoarray;
-
+	my $anzahl1 = @deftoarray;
+	my $anzahl3 = @deftoarray;
+	
+	
+	my @testidsdev = split( /#\[ND\]/, ReadingsVal( $Name, '.Device_Affected_Details', 'no_device' ) );
+	
+	
+	#PRIORITY
+	# teste auf grössere PRIORITY als anzahl devices
+	foreach (@testidsdev)
+	{
+	MSwitch_LOG( $Name, 5, "dev @testidsdev");
+	my @testid = split( /#\[NF\]/, $_ );
+	my $x =0;
+	#foreach (@testid)
+	#{
+	#MSwitch_LOG( $Name, 0, "devfelder $x -> $testid[$x]");
+	#$x++;
+	#}
+	MSwitch_LOG( $Name, 5, "devfelder @testid");
+	my $id = $testid[13];
+	MSwitch_LOG( $Name, 5, "id $id");
+	$anzahl = $id if $id > $anzahl;
+	}
+	#################################
 	my $reihenfolgehtml="";
-	if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1' ) 
-		{
-			$reihenfolgehtml="<select name = 'reihe' id=''>";
-			for (my $i=1; $i<$anzahl+1; $i++)
-			{
-				$reihenfolgehtml.="<option value='$i'>$i</option>";
-			}			
-			$reihenfolgehtml.="</select>";
+	 if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1' ) 
+		 {
+			 $reihenfolgehtml="<select name = 'reihe' id=''>";
+			 for (my $i=1; $i<$anzahl+1; $i++)
+			 {
+				 $reihenfolgehtml.="<option value='$i'>$i</option>";
+			 }			
+			 $reihenfolgehtml.="</select>";
 
-		}
+		 }
 		
+	#########################################	
+		
+	#SHOW
+	# teste auf grössere PRIORITY als anzahl devices
+	foreach (@testidsdev)
+	#if (1 == 2)
+	{
+	MSwitch_LOG( $Name, 5, "dev @testidsdev");
+	my @testid = split( /#\[NF\]/, $_ );
+	my $x =0;
+	#foreach (@testid)
+	#{
+	#MSwitch_LOG( $Name, 0, "devfelder $x -> $testid[$x]");
+	#$x++;
+	#}
+	MSwitch_LOG( $Name, 5, "devfelder @testid");
+	my $id = $testid[18];
+	MSwitch_LOG( $Name, 5, "id $id");
+	$anzahl1 = $id if $id > $anzahl;
+	}
+	
+	#################################
+	my $showfolgehtml="";
+	# if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) ne '1' ) 
+	#	 {
+			 $showfolgehtml="<select name = 'showreihe' id=''>";
+			 for (my $i=1; $i<$anzahl1+1; $i++)
+			 {
+				 $showfolgehtml.="<option value='$i'>$i</option>";
+			 }			
+			 $showfolgehtml.="</select>";
+
+		# }
+    
+
+	
+		
+		
+	######################################	
+		
+		
+	#ID	
 	my $idfolgehtml="";	
 	if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1' ) 
 		{
 			$idfolgehtml="<select name = 'idreihe' id=''>";
-			for (my $i=-1; $i<$anzahl+1; $i++)
+			for (my $i=-1; $i<$anzahl3+1; $i++)
 			{
 				$idfolgehtml.="<option value='$i'>$i</option>" if $i > 0 ;
 				$idfolgehtml.="<option value='$i'>-</option>" if $i == 0 ;
@@ -2874,16 +2968,83 @@ sub MSwitch_fhemwebFn($$$$) {
     my %savedetails = MSwitch_makeCmdHash($Name);
     my $detailhtml  = "";
     my @affecteddevices = split( /,/, ReadingsVal( $Name, '.Device_Affected', 'no_device' ) );
+	
+	
+	#####################################
+	
+	
+	
+	MSwitch_LOG( $Name, 5,"$Name:  ->  @affecteddevices" );
+	
+	
+	
+	if (   AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1' && ReadingsVal( $Name, '.sortby', 'none' ) eq 'priority')
+	{
+	#sortieren
+	my $execids = "0";
+	@affecteddevices = MSwitch_priority($hash,$execids,@affecteddevices);
+	}
+	
+	if (   ReadingsVal( $Name, '.sortby', 'none' ) eq 'show')
+	{
+	#sortieren
+	my $typ = "_showreihe";
+	@affecteddevices = MSwitch_sort($hash,$typ,@affecteddevices);
+	}
+	
+	
+	MSwitch_LOG( $Name, 5,"$Name:  ->  @affecteddevices" );
+	
+	
+	
+	
+	######################################
+	
     if ( $affecteddevices[0] ne 'no_device' ) 
 	{
         $detailhtml =
 		"<table border='$border' class='block wide' id='MSwitchDetails' nm='MSwitch'>
 		<tr class='even'>
-		<td colspan='5'>device actions :<br>&nbsp;
+		<td colspan='5'>device actions sortby:
 		<input type='hidden' id='affected' name='affected' size='40'  value ='"
-		. ReadingsVal( $Name, '.Device_Affected', 'no_device' ) . "'>
-		</td></tr>";    #start
+		. ReadingsVal( $Name, '.Device_Affected', 'no_device' ) . "'>";
 		
+		
+		
+		my $select = ReadingsVal( $Name, '.sortby', 'none' );
+		
+		if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) ne '1' && $select eq 'priority')
+		{
+		$select = 'none';
+		readingsSingleUpdate( $hash, ".sortby", $select,0 );
+		}
+		
+		my $nonef ="";
+		#my $namef ="";
+		my $priorityf ="";
+		my $showf = "";
+		
+		#MSwitch_LOG( $Name, 0, "select - ".$select);
+		$nonef = 'selected="selected"' if $select eq 'none';
+		#$namef = 'selected="selected"' if $select eq 'name';
+		$priorityf = 'selected="selected"' if $select eq 'priority';
+		$showf ='selected="selected"' if $select eq 'show';
+		
+		#MSwitch_LOG( $Name, 0, "select -nonef ".$nonef);
+		#MSwitch_LOG( $Name, 0, "select - namef ".$namef);
+		#MSwitch_LOG( $Name, 0, "select - priorityf  ".$priorityf);
+		#MSwitch_LOG( $Name, 0, "select - showf ".$showf);
+		
+		$detailhtml .='
+		<select name="sort" id="sort" onchange="changesort()" >
+		<option value="none" '.$nonef.'>None</option>';
+       # <option value="name" '.$namef.'>Name</option>
+		if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1')
+		{
+        $detailhtml .='<option value="priority" '.$priorityf.'>Field Priority</option>';
+		}
+        $detailhtml .='<option value="show" '.$showf.'>Field Show</option>';
+		$detailhtml .="<br>&nbsp;</td></tr>";    #start
 		
 		my $alert;
         foreach (@affecteddevices)
@@ -3046,6 +3207,28 @@ sub MSwitch_fhemwebFn($$$$) {
 			}
 
 			
+			
+			my $realname = '';
+		if ( AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '4' ) 
+			{ 
+			$realname = "<input id='' name='devicename" . $_ . "' size='20'  value ='".$_."'>";
+			}
+			else 
+			{ 
+			$realname = "<input type='$hidden' id='' name='devicename" . $_ . "' size='20'  value ='".$_."'>";
+			}
+			
+			
+			
+			
+			
+			 
+			
+			
+			
+			
+			
+			
 			if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1' ) 
 			{
 
@@ -3053,10 +3236,10 @@ sub MSwitch_fhemwebFn($$$$) {
 				<tr class='odd'>
 				<td colspan='4' class='col1' style=\"width: 100%\">";
 				
-				$detailhtml = $detailhtml . "$zusatz $devicenamet&nbsp&nbsp;&nbsp;$dalias $alert
+				$detailhtml = $detailhtml . "$zusatz $devicenamet $realname&nbsp&nbsp;&nbsp;$dalias $alert
 				</td>";
 				
-			# priority		
+			###################### priority		
 				my $aktfolge = $reihenfolgehtml;
 				my $newname = "reihe".$_;
 				my $tochange = "<option value='$savedetails{ $aktdevice . '_priority' }'>$savedetails{ $aktdevice . '_priority' }</option>";
@@ -3070,6 +3253,22 @@ sub MSwitch_fhemwebFn($$$$) {
 				}
 				$detailhtml = $detailhtml ."priority: ". $aktfolge ."&nbsp;";
 			# ende
+			
+			
+			# show
+			#showfolgehtml
+			
+				$aktfolge = $showfolgehtml;
+				my $newname = "showreihe".$_;
+				my $tochange = "<option value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
+				my $change = "<option selected value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
+				$aktfolge =~ s/showreihe/$newname/g;
+				$aktfolge =~ s/$tochange/$change/g;
+				#$detailhtml = $detailhtml ."<td nowrap style='text-align: right;' class='col1'>";
+				$detailhtml = $detailhtml ."Show: ". $aktfolge ."&nbsp;";
+			
+
+			
 			# ID
 				$aktfolge = $idfolgehtml;
 				$newname = "idreihe".$_;
@@ -3086,8 +3285,42 @@ sub MSwitch_fhemwebFn($$$$) {
 			    $detailhtml = $detailhtml . "
 				<tr class='odd'>
 				<td colspan='5' class='col1'>";
-				$detailhtml = $detailhtml . "$zusatz $devicenamet&nbsp&nbsp;&nbsp;$dalias $alert
+				$detailhtml = $detailhtml . "$zusatz $devicenamet $realname&nbsp&nbsp;&nbsp;$dalias $alert
 				</td>";
+				
+				
+				# my $newname = "show".$_;
+				# my $tochange = "<option value='$savedetails{ $aktdevice . '_show' }'>$savedetails{ $aktdevice . '_show' }</option>";
+				# my $change = "<option selected value='$savedetails{ $aktdevice . '_priority' }'>$savedetails{ $aktdevice . '_show' }</option>";
+				# $showfolgehtml =~ s/show/$newname/g;
+				# $showfolgehtml =~ s/$tochange/$change/g;
+				# $detailhtml = $detailhtml ."<td nowrap style='text-align: right;' class='col1'>";
+				# $detailhtml = $detailhtml ."Show: ". $showfolgehtml ."&nbsp;";
+				
+				my $aktfolge = $showfolgehtml;
+				
+				MSwitch_LOG( $Name, 5, "oldname $aktfolge");
+				
+				
+				my $newname = "showreihe".$_;
+				my $tochange = "<option value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
+				my $change = "<option selected value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
+				$aktfolge =~ s/showreihe/$newname/g;
+				
+				MSwitch_LOG( $Name, 5, "newname $aktfolge");
+				MSwitch_LOG( $Name, 5, "tochange $tochange");
+				MSwitch_LOG( $Name, 5, "intochange $change");
+				
+				
+				$aktfolge =~ s/$tochange/$change/g;
+				$detailhtml = $detailhtml ."<td nowrap style='text-align: right;' class='col1'>";
+				$detailhtml = $detailhtml ."Show: ". $aktfolge ."&nbsp;";
+				
+				
+				
+				
+				
+				
 			}
 	
 			$detailhtml = $detailhtml . "</td></tr>";
@@ -3514,8 +3747,7 @@ sub MSwitch_fhemwebFn($$$$) {
 					$detailhtml = $detailhtml. "<input name='info' type='button' value='?' onclick=\"javascript: info('timer')\">&nbsp;";
 				}
 			
-			$detailhtml = $detailhtml. "'cmd2'&nbsp;
-			<select id = '' name='offatdelay" . $_ . "'>";
+			$detailhtml = $detailhtml. "'cmd2'&nbsp;<select id = '' name='offatdelay" . $_ . "'>";
 
             $se11 = '';
             $sel2 = '';
@@ -3588,6 +3820,11 @@ sub MSwitch_fhemwebFn($$$$) {
 ####################change1 = change.replace(/,/g,'##');
             # javazeile für übergabe erzeugen
 			 $javaform = $javaform . "
+			 
+			devices += \$(\"[name=devicename$_]\").val();
+			devices += '#[DN]'; 
+			 
+			 
 			devices += \$(\"[name=cmdon$_]\").val()+'#[NF]';
 			devices += \$(\"[name=cmdoff$_]\").val()+'#[NF]';
 			change = \$(\"[name=cmdonopt$_]\").val();
@@ -3622,7 +3859,12 @@ sub MSwitch_fhemwebFn($$$$) {
 			devices += \$(\"[name=exit1$_]\").prop(\"checked\") ? \"1\":\"0\";
 			devices += '#[NF]';
 			devices += \$(\"[name=exit2$_]\").prop(\"checked\") ? \"1\":\"0\";
-			devices += '#[ND]';
+			devices += '#[NF]';
+			devices += \$(\"[name=showreihe$_]\").val();
+			devices += '#[DN]';
+			
+		//	alert(devices);
+		//	return;
 			";
         }
 			
@@ -4730,6 +4972,19 @@ sub MSwitch_fhemwebFn($$$$) {
 	return;
 	}
 
+	
+	function changesort(){
+	
+	sortby = \$(\"[name=sort]\").val();
+	
+	//alert(sortby);
+	//return;
+	var nm = \$(t).attr(\"nm\");
+	var  def = nm+\" sort_device \"+sortby;
+	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
+	}
+	
+	
 
 	function addevice(device){
 	var nm = \$(t).attr(\"nm\");
@@ -5079,6 +5334,21 @@ sub MSwitch_makeCmdHash($) {
             $savedetails{$key} = 0;
         }
 		###
+		
+		###
+		$key = $detailarray[0] . "_showreihe";
+        if ( defined $detailarray[18] ) 
+		{
+            $savedetails{$key} = $detailarray[18];
+        }
+        else 
+		{
+            $savedetails{$key} = 0;
+        }
+		###
+		
+		
+		
 		$key = $detailarray[0] . "_comment";
         if ( defined $detailarray[15] ) 
 		{
@@ -7487,14 +7757,67 @@ sub MSwitch_priority(@)
 			push(@newlist,$key);
 			}
 		}
-		@devices=@newlist;
-		my $test = join( '|', @devices );
+		
+		
+		
+		
+		my $anzahl = @newlist;
+		MSwitch_LOG( $name, 5, "$name:   anzahl $anzahl" );
+		@devices=@newlist if $anzahl > 0;
+		
 		return @devices;
 }
 
 
 ##########################################################
+##########################################################
 
+
+# setzt reihenfolge und testet ID
+sub MSwitch_sort(@) 
+{
+	my ( $hash,$typ, @devices ) = @_;
+	my $name = $hash->{NAME};
+
+	
+	MSwitch_LOG( $name, 5, "$name:     zuweisung der reihenfolge" );
+	
+
+	my %devicedetails = MSwitch_makeCmdHash($name);
+	
+	#	my $execids = "0" if !defined $execids;
+	
+	my %new;
+		foreach my $device (@devices) 
+		{
+		
+			my $key = $device . $typ;
+			my $prio = $devicedetails{$key};
+			MSwitch_LOG( $name, 5, "$name:     device hat  $typ $device - $devicedetails{$key}" );
+			$new{$device}=$prio;
+		}
+		
+		my @new = %new;
+		my @newlist;
+		for my $key (sort { $new{ $a } <=> $new{ $b } } keys %new)
+		{
+		if ($key ne "" && $key ne " "){
+			push(@newlist,$key);
+			}
+		}
+		
+		
+		
+		
+		my $anzahl = @newlist;
+		MSwitch_LOG( $name, 5, "$name:   anzahl $anzahl" );
+		@devices=@newlist if $anzahl > 0;
+		
+		return @devices;
+}
+
+
+##########################################################
 
 
 
