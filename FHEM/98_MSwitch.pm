@@ -3259,9 +3259,9 @@ sub MSwitch_fhemwebFn($$$$) {
 			#showfolgehtml
 			
 				$aktfolge = $showfolgehtml;
-				my $newname = "showreihe".$_;
-				my $tochange = "<option value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
-				my $change = "<option selected value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
+				 $newname = "showreihe".$_;
+				 $tochange = "<option value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
+				 $change = "<option selected value='$savedetails{ $aktdevice . '_showreihe' }'>$savedetails{ $aktdevice . '_showreihe' }</option>";
 				$aktfolge =~ s/showreihe/$newname/g;
 				$aktfolge =~ s/$tochange/$change/g;
 				#$detailhtml = $detailhtml ."<td nowrap style='text-align: right;' class='col1'>";
@@ -3604,7 +3604,7 @@ sub MSwitch_fhemwebFn($$$$) {
 			
 			
 			my $exit2='';
-			$exit2 = 'checked' if $savedetails{ $aktdevice . '_exit1' } eq '1';
+			$exit2 = 'checked' if $savedetails{ $aktdevice . '_exit2' } eq '1';
 			if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1')
 			{
 			
