@@ -47,7 +47,7 @@ use POSIX;
 
 # Version #######################################################
 my $autoupdate = 'on'; #off/on
-my $version = '2.02a_Test';
+my $version = '2.02c_Test';
 my $vupdate = 'V2.00'; 			# versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30; 			# anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $standartstartdelay =60; 	# zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
