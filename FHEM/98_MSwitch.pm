@@ -47,7 +47,7 @@ use POSIX;
 
 # Version #######################################################
 my $autoupdate = 'on';     #off/on
-my $version    = '2.02';
+my $version    = '2.03';
 my $vupdate    = 'V2.00'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30
@@ -105,6 +105,7 @@ sub MSwitch_clearlog($);
 sub MSwitch_LOG($$$);
 sub MSwitch_Getsupport($);
 sub MSwitch_confchange($$);
+sub MSwitch_setconfig($$);
 
 my %sets = (
     "on"             => "noArg",
@@ -145,6 +146,65 @@ my %gets = (
 
 ####################
 sub MSwitch_Initialize($) {
+
+
+
+my $conf;
+#my $verzeichnis = "./MSwitch_Extensions";
+
+
+my $verzeichnis = "./FHEM/MSwitch";
+
+
+if(-d $verzeichnis) {  
+					#Log3( "SELF", 0, "SELF datei vorhanden ".$verzeichnis );
+					opendir(DIR, $verzeichnis);
+					while (my $entry = readdir(DIR)) 
+					{
+					my $dat = $entry;
+					$entry = $verzeichnis.'/'.$entry;
+					 
+					next if $entry eq ".";
+					next if $entry eq "..";
+					unless (-f $entry)
+					{
+					next;
+					}
+					   
+					#$conf.=",".$dat;
+					$conf.=$dat.",";
+					
+					
+					#Log3( "SELF", 0, "SELF datei ".$entry );
+
+					}
+					closedir(DIR);
+				  chop ($conf);
+				 
+				 
+        }  
+        else {  
+                 Log3( "SELF", 0, "SELF datei nicht vorhanden".$verzeichnis );
+        } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     my ($hash) = @_;
     $hash->{SetFn}             = "MSwitch_Set";
     $hash->{AsyncOutput}       = "MSwitch_AsyncOutput";
@@ -185,7 +245,19 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_RandomNumber"
       . "  MSwitch_Safemode:0,1"
       . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
-      . "  MSwitch_Wait";
+      . "  MSwitch_Wait"
+	  . "  setList:textField-long "
+	  . "  readingList:textField-long "
+	  . $readingFnAttributes;
+	  
+	  
+	  if ($conf ne "standart")
+	  {
+	  $hash->{AttrList} .=
+	  "  MSwitch_Config:".$conf;
+	  }
+	  
+	  
     $hash->{FW_addDetailToSummary} = 0;
 }
 ####################
@@ -405,6 +477,9 @@ sub MSwitch_summary($) {
 	\$( \".devType\" ).text( \"MSwitch Inforoom: Anzeige der Deviceinformationen, Änderungen sind nur in den Details möglich.\" );
 	});
 	</script>";
+	
+	 $ret =~ s/#dp /:/g;
+	
     return $ret;
 }
 
@@ -802,6 +877,10 @@ sub MSwitch_Set($@) {
     my $special = '';
     my $cs = ReadingsVal( $name, '.sysconf', 'undef' );
     if ( $cs ne "undef" ) {
+	
+	
+	$cs =~ s/#\[tr\]/[tr]/g;
+	
         $cs =~ s/#\[wa\]/|/g;
         $cs =~ s/#\[sp\]/ /g;
         $cs =~ s/#\[nl\]/\n/g;
@@ -813,8 +892,10 @@ sub MSwitch_Set($@) {
         $cs =~ s/#\[ko\]/,/g;
         $cs =~ s/#.*\n//g;
         $cs =~ s/\n//g;
+		
+		$cs =~ s/\[tr\]/#[tr]/g;
 
-        my $return = "no value";
+        my $return = "no value"; 
         $return = eval($cs);
         if ($@) {
             Log3( $name, 1, "$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
@@ -825,6 +906,39 @@ sub MSwitch_Set($@) {
     ############################
 
     if ( !defined $args[0] ) { $args[0] = ''; }
+	
+	
+	my $setList = AttrVal($name, "setList", " ");
+       $setList =~ s/\n/ /g;
+	
+if ($cmd ne "?")
+{	
+	 my @sl = split(" ", AttrVal($name, "setList", ""));
+
+	my $re = qr/$cmd/;
+	my @gefischt=grep(/$re/,@sl);
+
+	 if(@sl && grep /$re/, @sl  ) 
+	 {
+ 
+	 my @rl = split(" ", AttrVal($name, "readingList", ""));
+	 if(@rl && grep /$re/, @rl  ) 
+	 {
+	 readingsSingleUpdate( $hash, $cmd, "@args", 1 );
+	 }
+	 else
+	 
+	 {
+	 readingsSingleUpdate( $hash, "state", $cmd." @args", 1 );
+	 }
+	 return;
+	 
+	 }
+}	
+	
+	
+	
+	
     if ( $cmd eq 'exec_cmd1' && $args[0] eq 'ID' ) {
         Log3( $name, 5, "$name: execids werden gesetzt -> " . $args[1] );
         $execids = $args[1];
@@ -882,15 +996,15 @@ sub MSwitch_Set($@) {
 
         if ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Notify" ) {
             return
-"Unknown argument $cmd, choose one of active:noArg inactive:noArg del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd1 exec_cmd2 exec_cmd1+2 wait reload_timer:noArg change_renamed $special";
+"Unknown argument $cmd, choose one of active:noArg inactive:noArg del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd1 exec_cmd2 exec_cmd1+2 wait reload_timer:noArg change_renamed $setList $special";
         }
         elsif ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Toggle" ) {
             return
-"Unknown argument $cmd, choose one of active:noArg inactive:noArg on offdel_delays:noArg backup_MSwitch:all_devices fakeevent wait reload_timer:noArg change_renamed $special";
+"Unknown argument $cmd, choose one of active:noArg inactive:noArg on offdel_delays:noArg backup_MSwitch:all_devices fakeevent wait reload_timer:noArg change_renamed $setList $special";
         }
         else {
             return
-"Unknown argument $cmd, choose one of active:noArg inactive:noArg on off  del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd1 exec_cmd2 exec_cmd1+2 wait reload_timer:noArg change_renamed $special";
+"Unknown argument $cmd, choose one of active:noArg inactive:noArg on off  del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd1 exec_cmd2 exec_cmd1+2 wait reload_timer:noArg change_renamed $setList $special";
 
         }
     }
@@ -1007,8 +1121,13 @@ sub MSwitch_Set($@) {
 
         # event manuell zufügen
         my $devName = ReadingsVal( $name, 'Trigger_device', '' );
-        $args[0] =~ s/~/ /g;
-        my @newevents = split( /,/, $args[0] );
+        $args[0] =~ s/\[sp\]/ /g;
+		
+		# MSwitch_LOG( $name, 0, "args0 ".$args[0] );
+		# TODO leerzeichen im perteil ersetzen
+		
+        my @newevents = split( / /, $args[0] );
+		
         if ( ReadingsVal( $name, 'Trigger_device', '' ) eq "all_events" ) {
             foreach (@newevents) {
                 $hash->{helper}{events}{all_events}{$_} = "on";
@@ -1845,6 +1964,15 @@ sub MSwitch_Attr(@) {
         return;
     }
 
+	
+	if ( $cmd eq 'set' && $aName eq 'MSwitch_Config'  ) {
+        
+        MSwitch_setconfig($hash,$aVal);
+    }
+	
+	
+	
+	
     if ( $cmd eq 'set' && $aName eq 'disable' && $aVal == 1 ) {
         $hash->{NOTIFYDEV} = 'no_trigger';
         MSwitch_Delete_Delay( $hash, 'all' );
@@ -2048,6 +2176,10 @@ sub MSwitch_Notify($$) {
         delete( $own_hash->{READINGS}{waiting} );
     }
 
+	
+	 MSwitch_LOG( $ownName, 6, "-------------waiting passiert-----------------" );
+	
+	
     my $incommingdevice = '';
     if ( defined( $own_hash->{helper}{testevent_device} ) ) {
 
@@ -2711,6 +2843,7 @@ sub MSwitch_fhemwebFn($$$$) {
     my $cs           = "";
     my %cmdsatz;              # ablage desbefehlssatzes jedes devices
     my $globalon = 'off';
+	my $globalon1 = 'off';
 
     if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) eq 'no_trigger' )
     {
@@ -2722,16 +2855,32 @@ sub MSwitch_fhemwebFn($$$$) {
     }
 
     if ( AttrVal( $Name, 'MSwitch_Expert', "0" ) eq '1' ) {
-        if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) eq
-            'all_events' )
+       
+	if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) eq 'all_events' )
         {
-            $triggerdevices .=
-"<option selected=\"selected\" value=\"all_events\">GLOBAL</option>";
+            $triggerdevices .="<option selected=\"selected\" value=\"all_events\">GLOBAL</option>";
             $globalon = 'on';
         }
-        else {
+        else 
+		{
             $triggerdevices .= "<option  value=\"all_events\">GLOBAL</option>";
         }
+		
+		
+	# if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) eq 'dynamic')
+        # {
+            # $triggerdevices .="<option selected=\"selected\" value=\"dynamic\">Dynamisch</option>";
+            # $globalon1 = 'on';
+        # }
+        # else 
+		# {
+            # $triggerdevices .= "<option  value=\"dynamic\">Dynamisch</option>";
+        # }
+		
+		
+		
+		
+		
     }
 
     my @notype = split( / /, AttrVal( $Name, 'MSwitch_Ignore_Types', "" ) );
@@ -2839,10 +2988,18 @@ sub MSwitch_fhemwebFn($$$$) {
             if ( lc($_) eq lc($deviceTYPE) ) { next LOOP9; }
         }
 
+		
+		
+		
+		
         if ( ReadingsVal( $Name, 'Trigger_device', '' ) eq $name ) {
             $selectedtrigger = 'selected=\"selected\"';
             if ( $name eq 'all_events' ) { $globalon = 'on' }
         }
+		
+	
+		
+		
 
         $triggerdevices .=
 "<option $selectedtrigger value=\"$name\">$name (a:$devicealias t:$deviceTYPE)</option>";
@@ -4131,6 +4288,13 @@ sub MSwitch_fhemwebFn($$$$) {
     if ( $globalon ne 'on' ) {
         $visible = 'collapse';
     }
+	
+	    my $visible1 = 'visible';
+    if ( $globalon1 ne 'on' ) {
+        $visible1 = 'collapse';
+    }
+	
+	
     $ret =
         $ret
       . "<tr class=\"even\"  id='triggerwhitelist' style=\"visibility:"
@@ -4149,6 +4313,31 @@ sub MSwitch_fhemwebFn($$$$) {
       . "' onClick=\"javascript:bigwindow(this.id);\" >";
 
     $ret = $ret . "</td></tr>";
+	
+######################
+
+    # $ret =
+        # $ret
+      # . "<tr class=\"even\"  id='triggerdynamic' style=\"visibility:"
+      # . $visible1 . ";\" >
+	# <td nowrap>";
+
+    # if ( AttrVal( $Name, 'MSwitch_Help', "0" ) eq '1' ) {
+        # $ret = $ret
+          # . "<input name='info' type='button' value='?' onclick=\"javascript: info('dynamisch')\">&nbsp;";
+    # }
+    # $ret = $ret . "Trigger Device dynamic: 
+	# </td>
+	# <td></td>
+	# <td><input type='text' id ='triggerdynamic' name='triggerdynamic' size='30' value ='"
+      # . ReadingsVal( $Name, '.Trigger_Dynamic', '' )
+      # . "' onClick=\"javascript:bigwindow(this.id);\" >";
+
+    # $ret = $ret . "</td></tr>";
+######################
+	
+	
+	
 
     my $inhalt      = "execute 'cmd1' only at :";
     my $inhalt1     = "execute 'cmd2' only at :";
@@ -4249,6 +4438,7 @@ sub MSwitch_fhemwebFn($$$$) {
 ####################
     # triggerdetails
     my $selectedcheck3 = "";
+	my $SELF = $Name;
     my $testlog = ReadingsVal( $Name, 'Trigger_log', 'on' );
     if ( $testlog eq 'on' ) {
         $selectedcheck3 = "checked=\"checked\"";
@@ -4269,12 +4459,24 @@ sub MSwitch_fhemwebFn($$$$) {
 		</tr>";
         $ret .= "<tr " . $displaynot . " class=\"even\"><td>";
 
-        $ret .= $inhalt5 . "</td><td>
-		Trigger " . $Triggerdevice . " :
+        $ret .= $inhalt5 . "</td><td>";
+		
+		$ret .= "Trigger " . $Triggerdevice . " :
 		</td>
-		<td>
-		<select id = \"trigon\" name=\"trigon\">" . $optionon . "</select>
-		</td>
+		<td>";
+		$ret .= "<select id = \"trigon\" name=\"trigon\">" . $optionon . "</select>";
+		 
+		##############
+		my $fieldon ="";
+		if ( $triggeron =~ m/{(.*)}/ ) 
+		{
+		my $exec = "\$fieldon = ".$1;
+		eval ($exec);
+        $ret .= "<input style='background-color:#e5e5e5;' name='info' readonly value='value = ".$fieldon."'>" ;
+		}
+		#####################
+		 
+		$ret .= "</td>
 		</tr>
 		<tr " . $displaynot . $displayntog . "class=\"even\">
 		<td>
@@ -4282,9 +4484,22 @@ sub MSwitch_fhemwebFn($$$$) {
 		<td>
 		Trigger " . $Triggerdevice . " :
 		</td>
-		<td>
-		<select id = \"trigoff\" name=\"trigoff\">" . $optionoff . "</select>
-		</td>
+		<td>";
+		$ret .= "<select id = \"trigoff\" name=\"trigoff\">" . $optionoff . "</select>";
+		
+			##############
+		my $fieldoff ="";
+		if ( $triggeroff =~ m/{(.*)}/ ) 
+		{
+		my $exec = "\$fieldoff = ".$1;
+		eval ($exec);
+        $ret .= "<input style='background-color:#e5e5e5;' name='info' readonly value='value = ".$fieldoff."'>" ;
+		}
+		#####################
+		
+		
+		
+		$ret .= "</td>
 		</tr>";
 
         $ret .= "<tr class=\"even\">
@@ -4296,8 +4511,18 @@ sub MSwitch_fhemwebFn($$$$) {
 		Trigger " . $Triggerdevice . " :
 		</td>
 		<td>
-		<select id = \"trigcmdon\" name=\"trigcmdon\">" . $optioncmdon . "</select>
-		</td>
+		<select id = \"trigcmdon\" name=\"trigcmdon\">" . $optioncmdon . "</select>";
+		
+		##############
+		my $fieldcmdon ="";
+		if ( $triggercmdon =~ m/{(.*)}/ ) 
+		{
+		my $exec = "\$fieldcmdon = ".$1;
+		eval ($exec);
+        $ret .= "<input style='background-color:#e5e5e5;' name='info' readonly value='value = ".$fieldcmdon."'>" ;
+		}
+		#####################
+		$ret .= "</td>
 		</tr>
 		<tr " . $displayntog . "class=\"even\">
 		<td>" . $inhalt3 . "</td>
@@ -4306,8 +4531,17 @@ sub MSwitch_fhemwebFn($$$$) {
 		</td>
 		<td>
 		<select id = \"trigcmdoff\" name=\"trigcmdoff\">"
-          . $optioncmdoff . "</select>
-		</td>
+          . $optioncmdoff . "</select>";
+		  	##############
+		my $fieldcmdoff ="";
+		if ( $triggercmdoff =~ m/{(.*)}/ ) 
+		{
+		my $exec = "\$fieldcmdoff = ".$1;
+		eval ($exec);
+        $ret .= "<input style='background-color:#e5e5e5;' name='info' readonly value='value = ".$fieldcmdoff."'>" ;
+		}
+		#####################
+		$ret .= "</td>
 		</tr>
 		
 		<tr class=\"even\">
@@ -4545,9 +4779,23 @@ sub MSwitch_fhemwebFn($$$$) {
 		{
 		document.getElementById(\"triggerwhitelist\").style.visibility = \"collapse\"; 
 		}
+		
+
+		
+		
+		
 	}
 	";
 
+	
+		# if (trigdev == 'dynamic')
+		# {
+		# document.getElementById(\"triggerdynamic\").style.visibility = \"visible\"; 
+		# }
+	# else
+		# {
+		# document.getElementById(\"triggerdynamic\").style.visibility = \"collapse\"; 
+		# }
     #####################
     $j1 .= "
 	
@@ -4797,7 +5045,7 @@ sub MSwitch_fhemwebFn($$$$) {
 	text = text +  'Bei der Auswahl \\\'GLOBAL\\\' als Triggerevent werde alle von Fhem erzeugten Events an dieses Device weitergeleitet. Dieses kann eine erhöhte Systemlast erzeugen.<br>In dem Feld \\\'Trigger Device Global Whitelist:\\\' kann dieses eingeschränkt werden , indem Devices oder Module benannt werden , deren Events Berücksichtigt werden. Sobald hier ein Eintrag erfolgt , werden nur noch Diese berücksichtigt , gibt es keinen Eintrag , werden alle berücksichtigt ( Whitelist ).<br> Format: Die einzelnen Angaben müssen durch Komma getrennt werden .<br><br>Mögliche Angaben :<br>Modultypen: TYPE=CUL_HM<br>Devicenamen: NAME<br><br>';}
 					   
 	if (from == 'addevent'){
-	text = text +  'Hier können manuell Events zugefügt werden , die in den Auswahllisten verfügbar sein sollen und auf die das Modul reagiert.<br>Grundsätzlich ist zu unterscheiden , ob das Device im Normal-, oder Globalmode betrieben wird<br>Im Normalmode bestehen die Events aus 2 Teilen , dem Reading und dem Wert \"state:on\"<br>Wenn sich das Device im GLOBAL Mode befindet müssen die Events aus 3 Teilen bestehen , dem Devicename, dem Reading und dem Wert \"device:state:on\".<br>Wird hier nur ein \"*\" angegeben , reagiert der entsprechende Zweig auf alle eingehenden Events.<br>Weitherhin sind folgende Syntaxmöglichkeiten vorgesehen :<br> device:state:*, device:*:*, *:state:* , etc.<br>Der Wert kann mehrere Auswahlmöglichkeiten haben , durch folgende Syntax: \"device:state:(on/off)\". In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.<br><br>Es können mehrere Evebts gleichzeitig angelegt werden . Diese sind durch Komma zu trennen .<br><br>Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.';}
+	text = text +  'Hier können manuell Events zugefügt werden , die in den Auswahllisten verfügbar sein sollen und auf die das Modul reagiert.<br>Grundsätzlich ist zu unterscheiden , ob das Device im Normal-, oder Globalmode betrieben wird<br>Im Normalmode bestehen die Events aus 2 Teilen , dem Reading und dem Wert \"state:on\"<br>Wenn sich das Device im GLOBAL Mode befindet müssen die Events aus 3 Teilen bestehen , dem Devicename, dem Reading und dem Wert \"device:state:on\".<br>Wird hier nur ein \"*\" angegeben , reagiert der entsprechende Zweig auf alle eingehenden Events.<br>Weitherhin sind folgende Syntaxmöglichkeiten vorgesehen :<br> device:state:*, device:*:*, *:state:* , etc.<br>Der Wert kann mehrere Auswahlmöglichkeiten haben , durch folgende Syntax: \"device:state:(on/off)\". In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.<br><br>Es können mehrere Evebts gleichzeitig angelegt werden . Diese sind durch Leerzeichen zu trennen .<br><br>Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.';}
 					   
 	if (from == 'condition'){
 	text = text +  'Hier kann die Angabe von Bedingungen erfolgen, die erfüllt sein müssen um den Schaltbefehl auszuführen.<br>Diese Bedingunge sind eng an DOIF- Bedingungen angelehnt.<br><br>Zeitabhängiges schalten: [19.10-23:00] - Schaltbefehl erfolgt nur in angegebenem Zeitraum<br>Readingabhängiges schalten [Devicename:Reading] =/>/< X oder [Devicename:Reading] eq \"x\" - Schaltbefehl erfolgt nur bei erfüllter Bedingung.<br>Achtung! Bei der Abfrage von Readings nach Strings ( on,off,etc. ) ist statt \"=\" \"eq\" zu nutzen und der String muss in \"x\" gesetzt werden!<br> Die Kombination mehrerer Bedingungen und Zeiten ist durch AND oder OR möglich:<br> [19.10-23:00] AND [Devicename:Reading] = 10 - beide Bedingungen müssen erfüllt sein<br>[19.10-23:00] OR [Devicename:Reading] = 10 - eine der Bedingungen muss erfüllt sein.<br>Es ist auf korrekte Eingabe der Leerzeichen zu achten.<br><br>sunset - Bedingungen werden mit zusätzlichen {} eingefügt z.B. : [{ sunset() }-23:00].<br><br>Variable \$we:<br>Die globlae Variable \$we ist nutzbar und muss {} gesetzt werden .<br>{ !\$we } löst den Schaltvorgang nur Werktagen aus<br>{ \$we } löst den Schaltvorgang nur Wochenenden, Feiertagen aus<br><br>Soll nur an bestimmten Wochentagen geschaltet werden, muss eine Zeitangsbe gemacht werden und durch z.B. |135 ergänzt werden.<br>[10:00-11:00|13] würde den Schaltvorgang z.B nur Montag und Mitwoch zwischen 10 uhr und 11 uhr auslösen. Hierbei zählen die Wochentage von 1-7 für Montag-Sonntag.<br>Achtung: Bei Anwendung der geschweiften Klammern zur einletung eines Perlasdrucks ist unbedingt auf die Leerzeichen hinter und vor der Klammer zu achten !<br>Überschreitet die Zeitangabe die Tagesgrenze (24.00 Uhr ), so gelten die angegebenen Tage noch bis zum ende der angegebenen Schaltzeit , d.H. es würde auch am Mitwoch noch der schaltvorgang erfolgen, obwohl als Tagesvorgabe Dienstag gesetzt wurde.<br><br>\$EVENT Variable: Die Variable EVENT enthält den auslösenden Trigger, d.H. es kann eine Reaktion in direkter Abhängigkeit zum auslösenden Trigger erfolgen.<br>[\$EVENT] eq \"state:on\" würde den Kommandozweig nur dann ausführen, wenn der auslösende Trigger \"state:on\" war.<br>Wichtig ist dieses, wenn bei den Triggerdetails nicht schon auf ein bestimmtes Event getriggert wird, sondern hier durch die Nutzung eines wildcards (*) auf alle Events getriggert wird, oder auf alle Events eines Readings z.B. (state:*)<br><br>Bei eingestellter Delayfunktion werden die Bedingungen je nach Einstellung sofort,verzögert oder sowohl-als-auch überprüft, d.H hiermit sind verzögerte Ein-, und Ausschaltbefehle möglich die z.B Nachlauffunktionen oder verzögerte Einschaltfunktionen ermöglichen, die sich selbst überprüfen. z.B. [wenn Licht im Bad an -> schalte Lüfter 2 Min später an -> nur wenn Licht im Bad noch an ist]<br><br>Anstatt einer Verzögerung kann hier auch eine festgelegte Schaltzeit erfolgen.';}
@@ -5071,15 +5319,29 @@ sub MSwitch_fhemwebFn($$$$) {
 	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
 	});
 		
+		
+		
+		
 	\$(\"#aw_addevent\").click(function(){
 	var nm = \$(t).attr(\"nm\");
+	
 	event = \$(\"[name=add_event]\").val();
-	event= event.replace(/ /g,'~');
+	
+	
+	
+	event= event.replace(/ /g,'[sp]');
 	event= event.replace(/\\|/g,'[bs]');
+	
+	
 	if (event == ''){
 	//alert('no event specified');
 	return;
 	}	  
+	
+	
+	
+	
+	
 	var  def = nm+\" addevent \"+event+\" \";
 	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
 	});
@@ -5783,9 +6045,9 @@ sub MSwitch_Restartcmd($) {
     return "" if ( IsDisabled($name) );
 
     $hash->{eventsave} = 'unsaved';
-    MSwitch_LOG( $name, 5, "----------------------------------------" );
-    MSwitch_LOG( $name, 5, "$name: aufruf restartcmd -> " . $incomming );
-    MSwitch_LOG( $name, 5, "----------------------------------------" );
+    MSwitch_LOG( $name, 6, "----------------------------------------" );
+    MSwitch_LOG( $name, 6, "$name: aufruf restartcmd -> " . $incomming );
+    MSwitch_LOG( $name, 6, "----------------------------------------" );
 
     # checke versionskonflikt der datenstruktur
     if ( ReadingsVal( $name, '.V_Check', $vupdate ) ne $vupdate ) {
@@ -5954,6 +6216,60 @@ sub MSwitch_checkcondition($$$) {
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
 
+	
+	
+	
+	###### perlersetzung
+	##############
+	
+	  my $x = 0;
+	  my $field ="";
+	  my $SELF = $name;
+     while ( $condition =~ m/(.*?){(.*)}(.*)?/ ) {
+	 
+	 
+         my $firstpart  = $1;
+         my $secondpart = $2;
+         my $lastpart   = $3;
+		 
+		 my $exec = "\$field = ".$2;
+		# Log3( $name, 0, "exec: " . $exec );
+		 
+		 eval ($exec);
+		# Log3( $name, 0, "field: " . $field );
+		 
+         $condition = $firstpart . $field . $lastpart;
+		 
+		#  Log3( $name, 0, "condition: " . $condition );
+		 
+         $x++;
+         last if $x > 10;    #notausstieg
+     }
+	#####################################
+	
+		# my $fieldcmdon ="";
+		# if ( $triggercmdon =~ m/{(.*)}/ ) 
+		# {
+		# my $exec = "\$fieldcmdon = ".$1;
+		# eval ($exec);
+        # $ret .= "<input style='background-color:#e5e5e5;' name='info' readonly value='value = ".$fieldcmdon."'>" ;
+		# }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
     if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {
         MSwitch_Createnumber($hash);
     }
@@ -6379,17 +6695,24 @@ sub MSwitch_Createtimer($) {
     $key = 'ly';
     $condition =~ s/$key//ig;
 
-    $x = 0;
-
+    $x = 0;	   
     # achtung perl 5.30
-    while ( $condition =~ m/(.*).\{(.*)\}.(.*)/ ) {
+    while ( $condition =~ m/(.*)\{(.*)\}(.*)/ ) {
         $x++;    # notausstieg
         last if $x > 20;    # notausstieg
         if ( defined $2 ) {
-            my $part2 = "[" . substr( ( eval $2 ), 0, 5 ) . "]";
-            my $test = substr( ( eval $2 ), 0, 2 ) * 1;
+		my $part1 = $1;
+		my $part3 = $3;
+			my $part2 =  eval $2 ;
+			if ($part2 !~ m/^[0-9]{2}:[0-9]{2}$|^[0-9]{2}:[0-9]{2}:[0-9]{2}$/)
+			{
+			MSwitch_LOG( $Name, 1, "$Name:  ERROR wrong format in set timer. There are no timers running. Format must be HH:MM. Format is: $part2 " );  
+			return;
+			}
+			$part2 =  substr( $part2, 0, 5 );
+			my $test = substr( $part2, 0, 2 ) * 1;
             $part2 = "" if $test > 23;
-            $condition = $1 . $part2 . $3;
+            $condition = $part1 . $part2 . $part3;
         }
     }
 
@@ -6937,6 +7260,23 @@ sub MSwitch_checktrigger(@) {
 
     #$triggerfield =~ s/\(//g;
     #$triggerfield =~ s/\)//g;
+	
+	
+	
+	#MSwitch_LOG( $ownName, 0, "triggerfield" .$triggerfield );
+     if ( $triggerfield =~ m/{(.*)}/ ) 
+	 {
+         #MSwitch_LOG( $ownName, 0, "found perl");
+		# MSwitch_LOG( $ownName, 0, "found perl s1 ".$1);
+		 my $SELF = $ownName;
+		 my $exec = "\$triggerfield = ".$1;
+		 eval ($exec);
+        
+     }
+	
+	#MSwitch_LOG( $ownName, 0, "triggerfield" .$triggerfield );
+	
+	
     unshift( @eventsplit, $device )
       if ReadingsVal( $ownName, 'Trigger_device', '' ) eq "all_events";
 
@@ -7034,9 +7374,15 @@ sub MSwitch_backup($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
 
-    my @areadings =
-      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state .sysconf Sys_Extension .sortby)
-      ;    #alle readings
+    #my @areadings =
+      #qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Exec_cmd Trigger_device Trigger_log last_event state .sysconf Sys_Extension .sortby)
+      #;    #alle readings
+
+	  	my $testreading = $hash->{READINGS}  ;
+	
+	
+	 
+my @areadings = ( keys %{ $testreading });
 
     my %keys;
     open( BACKUPDATEI, ">MSwitch_backup_$vupdate.cfg" )
@@ -7220,8 +7566,28 @@ sub MSwitch_Getconfig($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
     my @areadings =
-      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Trigger_device Trigger_log last_event .sysconf state Sys_Extension .sortby);
+   #   qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Trigger_device Trigger_log last_event .sysconf state Sys_Extension .sortby);
 
+	  
+	my $testreading = $hash->{READINGS}  ;
+	
+	
+	 
+@areadings = ( keys %{ $testreading });
+
+# Log3( "SELF", 0, "readings ".@areadings );
+	 
+	# foreach my $xyz ( keys %{ $test }) 
+	# {
+
+# Log3( "SELF", 0, "def ".$xyz );
+
+
+#}	 
+	  
+	  
+	  
+	  
     my $count = 0;
     my $out   = "#V $version\\n";
     $out .= "#VS $vupdate\\n";
@@ -7240,7 +7606,15 @@ sub MSwitch_Getconfig($) {
             $tmp =~ s/#\[st\]/\\'/g;
             $tmp =~ s/'/\\'/g;
             $tmp =~ s/#\[bs\]/\\\\/g;
+				
         }
+		 if ( $key eq ".Device_Events" || $key eq ".Trigger_cmd_on" || $key eq ".Trigger_cmd_off" || $key eq ".Trigger_on" || $key eq ".Trigger_off" ) {
+		 $tmp =~ s/'/\\'/g;
+		 }
+		
+		
+		
+		
 
         if ( $key eq ".sysconf" ) {
         }
@@ -7270,7 +7644,7 @@ sub MSwitch_Getconfig($) {
     $count++;
 
     my $client_hash = $hash->{CL};
-    Log3( $Name, 0, "MSWITCH-CONFIG: " . $out );
+    #Log3( $Name, 0, "MSWITCH-CONFIG: " . $out );
     asyncOutput( $hash->{CL},
 "<html>Änderungen sollten hier nur von erfahrenen Usern durchgeführt werden.<textarea name=\"edit1\" id=\"edit1\" rows=\""
           . $count
@@ -7372,6 +7746,9 @@ sub MSwitch_savesys($$) {
     my ( $hash, $cont ) = @_;
     my $name = $hash->{NAME};
     $cont = urlDecode($cont);
+	
+	#$cont =~ s/#\[tr]/#[nl]/g;
+	
     $cont =~ s/\n/#[nl]/g;
     $cont =~ s/\t/    /g;
     $cont =~ s/ /#[sp]/g;
@@ -7404,9 +7781,17 @@ sub MSwitch_saveconf($$) {
 
     my @changes;
     my $info = "";
+	
+		MSwitch_LOG( $name, 0, "saveconfig " . $cont);
+	
+	
     my @found = split( /#\[EOL\]/, $cont );
     foreach (@found) {
 
+	
+	MSwitch_LOG( $name, 0, "saveconfig " . $_);
+	
+	
         if ( $_ =~ m/#Q (.*)/ )    # setattr
         {
             push( @changes, $1 );
@@ -7429,6 +7814,8 @@ sub MSwitch_saveconf($$) {
         if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
         {
             if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
+			
+			 delete( $hash->{READINGS}{$1} );
             }
             else {
                 my $newstring = $2;
@@ -7996,6 +8383,62 @@ sub MSwitch_makefreecmd($$) {
 
 #################################
 
+sub MSwitch_setconfig($$)
+{
+    my ( $hash, $aVal ) = @_;
+    my $name = $hash->{NAME};
+   # MSwitch_LOG( $name, 0, "setconfig " . $aVal );
+
+	
+	
+	
+	
+	 my %keys;
+        foreach my $attrdevice ( keys %{ $attr{$name} } )       #geht
+        {
+           
+			  delete $attr{$name}{$attrdevice};
+			  
+        }
+	my $testreading = $hash->{READINGS}  ;
+	my @areadings = ( keys %{ $testreading });
+                     #
+     foreach my $key (@areadings) 
+	 {
+       fhem("deletereading $name $key ");    
+     }
+	
+	
+	
+
+	
+	
+	my $Zeilen ='';
+	open( BACKUPDATEI, "<./FHEM/MSwitch/$aVal" )
+      || return "$name|no Backupfile ./MSwitch_Extensions/$aVal found\n";
+    while (<BACKUPDATEI>) {
+	
+	
+	
+        $Zeilen = $Zeilen . $_;
+    }
+    close(BACKUPDATEI);
+	
+	
+	$Zeilen =~ s/\n/#[EOL]/g;
+	
+	
+	#MSwitch_LOG( $name, 0, "setconfig " . $Zeilen );
+	
+	MSwitch_saveconf($hash,$Zeilen);
+}
+
+
+
+#sub MSwitch_saveconf($$)
+#my $verzeichnis = "./MSwitch_Extensions";
+
+#################################
 1;
 
 =pod
