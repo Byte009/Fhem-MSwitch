@@ -46,8 +46,42 @@ use warnings;
 use POSIX;
 
 # Version #######################################################
+
+
+my $preconf="";
+my $verzeichnis = "./FHEM/MSwitch";
+if(-d $verzeichnis) {  
+					#Log3( "SELF", 0, "SELF datei vorhanden ".$verzeichnis );
+					opendir(DIR, $verzeichnis);
+					while (my $entry = readdir(DIR)) 
+					{
+					my $dat = $entry;
+					$entry = $verzeichnis.'/'.$entry;
+					 
+					next if $entry eq ".";
+					next if $entry eq "..";
+					unless (-f $entry)
+					{
+					next;
+					}
+					#$preconf.=",".$dat;
+					$preconf.=$dat.",";
+					#Log3( "SELF", 0, "SELF datei ".$entry );
+					}
+					closedir(DIR);
+				  chop ($preconf); 
+        }  
+        else {  
+		$preconf="";
+        } 
+
+
+
+
+
+
 my $autoupdate = 'on';     #off/on
-my $version    = '2.03';
+my $version    = '2.03_Test';
 my $vupdate    = 'V2.00'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30
@@ -149,63 +183,11 @@ sub MSwitch_Initialize($) {
 
 
 
-my $conf;
-#my $verzeichnis = "./MSwitch_Extensions";
-
-
-my $verzeichnis = "./FHEM/MSwitch";
-
-
-if(-d $verzeichnis) {  
-					#Log3( "SELF", 0, "SELF datei vorhanden ".$verzeichnis );
-					opendir(DIR, $verzeichnis);
-					while (my $entry = readdir(DIR)) 
-					{
-					my $dat = $entry;
-					$entry = $verzeichnis.'/'.$entry;
-					 
-					next if $entry eq ".";
-					next if $entry eq "..";
-					unless (-f $entry)
-					{
-					next;
-					}
-					   
-					#$conf.=",".$dat;
-					$conf.=$dat.",";
-					
-					
-					#Log3( "SELF", 0, "SELF datei ".$entry );
-
-					}
-					closedir(DIR);
-				  chop ($conf);
-				 
-				 
-        }  
-        else {  
-                 Log3( "SELF", 0, "SELF datei nicht vorhanden".$verzeichnis );
-        } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     my ($hash) = @_;
+	
+	
     $hash->{SetFn}             = "MSwitch_Set";
     $hash->{AsyncOutput}       = "MSwitch_AsyncOutput";
     $hash->{RenameFn}          = "MSwitch_Rename";
@@ -239,7 +221,7 @@ if(-d $verzeichnis) {
       . "  MSwitch_Trigger_Filter"
       . "  MSwitch_Extensions:0,1"
       . "  MSwitch_Inforoom"
-      . "  MSwitch_Mode:Full,Notify,Toggle"
+      . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
       . "  MSwitch_Condition_Time:0,1"
       . "  MSwitch_RandomTime"
       . "  MSwitch_RandomNumber"
@@ -251,11 +233,7 @@ if(-d $verzeichnis) {
 	  . $readingFnAttributes;
 	  
 	  
-	  if ($conf ne "standart")
-	  {
-	  $hash->{AttrList} .=
-	  "  MSwitch_Config:".$conf;
-	  }
+	 
 	  
 	  
     $hash->{FW_addDetailToSummary} = 0;
@@ -392,9 +370,20 @@ sub MSwitch_summary($) {
             $ret .=
 "<select style='width: 18em;' title=\"\" disabled ><option value=\"Trigger:\">Trigger: inaktiv</option></select>";
         }
-        else {
+        else 
+		{
+		
+		if ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) ne "Dummy" ) {
             $affectedtime = "";
             $ret .= "&nbsp;&nbsp;Multiswitchmode (no trigger / no timer)&nbsp;";
+			}
+			else
+			{
+			$affectedtime = "";
+			$affected ="";
+            $ret .= "&nbsp;&nbsp;Dummymode&nbsp;";
+			}
+			
         }
     }
     else {
@@ -488,10 +477,17 @@ sub MSwitch_LoadHelper($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
     my $oldtrigger = ReadingsVal( $Name, 'Trigger_device', 'undef' );
+	
+	
+	Log3( $Name, 0, "REACHED HELPER $Name oldtrigger $oldtrigger " . __LINE__ );
+	
+	
     my $devhash    = undef;
     my $cdev       = '';
     my $ctrigg     = '';
     if ( defined $hash->{DEF} ) {
+	Log3( $Name, 0, "$Name rout 1 " . __LINE__ );
+	
         $devhash = $hash->{DEF};
         my @dev = split( /#/, $devhash );
         $devhash = $dev[0];
@@ -503,6 +499,7 @@ sub MSwitch_LoadHelper($) {
             $ctrigg = '';
         }
         if ( defined $devhash ) {
+		Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
             $hash->{NOTIFYDEV} = $cdev; # stand aug global ... änderung auf ...
             readingsSingleUpdate( $hash, "Trigger_device", $cdev, 0 );
             if ( defined $cdev && $cdev ne '' ) {
@@ -510,6 +507,7 @@ sub MSwitch_LoadHelper($) {
             }
         }
         else {
+		Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
             $hash->{NOTIFYDEV} = 'no_trigger';
             readingsSingleUpdate( $hash, "Trigger_device", 'no_trigger', 0 );
         }
@@ -519,13 +517,19 @@ sub MSwitch_LoadHelper($) {
         || $hash->{NOTIFYDEV} eq 'undef'
         || $hash->{NOTIFYDEV} eq '' )
     {
+	Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
         $hash->{NOTIFYDEV} = 'no_trigger';
     }
 
     if ( $oldtrigger ne 'undef' ) {
+	Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
         $hash->{NOTIFYDEV} = $oldtrigger;
         readingsSingleUpdate( $hash, "Trigger_device", $oldtrigger, 0 );
     }
+	
+	
+	#if ($hash->{NOTIFYDEV} eq "MSwitch_Self") {$hash->{NOTIFYDEV} = $Name};
+	
 #################
 
     MSwitch_set_dev($hash);
@@ -613,11 +617,20 @@ sub MSwitch_Define($$) {
     my $devpointer = $name;
     my $devhash    = '';
     my $old        = $hash->{OLDDEF};
+	
+	
+	#Log3( $name, 0, "REACHED set Notivydev" . __LINE__ );
+	
+	
+	
     $old = '' if !defined $old;
     $modules{MSwitch}{defptr}{$devpointer} = $hash;
     $hash->{Version_Modul}                 = $version;
     $hash->{Version_Datenstruktur}         = $vupdate;
     $hash->{Version_autoupdate}            = $autoupdate;
+	#$hash->{preconf}    					= $preconf;
+	
+	
 
     if ( $init_done && $old ne '' ) {
         my $timecond = gettimeofday() + 5;
@@ -642,6 +655,20 @@ sub MSwitch_Get($$@) {
         return $ret;
     }
 ####################
+
+
+
+	if ( $opt eq 'get_MSwitch_preconf')	{
+
+        MSwitch_setconfig($hash,$args[0]);
+		
+		return "MSwitch_preconfig for $name has loaded.\nPlease refresh device.";
+    }
+	
+
+
+
+########################
     if ( $opt eq 'restore_MSwitch_Data' && $args[0] eq "all_Devices" ) {
         open( BACKUPDATEI, "<MSwitch_backup_$vupdate.cfg" )
           || return "no Backupfile found\n";
@@ -825,18 +852,33 @@ sub MSwitch_Get($$@) {
 "<span style=\"font-size: medium\">Keine aktiven Delays/Ats gefunden <\/span>";
     }
 
+	
+	#my $preconf = $hash->{preconf} ; 
+	if ($preconf && $preconf ne "")
+	{
+	$preconf="get_MSwitch_preconf:".$preconf;
+	}
+	
+	
     my $extension = '';
     if ( ReadingsVal( $name, 'Sys_Extension', '' ) eq 'on' ) {
         $extension = 'get_sysextension:noArg';
     }
 
+	
+	  if ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Dummy" ) {
+            return "Unknown argument $opt, choose one of get_support_info:noArg restore_MSwitch_Data:this_Device,all_Devices";
+         }
+	
+	
+	
     if ( ReadingsVal( $name, '.lock', 'undef' ) ne "undef" ) {
         return
-"Unknown argument $opt, choose one of active_timer:show,delete get_config:noArg restore_MSwitch_Data:this_Device,all_Devices";
+"Unknown argument $opt, choose one of active_timer:show,delete get_config:noArg restore_MSwitch_Data:this_Device,all_Devices $preconf";
     }
     else {
         return
-"Unknown argument $opt, choose one of get_support_info:noArg get_config:noArg active_timer:show,delete restore_MSwitch_Data:this_Device,all_Devices $extension";
+"Unknown argument $opt, choose one of get_support_info:noArg get_config:noArg active_timer:show,delete restore_MSwitch_Data:this_Device,all_Devices $preconf $extension";
     }
 }
 
@@ -850,6 +892,11 @@ sub MSwitch_AsyncOutput ($) {
 sub MSwitch_Set($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
 
+	
+	
+	Log3( $name, 5, "$name Set $cmd, @args " . __LINE__ );
+	
+	
 ##############################
 
     if ( $cmd eq 'inactive' ) {
@@ -939,6 +986,13 @@ if ($cmd ne "?")
 	
 	
 	
+	
+	 if ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Dummy" && $cmd ne "?") {
+	 readingsSingleUpdate( $hash, "state", $cmd." @args", 1 );
+        return;    
+	    }
+	
+	
     if ( $cmd eq 'exec_cmd1' && $args[0] eq 'ID' ) {
         Log3( $name, 5, "$name: execids werden gesetzt -> " . $args[1] );
         $execids = $args[1];
@@ -1000,9 +1054,16 @@ if ($cmd ne "?")
         }
         elsif ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Toggle" ) {
             return
-"Unknown argument $cmd, choose one of active:noArg inactive:noArg on offdel_delays:noArg backup_MSwitch:all_devices fakeevent wait reload_timer:noArg change_renamed $setList $special";
+"Unknown argument $cmd, choose one of active:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:all_devices fakeevent wait reload_timer:noArg change_renamed $setList $special";
         }
-        else {
+        
+		
+		 elsif ( AttrVal( $name, 'MSwitch_Mode', 'Full' ) eq "Dummy" ) {
+            return
+"Unknown argument $cmd, choose one of state $setList $special";
+        }
+		
+		else {
             return
 "Unknown argument $cmd, choose one of active:noArg inactive:noArg on off  del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd1 exec_cmd2 exec_cmd1+2 wait reload_timer:noArg change_renamed $setList $special";
 
@@ -1182,6 +1243,9 @@ if ($cmd ne "?")
 ##############################
     if ( $cmd eq "set_trigger" ) {
 
+	
+	
+	
         # setze trigger
         chop( $args[1], $args[2], $args[3], $args[4], $args[5] );
         my $triggertime = 'on'
@@ -1223,21 +1287,44 @@ if ($cmd ne "?")
 
         $hash->{helper}{events}{ $args[0] }{'no_trigger'} = "on";
 
-        if ( $args[0] ne 'no_trigger' ) {
-            if ( $args[0] eq "all_events" ) {
+        if ( $args[0] ne 'no_trigger' )
+ {
+            if ( $args[0] eq "all_events" ) 
+			{
                 delete( $hash->{NOTIFYDEV} );
-                if ( ReadingsVal( $name, '.Trigger_Whitelist', '' ) ne '' ) {
+                if ( ReadingsVal( $name, '.Trigger_Whitelist', '' ) ne '' ) 
+				{
+				Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
                     $hash->{NOTIFYDEV} =
                       ReadingsVal( $name, '.Trigger_Whitelist', '' );
                 }
             }
-            else {
+            else 
+			{
+			
+			
+			
+			
+			if ( $args[0] ne "MSwitch_Self" ){
+			Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
                 $hash->{NOTIFYDEV} = $args[0];
                 my $devices = MSwitch_makeAffected($hash);
                 $hash->{DEF} = $args[0] . ' # ' . $devices;
+				}
+				else{
+				Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
+				$hash->{NOTIFYDEV} = $name;
+                my $devices = MSwitch_makeAffected($hash);
+                $hash->{DEF} = $name . ' # ' . $devices;
+
+}		
+				
+				
+				
             }
         }
         else {
+		Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
             $hash->{NOTIFYDEV} = 'no_trigger';
             delete $hash->{DEF};
         }
@@ -1965,12 +2052,15 @@ sub MSwitch_Attr(@) {
     }
 
 	
-	if ( $cmd eq 'set' && $aName eq 'MSwitch_Config'  ) {
-        
-        MSwitch_setconfig($hash,$aVal);
-    }
+	# if ( $cmd eq 'set' && $aName eq 'MSwitch_Config') {
+
+        # MSwitch_setconfig($hash,$aVal);
+    # }
 	
 	
+	
+
+
 	
 	
     if ( $cmd eq 'set' && $aName eq 'disable' && $aVal == 1 ) {
@@ -2025,9 +2115,45 @@ sub MSwitch_Attr(@) {
 
     if ( $aName eq 'MSwitch_Mode' && ( $aVal eq 'Full' || $aVal eq 'Toggle' ) )
     {
+	
+	#$hash->{NotifyFn}          = "MSwitch_Notify";
+	#$hash->{NotifyOrderPrefix} = "45-";
+	$hash->{NOTIFYDEV} =
+          ReadingsVal( $name, 'Trigger_device', 'no_trigger' );
+	
         my $cs = "setstate $name ???";
         my $errors = AnalyzeCommandChain( undef, $cs );
     }
+	
+	  if ( $aName eq 'MSwitch_Mode' && ( $aVal eq 'Notify' ) )
+    {
+	
+	#$hash->{NotifyFn}          = "MSwitch_Notify";
+	#$hash->{NotifyOrderPrefix} = "45-";
+	
+	$hash->{NOTIFYDEV} =
+    ReadingsVal( $name, 'Trigger_device', 'no_trigger' );
+      
+    }
+	
+	
+	 if ( $aName eq 'MSwitch_Mode' && ( $aVal eq 'Dummy' ) )
+    {
+        MSwitch_Delete_Delay( $hash, 'all' );
+        MSwitch_Clear_timer($hash);
+		$hash->{NOTIFYDEV} = 'no_trigger';
+		#delete( $hash->{NOTIFYDEV} );
+		#delete( $hash->{NotifyFn} );
+
+	
+	
+	#setDevAttrList($hash->{NAME},"disable:0,1 loglevel:0,1,2,3,4,5,6 notexist checkReadingEvent:0,1 addStateEvent:1,0 weekdays setList:textField-long readingList DOIF_Readings:textField-long uiTable:textField-long ".$readingFnAttributes);
+	
+	#delete $defs{$hash->{NAME}}{".AttrList"};
+	
+	
+	}
+	
 
     if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' ) {
         readingsSingleUpdate( $hash, "state", 'active', 1 );
@@ -2125,6 +2251,10 @@ sub MSwitch_Notify($$) {
       if ( IsDisabled($ownName) )
       ;    # Return without any further action if the module is disabled
 
+	  
+	 return if ( AttrVal( $ownName, 'MSwitch_Mode', "Full" ) eq 'Dummy' ); 
+	  
+	  
     # startverzöferung abwarten
     my $startdelay =
       AttrVal( $ownName, 'MSwitch_Startdelay', $standartstartdelay );
@@ -2633,6 +2763,12 @@ sub MSwitch_fhemwebFn($$$$) {
     my $jsvarset = '';
     my $j1       = '';
     my $border   = 0;
+	
+	
+    #delete $defs{$hash->{NAME}}{".AttrList"};
+
+
+    return if ( AttrVal( $Name, 'MSwitch_Mode', "Full" ) eq 'Dummy' );
 
     if ( AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '4' ) {
         $border = 0;
@@ -2866,7 +3002,11 @@ sub MSwitch_fhemwebFn($$$$) {
             $triggerdevices .= "<option  value=\"all_events\">GLOBAL</option>";
         }
 		
-		
+	
+#$triggerdevices = "<option  value=\"MSwitch_Self\">MSwitch_Self ($Name)</option>";
+
+
+	
 	# if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) eq 'dynamic')
         # {
             # $triggerdevices .="<option selected=\"selected\" value=\"dynamic\">Dynamisch</option>";
@@ -2883,6 +3023,22 @@ sub MSwitch_fhemwebFn($$$$) {
 		
     }
 
+	
+	
+	if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) eq 'MSwitch_Self' )
+        {
+            $triggerdevices .="<option selected=\"selected\" value=\"MSwitch_Self\">MSwitch_Self ($Name)</option>";
+           
+        }
+        else 
+		{
+            $triggerdevices .= "<option  value=\"MSwitch_Self\">MSwitch_Self ($Name)</option>";
+        }
+	
+	
+	
+	
+	
     my @notype = split( / /, AttrVal( $Name, 'MSwitch_Ignore_Types', "" ) );
     my $affecteddevices = ReadingsVal( $Name, '.Device_Affected', 'no_device' );
 
@@ -6043,7 +6199,7 @@ sub MSwitch_Restartcmd($) {
     my $name      = $msgarray[1];
     my $hash      = $modules{MSwitch}{defptr}{$name};
     return "" if ( IsDisabled($name) );
-
+	return if ( AttrVal( $name, 'MSwitch_Mode', "Full" ) eq 'Dummy' ); 
     $hash->{eventsave} = 'unsaved';
     MSwitch_LOG( $name, 6, "----------------------------------------" );
     MSwitch_LOG( $name, 6, "$name: aufruf restartcmd -> " . $incomming );
@@ -6225,18 +6381,29 @@ sub MSwitch_checkcondition($$$) {
 	  my $x = 0;
 	  my $field ="";
 	  my $SELF = $name;
-     while ( $condition =~ m/(.*?){(.*)}(.*)?/ ) {
-	 
-	 
+	  
+	  #$condition = $condition ." END";
+   # while ( $condition =~ m/(.*?){(.*)}(.*)?\b/ ) {
+	 while ( $condition =~ m/(.*){(.+)}(.*)/ ) {
          my $firstpart  = $1;
          my $secondpart = $2;
          my $lastpart   = $3;
-		 
 		 my $exec = "\$field = ".$2;
-		# Log3( $name, 0, "exec: " . $exec );
-		 
+		 #Log3( $name, 0, "exec: " . $exec );
 		 eval ($exec);
 		# Log3( $name, 0, "field: " . $field );
+		# Log3( $name, 0, "firstpart: " . $firstpart );
+		# Log3( $name, 0, "secondpart: " . $secondpart );
+		 #Log3( $name, 0, "lastpart: " . $lastpart );
+		 
+		 
+		 if ($field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/)
+		 {
+		 my $hh =$1;
+		 if ($hh > 23){$hh= $hh -24};
+		 $field = $hh.":".$2;
+		 }
+		 
 		 
          $condition = $firstpart . $field . $lastpart;
 		 
@@ -6246,7 +6413,7 @@ sub MSwitch_checkcondition($$$) {
          last if $x > 10;    #notausstieg
      }
 	#####################################
-	
+	#return;
 		# my $fieldcmdon ="";
 		# if ( $triggercmdon =~ m/{(.*)}/ ) 
 		# {
@@ -6258,14 +6425,7 @@ sub MSwitch_checkcondition($$$) {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
+	# Log3( $name, 0, "condend: " . $condition );
 	
 	
 	
@@ -6340,7 +6500,7 @@ sub MSwitch_checkcondition($$$) {
     $condition =~ s/{sunset\(\)}/{ sunset\(\) }/ig;
     $condition =~ s/{sunrise\(\)}/{ sunrise\(\) }/ig;
 
-    my $x = 0;
+     $x = 0;
     while ( $condition =~ m/(.*?)(\$NAME)(.*)?/ ) {
         my $firstpart  = $1;
         my $secondpart = $2;
@@ -7645,12 +7805,19 @@ sub MSwitch_Getconfig($) {
 
     my $client_hash = $hash->{CL};
     #Log3( $Name, 0, "MSWITCH-CONFIG: " . $out );
+	
+	my $ret =
+	
+	
+	
     asyncOutput( $hash->{CL},
 "<html>Änderungen sollten hier nur von erfahrenen Usern durchgeführt werden.<textarea name=\"edit1\" id=\"edit1\" rows=\""
           . $count
           . "\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">"
           . $out
-          . "</textarea><br><input name\"edit\" type=\"button\" value=\"save changes\" onclick=\" javascript: saveconfig(document.querySelector(\\\'#edit1\\\').value) \"></html>"
+          . "</textarea><br>"
+		  ."<input name\"edit\" type=\"button\" value=\"save changes\" onclick=\" javascript: saveconfig(document.querySelector(\\\'#edit1\\\').value) \">"
+		  ."</html>"
     );
 
     return;
@@ -7782,14 +7949,14 @@ sub MSwitch_saveconf($$) {
     my @changes;
     my $info = "";
 	
-		MSwitch_LOG( $name, 0, "saveconfig " . $cont);
+		#MSwitch_LOG( $name, 0, "saveconfig " . $cont);
 	
 	
     my @found = split( /#\[EOL\]/, $cont );
     foreach (@found) {
 
 	
-	MSwitch_LOG( $name, 0, "saveconfig " . $_);
+	#MSwitch_LOG( $name, 0, "saveconfig " . $_);
 	
 	
         if ( $_ =~ m/#Q (.*)/ )    # setattr
@@ -7860,6 +8027,8 @@ sub MSwitch_saveconf($$) {
 
         readingsSingleUpdate( $hash, ".change_info", $info, 0 );
     }
+
+	
 
     return;
 }
@@ -8390,7 +8559,7 @@ sub MSwitch_setconfig($$)
    # MSwitch_LOG( $name, 0, "setconfig " . $aVal );
 
 	
-	
+		
 	
 	
 	 my %keys;
@@ -8431,6 +8600,13 @@ sub MSwitch_setconfig($$)
 	#MSwitch_LOG( $name, 0, "setconfig " . $Zeilen );
 	
 	MSwitch_saveconf($hash,$Zeilen);
+	
+	
+	
+
+		  
+		  
+		  
 }
 
 
