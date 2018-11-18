@@ -81,7 +81,7 @@ if(-d $verzeichnis) {
 
 
 my $autoupdate = 'on';     #off/on
-my $version    = '2.03_Test';
+my $version    = '2.03a_Test';
 my $vupdate    = 'V2.00'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30
@@ -616,14 +616,14 @@ sub MSwitch_Define($$) {
     my $name       = $a[0];
     my $devpointer = $name;
     my $devhash    = '';
-    my $old        = $hash->{OLDDEF};
+    #my $old        = $hash->{OLDDEF};
 	
 	
 	#Log3( $name, 0, "REACHED set Notivydev" . __LINE__ );
 	
 	
 	
-    $old = '' if !defined $old;
+   # $old = '' if !defined $old;
     $modules{MSwitch}{defptr}{$devpointer} = $hash;
     $hash->{Version_Modul}                 = $version;
     $hash->{Version_Datenstruktur}         = $vupdate;
@@ -632,7 +632,9 @@ sub MSwitch_Define($$) {
 	
 	
 
-    if ( $init_done && $old ne '' ) {
+   # if ( $init_done && $old ne '' ) 
+	if($init_done && !defined($hash->{OLDDEF}))
+	{
         my $timecond = gettimeofday() + 5;
         InternalTimer( $timecond, "MSwitch_LoadHelper", $hash );
     }
@@ -2116,24 +2118,11 @@ sub MSwitch_Attr(@) {
     if ( $aName eq 'MSwitch_Mode' && ( $aVal eq 'Full' || $aVal eq 'Toggle' ) )
     {
 	
-	#$hash->{NotifyFn}          = "MSwitch_Notify";
-	#$hash->{NotifyOrderPrefix} = "45-";
-	#$hash->{NOTIFYDEV} = ReadingsVal( $name, 'Trigger_device', 'no_trigger' );
-	
         my $cs = "setstate $name ???";
         my $errors = AnalyzeCommandChain( undef, $cs );
     }
 	
-	  if ( $aName eq 'MSwitch_Mode' && ( $aVal eq 'Notify' ) )
-    {
-	
-	#$hash->{NotifyFn}          = "MSwitch_Notify";
-	#$hash->{NotifyOrderPrefix} = "45-";
-	
-	$hash->{NOTIFYDEV} =
-    ReadingsVal( $name, 'Trigger_device', 'no_trigger' );
-      
-    }
+
 	
 	
 	 if ( $aName eq 'MSwitch_Mode' && ( $aVal eq 'Dummy' ) )
@@ -2145,9 +2134,7 @@ sub MSwitch_Attr(@) {
 		#delete( $hash->{NotifyFn} );
 
 	
-	
 	#setDevAttrList($hash->{NAME},"disable:0,1 loglevel:0,1,2,3,4,5,6 notexist checkReadingEvent:0,1 addStateEvent:1,0 weekdays setList:textField-long readingList DOIF_Readings:textField-long uiTable:textField-long ".$readingFnAttributes);
-	
 	#delete $defs{$hash->{NAME}}{".AttrList"};
 	
 	
