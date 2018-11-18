@@ -479,14 +479,14 @@ sub MSwitch_LoadHelper($) {
     my $oldtrigger = ReadingsVal( $Name, 'Trigger_device', 'undef' );
 	
 	
-	Log3( $Name, 0, "REACHED HELPER $Name oldtrigger $oldtrigger " . __LINE__ );
+	#Log3( $Name, 0, "REACHED HELPER $Name oldtrigger $oldtrigger " . __LINE__ );
 	
 	
     my $devhash    = undef;
     my $cdev       = '';
     my $ctrigg     = '';
     if ( defined $hash->{DEF} ) {
-	Log3( $Name, 0, "$Name rout 1 " . __LINE__ );
+	#Log3( $Name, 0, "$Name rout 1 " . __LINE__ );
 	
         $devhash = $hash->{DEF};
         my @dev = split( /#/, $devhash );
@@ -499,7 +499,7 @@ sub MSwitch_LoadHelper($) {
             $ctrigg = '';
         }
         if ( defined $devhash ) {
-		Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
+		#Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
             $hash->{NOTIFYDEV} = $cdev; # stand aug global ... änderung auf ...
             readingsSingleUpdate( $hash, "Trigger_device", $cdev, 0 );
             if ( defined $cdev && $cdev ne '' ) {
@@ -507,7 +507,7 @@ sub MSwitch_LoadHelper($) {
             }
         }
         else {
-		Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
+		#Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
             $hash->{NOTIFYDEV} = 'no_trigger';
             readingsSingleUpdate( $hash, "Trigger_device", 'no_trigger', 0 );
         }
@@ -517,12 +517,12 @@ sub MSwitch_LoadHelper($) {
         || $hash->{NOTIFYDEV} eq 'undef'
         || $hash->{NOTIFYDEV} eq '' )
     {
-	Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
+	#Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
         $hash->{NOTIFYDEV} = 'no_trigger';
     }
 
     if ( $oldtrigger ne 'undef' ) {
-	Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
+	#Log3( 'test', 0, "REACHED set Notivydev" . __LINE__ );
         $hash->{NOTIFYDEV} = $oldtrigger;
         readingsSingleUpdate( $hash, "Trigger_device", $oldtrigger, 0 );
     }
@@ -2118,8 +2118,7 @@ sub MSwitch_Attr(@) {
 	
 	#$hash->{NotifyFn}          = "MSwitch_Notify";
 	#$hash->{NotifyOrderPrefix} = "45-";
-	$hash->{NOTIFYDEV} =
-          ReadingsVal( $name, 'Trigger_device', 'no_trigger' );
+	#$hash->{NOTIFYDEV} = ReadingsVal( $name, 'Trigger_device', 'no_trigger' );
 	
         my $cs = "setstate $name ???";
         my $errors = AnalyzeCommandChain( undef, $cs );
