@@ -74,7 +74,10 @@ if(-d $verzeichnis) {
         else {  
 		$preconf="";
         } 
-
+	if ($preconf && $preconf ne "")
+	{
+	$preconf="get_MSwitch_preconf:".$preconf;
+	}
 
 
 
@@ -364,7 +367,7 @@ sub MSwitch_summary($) {
           . $info . "')\">";
     }
 
-    if ( $trigger eq 'no_trigger' || $trigger eq 'undef' ) {
+    if ( $trigger eq 'no_trigger' || $trigger eq 'undef' || $trigger eq '') {
         $triggerc = 0;
         if ( $triggerc != 0 || $timer != 0 ) {
             $ret .=
@@ -856,10 +859,7 @@ sub MSwitch_Get($$@) {
 
 	
 	#my $preconf = $hash->{preconf} ; 
-	if ($preconf && $preconf ne "")
-	{
-	$preconf="get_MSwitch_preconf:".$preconf;
-	}
+
 	
 	
     my $extension = '';
