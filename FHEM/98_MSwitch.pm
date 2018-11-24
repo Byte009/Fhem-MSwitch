@@ -26,16 +26,24 @@
 #################################################################
 # Todo's:
 #
-# info conf
-# reading '.lock' wenn definiert -> device locked
-# reading '.info' wenn definiert -> infotext für device
-# reading '.change' wenn definiert -> angeforderte deviceänderung
-# reading '.change_inf' wenn definiert -> info für angeforderte deviceänderung
+#---------------------------------------------------------------
+#
+# info sonderreadings
+# 
+# reading '.info' 			wenn definiert -> infotext für device
+# reading '.change' 		wenn definiert -> angeforderte deviceänderung
+# reading '.change_inf' 	wenn definiert -> info für angeforderte deviceänderung
+# reading '.lock' 			sperrt das Interface (1 - alles / 2 alles bis auf trigger)
+# reading 'Sys_Extension' 	'on' gibt Systemerweiterung frei
+#
+#---------------------------------------------------------------
 #
 # info conffile - austausch eines/mehrerer devices
-# I testinfo
+# I Information zu Devicetausch
 # Q dummy1#zu schaltendes geraet#device
 # Q dummy2#zu schaltendes geraet2#device
+# 
+##---------------------------------------------------------------
 #
 #################################################################
 
@@ -84,7 +92,7 @@ if(-d $verzeichnis) {
 
 
 my $autoupdate = 'on';     #off/on
-my $version    = '2.03a_Test';
+my $version    = '2.04_Test';
 my $vupdate    = 'V2.00'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30
@@ -220,7 +228,7 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Include_MSwitchcmds:0,1"
       . "  MSwitch_Activate_MSwitchcmds:0,1"
       . "  MSwitch_Lock_Quickedit:0,1"
-      . "  MSwitch_Ignore_Types"
+      . "  MSwitch_Ignore_Types:textField-long "
       . "  MSwitch_Trigger_Filter"
       . "  MSwitch_Extensions:0,1"
       . "  MSwitch_Inforoom"
@@ -3025,7 +3033,7 @@ sub MSwitch_fhemwebFn($$$$) {
 	
 	
 	
-    my @notype = split( / /, AttrVal( $Name, 'MSwitch_Ignore_Types', "" ) );
+   # my @notype = split( / /, AttrVal( $Name, 'MSwitch_Ignore_Types', "" ) );
     my $affecteddevices = ReadingsVal( $Name, '.Device_Affected', 'no_device' );
 
     # affected devices to hash
@@ -3117,7 +3125,117 @@ sub MSwitch_fhemwebFn($$$$) {
         $usedevices{$a} = 'on';
     }
 
-  LOOP9: for my $name ( sort keys %defs ) {
+	
+	my $notype = AttrVal( $Name, 'MSwitch_Ignore_Types', "" ) ;
+	my @found_devices;
+	my $setpattern = "";
+	my $setpattern1 = "";
+	
+	
+	
+	###### ersetzung ATTR oder READING
+	if	($notype =~ /(.*)\[(ATTR|READING):(.*):(.*)\](.*)/)
+	{
+	my $devname = $3;
+	my $firstpart = $1;
+	my $lastpart = $5;
+	my $readname = $4;
+	my $type = $2;
+	
+	$devname =~ s/\$SELF/$Name/;
+	
+	#MSwitch_LOG( $Name, 0, "found devname: $devname " ); 
+	
+	
+	my $magic = ".*";
+	$magic = AttrVal( $devname, $readname, ".*" ) if $type eq "ATTR";
+	$magic = ReadingsVal( $devname, $readname, '.*' ) if $type eq "READING";
+	
+	$notype =$firstpart.$magic.$lastpart;
+	#MSwitch_LOG( $Name, 0, "found magic: $notype " ); 
+	}
+	
+	
+	if	($notype =~ /(")(.*)(")/)
+	{
+	
+
+	my $reg =$2;
+	if ($reg  =~ /(.*?)(s)(!=|=)([a-zA-Z]{1,10})(:?)(.*)/)
+	{
+	$reg = $1.$5.$6;
+	$setpattern1 = $4;
+	$setpattern = "=~" if ($3 eq "=");
+	$setpattern = "!=" if ($3 eq "!=");
+
+	
+	#MSwitch_LOG( $Name, 0, "found reg1: $reg " );
+	
+	
+	chop $reg if $6 eq "";
+	$reg =~ s/::/:/g;
+	
+	
+	}
+	#MSwitch_LOG( $Name, 0, "found reg2: $reg " ); 
+
+	@found_devices =devspec2array("$reg");
+	}
+	else
+	{
+	$notype =~ s/ /|/g;
+	@found_devices =devspec2array("TYPE!=$notype");
+	}
+	
+	
+	
+	if ($setpattern eq "=~" )
+	{
+		my @found_devices_new;
+		my $re = qr/$setpattern1/;
+		for my $name (@found_devices) 
+		{
+		my $cs = "set $name ?";
+        my $errors = AnalyzeCommandChain( undef, $cs );
+		if ($errors =~ /$re/)
+				{
+				push @found_devices_new, $name;
+				}
+		}
+		@found_devices = @found_devices_new;
+	}
+	
+	
+	if ($setpattern eq "!=" )
+	{
+		my @found_devices_new;
+		my $re = qr/$setpattern1/;
+		for my $name (@found_devices) 
+		{
+		my $cs = "set $name ?";
+        my $errors = AnalyzeCommandChain( undef, $cs );
+		if ($errors !~ /$re/)
+				{
+				push @found_devices_new, $name;
+				}
+		}
+		@found_devices = @found_devices_new;
+	}
+	
+	
+	if  (!grep {$_ eq $Name} @found_devices)
+	{
+	MSwitch_LOG( $Name, 5, "grep Devicetest $Name nicht vorhanden -> wird ergänzt" ); 
+	push @found_devices, $Name;
+	}
+	
+	
+	
+	
+	
+  #LOOP9: for my $name ( sort keys %defs ) {
+  
+  LOOP9: for my $name ( sort @found_devices) {
         my $selectedtrigger = '';
         my $devicealias = AttrVal( $name, 'alias', "" );
         my $devicewebcmd =
@@ -3126,22 +3244,14 @@ sub MSwitch_fhemwebFn($$$$) {
         my $deviceTYPE = $devicehash->{TYPE};
 
         # triggerfile erzeugen
-        foreach (@notype) {
-            if ( lc($_) eq lc($deviceTYPE) ) { next LOOP9; }
-        }
+        # foreach (@notype) {
+            # if ( lc($_) eq lc($deviceTYPE) ) { next LOOP9; }
+        # }
 
-		
-		
-		
-		
         if ( ReadingsVal( $Name, 'Trigger_device', '' ) eq $name ) {
             $selectedtrigger = 'selected=\"selected\"';
             if ( $name eq 'all_events' ) { $globalon = 'on' }
         }
-		
-	
-		
-		
 
         $triggerdevices .=
 "<option $selectedtrigger value=\"$name\">$name (a:$devicealias t:$deviceTYPE)</option>";
@@ -3159,7 +3269,8 @@ sub MSwitch_fhemwebFn($$$$) {
         else {
             $errors = '';
         }
-
+	
+		
         if ( !defined $errors ) { $errors = '' }
 
         my @tmparg = split( /of /, $errors );
@@ -5037,7 +5148,19 @@ sub MSwitch_fhemwebFn($$$$) {
 		globallock =' this device is locked !';
 			[ \"aw_dev\",\"aw_det\",\"aw_trig\",\"aw_md\",\"aw_md1\",\"aw_md2\",\"aw_addevent\"].forEach (lock,);
 			randomdev.forEach (lock);"
-      if ( ReadingsVal( $Name, '.lock', 'undef' ) ne "undef" );
+      if ( ReadingsVal( $Name, '.lock', 'undef' ) eq "1" );
+	  
+	  
+	$j1 .= "
+		globallock =' only trigger is changeable';
+			[ \"aw_dev\",\"aw_det\",\"aw_md\",\"aw_md1\",\"aw_md2\",\"aw_addevent\"].forEach (lock,);
+			randomdev.forEach (lock);"
+      if ( ReadingsVal( $Name, '.lock', 'undef' ) eq "2" );
+	  
+	   
+	  
+	  
+	  
 
     $j1 .= "
 	sel1.onchange = function() 
@@ -7711,15 +7834,35 @@ sub MSwitch_Getsupport($) {
 sub MSwitch_Getconfig($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-    my @areadings =
-   #   qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Trigger_device Trigger_log last_event .sysconf state Sys_Extension .sortby);
+    # my @areadings =
+      # qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check Trigger_device Trigger_log last_event .sysconf state Sys_Extension .sortby);
 
+	  
+	  
+	  
+	  # my @areadings =
+	  # qw(dim_action .Trigger_cmd_on waiting steps EVENTFULL .V_Check .sysconf .Trigger_condition .Device_Affected_Details .Trigger_time .Trigger_on .sortby Trigger_device EVTFULL Parameter Sys_Extension Exec_cmd EVENT pct seconds .Trigger_cmd_off EVTPART2 EVTPART3 dim_value ziel EVTPART1 incomming .Trigger_Whitelist state Trigger_log .Trigger_off .First_init .Device_Affected .Device_Events last_event);
+	  
+	  
+	 
+	  
+	  
+	  
+	  
+	  
+	  
 	  
 	my $testreading = $hash->{READINGS}  ;
 	
-	
+	my @areadings = ( keys %{ $testreading });
+	# Log3( "SELF", 0, "@areading1s" );
 	 
-@areadings = ( keys %{ $testreading });
+	 
+	 
+#@areadings = ( keys %{ $testreading });
+
+
+
 
 # Log3( "SELF", 0, "readings ".@areadings );
 	 
@@ -7754,11 +7897,32 @@ sub MSwitch_Getconfig($) {
             $tmp =~ s/#\[bs\]/\\\\/g;
 				
         }
-		 if ( $key eq ".Device_Events" || $key eq ".Trigger_cmd_on" || $key eq ".Trigger_cmd_off" || $key eq ".Trigger_on" || $key eq ".Trigger_off" ) {
+		
+		
+		
+		
+		
+		
+		
+		  if ( 
+		  $key eq ".Device_Events" ||
+		  $key eq ".info" ||
+		  $key eq ".Trigger_cmd_on" || 
+		  $key eq ".Trigger_cmd_off" ||
+		  $key eq ".Trigger_on" || 
+		  $key eq ".Trigger_off" 
+		
+		  ) 
+		  {
 		 $tmp =~ s/'/\\'/g;
-		 }
+		 #$tmp =~ s/'/'/g;
+		 
+		 #$tmp ='';
+		 
 		
+		  }
 		
+		  #'$EVENT'= m/{AttrVal($SELF,'setcmd','pct')}(.*)/
 		
 		
 
@@ -7782,7 +7946,7 @@ sub MSwitch_Getconfig($) {
         $tmp =~ s/'/\\'/g;
 
 # $out .= "#A $attrdevice -> ". AttrVal( $testdevice, $attrdevice, '' ) . "\\n";
-
+#############################
         $out .= "#A $attrdevice -> " . $tmp . "\\n";
         $count++;
     }
@@ -8493,8 +8657,11 @@ sub MSwitch_makefreecmd($$) {
     my $ersetzung = "";
 
     # entferne kommntarzeilen
-    $cs =~ s/#.*\n//g;
+      $cs =~ s/\\#/comment/g;
 
+	$cs =~ s/#.*\n//g;
+	
+	$cs =~ s/comment/#/g;
     # entferne zeilenumbruch
     $cs =~ s/\n//g;
 
