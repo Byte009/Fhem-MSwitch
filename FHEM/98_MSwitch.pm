@@ -92,7 +92,7 @@ if(-d $verzeichnis) {
 
 
 my $autoupdate = 'on';     #off/on
-my $version    = '2.04_Test';
+my $version    = '2.03a_Test';
 my $vupdate    = 'V2.00'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30
