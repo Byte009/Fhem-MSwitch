@@ -260,6 +260,8 @@ sub MSwitch_Copy ($) {
     my $errors = AnalyzeCommandChain( undef, $cs );
     if ( defined($errors) ) {
         Log3( $new_name, 1, "ERROR $cs" );
+		
+
     }
 
     foreach my $key (@areadings) {
@@ -938,6 +940,7 @@ sub MSwitch_Set($@) {
         $return = eval($cs);
         if ($@) {
             Log3( $name, 1, "$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
+			
         }
         return if $return eq "exit";
     }
@@ -1986,6 +1989,7 @@ my $lastdevice ;
                 if ($@) {
                     MSwitch_LOG( $Name, 1,
                         "$Name MSwitch_Set: ERROR $cmds: $@ " . __LINE__ );
+						
                 }
 
             }
@@ -1996,6 +2000,7 @@ my $lastdevice ;
                 if ( defined($errors) ) {
                     MSwitch_LOG( $Name, 1,
                         "$Name MSwitch_Set: ERROR $cmds: $errors " . __LINE__ );
+						
                 }
             }
         }
@@ -5720,6 +5725,13 @@ sub MSwitch_makeCmdHash($) {
             $testtimestron =~ s/[A-Za-z0-9#\.\-_]//g;
 
             if ( $testtimestron ne "[:]" && $testtimestroff ne "[\$:]" ) {
+			
+			if ($detailarray[8] ne "00:00:00")
+			{
+			#MSwitch_LOG( $Name, 0, "$Name:     detailarray8  " .$detailarray[8] );
+			}
+			
+
                 my $hdel = substr( $detailarray[8], 0, 2 ) * 3600;
                 my $mdel = substr( $detailarray[8], 3, 2 ) * 60;
                 my $sdel = substr( $detailarray[8], 6, 2 ) * 1;
@@ -5745,7 +5757,7 @@ sub MSwitch_makeCmdHash($) {
         $savedetails{$key} = $detailarray[8];
         $key               = $detailarray[0] . "_repeatcount";
 
-        if ( defined $detailarray[11] ) {
+        if ( defined $detailarray[11] && $detailarray[11] ne "") {
 
             $savedetails{$key} = $detailarray[11];
         }
@@ -5754,7 +5766,7 @@ sub MSwitch_makeCmdHash($) {
         }
 
         $key = $detailarray[0] . "_repeattime";
-        if ( defined $detailarray[12] ) {
+        if ( defined $detailarray[12] && $detailarray[12] ne "" ) {
             $savedetails{$key} = $detailarray[12];
         }
         else {
@@ -6112,6 +6124,8 @@ sub MSwitch_Exec_Notif($$$$$) {
                                 MSwitch_LOG( $name, 1,
                                     "$name MSwitch_Set: ERROR $cs: $@ "
                                       . __LINE__ );
+							
+
                             }
 
                             if ( $out eq '1' ) {
@@ -6128,9 +6142,10 @@ sub MSwitch_Exec_Notif($$$$$) {
 
                             my $errors = AnalyzeCommandChain( undef, $cs );
                             if ( defined($errors) ) {
-                                MSwitch_LOG( $name, 1,
-"$name Absent_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs"
-                                );
+                                MSwitch_LOG( $name, 1, "$name Absent_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs");
+							
+
+                              
                             }
 
                             if ( $out eq '1' ) {
@@ -6325,9 +6340,14 @@ sub MSwitch_Restartcmd($) {
     my $event        = $msgarray[2];
     my $device       = $msgarray[5];
 
+	#MSwitch_LOG( $name, 0, "$name: conditionkey -> " . $conditionkey );
+	
     MSwitch_LOG( $name, 5, "$name: erstelle cmdhash -> " . $name );
     my %devicedetails = MSwitch_makeCmdHash($name);
 
+	
+	
+	
     if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {
         MSwitch_Createnumber1($hash);
     }
@@ -6336,25 +6356,23 @@ sub MSwitch_Restartcmd($) {
     ### antwort $execute 1 oder 0 ;
 
     my $execute = "true";
-    MSwitch_LOG( $name, 5,
-        "$name: kein aufruf checkcondition - nicht gesetzt ->" . $execute )
-      if $devicedetails{$conditionkey} eq ''
-      || $devicedetails{$conditionkey} eq 'nocheck';
+	
+	$devicedetails{$conditionkey} = "nocheck" if $conditionkey eq "nocheck";
+    MSwitch_LOG( $name, 5,"$name: kein aufruf checkcondition - nicht gesetzt ->".$execute ) if $conditionkey eq "nocheck" || $devicedetails{$conditionkey} eq '' || $devicedetails{$conditionkey} eq 'nocheck';
 
+	
+	
+	
     if ( $msgarray[2] ne 'nocheck' ) {
-        MSwitch_LOG( $name, 5,
-            "$name: aufruf checkcondition mit -> "
-              . $devicedetails{$conditionkey} );
+        MSwitch_LOG( $name, 5, "$name: aufruf checkcondition mit -> " . $devicedetails{$conditionkey} );
         $execute = MSwitch_checkcondition( $devicedetails{$conditionkey}, $name,
             $event );
-        MSwitch_LOG( $name, 5,
-            "$name: ergebniss checkcondition -> " . $execute );
+        MSwitch_LOG( $name, 5,"$name: ergebniss checkcondition -> " . $execute );
     }
 
     my $toggle = '';
     if ( $execute eq 'true' ) {
-        Log3( $name, 3,
-            "$name MSwitch_Restartcm: Befehlsausfuehrung -> $cs " . __LINE__ );
+        Log3( $name, 3, "$name MSwitch_Restartcm: Befehlsausfuehrung -> $cs " . __LINE__ );
 
         if ( $cs =~ m/set (.*)(MSwitchtoggle)(.*)/ ) {
             $toggle = $cs;
@@ -6390,6 +6408,11 @@ sub MSwitch_Restartcmd($) {
             "$name: repeattime nach test -> "
               . $devicedetails{ $device . '_repeattime' } );
 
+			  
+	#MSwitch_LOG( $name, 0, "$name repeattime ".$devicedetails{ $device . '_repeattime' } );
+	#MSwitch_LOG( $name, 0, "$name repeatcount ".$devicedetails{ $device . '_repeatcount'  });	  
+			  
+			  
         ######################################
         if (   AttrVal( $name, 'MSwitch_Expert', "0" ) eq '1'
             && $devicedetails{ $device . '_repeatcount' } > 0
@@ -6433,6 +6456,8 @@ sub MSwitch_Restartcmd($) {
                 if ($@) {
                     MSwitch_LOG( $name, 1,
                         "$name MSwitch_Set: ERROR $cs: $@ " . __LINE__ );
+					
+
                 }
             }
             else {
@@ -6443,6 +6468,7 @@ sub MSwitch_Restartcmd($) {
                     MSwitch_LOG( $name, 1,
 "$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors "
                           . __LINE__ );
+				
                 }
             }
         }
@@ -6568,8 +6594,21 @@ sub MSwitch_checkcondition($$$) {
     ### perlteile trennen
 
     #######################
-    my @evtparts = split( /:/, $event );
+    my @evtparts;
+	
+	
+	if ($event){
+	
+	@evtparts = split( /:/, $event ) ;
+}
+else
+{
+$event ="";
+$evtparts[0]="";
+$evtparts[1]="";
+$evtparts[2]="";
 
+}
     my $evtsanzahl = @evtparts;
     if ( $evtsanzahl < 3 ) {
         my $eventfrom = $hash->{helper}{eventfrom};
@@ -6785,6 +6824,7 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
         MSwitch_LOG( $name, 1, "ERROR: $@ " . __LINE__ );
         MSwitch_LOG( $name, 1, "$finalstring " . __LINE__ );
         $hash->{helper}{conditionerror} = $@;
+		
         return 'false';
     }
 
@@ -6960,6 +7000,9 @@ sub MSwitch_Createtimer($) {
     my $Name = $hash->{NAME};
 
     # keine timer vorhenden
+	
+	# Log3( $Name, 0,"$Name MSwitch_newtimer exec newqtimer". __LINE__ );
+	
     my $condition = ReadingsVal( $Name, '.Trigger_time', '' );
     $condition =~ s/#\[dp\]/:/g;
 
@@ -7001,7 +7044,9 @@ sub MSwitch_Createtimer($) {
 			my $part2 =  eval $2 ;
 			if ($part2 !~ m/^[0-9]{2}:[0-9]{2}$|^[0-9]{2}:[0-9]{2}:[0-9]{2}$/)
 			{
-			MSwitch_LOG( $Name, 1, "$Name:  ERROR wrong format in set timer. There are no timers running. Format must be HH:MM. Format is: $part2 " );  
+			MSwitch_LOG( $Name, 1, "$Name:  ERROR wrong format in set timer. There are no timers running. Format must be HH:MM. Format is: $part2 " );
+			
+			
 			return;
 			}
 			$part2 =  substr( $part2, 0, 5 );
@@ -7254,6 +7299,9 @@ sub MSwitch_Execute_Timer($) {
 	
 			
 	my $param = $string[0];
+	
+# Log3( $Name, 0,"$Name MSwitch_newtimer param $param". __LINE__ );
+	
 	my $execid =0;
 	$execid = $string[1] if ($string[1]);
 
@@ -7273,7 +7321,8 @@ sub MSwitch_Execute_Timer($) {
         MSwitch_Createnumber1($hash);
     }
     if ( $param eq '5' ) {
-        MSwitch_Createtimer($hash);
+	#Log3( $Name, 0,"$Name MSwitch_newtimer createtimert". __LINE__ );
+       # MSwitch_Createtimer($hash);
         return;
     }
 
@@ -7316,6 +7365,7 @@ sub MSwitch_Execute_Timer($) {
             Log3( $Name, 1,
 "$Name MSwitch_Execute_Timer: Fehler bei Befehlsausfuehrung ERROR $Name: $errors "
                   . __LINE__ );
+	
         }
         return;
     }
@@ -7330,6 +7380,8 @@ sub MSwitch_Execute_Timer($) {
             Log3( $Name, 1,
 "$Name MSwitch_Execute_Timer: Fehler bei Befehlsausfuehrung ERROR $Name: $errors "
                   . __LINE__ );
+		 
+				
         }
         return;
     }
@@ -7794,6 +7846,7 @@ sub MSwitch_backup_this($) {
             my $errors = AnalyzeCommandChain( undef, $cs );
             if ( defined($errors) ) {
                 Log3( $Name, 1, "ERROR $cs" );
+						
             }
         }
     }
@@ -8050,6 +8103,7 @@ sub MSwitch_backup_all($) {
                 my $errors = AnalyzeCommandChain( undef, $cs );
                 if ( defined($errors) ) {
                     Log3( $testdevice, 1, "ERROR $cs" );
+					
                 }
             }
         }
@@ -8058,6 +8112,7 @@ sub MSwitch_backup_all($) {
         my $errors = AnalyzeCommandChain( undef, $cs );
         if ( defined($errors) ) {
             Log3( $testdevice, 1, "ERROR $cs" );
+			
         }
 
         MSwitch_LoadHelper($devhash);
@@ -8277,6 +8332,7 @@ sub MSwitch_repeat($) {
             if ($@) {
                 MSwitch_LOG( $name, 1,
                     "$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
+					
             }
         }
         else {
@@ -8284,6 +8340,7 @@ sub MSwitch_repeat($) {
             if ( defined($errors) ) {
                 MSwitch_LOG( $name, 1,
                     "$name Absent_repeat $cs: ERROR : $errors -> Comand: $cs" );
+				
             }
         }
     }
