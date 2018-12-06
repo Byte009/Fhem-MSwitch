@@ -7001,7 +7001,7 @@ sub MSwitch_Createtimer($) {
 
     # keine timer vorhenden
 	
-	# Log3( $Name, 0,"$Name MSwitch_newtimer exec newqtimer". __LINE__ );
+	#Log3( $Name, 0,"$Name MSwitch_newtimer exec newqtimer". __LINE__ );
 	
     my $condition = ReadingsVal( $Name, '.Trigger_time', '' );
     $condition =~ s/#\[dp\]/:/g;
@@ -7298,9 +7298,9 @@ sub MSwitch_Execute_Timer($) {
 	my @string=split(/ID/,$param );
 	
 			
-	my $param = $string[0];
+	$param = $string[0];
 	
-# Log3( $Name, 0,"$Name MSwitch_newtimer param $param". __LINE__ );
+ #Log3( $Name, 0,"$Name MSwitch_newtimer param $param". __LINE__ );
 	
 	my $execid =0;
 	$execid = $string[1] if ($string[1]);
@@ -7322,7 +7322,7 @@ sub MSwitch_Execute_Timer($) {
     }
     if ( $param eq '5' ) {
 	#Log3( $Name, 0,"$Name MSwitch_newtimer createtimert". __LINE__ );
-       # MSwitch_Createtimer($hash);
+    MSwitch_Createtimer($hash);
         return;
     }
 
