@@ -6525,18 +6525,26 @@ sub MSwitch_checkcondition($$$) {
          my $secondpart = $2;
          my $lastpart   = $3;
 		 my $exec = "\$field = ".$2;
-		 eval ($exec);
 		 
+		# MSwitch_LOG( $name, 0,"$name:   secondpart  -> " .$secondpart );
+		 
+		 if ($secondpart =~ m/(!\$.*|\$.*)/)
+		  {
+		 
+		 #MSwitch_LOG( $name, 0,"$name:  found var exec  -> " .$field );
+		 $field = $secondpart;
+		 }
+		 else{
+		 eval ($exec);
+		 }
 		 #MSwitch_LOG( $name, 0,"$name:   exec  -> " .$exec );
 		 
 		
 
-		 if ($field =~ m/(!$.*|$.*)/)
-		 {
-		 
-		# MSwitch_LOG( $name, 0,"$name:  found var exec  -> " .$field );
-		 $field = $secondpart;
-		 }
+		#
+		
+		#if ($field eq "!\$we" || $field eq "\$we"  )
+		
 		 
 		  if ($field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/)
 		 {
