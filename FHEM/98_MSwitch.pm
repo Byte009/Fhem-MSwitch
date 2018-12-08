@@ -88,7 +88,7 @@ if(-d $verzeichnis) {
 
 
 my $autoupdate = 'on';     #off/on
-my $version    = '2.06_Test';
+my $version    = '2.07_Test';
 my $vupdate    = 'V2.00'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30
@@ -6526,16 +6526,26 @@ sub MSwitch_checkcondition($$$) {
          my $lastpart   = $3;
 		 my $exec = "\$field = ".$2;
 		 eval ($exec);
+		 
+		 #MSwitch_LOG( $name, 0,"$name:   exec  -> " .$exec );
+		 
 		 if ($field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/)
 		 {
 		 my $hh =$1;
 		 if ($hh > 23){$hh= $hh -24};
 		 if ($hh < 10){$hh= "0".$hh};
-		 
-		 
 		 $field = $hh.":".$2;
 		 }
 
+		 if ($field =~ m/(!$.*|$.*)/)
+		 {
+		 
+		# MSwitch_LOG( $name, 0,"$name:  found var exec  -> " .$field );
+		 $field = $secondpart;
+		 }
+		 
+		 
+		 
          $condition = $firstpart . $field . $lastpart;
 
          $x++;
@@ -6543,7 +6553,7 @@ sub MSwitch_checkcondition($$$) {
      }
 
 	
-	#	MSwitch_LOG( $name, 0,"$name:   searchstring erreicht  -> " .$condition );
+		MSwitch_LOG( $name, 0,"$name:   searchstring erreicht  -> " .$condition );
 
 	
 	
