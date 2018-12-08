@@ -6529,13 +6529,7 @@ sub MSwitch_checkcondition($$$) {
 		 
 		 #MSwitch_LOG( $name, 0,"$name:   exec  -> " .$exec );
 		 
-		 if ($field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/)
-		 {
-		 my $hh =$1;
-		 if ($hh > 23){$hh= $hh -24};
-		 if ($hh < 10){$hh= "0".$hh};
-		 $field = $hh.":".$2;
-		 }
+		
 
 		 if ($field =~ m/(!$.*|$.*)/)
 		 {
@@ -6544,7 +6538,13 @@ sub MSwitch_checkcondition($$$) {
 		 $field = $secondpart;
 		 }
 		 
-		 
+		  if ($field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/)
+		 {
+		 my $hh =$1;
+		 if ($hh > 23){$hh= $hh -24};
+		 if ($hh < 10){$hh= "0".$hh};
+		 $field = $hh.":".$2;
+		 }
 		 
          $condition = $firstpart . $field . $lastpart;
 
@@ -6553,7 +6553,7 @@ sub MSwitch_checkcondition($$$) {
      }
 
 	
-		MSwitch_LOG( $name, 0,"$name:   searchstring erreicht  -> " .$condition );
+		#MSwitch_LOG( $name, 0,"$name:   searchstring erreicht  -> " .$condition );
 
 	
 	
