@@ -2038,58 +2038,28 @@ sub MSwitch_toggle($$) {
     return $cmds;
 }
 
-
-
 ##############################
-
-
-
-
 sub MSwitch_Log_Event(@){
 my ( $hash,$msg,$me ) = @_;
-
 my $Name = $hash->{NAME};
-
 my $triggerdevice = ReadingsVal( $Name, 'Trigger_device', 'no_trigger');
-
-#readingsSingleUpdate( $hash, "Log-found in", $msg, 1 );  # nur zu testzwecken
-
 my $re = qr/$triggerdevice/;
-
-
-
 if ($triggerdevice eq 'no_trigger' )
 	{
-	#MSwitch_LOG( $ownName, 0, "$ownName ABBRUCH cond ".$read);
-	#MSwitch_LOG( $ownName, 0, "$ownName ABBRUCH " );
 	delete($hash->{helper}{writelog});
 	return;
 	}
 
 if ( $triggerdevice ne 'Logfile' && $triggerdevice ne 'all_events' && ($hash->{helper}{writelog} !~ /$re/))
 	{
-	#MSwitch_LOG( $ownName, 0, "$ownName ABBRUCH cond ".$read);
-	#MSwitch_LOG( $ownName, 0, "$ownName ABBRUCH " );
 	delete($hash->{helper}{writelog});
 	return;
 	}
-	
-#$hash->{helper}{writelog} =~ s/:/[#dp]/g;
 
-#readingsSingleUpdate( $hash, "incomminglog", $msg, 1 );  # nur zu testzwecken
-
-#$hash->{helper}{logevent} = $msg;
-
-#MSwitch_Check_Event( $hash, "logevent" );
 MSwitch_Check_Event( $hash, $hash );
-
 delete($hash->{helper}{writelog});
-
 return;
 }
-
-##############################
-
 
 ##############################
 
@@ -2126,29 +2096,20 @@ sub MSwitch_Attr(@) {
     }
 
 	
-		if($cmd eq "set" && $aName eq "MSwitch_Read_Log") 
+	if($cmd eq "set" && $aName eq "MSwitch_Read_Log") 
 	{
-  
-  # MSwitch_LOG( 'test', 0, "writelog".$test );
-	  
-		#if(!defined($aVal) || $aVal)
 		if(defined($aVal) && $aVal eq "1"){
-		
 			$logInform{$name} = sub($$){
 			my ($me, $msg) = @_;
-			#my $test = $hash->{helper}{writelog};
 			#return if(defined($hash->{CHANGED}));
 			return if(defined($hash->{helper}{writelog}));
-		#my $test1 = $dev;
-			
+
 			#$hash->{CHANGED}[0] = $msg;
 			$hash->{helper}{writelog} = $msg;
-			
 			MSwitch_Log_Event($hash, $msg ,$me);
 			#delete($hash->{CHANGED});
 			}
-		  
-		  
+		
 			} 
 		else 
 			{
@@ -2156,15 +2117,8 @@ sub MSwitch_Attr(@) {
 
 		  delete $logInform{$name};
 			}
-		#return;
 	}
-	
-	
-	
-	
-	
-	
-	
+
 	
     if ( $cmd eq 'set' && $aName eq 'disable' && $aVal == 1 ) {
         $hash->{NOTIFYDEV} = 'no_trigger';
@@ -2361,15 +2315,8 @@ sub MSwitch_Notify($$) {
 	  
 	 return if ( $devicemode eq 'Dummy' ); 
 	 return if ( ReadingsVal($ownName,"Trigger_device","no_trigger") eq 'no_trigger' ); 
-	 
-	 
 	 return if (!$own_hash->{NOTIFYDEV}  && ReadingsVal( $ownName, 'Trigger_device', 'no_triggen' ) ne "all_events");
-	 
-	 
-	 
-	 
-	
-	 
+
     # startverzöferung abwarten
     
     my $diff = int(time) - $fhem_started;
@@ -2401,24 +2348,6 @@ sub MSwitch_Notify($$) {
         return;
     }
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	
-	
-	
-	
-	
-	
     if ( $attrrandomnumber ne '' ) {
 
         # create randomnumber wenn attr an
@@ -2453,15 +2382,10 @@ sub MSwitch_Notify($$) {
         $incommingdevice = $dev_hash->{NAME};    # aufrufendes device
     }
 
-	
-	
-	
-	#readingsSingleUpdate( $own_hash, "trigdev", 'vor erste ', 1 );  # nur zu testzwecken
     if ( !$events && $own_hash->{helper}{testevent_device} ne 'Logfile' )
 	{
 	return;
 	}
-	#readingsSingleUpdate( $own_hash, "trigdev1", 'nach erste ', 1 );  # nur zu testzwecken
 
     my $triggerdevice =
       ReadingsVal( $ownName, 'Trigger_device', '' );    # Triggerdevice
@@ -2498,30 +2422,14 @@ sub MSwitch_Notify($$) {
 
     my @eventscopy;
 	
-	
-	
-		
-	
-	
-	
-	
-	
-	
-	
     if ( defined( $own_hash->{helper}{testevent_event} ) ) {
-
-  
 	@eventscopy = "$own_hash->{helper}{testevent_event}";
     }
-
     else {
         @eventscopy = ( @{$events} );
     }
 
-	
-	
-	
-	
+
     my $triggerlog = ReadingsVal( $ownName, 'Trigger_log', 'off' );
     if ( $incommingdevice eq $triggerdevice || $triggerdevice eq "all_events" )
     {
@@ -6707,31 +6615,21 @@ sub MSwitch_checkcondition($$$) {
 	  my $x = 0;
 	  my $field ="";
 	  my $SELF = $name;
-	 while ( $condition =~ m/(.*){(.+)}(.*)/ ) {
+	 while ( $condition =~ m/(.*)\{(.+)\}(.*)/ ) {
          my $firstpart  = $1;
          my $secondpart = $2;
          my $lastpart   = $3;
 		 my $exec = "\$field = ".$2;
-		 
-		# MSwitch_LOG( $name, 0,"$name:   secondpart  -> " .$secondpart );
-		 
+
 		 if ($secondpart =~ m/(!\$.*|\$.*)/)
 		  {
-		 
-		 #MSwitch_LOG( $name, 0,"$name:  found var exec  -> " .$field );
+
 		 $field = $secondpart;
 		 }
 		 else{
 		 eval ($exec);
 		 }
-		 #MSwitch_LOG( $name, 0,"$name:   exec  -> " .$exec );
-		 
-		
-
-		#
-		
-		#if ($field eq "!\$we" || $field eq "\$we"  )
-		
+	
 		 
 		  if ($field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/)
 		 {
@@ -6747,11 +6645,6 @@ sub MSwitch_checkcondition($$$) {
          last if $x > 10;    #notausstieg
      }
 
-	
-		#MSwitch_LOG( $name, 0,"$name:   searchstring erreicht  -> " .$condition );
-
-	
-	
 	
     if ( $attrrandomnumber ne '' ) {
         MSwitch_Createnumber($hash);
@@ -7830,20 +7723,14 @@ sub MSwitch_Check_Event($$) {
 	if ($eventin eq $hash){
 	my $logout = $hash->{helper}{writelog};
 	$logout =~ s/:/[#dp]/g;
-	
-	
-	my $triggerdevice = ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) ;
-		#my $re = qr/$triggerdevice/;
-		
-		
-		
+
 	    if ( ReadingsVal( $Name, 'Trigger_device', '' ) eq "all_events" )
 		{
 		readingsSingleUpdate( $hash, "Loginfromfile", 'global', 1 );  # nur zu testzwecken
 		$dev_hash = $hash;
 		$hash->{helper}{testevent_device} = 'Logfile';
 		$hash->{helper}{testevent_event} = "writelog:".$logout ;
-		#return;
+
 		}
 		elsif ( ReadingsVal( $Name, 'Trigger_device', '' ) eq "Logfile" )
 		{
@@ -7851,7 +7738,7 @@ sub MSwitch_Check_Event($$) {
 	    $dev_hash = $hash;
         $hash->{helper}{testevent_device} = 'Logfile';
         $hash->{helper}{testevent_event} = "writelog:".$logout ;
-		#return;
+
 		}
 		else
 		{
@@ -7862,11 +7749,8 @@ sub MSwitch_Check_Event($$) {
         $hash->{helper}{testevent_event} = "writelog:".$logout ;
 		
 		}
-	
-		
-		
+
 	}
-	
     my $we = AnalyzeCommand( 0, '{return $we}' );
     MSwitch_Notify( $hash, $dev_hash );
     delete( $hash->{helper}{testevent_device} );
