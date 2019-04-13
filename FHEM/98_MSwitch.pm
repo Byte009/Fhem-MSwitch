@@ -3600,8 +3600,10 @@ sub MSwitch_fhemwebFn($$$$) {
         $errors =~ s/\| //g;
         $errors =~ s/\|//g;
 
-        if ( $errors eq ''
-            && AttrVal( $Name, 'MSwitch_Include_Webcmds', "1" ) eq '1' )
+       # if ( $errors eq '' && AttrVal( $Name, 'MSwitch_Include_Webcmds', "1" ) eq '1' )
+		if ( AttrVal( $Name, 'MSwitch_Include_Webcmds', "1" ) eq '1' )
+		
+		
         {
             if ( $devicewebcmd ne "noArg" ) {
                 my $device = '';
@@ -3618,7 +3620,7 @@ sub MSwitch_fhemwebFn($$$$) {
                 }
                 chop $device;
                 $devicewebcmd = $device;
-                $errors       = $devicewebcmd;
+               $errors .= ' ' .  $devicewebcmd;
             }
         }
 
