@@ -2621,7 +2621,7 @@ sub MSwitch_Notify($$) {
             }
 
 			
-			MSwitch_LOG( $ownName, 1, "$ownName:     event1 -> $event  " );
+			MSwitch_LOG( $ownName, 5, "$ownName:     event1 -> $event  " );
 			
 			
 			
