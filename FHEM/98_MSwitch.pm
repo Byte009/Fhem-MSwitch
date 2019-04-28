@@ -1,4 +1,4 @@
-# $Id: 98_MSwitch.pm 19132 2019-04-06 17:05:01Z Byte09 $
+# $Id: 98_MSwitch.pm 19182 2019-04-14 15:18:36Z Byte09 $
 # 98_MSwitch.pm
 # 
 # copyright #####################################################
@@ -207,7 +207,7 @@ sub MSwitch_Initialize($) {
     $hash->{AttrList} =
         "  disable:0,1"
       . "  disabledForIntervals"
-      . "  stateFormat"
+      . "  stateFormat:textField-long"
       . "  MSwitch_Comments:0,1"
       . "  MSwitch_Read_Log:0,1"
       . "  MSwitch_Help:0,1"
@@ -2589,6 +2589,15 @@ sub MSwitch_Notify($$) {
       EVENT: foreach my $event (@eventscopy) {
 ##################################
             MSwitch_LOG( $ownName, 5, "$ownName:     event -> $event  " );
+			
+			
+			if ( $event =~ m/.\{.*\}?/ ) {
+			 $event =~ s/:/[dp]/g;
+                $event =~ s/\"/[dst]/g;
+			MSwitch_LOG( $ownName, 5, "$ownName:    found jason -> $event  " );
+			}
+			
+			
 
             if ( $event =~ m/(.*)(\{.*\})(.*)/ ) {
 
@@ -2611,6 +2620,11 @@ sub MSwitch_Notify($$) {
                 #next EVENT;
             }
 
+			
+			MSwitch_LOG( $ownName, 1, "$ownName:     event1 -> $event  " );
+			
+			
+			
             $own_hash->{eventsave} = 'unsaved';
             MSwitch_LOG( $ownName, 5,
                     "$ownName: eingehendes Event  -> "
