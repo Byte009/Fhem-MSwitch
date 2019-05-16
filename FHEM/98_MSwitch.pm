@@ -7351,7 +7351,7 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
     $finalstring =
       "if (" . $condition . "){\$answer = 'true';} else {\$answer = 'false';} ";
 
-    MSwitch_LOG( $name, 3,
+    MSwitch_LOG( $name, 5,
         "$name:     Checkcondition - finalstring -> " . $finalstring );
 
     #MSwitch_LOG( $name, 0,"name   $name ");
