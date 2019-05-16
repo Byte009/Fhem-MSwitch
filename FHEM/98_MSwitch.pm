@@ -2665,12 +2665,12 @@ sub MSwitch_Notify($$) {
       EVENT: foreach my $event (@eventscopy) {
 ##################################
             MSwitch_LOG( $ownName, 6, "$ownName:     event -> $event  " );
-
 			
-			if ( $event =~ m/^.\{.*\}?/ ) {
-			 $event =~ s/:/[dp]/g;
-             $event =~ s/\"/[dst]/g;
+			if ( $event =~ m/^.*:.\{.*\}?/ ) {
+			# $event =~ s/:/[dp]/g;
+            # $event =~ s/\"/[dst]/g;
 			MSwitch_LOG( $ownName, 6, "$ownName:    found jason -> $event  " );
+			next EVENT;
 			}
 			
 			
@@ -5336,7 +5336,7 @@ my %savedetails = MSwitch_makeCmdHash($Name);
 	<td>affected devices :
 	";
 	
-	 my $savecmds	= AttrVal( $Name, 'MSwitch_DeleteCMDs', $deletesavedcmdsstandart );
+	 #my $savecmds	= AttrVal( $Name, 'MSwitch_DeleteCMDs', $deletesavedcmdsstandart );
 	 
 	 if ($savecmds ne "nosave" && $cmdfrombase eq "1")
 	 {
