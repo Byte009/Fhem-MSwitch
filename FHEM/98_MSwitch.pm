@@ -789,18 +789,18 @@ sub MSwitch_Get($$@) {
         while ( $condsplit =~ m/(if \()(.*)(\()(.*')(.*)',\s'(.*)',\s(.*)/ ) {
             $x++;    # exit
 			
-			MSwitch_LOG( $name, 0, "$condsplit" . __LINE__ );
+			# MSwitch_LOG( $name, 0, "$condsplit" . __LINE__ );
 			
 			
-			MSwitch_LOG( $name, 0, "1 $1 " . __LINE__ );
-			MSwitch_LOG( $name, 0, "2 $2 " . __LINE__ );
-			MSwitch_LOG( $name, 0, "3 $3 " . __LINE__ );
-			MSwitch_LOG( $name, 0, "5 $4 " . __LINE__ );
-			MSwitch_LOG( $name, 0, "6 $5 " . __LINE__ );
-			MSwitch_LOG( $name, 0, "7 $6 " . __LINE__ );
-			MSwitch_LOG( $name, 0, "8 $7 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "1 $1 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "2 $2 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "3 $3 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "5 $4 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "6 $5 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "7 $6 " . __LINE__ );
+			# MSwitch_LOG( $name, 0, "8 $7 " . __LINE__ );
 			
-			MSwitch_LOG( $name, 0, "---------------" . __LINE__ );
+			# MSwitch_LOG( $name, 0, "---------------" . __LINE__ );
 			
 			
             last if $x > 20;    # exit
