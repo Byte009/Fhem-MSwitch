@@ -48,6 +48,12 @@
 #
 #################################################################
 
+
+
+
+
+
+
 package main;
 use Time::Local;
 use strict;
@@ -673,6 +679,7 @@ sub MSwitch_Define($$) {
     $hash->{Version_Datenstruktur}         = $vupdate;
     $hash->{Version_autoupdate}            = $autoupdate;
     $hash->{MODEL}                         = $startmode;
+	$hash->{Support_Fhemforum}             = "https://forum.fhem.de/index.php/topic,86199.0.html";
 
     if ( $defstring ne "" and $defstring =~ m/(\(.+?\))/ ) {
 
@@ -1165,6 +1172,13 @@ sub MSwitch_Set($@) {
         $cs =~ s/\n//g;
         $cs =~ s/\[tr\]/#[tr]/g;
         my $return = "no value";
+		
+		
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
         $return = eval($cs);
 
         if ($@) {
@@ -1213,27 +1227,27 @@ sub MSwitch_Set($@) {
 		 
 		 #####################
 		 
-		if ($debugging eq "2")
-		{
+		# if ($debugging eq "2")
+		# {
 		
-		MSwitch_LOG( $name, 0,
-                         "############# " . __LINE__ );
+		# MSwitch_LOG( $name, 0,
+                         # "############# " . __LINE__ );
 						 
-		MSwitch_LOG( $name, 0,
-                         "$name tarray ". join("-",@testarray));
+		# MSwitch_LOG( $name, 0,
+                         # "$name tarray ". join("-",@testarray));
 						 
 						 
-		MSwitch_LOG( $name, 0,
-                         "$name ATTS $atts ");
+		# MSwitch_LOG( $name, 0,
+                         # "$name ATTS $atts ");
 						
 	
-		foreach my $debug ( sort keys %setlist )
-		{
-		MSwitch_LOG( $name, 0,
-                         "- $debug " .$setlist{$debug}." ");
+		# foreach my $debug ( sort keys %setlist )
+		# {
+		# MSwitch_LOG( $name, 0,
+                         # "- $debug " .$setlist{$debug}." ");
 		
-		}
-		}
+		# }
+		# }
 		
 		
         foreach my $k ( sort keys %sets ) {
@@ -1254,7 +1268,8 @@ sub MSwitch_Set($@) {
 
         # bearbeite setlist und readinglist
 ##############################
-        if ( $cmd ne "?" ) {
+        if ( $cmd ne "?" ) 
+		{
             my @sl       = split( " ", AttrVal( $name, "setList", "" ) );
             my $re       = qr/$cmd/;
             my @gefischt = grep( /$re/, @sl );
@@ -1305,6 +1320,7 @@ sub MSwitch_Set($@) {
         }
     }
 
+
     if (    ( ( $cmd eq 'on' ) || ( $cmd eq 'off' ) )
          && ( $args[0] ne '' )
          && ( $ic ne 'fromnotify' ) )
@@ -1342,11 +1358,18 @@ sub MSwitch_Set($@) {
         delete( $hash->{helper}{repeats} );
         return;
     }
+	
+	
+	MSwitch_LOG( $name, 5,"BEFEHL. $cmd ");
+	
+	
+	
 ##############################
 
     if ( $cmd eq 'inactive' ) {
 
         # setze device auf inaktiv
+		
         readingsSingleUpdate( $hash, "state", 'inactive', 1 );
         return;
     }
@@ -1354,6 +1377,7 @@ sub MSwitch_Set($@) {
     if ( $cmd eq 'active' ) {
 
         # setze device auf aktiv
+
         readingsSingleUpdate( $hash, "state", 'active', 1 );
         return;
     }
@@ -2000,6 +2024,13 @@ sub MSwitch_Set($@) {
 
             if ( $testtstate eq "[:]" || $testtstate eq "[\$:]" ) {
 
+
+if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                 $devicedetails{$timerkey} =
                   eval MSwitch_Checkcond_state( $devicedetails{$timerkey},
                                                 $name );
@@ -2242,6 +2273,9 @@ sub MSwitch_Set($@) {
             readingsSingleUpdate( $hash, "state", $cmd, 1 );
         }
         else {
+		
+		
+		
             readingsSingleUpdate( $hash, "state", 'active', $showevents );
         }
         my $anzahl = @cmdpool;
@@ -2382,6 +2416,13 @@ sub MSwitch_Cmd(@) {
                 MSwitch_LOG( $Name, 6,
                              "$Name:     exec als perlcode -> " . $cmds );
 
+
+if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                 my $out = eval($cmds);
                 if ($@) {
                     MSwitch_LOG( $Name, 1,
@@ -2648,6 +2689,9 @@ sub MSwitch_Attr(@) {
     }
 
     if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' ) {
+	
+	
+	
         readingsSingleUpdate( $hash, "state", 'active', 1 );
         $hash->{MODEL} = 'Notify';
         my $cs = "setstate $name active";
@@ -3305,11 +3349,7 @@ sub MSwitch_Notify($$) {
             # speichert 20 events ab zur weiterne funktion ( funktionen )
             # ändern auf bedarfschaltung
 
-if ($debugging eq "1")
-		{
-		MSwitch_LOG( $ownName, 0,"############");
-		MSwitch_LOG( $ownName, 0,"$ownName: eventcopy  $eventcopy" );
-		}
+
 
 
 
@@ -3346,6 +3386,12 @@ if ($debugging eq "1")
                  and $activecount == 0 )
             {
                 # reading activity aktualisieren
+				
+				
+				MSwitch_LOG( $ownName, 5,"setze state neu");
+				
+				
+				
                 readingsSingleUpdate( $own_hash, "state",
                                       'active',  $showevents );
                 $activecount = 1;
@@ -3657,7 +3703,12 @@ sub MSwitch_fhemwebFn($$$$) {
     @eventsall = @eventsallnew;
 
     if ( AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Notify" ) {
+
+
+	if ( ReadingsVal( $Name, 'state', '' ) ne "inactive" ) {
         readingsSingleUpdate( $hash, "state", 'active', 1 );
+		}
+		
         $triggeroff = "";
         $triggeron  = "";
     }
@@ -5617,6 +5668,13 @@ sub MSwitch_fhemwebFn($$$$) {
         my $fieldon = "";
         if ( $triggeron =~ m/{(.*)}/ ) {
             my $exec = "\$fieldon = " . $1;
+			
+			if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             eval($exec);
             $ret .=
 "<input style='background-color:#e5e5e5;' name='info' readonly value='value = "
@@ -5642,6 +5700,13 @@ sub MSwitch_fhemwebFn($$$$) {
         my $fieldoff = "";
         if ( $triggeroff =~ m/{(.*)}/ ) {
             my $exec = "\$fieldoff = " . $1;
+			
+			if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             eval($exec);
             $ret .=
 "<input style='background-color:#e5e5e5;' name='info' readonly value='value = "
@@ -5667,6 +5732,13 @@ sub MSwitch_fhemwebFn($$$$) {
         my $fieldcmdon = "";
         if ( $triggercmdon =~ m/{(.*)}/ ) {
             my $exec = "\$fieldcmdon = " . $1;
+			
+			if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             eval($exec);
             $ret .=
 "<input style='background-color:#e5e5e5;' name='info' readonly value='value = "
@@ -5689,6 +5761,13 @@ sub MSwitch_fhemwebFn($$$$) {
             my $fieldcmdoff = "";
             if ( $triggercmdoff =~ m/{(.*)}/ ) {
                 my $exec = "\$fieldcmdoff = " . $1;
+				
+				if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                 eval($exec);
                 $ret .=
 "<input style='background-color:#e5e5e5;' name='info' readonly value='value = "
@@ -7012,6 +7091,13 @@ sub MSwitch_Exec_Notif($$$$$) {
         $testtstate =~ s/[A-Za-z0-9#\.\-_]//g;
         if ( $testtstate eq "[:]" || $testtstate eq "[\$:]" ) {
 
+
+if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             $devicedetails{$timerkey} =
               eval MSwitch_Checkcond_state( $devicedetails{$timerkey}, $name );
 
@@ -7177,6 +7263,13 @@ sub MSwitch_Exec_Notif($$$$$) {
                     else {
 
                         if ( $cs =~ m/{.*}/ ) {
+						
+						if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                             eval($cs);
                             if ($@ and  $@ ne "OK" ) {
                                 MSwitch_LOG( $name, 1,
@@ -7529,6 +7622,13 @@ sub MSwitch_Restartcmd($) {
             if ( $cs =~ m/{.*}/ ) {
                 MSwitch_LOG( $name, 5,
                              "$name:     exec als perlcode -> " . $cs );
+							 
+							 if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                 eval($cs);
                 if ($@) {
                     MSwitch_LOG( $name, 1,
@@ -7684,6 +7784,13 @@ sub MSwitch_checkcondition($$$) {
                   . $rechenzeichen
                   . $vergleichswert
                   . ";return \$ret;";
+				  
+				  if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                 my $erg2 = eval $erg;
                 MSwitch_LOG( $name, 5, "$name:  ergebniss  : $erg" );
                 MSwitch_LOG( $name, 5, "$name:  ergebniss  : $erg2" );
@@ -7947,6 +8054,13 @@ sub MSwitch_checkcondition($$$) {
                   . $rechenzeichen
                   . $vergleichswert
                   . ";return \$ret;";
+				  
+				  if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                 my $erg1 = eval $erg;
 
                 MSwitch_LOG( $name, 5, "$name: Teststring: $erg" );
@@ -8054,6 +8168,13 @@ sub MSwitch_checkcondition($$$) {
                       . $rechenzeichen
                       . $vergleichswert
                       . ";return \$ret;";
+					  
+					  if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
                     my $erg1 = eval $erg;
                     $finalinc =
 "Funktionberechnung INCREASE<br>Herangezogene Werte: letzter Wert "
@@ -8090,6 +8211,13 @@ sub MSwitch_checkcondition($$$) {
             $field = $secondpart;
         }
         else {
+		
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             eval($exec);
         }
 
@@ -8265,6 +8393,13 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
         $x++;    # notausstieg
         last if $x > 20;    # notausstieg
         if ( defined $2 ) {
+		
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             my $part2 = eval $3;
             chop($part2);
             chop($part2);
@@ -8356,6 +8491,13 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
 
     MSwitch_LOG( $name, 5,
                  "$name:     Checkcondition - finalstring -> " . $finalstring );
+				 
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
     my $ret = eval $finalstring;
 
     if ($@) {
@@ -8596,6 +8738,13 @@ sub MSwitch_Createtimer($) {
         if ( defined $2 ) {
             my $part1 = $1;
             my $part3 = $3;
+			
+			if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             my $part2 = eval $2;
             if ( $part2 !~ m/^[0-9]{2}:[0-9]{2}$|^[0-9]{2}:[0-9]{2}:[0-9]{2}$/ )
             {
@@ -9064,6 +9213,13 @@ sub MSwitch_ChangeCode($$) {
         $x++;                   # exit secure
         last if $x > 20;        # exit secure
         if ( defined $2 ) {
+		
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             my $part2 = eval $2 . $3;
             chop($part2);
             chop($part2);
@@ -9329,6 +9485,13 @@ sub MSwitch_checktrigger(@) {
 
         my $SELF = $ownName;
         my $exec = "\$triggerfield = " . $1;
+		
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
         eval($exec);
     }
 
@@ -10011,6 +10174,13 @@ sub MSwitch_repeat($) {
     if ( AttrVal( $name, 'MSwitch_Debug', "0" ) ne '2' ) {
 
         if ( $cs =~ m/{.*}/ ) {
+		
+		if ($debugging eq "1")
+		{
+		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		}
+		
+		
             eval($cs);
             if ($@) {
                 MSwitch_LOG( $name, 1,
