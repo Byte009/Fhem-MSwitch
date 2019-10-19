@@ -167,6 +167,7 @@ sub MSwitch_check_setmagic_i($$);
 sub MSwitch_Eventlog($$);
 sub MSwitch_Writesequenz($);
 sub MSwitch_del_singlelog($$);
+sub MSwitch_Checkcond_history($$);
 
 ##############################
 my %sets = (
@@ -3325,6 +3326,8 @@ else
 
 
 
+
+delete( $own_hash->{helper}{history} );# lösche historyberechnung verschieben auf nach abarbeitung conditions
 # sequenz
 
             my $x = 0;
@@ -8867,7 +8870,7 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
 		
 		if ($debugging eq "1")
 		{
-		MSwitch_LOG( "Debug", 0,"eveal line" . __LINE__ );
+		MSwitch_LOG( "Debug", 0,"eval line" . __LINE__ );
 		}
 		
 		
@@ -8928,7 +8931,23 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
     my @newargarray;
     foreach my $args (@argarray) {
         $testarg = $args;
+		#MSwitch_LOG( "Debug", 0,"suche history $name $testarg" . __LINE__ );
+		
+		
+			if ( $testarg =~ '.*:h\d{1,3}' ) {
+			# historyformatierung erkannt - auswerten über sub
+			# in der regex evtl auf zeilenende definieren
+			$newargarray[$count] = MSwitch_Checkcond_history( $args, $name );
+			
+		MSwitch_LOG( "Debug", 0,"suche history $testarg" . __LINE__ );
+		
+		next;
+		}
+	
         $testarg =~ s/[0-9]+//gs;
+		
+		#MSwitch_LOG( "Debug", 0,"suche history $name  $testarg" . __LINE__ );
+		
         if ( $testarg eq '[:-:|]' || $testarg eq '[:-:]' ) {
 
             # timerformatierung erkannt - auswerten über sub
@@ -8936,15 +8955,17 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
 
             $newargarray[$count] = MSwitch_Checkcond_time( $args, $name );
         }
+		
+	
+		
         elsif ( $testarg =~ '[.*:.*]' ) {
 
             # stateformatierung erkannt - auswerten über sub
             $newargarray[$count] = MSwitch_Checkcond_state( $args, $name );
         }
-		elsif ( $testarg =~ '[.*:history.*]' ) {
-			# historyformatierung erkannt - auswerten über sub
 		
-		}
+		
+		
 		
         else {
             $newargarray[$count] = $args;
@@ -9137,6 +9158,64 @@ sub MSwitch_Checkcond_time($$) {
     }
 
     return $return;
+}
+####################
+sub MSwitch_Checkcond_history($$) {
+
+    my ( $condition, $name ) = @_;
+    $condition =~ s/\[//;
+    $condition =~ s/\]//;
+    my $hash         = $defs{$name};
+    my $return;
+
+
+
+my $seq;
+my $x=0;
+my $log = $hash->{helper}{eventlog};
+
+
+
+if ($hash->{helper}{history}{eventberechnung} ne "berechnet") # teste auf vorhandene berechnung
+{
+foreach $seq ( sort{$b <=> $a} keys  %{$log} ) 
+		{
+		my @historyevent = split( /:/, $hash->{helper}{eventlog}{$seq} );
+		$hash->{helper}{history}{event}{$x}{EVENT} = $historyevent[1].":".$historyevent[2];
+		$hash->{helper}{history}{event}{$x}{EVFULL} = $hash->{helper}{eventlog}{$seq};
+		$hash->{helper}{history}{event}{$x}{EVTPART1} = $historyevent[0];
+		$hash->{helper}{history}{event}{$x}{EVTPART2} = $historyevent[1];
+		$hash->{helper}{history}{event}{$x}{EVTPART3} = $historyevent[2];
+		#MSwitch_LOG( "Debug", 0,"log" . $hash->{helper}{eventlog}{$seq} );
+		$x++;
+		}
+	$hash->{helper}{history}{eventberechnung} ="berechnet";	
+}
+
+
+my @historysplit   = split( /\:/, $condition );
+
+
+my $historynumber = $historysplit[1];
+#$historynumber =~ s/[0-9]+//gs;
+
+$historynumber =~ s/[a-z]+//gs;
+
+# \W
+
+my $inhalt = $hash->{helper}{history}{event}{1}{$historysplit[0]};
+$return ="'".$inhalt."'";
+
+#$return ="(1)";
+
+
+#MSwitch_LOG( "Debug", 0,"history condition: " . $condition );
+#MSwitch_LOG( "Debug", 0,"history number: " . $historynumber );
+#MSwitch_LOG( "Debug", 0,"history split: " . $historysplit[0] );
+
+return $return;
+
+
 }
 ####################
 sub MSwitch_Checkcond_day($$$$) {
@@ -11248,6 +11327,8 @@ sub MSwitch_Eventlog($$) {
 	{
 	delete( $hash->{helper}{eventlog} );
 	delete( $hash->{helper}{tmp} );
+	delete( $hash->{helper}{history} );# lösche historyberechnung verschieben auf nach abarbeitung conditions
+# sequenz
 	return "ok, alle Daten gelöscht !"
 	}
 	
