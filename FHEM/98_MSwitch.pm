@@ -635,7 +635,9 @@ sub MSwitch_LoadHelper($) {
         }
 
         #setze alle attrs
-        $attr{$Name}{MSwitch_Help}                = '0';
+        $attr{$Name}{MSwitch_Eventhistory}        = '0';
+		$attr{$Name}{MSwitch_Safemode}            = '1';
+		$attr{$Name}{MSwitch_Help}                = '0';
         $attr{$Name}{MSwitch_Debug}               = '0';
         $attr{$Name}{MSwitch_Expert}              = '0';
         $attr{$Name}{MSwitch_Delete_Delays}       = '1';
@@ -8119,9 +8121,25 @@ sub MSwitch_checkcondition($$$) {
     $condition =~ s/\[\$EVTPART1\]/"\$EVTPART1"/g;
     $condition =~ s/\[\$EVTPART2\]/"\$EVTPART2"/g;
     $condition =~ s/\[\$EVTPART3\]/"\$EVTPART3"/g;
-
     $condition =~ s/\[\$EVT_CMD1_COUNT\]/"\$EVT_CMD1_COUNT"/g;
     $condition =~ s/\[\$EVT_CMD2_COUNT\]/"\$EVT_CMD2_COUNT"/g;
+	#### evt anpassung wenn alleinstehend
+	
+	#MSwitch_LOG( "Debug", 0,"cond vorfunc: " . $condition );
+	
+	
+	$condition =~ s/\[EVENT]/[$name:EVENT]/g;
+    $condition =~ s/\[EVTFULL]/[$name:EVTFULL]/g;
+    $condition =~ s/\[EVTPART1]/[$name:EVTPART1]/g;
+    $condition =~ s/\[EVTPART2]/[$name:EVTPART2]/g;
+    $condition =~ s/\[EVTPART3]/[$name:EVTPART3]"/g;
+	
+	$condition =~ s/\[EVT_CMD1_COUNT\]/[$name:EVT_CMD1_COUNT]/g;
+    $condition =~ s/\[EVT_CMD2_COUNT\]/[$name:EVT_CMD2_COUNT]/g;
+	$condition =~ s/\[DIFFDIRECTION\]/[$name:DIFFDIRECTION]/g;
+	$condition =~ s/\[DIFFERENCE\]/[$name:DIFFERENCE]/g;
+	
+	#MSwitch_LOG( "Debug", 0,"cond nach func: " . $condition );
 
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
@@ -8136,25 +8154,35 @@ sub MSwitch_checkcondition($$$) {
     my $funktionsstringavg;
     my $funktionsstringinc;
 
-    if ( $condition =~ m/(.*)(\[DIFF.*[>|<].*\d{1,3})(.*)/ ) {
+#MSwitch_LOG( "Debug", 0,"cond vorfunc: " . $condition );
+
+
+    if ( $condition =~ m/(.*)(\[DIFF.*[>|<].*?\d{1,3})(.*)/ ) {
+	
+	#MSwitch_LOG( "Debug", 0,"1: " . $1);
+	#MSwitch_LOG( "Debug", 0,"2: " . $2 );
+	#MSwitch_LOG( "Debug", 0,"3: " . $3 );
+	
         $funktionstring = $2;
         $condition      = $1 . "[$name:DIFFERENCE] eq \"true\"" . $3;
-        MSwitch_LOG( $name, 5, "$name:     condition -> " . $condition );
+        #MSwitch_LOG( $name, 5, "$name:     condition -> " . $condition );
+		
+		#   [DIFF2:humidity] > 5 AND 1 == 1
     }
 
-    if ( $condition =~ m/(.*)(\[TEND.*[>|<].*\d{1,3})(.*)/ ) {
+    if ( $condition =~ m/(.*)(\[TEND.*[>|<].*?\d{1,3})(.*)/ ) {
         $funktionstring = $2;
         $condition      = $1 . "[$name:TENDENCY] eq \"true\"" . $3;
         MSwitch_LOG( $name, 5, "$name:     condition -> " . $condition );
     }
 
-    if ( $condition =~ m/(.*)(\[AVG.*[>|<].*\d{1,3})(.*)/ ) {
+    if ( $condition =~ m/(.*)(\[AVG.*[>|<].*?\d{1,3})(.*)/ ) {
         $funktionstring = $2;
         $condition      = $1 . "[$name:AVERAGE] eq \"true\"" . $3;
         MSwitch_LOG( $name, 5, "$name:     condition -> " . $condition );
     }
 
-    if ( $condition =~ m/(.*)(\[INC.*[>|<].*\d{1,3})(.*)/ ) {
+    if ( $condition =~ m/(.*)(\[INC.*[>|<].*?\d{1,3})(.*)/ ) {
         $funktionstring = $2;
         $condition      = $1 . "[$name:INCREASE] eq \"true\"" . $3;
         MSwitch_LOG( $name, 5, "$name:     condition -> " . $condition );
@@ -8176,6 +8204,13 @@ sub MSwitch_checkcondition($$$) {
         $funktionsstringinc  = $1;
 
 ######## unterscheidung der funktionen
+#MSwitch_LOG( "Debug", 0,"1 cond nach func: " . $condition );
+
+
+#################
+
+
+
 
         #Function DIFF
         if ( $funktionsstringdiff =~ m/(DIFF)(.*)/ ) {
@@ -8240,7 +8275,23 @@ sub MSwitch_checkcondition($$$) {
 				
 				$hash->{helper}{eventhistory}{DIFFERENCE} = $finaldiff;
                 readingsSingleUpdate( $hash, "DIFFERENCE", $erg2, 1 );
-
+				
+				
+				if ($operand > $operand1)
+				{
+				readingsSingleUpdate( $hash, "DIFFDIRECTION", "up", 1 );
+				}
+				elsif ($operand < $operand1)
+				{
+				readingsSingleUpdate( $hash, "DIFFDIRECTION", "down", 1 );
+				}
+				else
+				{
+				readingsSingleUpdate( $hash, "DIFFDIRECTION", "no_tendency", 1 );
+				}
+				
+				
+				
             }
 			
 			
@@ -8667,6 +8718,18 @@ readingsSingleUpdate( $hash, "Debug-TENDENCY-Soll-Richtung", $tendenzgefordert, 
 
     }
 ###################################
+
+
+# $condition
+
+MSwitch_LOG( "Debug", 0,"cond nach func: " . $condition );
+
+
+
+
+
+
+
 
     ###### perlersetzung
     ##############
