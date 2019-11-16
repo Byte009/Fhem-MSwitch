@@ -1320,7 +1320,7 @@ my %setlist;
 			}
 			else
 			{
-			    return "Unknown argument $cmd, choose one of del_delays:noArg exec_cmd_1 exec_cmd_2 reset_device:noArg state backup_MSwitch:all_devices $setList $special";
+			    return "Unknown argument $cmd, choose one of del_repeats:noArg del_delays:noArg exec_cmd_1 exec_cmd_2 reset_device:noArg state backup_MSwitch:all_devices $setList $special";
 			}
 
 	   }
