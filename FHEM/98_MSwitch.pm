@@ -1,4 +1,4 @@
-# $Id: 98_MSwitch.pm 20503 2019-11-13 04:37:15Z Byte09 $
+# $Id: 98_MSwitch.pm 20516 2019-11-16 09:42:01Z Byte09 $
 # 98_MSwitch.pm
 #
 # copyright #####################################################
@@ -1320,7 +1320,7 @@ my %setlist;
 			}
 			else
 			{
-			    return "Unknown argument $cmd, choose one of exec_cmd_1 exec_cmd_2 reset_device:noArg state backup_MSwitch:all_devices $setList $special";
+			    return "Unknown argument $cmd, choose one of del_delays:noArg exec_cmd_1 exec_cmd_2 reset_device:noArg state backup_MSwitch:all_devices $setList $special";
 			}
 
 	   }
@@ -2751,8 +2751,6 @@ sub MSwitch_Attr(@) {
       . "  MSwitch_Event_Id_Distributor:textField-long "
       . "  setList:textField-long "
       . "  readingList:textField-long "
-	  . "  MSwitch_Develop_Affected:textField-long"	  
-	  . "  MSwitch_Develop_Trigger:textField-long"
       . "  textField-long ";
 	
 	setDevAttrList($name, $attrzerolist);
