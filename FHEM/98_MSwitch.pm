@@ -1,4 +1,4 @@
-# $Id: 98_MSwitch.pm 20457 2019-11-05 05:36:29Z Byte09 $
+# $Id: 98_MSwitch.pm 20503 2019-11-13 04:37:15Z Byte09 $
 # 98_MSwitch.pm
 #
 # copyright #####################################################
@@ -1118,7 +1118,7 @@ sub MSwitch_Get($$@) {
 
     if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) eq "Dummy" ) 
 	{
-        return "Unknown argument $opt, choose one of Eventlog:timeline,clear support_info:noArg restore_MSwitch_Data:this_Device,all_Devices";
+        return "Unknown argument $opt, choose one of Eventlog:timeline,clear support_info:noArg restore_MSwitch_Data:this_Device,all_Devices active_timer:show,delete";
     }
 
     if ( ReadingsVal( $name, '.lock', 'undef' ) ne "undef" ) 
@@ -1320,7 +1320,7 @@ my %setlist;
 			}
 			else
 			{
-			    return "Unknown argument $cmd, choose one of reset_device:noArg state backup_MSwitch:all_devices $setList $special";
+			    return "Unknown argument $cmd, choose one of exec_cmd_1 exec_cmd_2 reset_device:noArg state backup_MSwitch:all_devices $setList $special";
 			}
 
 	   }
@@ -2425,7 +2425,7 @@ sub MSwitch_Cmd(@) {
              && $devicedetails{ $device . '_repeattime' } > 0 )
         {
             my $i;
-            for ( $i = 0 ;$i <= $devicedetails{ $device . '_repeatcount' };$i++ )
+            for ( $i = 1 ;$i <= $devicedetails{ $device . '_repeatcount' };$i++ )
             {
                 my $msg = $cmds . "|" . $Name;
                 if ( $toggle ne '' ) 
@@ -2716,7 +2716,7 @@ sub MSwitch_Attr(@) {
 		fhem("deleteattr $name MSwitch_Include_MSwitchcmds");
 		fhem("deleteattr $name MSwitch_Include_Devicecmds");
 		fhem("deleteattr $name MSwitch_Safemode");
-		fhem("deleteattr $name MSwitch_Expert");
+		#fhem("deleteattr $name MSwitch_Expert");
 		fhem("deleteattr $name MSwitch_Extensions");
 		fhem("deleteattr $name MSwitch_Lock_Quickedit");
 		fhem("deleteattr $name MSwitch_Delete_Delays");
@@ -2737,6 +2737,7 @@ sub MSwitch_Attr(@) {
         "  disable:0,1"
       . "  MSwitch_Debug:0,1"
 	  . "  disabledForIntervals"
+	  . "  MSwitch_Expert:0,1"
       . "  stateFormat:textField-long"
 	  . "  MSwitch_Eventhistory:0,10"
       . "  MSwitch_Help:0,1"
@@ -2744,12 +2745,14 @@ sub MSwitch_Attr(@) {
       . "  MSwitch_Extensions:0,1"
       . "  MSwitch_Inforoom"
       . "  MSwitch_DeleteCMDs:manually,automatic,nosave"
-      . "  MSwitch_Mode:Dummy"
+      . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
 	  . "  MSwitch_Selftrigger_always:0,1"
 	  . "  useSetExtensions:0,1"
       . "  MSwitch_Event_Id_Distributor:textField-long "
       . "  setList:textField-long "
       . "  readingList:textField-long "
+	  . "  MSwitch_Develop_Affected:textField-long"	  
+	  . "  MSwitch_Develop_Trigger:textField-long"
       . "  textField-long ";
 	
 	setDevAttrList($name, $attrzerolist);
@@ -7253,7 +7256,7 @@ sub MSwitch_Exec_Notif($$$$$) {
                          && $devicedetails{ $device . '_repeattime' } > 0 )
                     {
                         my $i;
-                        for ( $i = 0 ;
+                        for ( $i = 1;
                               $i <= $devicedetails{ $device . '_repeatcount' } ;
                               $i++ )
                         {
@@ -7514,7 +7517,7 @@ sub MSwitch_Restartcmd($) {
     my $hash      = $modules{MSwitch}{defptr}{$name};
     my $showevents = AttrVal( $name, "MSwitch_generate_Events", 1 );
     return "" if ( IsDisabled($name) );
-    return if ( AttrVal( $name, 'MSwitch_Mode', "Notify" ) eq 'Dummy' );
+    #return if ( AttrVal( $name, 'MSwitch_Mode', "Notify" ) eq 'Dummy' );
     $hash->{eventsave} = 'unsaved';
     MSwitch_LOG( $name, 6, "----------------------------------------" );
     MSwitch_LOG( $name, 6, "$name: aufruf restartcmd -> " . $incomming );
@@ -7622,7 +7625,7 @@ sub MSwitch_Restartcmd($) {
              && $devicedetails{ $device . '_repeattime' } > 0 )
         {
             my $i;
-            for ( $i = 0 ;
+            for ( $i = 1 ;
                   $i <= $devicedetails{ $device . '_repeatcount' } ;
                   $i++ )
             {
