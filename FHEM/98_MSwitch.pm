@@ -8494,8 +8494,8 @@ sub MSwitch_checkcondition($$$) {
 	
 	
 	
-	$event =~ s/"/\\"/g;
- #MSwitch_LOG( $name, 0, "$name:     event: ".$event );
+	$event =~ s/"/\\"/g; # keine " im event zulassen ERROR
+    #MSwitch_LOG( $name, 0, "$name:     event: ".$event );
  
     my $attrrandomnumber = AttrVal( $name, 'MSwitch_RandomNumber', '' );
     my $debugmode    = AttrVal( $name, 'MSwitch_Debug',          "0" );
@@ -9138,7 +9138,7 @@ my @wertpaar2;
             eval($exec);
         }
 
-MSwitch_LOG( $name, 0, "$name:  c-isday -> ".isday()  );
+#MSwitch_LOG( $name, 0, "$name:  c-isday -> ".isday()  );
 
         if ( $field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/ ) {
             my $hh = $1;
