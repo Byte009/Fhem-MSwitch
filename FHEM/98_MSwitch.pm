@@ -92,7 +92,7 @@ my $autoupdate = 'off';    #off/on
 my $version    = '2.8';
 my $vupdate    = 'V2.00'; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
-my $standartstartdelay = 60; # zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
+my $standartstartdelay = 30; # zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
 my $eventset = '0';
 my $deletesavedcmds = 1800; # zeitraum nachdem gespeicherte devicecmds gelöscht werden ( beschleunugung des webinterfaces )
 my $deletesavedcmdsstandart = "nosave"; # standartverhalten des attributes "MSwitch_DeleteCMDs" <manually,nosave,automatic>
@@ -8483,10 +8483,20 @@ sub MSwitch_checkcondition($$$) {
   $month++; $year+=1900;
 
 
+
+
+
+
+
     # antwort execute 0 oder 1
     my ( $condition, $name, $event ) = @_;
     my $hash = $modules{MSwitch}{defptr}{$name};
-
+	
+	
+	
+	$event =~ s/"/\\"/g;
+ #MSwitch_LOG( $name, 0, "$name:     event: ".$event );
+ 
     my $attrrandomnumber = AttrVal( $name, 'MSwitch_RandomNumber', '' );
     my $debugmode    = AttrVal( $name, 'MSwitch_Debug',          "0" );
 	
@@ -9071,6 +9081,20 @@ my @wertpaar2;
     }
 	
 	}######## oldplace
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 ###################################
 # $condition
 # perlersetzung
@@ -9079,13 +9103,29 @@ my @wertpaar2;
     my $field = "";
     my $SELF  = $name;
 
-    while ( $condition =~ m/(.*)\{(.+)\}(.*)/ ) {
+
+#MSwitch_LOG( $name, 0, "$name:  c-perlersetzung before-> ".$condition );
+
+    while ( $condition =~ m/(.*)\{(.+)\}(.*)/ ) #z.b $WE
+	{
+	
+	#MSwitch_LOG( $name, 0, "$name:  c-perlersetzung -> ".$condition );
+	
+	
         my $firstpart  = $1;
         my $secondpart = $2;
         my $lastpart   = $3;
         my $exec       = "\$field = " . $2;
 
-        if ( $secondpart =~ m/(!\$.*|\$.*)/ ) {
+#MSwitch_LOG( $name, 0, "$name:  c-firstpart -> ".$firstpart );
+#MSwitch_LOG( $name, 0, "$name:  c-secondpart -> ".$secondpart );
+#MSwitch_LOG( $name, 0, "$name:  c-lastpart -> ".$lastpart );
+#MSwitch_LOG( $name, 0, "$name:  c-exec -> ".$exec );
+
+
+
+        if ( $secondpart =~ m/(!\$.*|\$.*)/ ) 
+		{
             $field = $secondpart;
         }
         else {
@@ -9094,10 +9134,11 @@ my @wertpaar2;
 		{
 		MSwitch_LOG( "Debug", 0,"eval line" . __LINE__ );
 		}
-		
-		
+
             eval($exec);
         }
+
+MSwitch_LOG( $name, 0, "$name:  c-isday -> ".isday()  );
 
         if ( $field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/ ) {
             my $hh = $1;
@@ -9112,6 +9153,24 @@ my @wertpaar2;
         $x++;
         last if $x > 10;    #notausstieg
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     if ( $attrrandomnumber ne '' ) {
         MSwitch_Createnumber($hash);
