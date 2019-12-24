@@ -81,7 +81,7 @@ use SetExtensions;
 # }
   
 my $autoupdate = 'off';    #off/on
-my $version    = '3.0 alpha';
+my $version    = '3.01 alpha';
 my $vupdate    = 'V2.00'; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $savemodetime = 10000000; # Zeit für Zugriffe im Safemode
@@ -534,13 +534,13 @@ sub MSwitch_summary($) {
             }
         }
     }
-    $ret .= "<script>
-	\$( \"td[informId|=\'" . $name . "\']\" ).attr(\"informId\", \'test\');
-	\$(document).ready(function(){
-	\$( \".col3\" ).text( \"\" );
-	\$( \".devType\" ).text( \"MSwitch Inforoom: Anzeige der Deviceinformationen, Änderungen sind nur in den Details möglich.\" );
-	});
-	</script>";
+     $ret .= "<script>
+	// \$( \"td[informId|=\'" . $name . "\']\" ).attr(\"informId\", \'test\');
+	// \$(document).ready(function(){
+	// \$( \".col3\" ).text( \"\" );
+	// \$( \".devType\" ).text( \"MSwitch Inforoom: Anzeige der Deviceinformationen, Änderungen sind nur in den Details möglich.\" );
+	//});
+	 </script>";
     $ret =~ s/#dp /:/g;
     return $ret;
 }
@@ -3811,6 +3811,7 @@ my $EXECCMD;
 my $DUMMYMODE;
 my $RELOADBUTTON;
 my $RENAMEBUTTON;
+my $EDITEVENT;
 
 if (AttrVal( $Name, 'MSwitch_Language',AttrVal( 'global', 'language', 'EN' ) ) eq "DE")
 			{
@@ -3834,6 +3835,7 @@ if (AttrVal( $Name, 'MSwitch_Language',AttrVal( 'global', 'language', 'EN' ) ) e
 			$EXECCMD="augeführter Befehl:";
 			$RELOADBUTTON="Aktualisieren";
 			$RENAMEBUTTON="Name ändern";
+			$EDITEVENT="Event bearbeiten";
 			}
 			else
 			{
@@ -3857,6 +3859,7 @@ if (AttrVal( $Name, 'MSwitch_Language',AttrVal( 'global', 'language', 'EN' ) ) e
 			$EXECCMD="executed command:";
 			$RELOADBUTTON="reload";
 			$RENAMEBUTTON="rename";
+			$EDITEVENT="edit selected event";
 			}
 
 
@@ -6151,6 +6154,7 @@ my $MScheckcondition="";
 	my $MSTESTEVENT="";
 	my $MSHELP5="";
 	my $MSHELP6="";
+	my $MSHELP7="";
 	my $triggerdetailhtml="
 <!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
 
@@ -6173,6 +6177,7 @@ add event->Event einfügen
 modify Trigger->Triggerdetails speichern
 apply filter to saved events->Filter auf gespeicherte Events anwenden
 clear saved events->Eventliste löschen
+event monitor->Eventmonitor
 end:textersetzung:ger
 -->
 
@@ -6224,7 +6229,7 @@ end:textersetzung:eng
 		<td>&nbsp;</td>
 	</tr>
 		<tr>
-		<td>MS-HELP5</td>
+		<td>MS-HELP7</td>
 		<td>event monitor</td>
 		<td><input id =\"eventmonitor\" name=\"eventmonitor\" type=\"checkbox\"></td>
 		<td>&nbsp;</td>
@@ -6382,6 +6387,7 @@ $triggerdetailhtml=~ s/#/\n/g;
 		{
 		$MSHELP5="<input name='info' type='button' value='?' onclick=\"javascript: info('saveevent')\">&nbsp;";
 		$MSHELP6="<input name='info' type='button' value='?' onclick=\"javascript: info('addevent')\">&nbsp;";
+		$MSHELP7="<input name='info' type='button' value='?' onclick=\"javascript: info('eventmonitor')\">&nbsp;";
 		}
 		$MSADDEVENT="<input type='text' id='add_event' name='add_event' size='40'  value =''>
 		<input type=\"button\" id=\"aw_addevent\" value=\"add event\"$disable>";
@@ -6419,6 +6425,7 @@ $triggerdetailhtml=~ s/#/\n/g;
 	$triggerdetailhtml =~ s/MS-HIDE/$displaynot/g;
 	$triggerdetailhtml =~ s/MS-HELP5/$MSHELP5/g;
 	$triggerdetailhtml =~ s/MS-HELP6/$MSHELP6/g;
+	$triggerdetailhtml =~ s/MS-HELP7/$MSHELP7/g;
 	
 	
 
@@ -6626,13 +6633,10 @@ $ret.="<div id='MSwitchWebAF' nm='$hash->{NAME}' cellpadding='0' style='border-s
     }
 
     # java wird bei seitenaufruf ausgeführt
-	
-
 	# Logmonitor
 	
 	$j1 .= " 
-	
-	 var olddest
+	var olddest
 	// reagiert auf Änderungen der INFORMID
 	\$(\"body\").on('DOMSubtreeModified', \"div[informId|=\'".$Name."-Debug']\", function() {
 	
@@ -6640,30 +6644,19 @@ $ret.="<div id='MSwitchWebAF' nm='$hash->{NAME}' cellpadding='0' style='border-s
 	var test = \$( \"div[informId|=\'".$Name."-Debug']\" ).text();
 	test= test.substring(0, test.length - 19);
 	var old = document.getElementById(\"log\").value;
-	
-// alert(test);
 
-if (olddest != test){
-
- olddest = test;
- 
- 
- 
-document.getElementById(\"log\").value=old+'\\n'+test;
-
-var textarea = document.getElementById('log');
-textarea.scrollTop = textarea.scrollHeight;
-}
-
+	if (olddest != test){
+	olddest = test;
+	document.getElementById(\"log\").value=old+'\\n'+test;
+	var textarea = document.getElementById('log');
+	textarea.scrollTop = textarea.scrollHeight;
+	}
 	return;
 	});
 
 ";
 	
-	
-	
-	
-	
+
 	# Eventmonitor
 	 $j1 .= "
 
@@ -6699,7 +6692,7 @@ textarea.scrollTop = textarea.scrollHeight;
  \$( \"#log3\" ).text( \"\" );
   var field = \$('<select style=\"width: 30em;\" size=\"5\" id =\"lf\" multiple=\"multiple\" name=\"lf\" size=\"6\"  ></select>');
  \$(field).appendTo('#log2');
-   var field = \$('<input id =\"editevent\" type=\"button\" value=\"edit selected event\"/>');
+   var field = \$('<input id =\"editevent\" type=\"button\" value=\"$EDITEVENT\"/>');
  \$(field).appendTo('#log3');
 \$(\"#editevent\").click(function(){
 	transferevent();
@@ -7625,7 +7618,7 @@ Increase
 	\$( \"#log3\" ).text( \"\" );
 	var field = \$('<select style=\"width: 30em;\" size=\"5\" id =\"lf\" multiple=\"multiple\" name=\"lf\" size=\"6\"  ></select>');
 	\$(field).appendTo('#log2');
-	var field = \$('<input id =\"editevent\" type=\"button\" value=\"edit selected event\"/>');
+	var field = \$('<input id =\"editevent\" type=\"button\" value=\"$EDITEVENT\"/>');
 	\$(field).appendTo('#log3');
 	//\$(\"#editevent\").click(function(){
 	//alert('click');
