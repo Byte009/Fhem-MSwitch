@@ -535,11 +535,11 @@ sub MSwitch_summary($) {
         }
     }
      $ret .= "<script>
-	// \$( \"td[informId|=\'" . $name . "\']\" ).attr(\"informId\", \'test\');
-	// \$(document).ready(function(){
-	// \$( \".col3\" ).text( \"\" );
+	 \$( \"td[informId|=\'" . $name . "\']\" ).attr(\"informId\", \'test\');
+	 \$(document).ready(function(){
+	 \$( \".col3\" ).text( \"\" );
 	// \$( \".devType\" ).text( \"MSwitch Inforoom: Anzeige der Deviceinformationen, Änderungen sind nur in den Details möglich.\" );
-	//});
+	});
 	 </script>";
     $ret =~ s/#dp /:/g;
     return $ret;
