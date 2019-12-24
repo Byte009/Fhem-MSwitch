@@ -153,9 +153,11 @@ sub MSwitch_Eventlog($$);
 sub MSwitch_Writesequenz($);
 sub MSwitch_del_singlelog($$);
 sub MSwitch_Checkcond_history($$);
+sub MSwitch_fhemwebconf($$$$);
 
 ##############################
 my %sets = (
+			 "wizard"            => "noArg",
              "on"                => "noArg",
 			 "reset_device"      => "noArg",
              "off"               => "noArg",
@@ -339,6 +341,12 @@ sub MSwitch_summary($) {
     my ( $wname, $name, $room ,$test) = @_;
     my $hash = $defs{$name};
     my $testroom = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
+	
+	
+	if ($hash->{helper}{mode} eq "absorb")
+	{
+	return "Device ist im Konfigurationsmodus";
+	}
 	
 	my @areadings = ( keys %{$test} );
 	#Log3( $name, 0, " @areadings " );
@@ -1305,7 +1313,7 @@ my %setlist;
 		if ($hash->{helper}{config} eq "no_config")
 		{
 		
-		return "Unknown argument $cmd, choose one of reset_device:noArg absorb:at,notify";
+		return "Unknown argument $cmd, choose one of wizard:noArg";
 
 		}
 
@@ -1358,6 +1366,17 @@ my %setlist;
         # randomnunner erzeugen wenn attr an
         MSwitch_Createnumber1($hash);
     }
+#############################
+#absorb
+
+if ( $cmd eq 'wizard' ) 
+{
+$hash->{helper}{mode} ='absorb';
+
+}
+
+
+
 
 ##############################
     if ( $cmd eq 'reset_device' ) 
@@ -1387,6 +1406,8 @@ my %setlist;
 	delete( $hash->{helper}{sequenz});
 	delete( $hash->{helper}{history} );
 	delete( $hash->{helper}{eventlog} );
+	delete( $hash->{helper}{mode} );
+	delete( $hash->{helper}{reset} );
 
     my @areadings = ( keys %{$testreading} );
 	foreach my $key (@areadings)
@@ -3768,7 +3789,73 @@ sub MSwitch_checkbridge($$$) {
     MSwitch_Exec_Notif( $hash, $zweig, 'nocheck', '', $bridge[2] );
     return "undef";
 }
+############################
+sub MSwitch_fhemwebconf($$$$) {
 
+	my ( $FW_wname, $d, $room, $pageHash ) =@_;    # pageHash is set for summaryFn.
+	my $hash     = $defs{$d};
+	my $Name     = $hash->{NAME};
+	
+	#$hash->{helper}{tmp}{reset}="on";
+	
+	
+	# makeTable wide internals makeTable wide readings
+	# \$('.makeTable wide attributes').removeClass('makeTable wide attributes').addClass('menulogo-hide');
+	# // \$( \"td[informId|=\'\']\" ).attr(\"informId\", \'test\');
+    my  $j1 = "
+	<script type=\"text/javascript\">{
+	
+		function reset() {
+	var nm = '$Name';
+	var  def = nm+\" reset_device checked\";
+	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
+	return;
+	}
+	
+	\$(document).ready(function() {
+    \$(window).load(function() {
+        // this code will run after all other $(document).ready() scripts
+        // have completely finished, AND all page elements are fully loaded.
+		
+
+		\$( \".makeSelect\" ).text( \"\" );
+		\$( \"[class='makeTable wide readings']\" ).hide();
+		\$( \"[class='makeTable wide internals']\" ).hide();
+		\$( \"[class='makeTable wide attributes']\" ).hide();
+		
+		\$( \"[class=\\\"detLink iconFor\\\"]\" ).hide();
+		\$( \"[class=\\\"detLink rawDef\\\"]\" ).hide();
+		\$( \"[class=\\\"detLink devSpecHelp\\\"]\" ).hide();
+		// \$( \"[class=\\\"detLink showDSI\\\"]\" ).hide();
+		
+		
+		\$( \"[class=\\\"detLink showDSI\\\"]\" ).text( \"\" );
+		var r3 = \$('<a href=\"javascript: reset()\">Reset this device (".$Name.")</a>');
+
+		\$(r3).appendTo('[class=\\\"detLink showDSI\\\"]');
+		
+		
+	
+		
+		
+		
+		
+		
+		});
+	});
+	
+	
+	
+	
+		}
+	
+	</script>";
+	
+	#<a href=\"/fhem?cmd=reset CONF".$FW_CSRF."\">Delete this device ".$defs{$d}."</a>
+	
+return "Funktion nicht verfügbar - comming soon<br>Modus kann derzeit nur durch Device-Reset verlassen werden.<br>&nbsp;".$j1;
+
+}
 ############################
 sub MSwitch_fhemwebFn($$$$) {
 
@@ -3786,7 +3873,16 @@ sub MSwitch_fhemwebFn($$$$) {
 	my $noshow = 0;
 	my @hidecmds = split (/,/,AttrVal( $Name, 'MSwitch_Hidecmds', 'undef' )) ;
 #<option value='$savedetails{ $aktdevice . '_priority' 
-##### test 
+##### konfigmode
+
+
+if ($hash->{helper}{mode} eq "absorb")
+{
+$rename = "off";
+my $ret = MSwitch_fhemwebconf($FW_wname, $d, $room, $pageHash);
+return $ret;
+
+}
 
 ####################  TEXTSPRACHE
 my $LOOPTEXT;
@@ -7722,6 +7818,8 @@ if (AttrVal( $Name, 'MSwitch_Language',AttrVal( 'global', 'language', 'EN' ) ) e
 	
 	function reset() {
 	var nm = \$(t).attr(\"nm\");
+	
+	//alert(nm);
 	var  def = nm+\" reset_device checked\";
 	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
 	return;
