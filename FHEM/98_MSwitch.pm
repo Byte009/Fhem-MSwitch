@@ -342,7 +342,7 @@ sub MSwitch_summary($) {
     my $hash = $defs{$name};
     my $testroom = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
 	
-	
+	#return;
 	if ($hash->{helper}{mode} eq "absorb")
 	{
 	return "Device ist im Konfigurationsmodus";
@@ -2515,7 +2515,7 @@ sub MSwitch_Cmd(@) {
                 my $out = eval($cmds);
                 if ($@) 
 				{
-                    MSwitch_LOG( $Name, 1,"$Name MSwitch_Set: ERROR $cmds: $@ " . __LINE__ );
+                    MSwitch_LOG( $Name, 6,"$Name MSwitch_Set: ERROR $cmds: $@ " . __LINE__ );
                 }
             }
             else 
@@ -2524,7 +2524,7 @@ sub MSwitch_Cmd(@) {
                 my $errors = AnalyzeCommandChain( undef, $cmds );
                 if ( defined($errors) and $errors ne "OK" ) 
 				{
-                    MSwitch_LOG( $Name, 1, "$Name MSwitch_Set: ERROR $cmds: $errors " . __LINE__ );
+                    MSwitch_LOG( $Name, 6, "$Name MSwitch_Set: ERROR $cmds: $errors " . __LINE__ );
                 }
             }
         }
@@ -2900,10 +2900,30 @@ sub MSwitch_Notify($$) {
     my $ownName = $own_hash->{NAME};    # own name / hash
     my $devName;
     $devName = $dev_hash->{NAME};
-	
+	my $events    = deviceEvents( $dev_hash, 1 );
+############################
 
 	
-	
+	 if ($own_hash->{helper}{mode} eq "absorb"){
+	 
+	 
+	 return if $devName eq $ownName;
+	 #Log3( $ownName, 0, "DN: ".$devName);
+	 
+	 my @eventscopy = ( @{$events} );
+        foreach my $event ( @eventscopy )
+		{
+		
+		#Log3( $ownName, 0, "EV: ".$event);
+	         readingsSingleUpdate( $own_hash, "EVENTCONF", $devName.": ".$event, 1 );
+			
+			
+			
+		 }
+		
+		 return;
+		 }
+############################	
 	
 	if ( ReadingsVal( $ownName, '.First_init', 'undef' ) ne 'done' ) 
 		{
@@ -2919,7 +2939,7 @@ sub MSwitch_Notify($$) {
         $devName = 'Logfile';
     }
 
-    my $events    = deviceEvents( $dev_hash, 1 );
+    
     my $trigevent = '';
     my $eventset  = '0';
     my $execids   = "0";
@@ -3108,6 +3128,7 @@ sub MSwitch_Notify($$) {
 	{
         @eventscopy = ( @{$events} ) if $events ne "x";
     }
+	
 
     my $triggerlog = ReadingsVal( $ownName, 'Trigger_log', 'off' );
 
@@ -3149,6 +3170,7 @@ sub MSwitch_Notify($$) {
             }
         }
 ##########################
+
       EVENT: foreach my $event (@eventscopy) 
 	  {
 
@@ -3796,64 +3818,143 @@ sub MSwitch_fhemwebconf($$$$) {
 	my $hash     = $defs{$d};
 	my $Name     = $hash->{NAME};
 	
-	#$hash->{helper}{tmp}{reset}="on";
+	
+	delete( $hash->{NOTIFYDEV} );
+	readingsSingleUpdate( $hash, "EVENTCONF","start", 1 );
+	# devicelist to objeckt
+	my $devstring ;
+	my @found_devices = devspec2array("TYPE=.*");
+	for (@found_devices) 
+		{
+		$devstring.="'".$_."',";
+		}
+	
+	chop $devstring;
+	$devstring = "[".$devstring."]";
+	my $fileend = rand(1000);
 	
 	
-	# makeTable wide internals makeTable wide readings
-	# \$('.makeTable wide attributes').removeClass('makeTable wide attributes').addClass('menulogo-hide');
-	# // \$( \"td[informId|=\'\']\" ).attr(\"informId\", \'test\');
-    my  $j1 = "
-	<script type=\"text/javascript\">{
 	
-		function reset() {
+	
+	my $return="
+	<div>Funktion nicht verfügbar - comming soon</div>
+	<div>Modus kann derzeit nur durch Device-Reset verlassen werden.</div>
+	<div id ='version'>Wizzard Version</div>
+
+	<table border = '0'>
+	<tr>
+	<td style=\"text-align: left; vertical-align: top;\">
+	&nbsp;<br>
+	
+	<table border = '0'>
+	<tr><td><div id='1step1' ></div></td><td><div id='1step2' ></div></td></tr>
+	<tr><td><div id='2step1' ></div></td><td><div id='2step2' ></div></td></tr>
+	<tr><td><div id='3step1' ></div></td><td><div id='3step2' ></div></td></tr>
+	<tr><td><div id='4step1' ></div></td><td><div id='4step2' ></div></td></tr>
+	<tr><td><div id='5step1' ></div></td><td><div id='5step2' ></div></td></tr>
+	
+	</table>
+	
+	<div id='monitor' >
+	<br>&nbsp;<br>
+	Eventmonitor:<br>
+	<select style=\"width: 50em;\" size=\"15\" id =\"eventcontrol\" multiple=\"multiple\"></select>
+	</div>
+	
+	</td>
+	<td>
+	&nbsp;
+	</td>
+	<td style=\"text-align: center; vertical-align: middle;\">
+	<input name=\"makeconf\" id=\"makeconf\" type=\"button\" value=\"make new config\" onclick=\"javascript: makeconfig()\"\">&nbsp;
+	<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: makeconfig()\"\">
+
+	<br>&nbsp;<br>
+	<textarea disabled id='rawconfig' style='width: 450px; height: 600px'></textarea>
+	</td>
+	</tr>
+	</table>
+	
+
+	";
+	
+	
+
+	
+	# javascript: document.getElementById(\"e1\").value=\'time\'; disabled=\"disabled\"
+	    my  $j1 = "
+	
+	<script type=\"text/javascript\">
+	// VARS
+	// firstconfig
+	var logging ='off';
+	var devices = ".$devstring.";
+	var i;
+	var len = devices.length;
+	var o = new Object();
+	var devicename= '".$Name."';
+
+	function reset() {
 	var nm = '$Name';
 	var  def = nm+\" reset_device checked\";
 	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
 	return;
 	}
 	
-	\$(document).ready(function() {
-    \$(window).load(function() {
-        // this code will run after all other $(document).ready() scripts
-        // have completely finished, AND all page elements are fully loaded.
-		
-
-		\$( \".makeSelect\" ).text( \"\" );
-		\$( \"[class='makeTable wide readings']\" ).hide();
-		\$( \"[class='makeTable wide internals']\" ).hide();
-		\$( \"[class='makeTable wide attributes']\" ).hide();
-		
-		\$( \"[class=\\\"detLink iconFor\\\"]\" ).hide();
-		\$( \"[class=\\\"detLink rawDef\\\"]\" ).hide();
-		\$( \"[class=\\\"detLink devSpecHelp\\\"]\" ).hide();
-		// \$( \"[class=\\\"detLink showDSI\\\"]\" ).hide();
-		
-		
-		\$( \"[class=\\\"detLink showDSI\\\"]\" ).text( \"\" );
-		var r3 = \$('<a href=\"javascript: reset()\">Reset this device (".$Name.")</a>');
-
-		\$(r3).appendTo('[class=\\\"detLink showDSI\\\"]');
-		
-		
 	
-		
-		
-		
-		
-		
-		});
+	// reagiert auf Änderungen der INFORMID
+	\$(\"body\").on('DOMSubtreeModified', \"div[informId|=\'".$Name."-EVENTCONF']\", function() {
+	// neustes event aus html extrahieren
+	var test = \$( \"div[informId|=\'".$Name."-EVENTCONF']\" ).text();
+	// datum entfernen
+	test= test.substring(0, test.length - 19);
+	var event = test.split(':');
+	var newevent =  event[1]+':'+event[2]
+	if (event[0] != document.getElementById('3').value){
+	 return;
+	}
+	if (logging == 'off'){return;}
+	// eintrag in dropdown und fenster ausblenden
+	var newselect = \$('<option value=\"'+newevent+'\">'+newevent+'</option>');
+	\$(newselect).appendTo('#6step');
+	
+	// document.getElementById(\"4step1\").style.display=\"none\";
+	// document.getElementById(\"5step1\").style.display=\"block\";
+	
+	o[test] = test;
+	// umwandlung des objekts in standartarray
+	var a3 = Object.keys(o).map(function (k) { return o[k];})
+	// array umdrehen
+	a3.reverse();
+	\$( \"#eventcontrol\" ).text( \"\" );
+	var i;
+	for (i = 0; i < 30; i++) 
+	{
+	if (a3[i])
+		{
+		var newselect = \$('<option value=\"'+a3[i]+'\">'+a3[i]+'</option>');
+		\$(newselect).appendTo('#eventcontrol'); 
+	}
+	} 
 	});
 	
 	
 	
-	
-		}
+	\$(document).ready(function() {
+    \$(window).load(function() {
+	var name = '$Name';
+    loadScript(\"pgm2/MSwitch_Wizard.js?v=".$fileend."\", function(){start1(name)});
+	return;
+	});
+		
+	});
 	
 	</script>";
 	
-	#<a href=\"/fhem?cmd=reset CONF".$FW_CSRF."\">Delete this device ".$defs{$d}."</a>
+
 	
-return "Funktion nicht verfügbar - comming soon<br>Modus kann derzeit nur durch Device-Reset verlassen werden.<br>&nbsp;".$j1;
+$return.="<br>&nbsp;<br>".$j1;
+return $return;
 
 }
 ############################
@@ -5275,7 +5376,7 @@ $controlhtml=~ s/#/\n/g;
 					$SET2=	"<textarea class=\"devdetails\" cols='50' rows='3' id='cmdoffopt"
 							. $_ . "1' name='cmdoffopt" . $_ . "'
 							>" . $savedetails{ $aktdevice . '_offarg' } . "</textarea>
-							<span style='text-align: left;' class='col1' nowrap id='" . $_. "_off_sel' ></span>
+							<span style='text-align: left;' class='col2' nowrap id='" . $_. "_off_sel' ></span>
 							<input type='$hidden' id='"
 							. $_
 							. "_off' name='cmdoff"
@@ -6761,7 +6862,6 @@ $ret.="<div id='MSwitchWebAF' nm='$hash->{NAME}' cellpadding='0' style='border-s
  var atriwaaray = new Object();
  var atriwaaray = { $scripttriggers };
 
- 
  // reagiert auf Änderungen der INFORMID
  \$(\"body\").on('DOMSubtreeModified', \"div[informId|=\'".$Name."-EVENT']\", function() {
  
@@ -6829,8 +6929,8 @@ for (i = 0; i < 10; i++)
 
 }";
 	
-
-	if ($rename eq "on")
+if (1 ==1 )
+	#if ($rename eq "on")
 	{
 	# einblendung Renamme und Reload
 	$j1 .= "
@@ -8362,9 +8462,12 @@ sub MSwitch_Exec_Notif($$$$$) {
                         else 
 						{
                             my $errors = AnalyzeCommandChain( undef, $cs );
+							
+							
+							
                             if ( defined($errors) and $errors ne "OK" ) {
-                                MSwitch_LOG( $name, 1,
-"$name Absent_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs"
+                                MSwitch_LOG( $name, 6,
+"$name MSwitch_Exec_Notif $comand: ERROR $device: $errors -> Comand: $cs"
                                 );
                             }
 
@@ -8712,7 +8815,7 @@ sub MSwitch_Restartcmd($) {
                              "$name:     execute als fhemcode -> " . $cs );
                 my $errors = AnalyzeCommandChain( undef, $cs );
                 if ( defined($errors) and $errors ne "OK"  ) {
-                    MSwitch_LOG( $name, 1,
+                    MSwitch_LOG( $name, 6,
 "$name MSwitch_Restartcmd :Fehler bei Befehlsausfuehrung  ERROR $errors "
                           . __LINE__ );
 
@@ -10269,7 +10372,7 @@ sub MSwitch_Execute_Timer($) {
         );
         my $errors = AnalyzeCommandChain( undef, $cs );
         if ( defined($errors) ) {
-            MSwitch_LOG( $Name, 1,
+            MSwitch_LOG( $Name, 6,
 "$Name MSwitch_Execute_Timer: Fehler bei Befehlsausfuehrung ERROR $Name: $errors "
                   . __LINE__ );
 
@@ -10287,7 +10390,7 @@ sub MSwitch_Execute_Timer($) {
         );
         my $errors = AnalyzeCommandChain( undef, $cs );
         if ( defined($errors) ) {
-            MSwitch_LOG( $Name, 1,
+            MSwitch_LOG( $Name, 6,
 "$Name MSwitch_Execute_Timer: Fehler bei Befehlsausfuehrung ERROR $Name: $errors "
                   . __LINE__ );
 
@@ -11378,7 +11481,7 @@ sub MSwitch_repeat($) {
 		
             eval($cs);
             if ($@) {
-                MSwitch_LOG( $name, 1,
+                MSwitch_LOG( $name, 6,
                             "$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
 
             }
@@ -11386,7 +11489,7 @@ sub MSwitch_repeat($) {
         else {
             my $errors = AnalyzeCommandChain( undef, $cs );
             if ( defined($errors) ) {
-                MSwitch_LOG( $name, 1,
+                MSwitch_LOG( $name, 6,
                     "$name Absent_repeat $cs: ERROR : $errors -> Comand: $cs" );
 
             }
