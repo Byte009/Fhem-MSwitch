@@ -81,7 +81,7 @@ use SetExtensions;
 # }
   
 my $autoupdate = 'off';    #off/on
-my $version    = '3.01 alpha';
+my $version    = '3.02 alpha';
 my $vupdate    = 'V2.00'; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 30; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $savemodetime = 10000000; # Zeit für Zugriffe im Safemode
