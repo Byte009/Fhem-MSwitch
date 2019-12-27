@@ -1,2 +1,2 @@
 UPD 2019-12-25_11:30:00 415273 FHEM/98_MSwitch.pm
-UPD 2019-12-25_11:30:00 6136 www/pgm2/MSwitch_Wizard.js
+UPD 2019-12-25_11:30:00 006136 www/pgm2/MSwitch_Wizard.js
