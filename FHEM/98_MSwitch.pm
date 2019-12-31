@@ -83,7 +83,7 @@ use SetExtensions;
 my $autoupdate = 'off';    #off/on
 my $version    = '3.02 alpha';
 my $vupdate    = 'V2.00'; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
-my $savecount = 30; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
+my $savecount = 50; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $savemodetime = 10000000; # Zeit für Zugriffe im Safemode
 my $rename = "on"; # on/off rename in der FW_summary möglich 
 
@@ -343,10 +343,16 @@ sub MSwitch_summary($) {
     my $testroom = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
 	
 	#return;
+
+	
+	
+	
+	
 	if ($hash->{helper}{mode} eq "absorb")
 	{
 	return "Device ist im Konfigurationsmodus";
 	}
+	
 	
 	my @areadings = ( keys %{$test} );
 	#Log3( $name, 0, " @areadings " );
@@ -355,6 +361,8 @@ sub MSwitch_summary($) {
 	#Log3( $name, 0, " found no group" );
 	return;
 	}
+	
+	
 	
     if ( $testroom ne $room ) { return; }
     my $test = AttrVal( $name, 'comment', '0' );
@@ -1408,12 +1416,15 @@ $hash->{helper}{mode} ='absorb';
 	delete( $hash->{helper}{eventlog} );
 	delete( $hash->{helper}{mode} );
 	delete( $hash->{helper}{reset} );
+	delete( $hash->{READINGS} );
+	
+	
 
-    my @areadings = ( keys %{$testreading} );
-	foreach my $key (@areadings)
-    {
-	fhem("deletereading $name $key ");
-	}
+   # my @areadings = ( keys %{$testreading} );
+	#foreach my $key (@areadings)
+   # {
+	#fhem("deletereading $name $key ");
+	#}
 	# attribute
 	my %keys;
 	my $oldinforoom = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
@@ -3818,7 +3829,6 @@ sub MSwitch_fhemwebconf($$$$) {
 	my $hash     = $defs{$d};
 	my $Name     = $hash->{NAME};
 	
-	
 	delete( $hash->{NOTIFYDEV} );
 	readingsSingleUpdate( $hash, "EVENTCONF","start", 1 );
 	# devicelist to objeckt
@@ -3828,31 +3838,59 @@ sub MSwitch_fhemwebconf($$$$) {
 		{
 		$devstring.="'".$_."',";
 		}
-	
 	chop $devstring;
 	$devstring = "[".$devstring."]";
 	my $fileend = rand(1000);
 	
-	
-	
-	
 	my $return="
+	
+	<div id='mode'>Konfigurationsmodus:&nbsp;
+	<input name=\"conf\" id=\"wizard\" type=\"button\" value=\"Wizard\" onclick=\"javascript: conf('importWIZARD',id)\"\">&nbsp;
+	<input name=\"conf\" id=\"config\" type=\"button\" value=\"import MSwitch_Config\" onclick=\"javascript: conf('importCONFIG',id)\"\">&nbsp;
+	<input name=\"conf\" id=\"importat\" type=\"button\" value=\"import AT\" onclick=\"javascript: conf('importAT',id)\"\">&nbsp;
+	<input name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
+	</div>
+	<br>&nbsp;<br>
+	
+	
+	<table border='1'>
+	<tr>
+	
+	<td id='help'>Hilfetext</td>
+	<td id='help'>&nbsp;</td>
+	<td>
 	<div>Funktion nicht verfügbar - comming soon</div>
 	<div>Modus kann derzeit nur durch Device-Reset verlassen werden.</div>
 	<div id ='version'>Wizzard Version</div>
+	<div id ='tf'>testfenster</div>
+	</td>
+	
+	</tr></table>
+	
 
+	&nbsp;<br>
+	
+	
+	
+	
+	
+	
+	
+	
+	<div id='importWIZARD'>
 	<table border = '0'>
 	<tr>
 	<td style=\"text-align: left; vertical-align: top;\">
-	&nbsp;<br>
+	
 	
 	<table border = '0'>
+	<td colspan='2'>Teil Trigger</div></td></tr>
 	<tr><td><div id='1step1' ></div></td><td><div id='1step2' ></div></td></tr>
 	<tr><td><div id='2step1' ></div></td><td><div id='2step2' ></div></td></tr>
 	<tr><td><div id='3step1' ></div></td><td><div id='3step2' ></div></td></tr>
 	<tr><td><div id='4step1' ></div></td><td><div id='4step2' ></div></td></tr>
 	<tr><td><div id='5step1' ></div></td><td><div id='5step2' ></div></td></tr>
-	
+	<td colspan='2'>Teil Ausführung</div></td></tr>
 	</table>
 	
 	<div id='monitor' >
@@ -3867,7 +3905,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	</td>
 	<td style=\"text-align: center; vertical-align: middle;\">
 	<input name=\"makeconf\" id=\"makeconf\" type=\"button\" value=\"make new config\" onclick=\"javascript: makeconfig()\"\">&nbsp;
-	<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: makeconfig()\"\">
+	<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: saveconfig()\"\">
 
 	<br>&nbsp;<br>
 	<textarea disabled id='rawconfig' style='width: 450px; height: 600px'></textarea>
@@ -3875,14 +3913,19 @@ sub MSwitch_fhemwebconf($$$$) {
 	</tr>
 	</table>
 	
+	
+	
+	</div>
+	
+	
 
+	<div id='importAT'>import at</div>
+	<div id='importNOTIFY'>import notify</div>
+	<div id='importCONFIG'>import config</div>
 	";
-	
-	
 
-	
 	# javascript: document.getElementById(\"e1\").value=\'time\'; disabled=\"disabled\"
-	    my  $j1 = "
+	my  $j1 = "
 	
 	<script type=\"text/javascript\">
 	// VARS
@@ -3893,62 +3936,17 @@ sub MSwitch_fhemwebconf($$$$) {
 	var len = devices.length;
 	var o = new Object();
 	var devicename= '".$Name."';
+	var mVersion= '".$version."';
 
-	function reset() {
-	var nm = '$Name';
-	var  def = nm+\" reset_device checked\";
-	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
-	return;
-	}
-	
-	
-	// reagiert auf Änderungen der INFORMID
-	\$(\"body\").on('DOMSubtreeModified', \"div[informId|=\'".$Name."-EVENTCONF']\", function() {
-	// neustes event aus html extrahieren
-	var test = \$( \"div[informId|=\'".$Name."-EVENTCONF']\" ).text();
-	// datum entfernen
-	test= test.substring(0, test.length - 19);
-	var event = test.split(':');
-	var newevent =  event[1]+':'+event[2]
-	if (event[0] != document.getElementById('3').value){
-	 return;
-	}
-	if (logging == 'off'){return;}
-	// eintrag in dropdown und fenster ausblenden
-	var newselect = \$('<option value=\"'+newevent+'\">'+newevent+'</option>');
-	\$(newselect).appendTo('#6step');
-	
-	// document.getElementById(\"4step1\").style.display=\"none\";
-	// document.getElementById(\"5step1\").style.display=\"block\";
-	
-	o[test] = test;
-	// umwandlung des objekts in standartarray
-	var a3 = Object.keys(o).map(function (k) { return o[k];})
-	// array umdrehen
-	a3.reverse();
-	\$( \"#eventcontrol\" ).text( \"\" );
-	var i;
-	for (i = 0; i < 30; i++) 
-	{
-	if (a3[i])
-		{
-		var newselect = \$('<option value=\"'+a3[i]+'\">'+a3[i]+'</option>');
-		\$(newselect).appendTo('#eventcontrol'); 
-	}
-	} 
-	});
-	
-	
-	
+// script nachladen
+
 	\$(document).ready(function() {
     \$(window).load(function() {
-	var name = '$Name';
+	name = '$Name';
     loadScript(\"pgm2/MSwitch_Wizard.js?v=".$fileend."\", function(){start1(name)});
 	return;
 	});
-		
 	});
-	
 	</script>";
 	
 
@@ -11024,6 +11022,17 @@ sub MSwitch_Getsupport($) {
     $out =~ s/\(DAYS\)/|/g;
     $out =~ s/#\[ko\]/,/g;     #neu
     $out =~ s/#\[bs\]/\\/g;    #neu
+	
+	 $out .= "\\n----- Rawdefinitionen -----\\n";
+	#my $raw = list Name;
+	my $cs = "list -R $Name";
+    my $answer= AnalyzeCommandChain( undef, $cs );
+				
+
+    $answer =~ s/\n/\\n/g; 
+	
+
+	$out .=$answer;
 
     asyncOutput( $hash->{CL},
 "<html><center>Supportanfragen bitte im Forum stellen:<a href=\"https://forum.fhem.de/index.php/topic,86199.0.html\">Fhem-Forum</a><br>Bei Devicespezifischen Fragen bitte untenstehene Datei anhängen, das erleichtert Anfragen erheblich.<br>&nbsp;<br><textarea name=\"edit1\" id=\"edit1\" rows=\""
@@ -11238,6 +11247,9 @@ sub MSwitch_saveconf($$) {
     my ( $hash, $cont ) = @_;
     my $name     = $hash->{NAME};
     my $contcopy = $cont;
+	
+	delete( $hash->{READINGS} );
+	
     $cont =~ s/#c\[sp\]/ /g;
     $cont =~ s/#c\[se\]/;/g;
     $cont =~ s/#c\[dp\]/:/g;
@@ -11248,7 +11260,7 @@ sub MSwitch_saveconf($$) {
     my @found = split( /#\[EOL\]/, $cont );
     foreach (@found) {
 	
-	#MSwitch_LOG( $name , 0, "line: $_" );
+	
 	
 	
 
@@ -11273,6 +11285,9 @@ sub MSwitch_saveconf($$) {
 
         if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
         {
+		
+		#MSwitch_LOG( $name , 0, "line: $_" );
+		
             if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
 
                 delete( $hash->{READINGS}{$1} );
@@ -11365,7 +11380,7 @@ sub MSwitch_saveconf($$) {
 	################# helperkeys abarbeiten #######
 	
 	delete( $hash->{helper}{safeconf} );
-	
+	delete( $hash->{helper}{mode} );
 	##############################################
 
     MSwitch_set_dev($hash);
@@ -11380,6 +11395,10 @@ sub MSwitch_saveconf($$) {
         readingsSingleUpdate( $hash, ".change_info", $info, 0 );
     }
 delete( $hash->{helper}{config} );
+
+# timrer berechnen
+MSwitch_Createtimer($hash);
+
     return;
 }
 
