@@ -1,9 +1,12 @@
 
-	var version = 'V0.3 beta';
+	var version = 'V0.5 beta';
 	var logging ='off';
 	var observer;
 	var target;
 	var lastevent;
+	var show = 'off';
+	var offtime =1000;
+	var sets = new Object();
 	
 	var configstart = [
 	'#V Version',
@@ -38,9 +41,6 @@
 
 
 
-
-
-
 // starte Hauptfenster
 conf('importWIZARD','wizard');
 
@@ -63,8 +63,7 @@ conf('importWIZARD','wizard');
 	document.getElementById('tf').innerHTML = test;
 	
 	if(o[test]){return;}
-	//test= test.substring(0, test.length - 19);
-	//alert(test);
+
 	var event = test.split(':');
 	var newevent =  event[1]+':'+event[2]
 	if (event[0] != document.getElementById('3').value)
@@ -79,11 +78,9 @@ conf('importWIZARD','wizard');
 	o[test] = test;		
 		
 	// eintrag in dropdown und fenster ausblenden
-	var newselect = $('<option value="'+newevent+'">'+newevent+'</option>');
+	newselect = $('<option value="'+newevent+'">'+newevent+'</option>');
 	$(newselect).appendTo('#6step');
-	// document.getElementById(\"4step1\").style.display=\"none\";
-	// document.getElementById(\"5step1\").style.display=\"block\";
-	
+
 	// umwandlung des objekts in standartarray
 	var a3 = Object.keys(o).map(function (k) { return o[k];})
 	// array umdrehen
@@ -106,7 +103,6 @@ conf('importWIZARD','wizard');
 
 
 function eventmonitorstop(){
-	//alert('monitor off');
 	if (observer){
 		observer.disconnect();
 		document.getElementById('tf').innerHTML = 'Monitor angehalten';
@@ -115,8 +111,12 @@ function eventmonitorstop(){
 }
 
 function eventmonitorstart(){
-	//alert('monitor on');
+	
+	document.getElementById('tf').innerHTML = 'Monitor gestartet';
+	var newselect = $('<option value="Event wählen">Event wählen:</option>');
+	$(newselect).appendTo('#6step');
 	observer.observe(target, config);
+	
 	return;
 }
 
@@ -126,6 +126,7 @@ function closeall(){
 		o = new Object();
 		eventmonitorstop()
 		
+		if (show == 'off'){
 		document.getElementById('4step1').style.display='none';
 		document.getElementById('4step2').style.display='none';
 		document.getElementById('5step1').style.display='none';
@@ -134,17 +135,17 @@ function closeall(){
 		document.getElementById('2step2').style.display='none';
 		document.getElementById('3step1').style.display='none';
 		document.getElementById('3step2').style.display='none';
+		}
 		document.getElementById('monitor').style.display='none';
 	
 	return;
 }
-
-function settyp(inhalt,open,fill) {
+// settyp
+function settypptime(inhalt,open,fill) {
 	openraw=open;
 	//  #inh1 =inhalt
 	//  #open = freizuschaltendezeile
 	//  #fill = zu füllendes feld
-	
 	open=openraw+'1';
 	open1=openraw+'2';
 	
@@ -159,7 +160,6 @@ function settyp(inhalt,open,fill) {
 	if (open == '2step1')
 	{
 		closeall();
-		
 		document.getElementById('help').innerHTML = 'Bitte die Zeit angeben, zu der das MSwitc-Device auslösen soll.<br>';	
 		document.getElementById('help').innerHTML += 'Hier stehen mehrere Formate zur Verfügung<br>';
 		document.getElementById('help').innerHTML += 'Bitte eine Vorauswahl treffen :<br>&nbsp;<br>';
@@ -169,19 +169,13 @@ function settyp(inhalt,open,fill) {
 	if (open == '4step1')
 	{
 		closeall();
-		document.getElementById('3step1').style.display='block';
-		document.getElementById('3step2').style.display='block';
 		document.getElementById('monitor').style.display='block';
-		document.getElementById('4step1').style.display='block';
-		document.getElementById('4step2').style.display='block';
-		
 		document.getElementById('help').innerHTML = 'Bitte das entsprechende Event manuell auslösen. Entweder durch der gewählten Hardware, oder durch schalten des entsprechenden MSwitchdevices.Wenn das gewünschte Event im Monitor sichtbar ist auf den Button klicken';	
 
-		
 		$( '#6step' ).text( '' );
 		$( '#eventcontrol' ).text( '' );
 		text = 'Warte auf eingehende Events des Devices '+inhalt+' ... ';
-		text =text+'<input name=\"5th\" id=\"5step\" type=\"button\" value=\"Event eingetroffen\" onclick=\"javascript: settyp(this.value,id,name)\">&nbsp;';
+		text =text+'<input name=\"5th\" id=\"5step\" type=\"button\" value=\"Event eingetroffen\" onclick=\"javascript: settypptime(this.value,id,name)\">&nbsp;';
 		document.getElementById('4step1').innerHTML = text;
 	
 		logging='on';
@@ -192,27 +186,13 @@ function settyp(inhalt,open,fill) {
 	{
 		eventmonitorstop();
 		logging = 'off';
-		
+		closeall();
 		// 5
 		document.getElementById('5').value=lastevent;
 		document.getElementById('help').innerHTML = 'Bitte das auslösende Event aus der Dropdownliste wählen. Im rechten Feld kann das Event manuell angepasst werden.';	
+	}
 
-		
-		document.getElementById('4step1').style.display='none';
-		document.getElementById('4step2').style.display='none';
-		document.getElementById('monitor').style.display='none';
-	}
-	
-	if (open == '6step1')
-	{
-		// wird von fertig gewähltem event aufgerufen
-	}
-	
-	if (open == '6step1')
-	{
-		// wird von fertig gewählter zeit aufgerufen 
-	}
-	
+
 	if (document.getElementById(fill)){document.getElementById(fill).value=inhalt;}
 	
 	if (document.getElementById(open)) {
@@ -221,6 +201,22 @@ function settyp(inhalt,open,fill) {
 	if (document.getElementById(open1)) {
 		document.getElementById(open1).style.display='block';
 	}
+	
+	if (open == '6step1')
+	{
+		// wird von fertig gewähltem event aufgerufen
+		// starte Teil2
+		// endptime();
+		setTimeout(endptime, offtime);
+	}
+	
+	if (open == '7step1')
+	{
+		// auswahl time event fertig 
+		// starte Teil2
+		setTimeout(endptime, offtime);
+	}
+	 
 	return;
 	}
 	
@@ -229,6 +225,58 @@ function reset() {
 	var nm = devicename;
 	var  def = nm+' reset_device checked';
 	location = location.pathname+'detail='+devicename+'&cmd=set '+addcsrf(def);
+	return;
+	}
+	
+function endptime() {
+		
+		// schliessen aller P1Fenster
+		document.getElementById('help').innerHTML = '';
+		document.getElementById('1step1').style.display='none';
+		document.getElementById('1step2').style.display='none';
+		document.getElementById('4step1').style.display='none';
+		document.getElementById('4step2').style.display='none';
+		document.getElementById('5step1').style.display='none';
+		document.getElementById('5step2').style.display='none';
+		document.getElementById('2step1').style.display='none';
+		document.getElementById('2step2').style.display='none';
+		document.getElementById('3step1').style.display='none';
+		document.getElementById('3step2').style.display='none';
+		document.getElementById('monitor').style.display='none';
+	document.getElementById('showall').disabled = false;
+	
+	
+	// starte teil2
+	createpart2();
+	return;
+	}
+	
+function togglep1() {
+		//show = 'on';
+
+		if (show == 'on'){
+			show = 'off';
+			insert = 'none';
+		}
+		else if(show == 'off'){
+			show = 'on';
+			insert = 'block';
+		}
+		
+		// schliessen aller P1Fenster
+		document.getElementById('help').innerHTML = '';
+		document.getElementById('1step1').style.display=insert;
+		document.getElementById('1step2').style.display=insert;
+		document.getElementById('4step1').style.display=insert;
+		document.getElementById('4step2').style.display=insert;
+		document.getElementById('5step1').style.display=insert;
+		document.getElementById('5step2').style.display=insert;
+		document.getElementById('2step1').style.display=insert;
+		document.getElementById('2step2').style.display=insert;
+		document.getElementById('3step1').style.display=insert;
+		document.getElementById('3step2').style.display=insert;
+		//document.getElementById('monitor').style.display='block';
+
 	return;
 	}
 	
@@ -243,18 +291,20 @@ function conf(typ,but){
 	document.getElementById('importNOTIFY').style.display='none';
 	document.getElementById('importCONFIG').style.display='none';
 	document.getElementById('importWIZARD').style.display='none';
+	document.getElementById('importPRECONF').style.display='none';
 	
 	document.getElementById('wizard').style.backgroundColor='';
 	document.getElementById('config').style.backgroundColor='';
 	document.getElementById('importat').style.backgroundColor='';
 	document.getElementById('importnotify').style.backgroundColor='';
+	document.getElementById('importpreconf').style.backgroundColor='';
 	
 	document.getElementById(typ).style.display='block';
 	document.getElementById(but).style.backgroundColor='#ffb900';
 
 	if (but == 'wizard'){
 		// neustart wizard
-		startwizard();
+		startwizardtrigger();
 	}
 
 	return;
@@ -277,21 +327,25 @@ function start1(name){
 		
 // fülle configfenster
 		fillconfig();
-		startwizard();
+		startwizardtrigger();
 }
 
-function startwizard(){	
+function startwizardtrigger(){	
 	
 // help
 		document.getElementById('help').innerHTML = 'Bitte wählen, ob die Auslösung des MSwitch-Devices durch ein Event oder zeitgesteuert erfolgen soll.';	
 	
 // htmlaufbau	
+
+document.getElementById('showall').disabled = true;
+
+
 		document.getElementById('version').innerHTML = 'Wizardversion '+version;
 		document.getElementById('monitor').style.display='none';
 // ##		
 		line = 'Was für ein Ereigniss soll das MSwitch auslösen ( Trigger ) ?&nbsp;&nbsp;&nbsp;&nbsp;';
-		line =line+'<input name=\"first\" id=\"2step\" type=\"button\" value=\"time\" onclick=\"javascript: settyp(this.value,id,name)\">&nbsp;';
-		line =line+'<input name=\"first\" id=\"3step\" type=\"button\" value=\"event\" onclick=\"javascript: settyp(this.value,id,name)\">&nbsp;';
+		line =line+'<input name=\"first\" id=\"2step\" type=\"button\" value=\"time\" onclick=\"javascript: settypptime(this.value,id,name)\">&nbsp;';
+		line =line+'<input name=\"first\" id=\"3step\" type=\"button\" value=\"event\" onclick=\"javascript: settypptime(this.value,id,name)\">&nbsp;';
 		document.getElementById('1step1').innerHTML = line;
 // ##
 		line ='<input id =\"first\" type=\"text\" value=\"\" disabled=\"disabled\">';
@@ -326,16 +380,12 @@ function startwizard(){
 		line ='<input id=\"2\" type=\"text\" value=\"\" disabled=\"disabled\"> ';
 		document.getElementById('2step2').innerHTML = line;
 		document.getElementById('2step2').style.display='none';
-			
+		document.getElementById('1step1').style.display='block';
+		document.getElementById('1step2').style.display='block';
 // ##
-
 		line = 'Welches Gerärt soll der Auslöser sein ? &nbsp;&nbsp;&nbsp;&nbsp;';
-		line =line+'<select id =\"4step\" name=\"3\" onchange=\"javascript: settyp(this.value,id,name)\">';
-		for (i=0; i<len; i++)
-			{
-			line =line+'<option value='+devices[i]+'>'+devices[i]+'</option>';
-			}
-		line =line+'</select>';
+		line += devicelist('4step','3','settypptime');
+
 		document.getElementById('3step1').innerHTML = line;
 		document.getElementById('3step1').style.display='none';
 		line ='<input id=\"3\" type=\"text\" value=\"\" disabled=\"disabled\">';
@@ -347,7 +397,7 @@ function startwizard(){
 		document.getElementById('4step1').style.display='none';
 // ##		
 		line = 'Auslösendes Event wählen ? &nbsp;&nbsp;&nbsp;&nbsp;';
-		line =line+'<select id =\"6step\" name=\"5\" onchange=\"javascript: settyp(this.value,id,name)\">';
+		line =line+'<select id =\"6step\" name=\"5\" onchange=\"javascript: settypptime(this.value,id,name)\">';
 // ##		
 		line =line+'</select>';
 		document.getElementById('5step1').innerHTML = line;
@@ -361,34 +411,78 @@ function startwizard(){
 	}
 	
 function makeconfig(){
-	//alert('starte makeconfig');
 	// configstart[0] = '#V '+mVersion;
 	if (document.getElementById('first').value == 'time'){
 		// ändere config für timeevent
-		// 6 #S .Trigger_time -> on~off~ononly[20#[dp]00|1]~offonly~onoffonly
-		
 		string = document.getElementById('2').value;
 		// ersetze dp durch #[dp]
 		string = string.replace(/:/gi,"#[dp]");
-		
 		configstart[13] ='#S .Trigger_time -> on~off~ononly'+ string +'~offonly~onoffonly';
-		
-		
 	}
 
 	if (document.getElementById('first').value == 'event'){
 		// ändere config für triggerevent
-		// 5 #S Trigger_device -> no_trigger element 3
 		configstart[5] ='#S Trigger_device -> '+ document.getElementById('3').value;
-		// 8 #S .Trigger_cmd_on -> state:on  element 5
 		configstart[8] ='#S .Trigger_cmd_on -> '+ document.getElementById('5').value;
-		
 	}
 	
+	// ############ nur für volle befehlseingabe
+	// affected devices und befehl
+	
+	if (document.getElementById('a11').value == 'FreeCmd'){
+	// nur für freie befehlseingabe
+	// alert('zweig nicht definiert');
+	var cmdstring = document.getElementById('tra23end').value;
+	
+	
+	
+	configstart[12] ='#S .Device_Affected -> '+ document.getElementById('a11').value +'-AbsCmd1';
+	
+	
+	
+	
+    var newcmdline = '#S .Device_Affected_Details -> '+ document.getElementById('a11').value +'-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
+	//                #S .Device_Affected_Details ->                                       FreeCmd-AbsCmd1#[NF]undefined#[NF]cmd#[NF]{;;fhem("set test on"};;;}#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0
+
+	
+	FW_okDialog(newcmdline);
+	
+	//return;
+	configstart[29]=newcmdline;
+	}
+	else{
+		
+		
+	// nur für definierte befehlseingabe
+	configstart[12] ='#S .Device_Affected -> '+ document.getElementById('a11').value +'-AbsCmd1';
+	// befehl aufteilen
+	savedcmd = document.getElementById('tra33end').value;
+	
+	
+	cmdarray= savedcmd.split(" ");
+	//alert('savecmd: '+savedcmd);
+	//alert('array0: '+cmdarray[0]);
+	//alert('array1: '+cmdarray[1]);
+	//alert('array2: '+cmdarray[2]);
+	// länge ermittel jedes element zufügen falls nicht leerzeichen
+	if (cmdarray[1] != " "){
+	secondstring = cmdarray[1];
+	}
+	if (cmdarray[2] != " "){
+	secondstring = cmdarray[2];
+	}
+	
+    var newcmdline = '#S .Device_Affected_Details -> '+ document.getElementById('a11').value +'-AbsCmd1'+'#[NF]'+cmdarray[0]+'#[NF]no_action#[NF]'+secondstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
+	//FW_okDialog(newcmdline);
+	
+	configstart[29]=newcmdline;
+		
+	}
+
+   // #########################################
 	fillconfig()
 	return;
 }
-
 
 function fillconfig(){
 	var showconf='';
@@ -403,13 +497,7 @@ function fillconfig(){
 }
 
 function saveconfig(){
-	//alert('nicht verfügbar !');
-	//return;
-	// alert('funk save')
 	conf = document.getElementById('rawconfig').value;
-	
-	// alert (conf);
-	// return;
 	conf = conf.replace(/\n/g,'#[EOL]');
 	conf = conf.replace(/:/g,'#c[dp]');
 	conf = conf.replace(/;/g,'#c[se]');
@@ -417,12 +505,7 @@ function saveconfig(){
 	
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
-	
-	// alert (devicename);
-	//return;	
-	// document.getElementById('tf').innerHTML=def;
-	
-	// return;
+
 	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
 	return;
 }
@@ -440,21 +523,24 @@ function getday(name){
 	addon += '<option value="|6">Samstag</option>';
 	addon += '<option value="|7">Sonntag</option>';
 	addon += '</select>';
-	//addon='test';
 	return addon;
 }
 
 
 function settimetyp(name){
 	
-	
 	document.getElementById('typ1').style.display='none';
 	document.getElementById('typ2').style.display='none';
 	document.getElementById('typ3').style.display='none';
-	//document.getElementsByClassName('timetyp').style.display='block';
+
+	if (name == 'typ0'){
+		document.getElementById('help').innerHTML = 'Bitte die Zeit angeben, zu der das MSwitc-Device auslösen soll.<br>';	
+		document.getElementById('help').innerHTML += 'Hier stehen mehrere Formate zur Verfügung<br>';
+		document.getElementById('help').innerHTML += 'Bitte eine Vorauswahl treffen :<br>&nbsp;<br>';
+		return;
+		}
 	
-	
-	if (name == 'typ0'){return;}
+	document.getElementById('help').innerHTML = 'Bitte die gewünschten Zeiten angeben.';	
 	document.getElementById(name).style.display='block';
 	return;
 	
@@ -532,15 +618,260 @@ function settime(){
 		// intrtvall
 		intervallhh=document.getElementById('periodic1').value;
 		intervallmm=document.getElementById('periodic2').value;
-		
-		// [00:02*04:10-06:30] 
+
 		ret = '['+intervallhh+':'+intervallmm+'*'+hh+':'+mm+'-'+hh1+':'+mm1+dd1+']';
-		// alert(ret);
 	}
 	
 	
-	settyp(ret,'7step','2');
+	settypptime(ret,'7step','2');
 
 return;
 }
 
+function createpart2(){
+
+	eventmonitorstop();
+	// hole geräteliste
+	ret = devicelist('a1','a1','setaffected',1); 
+	// hole befehlsliste dur gewähltes gerät
+	
+	line = '<table border = \'0\'><tr>';
+	line += '<td>Teil Ausführung ';
+	line += '<input name=\"\" id=\"showall1\" type=\"button\" value=\"show complete\" onclick=\"javascript: togglep1()\"\">';
+	line += '</td>';
+	line += '<td></td>';
+	line += '<td></td>';
+	line += '</tr>';
+
+	// id des select,name des select,scriptname,flag ( gesetzt - freie Befehlseingabe )
+	line +='<tr>';
+	line +='<td>Welches Gerät soll geschaltet werden ?</td>';
+	line +='<td>'+ret+'</td>';
+	line +='<td><input id=\"a11\" type=\"text\" value=\"\" disabled=\"disabled\"></td>';
+	line +='</tr>';
+	
+	line +='<tr id=\"tra2\">';
+	line +='<td><div style=\"display:none\" id=\"tra21\">Auszuführender Befehl:</div></td>';
+	line +='<td style=\" text-align: center; vertical-align: middle;\"><div style=\"display:none\" id=\"tra22\"><textarea id=\"freecmd\" cols=\"50\" name=\"TextArea1\" rows=\"4\"></textarea>';
+	
+	line +='<br><input type=\"button\" value=\"übernehmen\" onclick=\"javascript: setaffected(\'a2\',\'a2\',\'a2\'); \">';
+
+	line +='</div></td>';
+	line +='<td><div style=\"display:none\" id=\"tra23\"><input id=\"tra23end\" type=\"text\" value=\"\" disabled=\"disabled\"></div></td>';
+	line +='</tr>';
+
+	line +='<tr id=\"tra3\">';
+	line +='<td><div style=\"display:none\" id=\"tra31\">Auszuführender Befehl:</div></td>';
+	line +='<td><div style=\"display:none\" id=\"tra32\">';
+	line +='<span id =\"setcmd\"></span>';
+	line +='<span id=\"setcmd1\"></span>';
+	line +='<span id=\"setcmd2\">test</span>';
+	line +='</div></td>';
+	line +='<td><div style=\"display:none\" id=\"tra33\"><input id=\"tra33end\" type=\"text\" value=\"\" disabled=\"disabled\"></div></td>';
+	line +='</tr>';
+	line += '</table>';
+	document.getElementById('part2').innerHTML =line;
+
+}
+
+function devicelist(id,name,script,flag){
+	
+	// erstelle geräteliste'+id+'+name+'
+	ret = '<select id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: '+script+'(this.value,id,name)\">';
+	count =0;
+	if (flag == '1'){
+		ret +='<option value=\"select\">bitte wählen:</option>';
+		ret +='<option value=\"free\">freie Befehlseingabe</option>';
+		//count++;
+	}
+	
+	for (i=count; i<len; i++)
+		{
+			
+		if (flag == '1'){
+			ret +='<option value='+i+'>'+devices[i]+'</option>';
+			}
+		else{
+			
+			ret +='<option value='+devices[i]+'>'+devices[i]+'</option>';
+			}
+		}
+		
+	ret +='</select>';
+	return ret;
+		
+}
+
+function setaffected(inhalt,id,name){
+	// alert('inhalt:'+inhalt+' id: '+id+' name: '+name);
+	
+	if (inhalt == 'select'){
+		document.getElementById('tra31').style.display='none';
+		document.getElementById('tra32').style.display='none';
+		document.getElementById('tra33').style.display='none';
+		
+		document.getElementById('tra21').style.display='none';
+		document.getElementById('tra22').style.display='none';
+		document.getElementById('tra23').style.display='none';
+		
+		
+		return;
+	}
+	if (inhalt == 'free'){
+		// wähle fenster 'freie eingabe'
+		
+		document.getElementById('tra31').style.display='none';
+		document.getElementById('tra32').style.display='none';
+		document.getElementById('tra33').style.display='none';
+
+		document.getElementById('tra21').style.display='block';
+		document.getElementById('tra22').style.display='block';
+		document.getElementById('tra23').style.display='block';
+		
+		
+		document.getElementById(id+'1').value='FreeCmd';
+		return;
+	}
+	
+	
+	if (id == 'a1'){
+		//schritt 1 deviceauswahl
+		
+		device  = devices[inhalt];
+		document.getElementById(id+'1').value= device;
+		seloptions = makecmdhash(cmds[inhalt]);
+		
+		document.getElementById('setcmd').innerHTML = 'set '+device+' ';
+		document.getElementById('setcmd').innerHTML += seloptions;
+		document.getElementById('setcmd1').innerHTML ='';
+		
+		out = '<input type=\"button\" value=\"übernehmen\" onclick=\"javascript: setaffected(\'a3\',\'a3\',\'a3\'); \">';
+		document.getElementById('setcmd2').innerHTML =out;
+		
+		document.getElementById('tra31').style.display='block';
+		document.getElementById('tra32').style.display='block';
+		document.getElementById('tra33').style.display='block';
+		
+		document.getElementById('tra21').style.display='none';
+		document.getElementById('tra22').style.display='none';
+		document.getElementById('tra23').style.display='none';
+	}
+	
+	
+	if (id == 'a2'){
+		//übernahme der befehle aus schritt 2 - freie befehlseingabe
+		
+		// alert('a3');
+		comand1 = document.getElementById('freecmd').value;
+		if (comand1 == ''){
+			comand1='';
+			FW_okDialog('Bitte Befehl engeben');
+			return;
+			}
+		// alert(comand1);
+		
+		
+		comand1 = comand1.replace(/\n/g,';;');
+		
+		document.getElementById('tra23end').value=comand1;
+		document.getElementById('tra33end').value='';
+	}
+	
+
+	
+	if (id == 'a3'){
+	//übernahme der befehle aus schritt 3
+
+	comand1='';
+	comand2='';
+	comand3='';
+	
+	device = document.getElementById('a11').value;
+	comand1 = document.getElementById('comand').value;
+	if (comand1 == '0'){
+			comand1='';
+			FW_okDialog('Bitte Befehl wählen');
+			return;
+			}
+	
+	
+	if (document.getElementById('comand1')){
+		comand2 = document.getElementById('comand1').value  ;
+		if (comand2 == '0'){
+			comand2='';
+			FW_okDialog('Bitte Befehlszusatz wählen');
+			return;
+			}
+	}
+	
+	if (document.getElementById('comand2')){
+			//alert('test cmd2');
+			comand3 = document.getElementById('comand2').value ; 
+		}
+	document.getElementById('tra23end').value='';
+	document.getElementById('tra33end').value=comand1+' '+comand2+' '+comand3;
+	}
+	
+	return;
+	
+}
+
+function makecmdhash(line){
+	document.getElementById('setcmd1').value='';	
+	document.getElementById('setcmd2').value='';	
+	
+	if (line === undefined){
+		return;
+	}
+	var retoption = '<select id =\"comand\" name=\"\" onchange=\"javascript: selectcmdoptions(this.value)\">';
+	retoption +='<option selected value=\"0\">Befehl wählen</option>';
+	
+	sets = new Object();
+	var cmdset = new Array;
+	cmdset = line.split(" ");
+	var anzahl = cmdset.length;
+	
+	for (i=0; i<anzahl; i++)
+		{
+		aktset = cmdset[i].split(":");	
+		sets[aktset[0]]=aktset[1];
+		if (aktset[0] != ""){
+		retoption +='<option value='+aktset[0]+'>'+aktset[0]+'</option>';
+			}
+		}
+	retoption +='</select>';
+	var arraysetskeys = Object.keys(sets);
+	document.getElementById('tf').innerHTML = 'ANZAHL: '+anzahl+'<br>';
+	document.getElementById('tf').innerHTML += line+'<br>';
+	document.getElementById('tf').innerHTML += arraysetskeys;
+	return retoption;
+}
+
+function selectcmdoptions(inhalt){
+	document.getElementById('setcmd1').innerHTML ='';
+	// wenn undefined textfeld erzeugen
+	if (sets[inhalt] == 'noArg'){ return;}
+	// wenn noarg befehl übernehmen
+	if (sets[inhalt] === undefined){ 
+	
+	retoption1 = '<input name=\"\" id=\"comand2\" type=\"text\" value=\"\">&nbsp;';
+	document.getElementById('setcmd1').innerHTML = retoption1;
+	return;
+	}
+	// wenn liste subcmd erzeugen
+
+	var retoption1;
+	retoption1 = '<select id =\"comand1\" name=\"\">';
+	retoption1 +='<option selected value=\"0\">Option wählen</option>';
+	
+	var cmdset1= new Array;
+	cmdset1= sets[inhalt].split(",");
+	console.log(cmdset1);
+	var anzahl = cmdset1.length;
+	for (i=0; i<anzahl; i++)
+		{
+		retoption1 +='<option value='+cmdset1[i]+'>'+cmdset1[i]+'</option>';
+		}
+	retoption1 +='</select>';
+	document.getElementById('setcmd1').innerHTML = retoption1;
+}
