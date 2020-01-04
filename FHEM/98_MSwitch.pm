@@ -3833,27 +3833,40 @@ sub MSwitch_fhemwebconf($$$$) {
 	readingsSingleUpdate( $hash, "EVENTCONF","start", 1 );
 	# devicelist to objeckt
 	my $devstring ;
+	my $cmds;
 	my @found_devices = devspec2array("TYPE=.*");
 	for (@found_devices) 
 		{
+		my $test = getAllSets($_); 
+		
+		#Log3( $Name, 0, "getset ".$test);
+		$cmds.="'".$test."',";
 		$devstring.="'".$_."',";
 		}
 	chop $devstring;
+	chop $cmds;
+	
+	
 	$devstring = "[".$devstring."]";
-	my $fileend = rand(1000);
+	
+	$cmds = "[".$cmds."]";
+	
+	
+	my $fileend = "x".rand(1000);
 	
 	my $return="
-	
+
 	<div id='mode'>Konfigurationsmodus:&nbsp;
 	<input name=\"conf\" id=\"wizard\" type=\"button\" value=\"Wizard\" onclick=\"javascript: conf('importWIZARD',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"config\" type=\"button\" value=\"import MSwitch_Config\" onclick=\"javascript: conf('importCONFIG',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"importat\" type=\"button\" value=\"import AT\" onclick=\"javascript: conf('importAT',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
+	<input name=\"conf\" id=\"importpreconf\" type=\"button\" value=\"import PRECONF\" onclick=\"javascript: conf('importPRECONF',id)\"\">
 	</div>
 	<br>&nbsp;<br>
 	
 	
-	<table border='1'>
+	<table border='0'>
 	<tr>
 	
 	<td id='help'>Hilfetext</td>
@@ -3884,15 +3897,23 @@ sub MSwitch_fhemwebconf($$$$) {
 	
 	
 	<table border = '0'>
-	<td colspan='2'>Teil Trigger</div></td></tr>
+	<tr>
+	<td colspan='2'>Teil Trigger
+	<input name=\"\" id=\"showall\" type=\"button\" value=\"show complete\" onclick=\"javascript: togglep1()\"\">
+	</td>
+	</tr>
 	<tr><td><div id='1step1' ></div></td><td><div id='1step2' ></div></td></tr>
 	<tr><td><div id='2step1' ></div></td><td><div id='2step2' ></div></td></tr>
 	<tr><td><div id='3step1' ></div></td><td><div id='3step2' ></div></td></tr>
 	<tr><td><div id='4step1' ></div></td><td><div id='4step2' ></div></td></tr>
 	<tr><td><div id='5step1' ></div></td><td><div id='5step2' ></div></td></tr>
-	<td colspan='2'>Teil Ausführung</div></td></tr>
 	</table>
 	
+	<div>&nbsp;</div>
+	
+	<div id='part2'>&nbsp;</div>
+	
+
 	<div id='monitor' >
 	<br>&nbsp;<br>
 	Eventmonitor:<br>
@@ -3918,10 +3939,10 @@ sub MSwitch_fhemwebconf($$$$) {
 	</div>
 	
 	
-
 	<div id='importAT'>import at</div>
 	<div id='importNOTIFY'>import notify</div>
 	<div id='importCONFIG'>import config</div>
+	<div id='importPRECONF'>import preconf</div>
 	";
 
 	# javascript: document.getElementById(\"e1\").value=\'time\'; disabled=\"disabled\"
@@ -3932,6 +3953,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	// firstconfig
 	var logging ='off';
 	var devices = ".$devstring.";
+	var cmds = ".$cmds.";
 	var i;
 	var len = devices.length;
 	var o = new Object();
