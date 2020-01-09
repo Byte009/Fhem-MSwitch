@@ -332,6 +332,13 @@ function start1(name){
 
 function startwizardtrigger(){	
 	
+	document.getElementById('makeconf').style.backgroundColor='#ff0000';
+	document.getElementById('saveconf').style.backgroundColor='#ff0000';
+		
+	document.getElementById('makeconf').disabled = true;
+	document.getElementById('saveconf').disabled = true;
+	
+	
 // help
 		document.getElementById('help').innerHTML = 'Bitte wählen, ob die Auslösung des MSwitch-Devices durch ein Event oder zeitgesteuert erfolgen soll.';	
 	
@@ -445,7 +452,7 @@ function makeconfig(){
 	//                #S .Device_Affected_Details ->                                       FreeCmd-AbsCmd1#[NF]undefined#[NF]cmd#[NF]{;;fhem("set test on"};;;}#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0
 
 	
-	FW_okDialog(newcmdline);
+	//FW_okDialog(newcmdline);
 	
 	//return;
 	configstart[29]=newcmdline;
@@ -481,6 +488,10 @@ function makeconfig(){
 
    // #########################################
 	fillconfig()
+	
+	document.getElementById('saveconf').style.backgroundColor='';
+	document.getElementById('saveconf').disabled = false;
+	
 	return;
 }
 
@@ -775,6 +786,8 @@ function setaffected(inhalt,id,name){
 		
 		document.getElementById('tra23end').value=comand1;
 		document.getElementById('tra33end').value='';
+		document.getElementById('makeconf').style.backgroundColor='';
+		document.getElementById('makeconf').disabled = false;
 	}
 	
 
@@ -811,7 +824,8 @@ function setaffected(inhalt,id,name){
 	document.getElementById('tra23end').value='';
 	document.getElementById('tra33end').value=comand1+' '+comand2+' '+comand3;
 	}
-	
+	document.getElementById('makeconf').style.backgroundColor='';
+	document.getElementById('makeconf').disabled = false;
 	return;
 	
 }
