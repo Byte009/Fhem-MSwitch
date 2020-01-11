@@ -306,6 +306,19 @@ function conf(typ,but){
 		// neustart wizard
 		startwizardtrigger();
 	}
+	
+	if (but == 'config'){
+		// neustart wizard
+		startconfig();
+	}
+	
+	if (but == 'importat'){
+	// neustart wizard
+	startimportat();
+	}
+	
+	
+	
 
 	return;
 }	
@@ -326,7 +339,7 @@ function start1(name){
 		$(r3).appendTo('[class=\"detLink showDSI\"]');
 		
 // fülle configfenster
-		fillconfig();
+		fillconfig('rawconfig');
 		startwizardtrigger();
 }
 
@@ -487,7 +500,7 @@ function makeconfig(){
 	}
 
    // #########################################
-	fillconfig()
+	fillconfig('rawconfig')
 	
 	document.getElementById('saveconf').style.backgroundColor='';
 	document.getElementById('saveconf').disabled = false;
@@ -495,7 +508,7 @@ function makeconfig(){
 	return;
 }
 
-function fillconfig(){
+function fillconfig(name){
 	var showconf='';
 	configstart[0] = '#V '+mVersion;
 	conflines =  configstart.length ;
@@ -503,12 +516,12 @@ function fillconfig(){
 		{
 			showconf = showconf+configstart[i]+'\n';
 		}
-	document.getElementById('rawconfig').innerHTML = showconf;
+	document.getElementById(name).innerHTML = showconf;
 	
 }
 
-function saveconfig(){
-	conf = document.getElementById('rawconfig').value;
+function saveconfig(name){
+	conf = document.getElementById(name).value;
 	conf = conf.replace(/\n/g,'#[EOL]');
 	conf = conf.replace(/:/g,'#c[dp]');
 	conf = conf.replace(/;/g,'#c[se]');
@@ -889,3 +902,127 @@ function selectcmdoptions(inhalt){
 	retoption1 +='</select>';
 	document.getElementById('setcmd1').innerHTML = retoption1;
 }
+
+
+function startconfig(){
+	
+	var html='<table><tr><td style=\"text-align: center; vertical-align: middle;\">';
+	// html+='<input name=\"makeconf\" id=\"makeconf\" type=\"button\" disabled=\"disabled\" value=\"make new config\" onclick=\"javascript: makeconfig()\"\">&nbsp;';
+	
+	// html+='<br>&nbsp;<br>';
+	html+='<textarea id=\"rawconfig1\" style=\"width: 950px; height: 600px\"></textarea>';
+	html+='</td>';
+	html+='</tr>';
+	
+	
+	html+='<tr><td style=\"text-align: center; vertical-align: middle;\">';
+	html+='<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: saveconfig(\'rawconfig1\')\"\">';
+
+	html+='</td>';
+	html+='</tr>';
+	html+='</table>';
+	
+	
+	document.getElementById('importCONFIG').innerHTML = html;
+	fillconfig('rawconfig1');
+	
+}
+
+
+
+
+function startimportat(){
+	
+	script = 'setat';
+	
+	ret = '<select id =\"\" name=\"\" onchange=\"javascript: '+script+'(this.value)\">';
+	ret +='<option value=\"\">bitte zu importierendes AT wählen</option>';
+	
+	count =0;
+
+	len = at.length;
+	for (i=count; i<len; i++)
+		{
+
+			ret +='<option value='+i+'>'+at[i]+'</option>';
+			
+		}
+		
+	ret +='</select>';
+	
+	
+	
+	
+	
+	
+	
+	var html='<table border=\"0\">';
+	
+	
+	
+	
+	html+='<tr><td colspan=\"3\">';
+	html+='Es können nur periodisch wiederkehrende ATs importiert werden.<br>';
+	html+='MSwitch berücksichtigt keine Sekundenangaben.<br>';
+	html+='&nbsp;<br>';
+	
+	html+='</td></tr>';
+	
+	html+='<tr><td style=\"\">';
+	
+	html+=ret;
+	html+='</td>';
+	
+	html+='<td>';
+	html+='Definition:<br>';
+	html+='Comand:<br>';
+	html+='Timespec:<br>';
+	html+='</td>';
+	
+	html+='<td>';
+	html+='<input id=\"def\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='<input id=\"defcmd\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='<input id=\"deftspec\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='</td>';
+	
+	
+	
+	
+
+	html+='</tr>';
+	
+	
+	//html+='<tr><td style=\"text-align: center; vertical-align: middle;\">';
+	//html+='<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: saveconfig(\'rawconfig1\')\"\">';
+
+	//html+='</td>';
+	//html+='</tr>';
+	html+='</table>';
+	
+	
+	document.getElementById('importAT').innerHTML = html;
+	
+	
+	
+	return;
+	
+}
+
+
+
+function setat(name){
+	
+	// alert(name);
+	document.getElementById('def').value=atdef[name];
+	document.getElementById('defcmd').value=atcmd[name];
+	document.getElementById('deftspec').value=atspec[name];
+	
+	return;
+}
+
+
+
+
+
+
+
