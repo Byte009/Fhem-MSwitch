@@ -1746,7 +1746,7 @@ $hash->{helper}{mode} ='absorb';
         # event manuell zufügen
         my $devName = ReadingsVal( $name, 'Trigger_device', '' );
         $args[0] =~ s/\[sp\]/ /g;
-        my @newevents = split( / /, $args[0] );
+        my @newevents = split( /,/, $args[0] );
         if ( ReadingsVal( $name, 'Trigger_device', '' ) eq "all_events" )
 		{
             foreach (@newevents) 
@@ -3949,13 +3949,71 @@ sub MSwitch_fhemwebconf($$$$) {
 	chop $devstring;
 	chop $cmds;
 	
-	
 	$devstring = "[".$devstring."]";
+	
 	
 	$cmds = "[".$cmds."]";
 	
 	
 	my $fileend = "x".rand(1000);
+	
+
+		
+	my $devicehash;	
+	my $at;
+	my $atdef;
+	my $athash;
+	my $insert;
+	
+	
+	
+	my $comand;
+	my $insertcomand;
+	
+	my $timespec;
+	my $inserttimespec;	
+	
+	#my $periodic;
+	
+	# suche at
+	my @found_devices = devspec2array("TYPE=at");
+	for (@found_devices) 
+		{
+		$athash  = $defs{$_};
+		
+		next if $athash->{PERIODIC} eq 'no';
+		next if $athash->{RELATIVE} eq 'yes';
+		
+		 #my $test = getAllSets($_); 
+		$at .="'".$_."',";
+		
+		
+		
+		
+		
+		$insert = $athash->{DEF};
+		
+		$atdef .="'".$insert."',";
+		
+		
+		$insertcomand = $athash->{COMMAND};
+		$comand .="'".$insertcomand."',";
+		
+		$inserttimespec = $athash->{TIMESPEC};
+		$timespec .="'".$inserttimespec."',";
+		
+		
+		
+		}
+	chop $at;	
+	chop $atdef;
+	chop $comand;
+	chop $timespec;
+	
+	$at = "[".$at."]";	
+	$atdef = "[".$atdef."]";	
+	$comand = "[".$comand."]";
+	$timespec = "[".$timespec."]";
 	
 	my $return="
 
@@ -3963,8 +4021,8 @@ sub MSwitch_fhemwebconf($$$$) {
 	<input name=\"conf\" id=\"wizard\" type=\"button\" value=\"Wizard\" onclick=\"javascript: conf('importWIZARD',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"config\" type=\"button\" value=\"import MSwitch_Config\" onclick=\"javascript: conf('importCONFIG',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"importat\" type=\"button\" value=\"import AT\" onclick=\"javascript: conf('importAT',id)\"\">&nbsp;
-	<input name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
-	<input name=\"conf\" id=\"importpreconf\" type=\"button\" value=\"import PRECONF\" onclick=\"javascript: conf('importPRECONF',id)\"\">
+	<input disabled=\"disabled\" name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
+	<input disabled=\"disabled\" name=\"conf\" id=\"importpreconf\" type=\"button\" value=\"import PRECONF\" onclick=\"javascript: conf('importPRECONF',id)\"\">
 	</div>
 	<br>&nbsp;<br>
 	
@@ -4029,7 +4087,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	</td>
 	<td style=\"text-align: center; vertical-align: middle;\">
 	<input name=\"makeconf\" id=\"makeconf\" type=\"button\" disabled=\"disabled\" value=\"make new config\" onclick=\"javascript: makeconfig()\"\">&nbsp;
-	<input name=\"saveconf\" id=\"saveconf\" type=\"button\" disabled=\"disabled\" value=\"save new config\" onclick=\"javascript: saveconfig()\"\">
+	<input name=\"saveconf\" id=\"saveconf\" type=\"button\" disabled=\"disabled\" value=\"save new config\" onclick=\"javascript: saveconfig('rawconfig')\"\">
 
 	<br>&nbsp;<br>
 	<textarea disabled id='rawconfig' style='width: 450px; height: 600px'></textarea>
@@ -4042,7 +4100,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	</div>
 	
 	
-	<div id='importAT'>import at</div>
+	<div id='importAT'>@found_devices</div>
 	<div id='importNOTIFY'>import notify</div>
 	<div id='importCONFIG'>import config</div>
 	<div id='importPRECONF'>import preconf</div>
@@ -4056,6 +4114,14 @@ sub MSwitch_fhemwebconf($$$$) {
 	// firstconfig
 	var logging ='off';
 	var devices = ".$devstring.";
+	
+	var at = ".$at.";
+	var atdef = ".$atdef.";
+	var atcmd = ".$comand.";
+	
+	var atspec = ".$timespec.";
+	
+	
 	var cmds = ".$cmds.";
 	var i;
 	var len = devices.length;
@@ -4684,7 +4750,11 @@ my $hidehtml = "";
             }
             else {
                 #$errors = AnalyzeCommandChain( undef, $cs );
-				$errors = getAllSets($name);	
+				$errors = getAllSets($name);
+
+#Log3( $name, 0, $name."-".$errors);
+
+				
                 if ( $savecmds ne "nosave" ) {
                     $hash->{helper}{devicecmds1}{$name} = $errors;
                     $hash->{helper}{last_devicecmd_save} = time;
@@ -5385,7 +5455,7 @@ $controlhtml=~ s/#/\n/g;
             if ( $devicenamet ne 'FreeCmd' ) 
 			{
             # nicht freecmd
-		
+		#$hidden='text';
 			$SET1 =	"<table border ='0'><tr><td>
 			Set <select class=\"devdetails2\" id='"
 					  . $_
@@ -7568,7 +7638,7 @@ und \"execute \\'cmd1+cmd2\\' only at:\" möglich. <br /><br>Die Variable \$we i
 	text = text +  'Bei der Auswahl \\\'GLOBAL\\\' als Triggerevent werde alle von Fhem erzeugten Events an dieses Device weitergeleitet. Dieses kann eine erhöhte Systemlast erzeugen.<br>In dem Feld \\\'Trigger Device Global Whitelist:\\\' kann dieses eingeschränkt werden , indem Devices oder Module benannt werden , deren Events Berücksichtigt werden. Sobald hier ein Eintrag erfolgt , werden nur noch Diese berücksichtigt , gibt es keinen Eintrag , werden alle berücksichtigt ( Whitelist ).<br> Format: Die einzelnen Angaben müssen durch Komma getrennt werden .<br><br>Mögliche Angaben :<br>Modultypen: TYPE=CUL_HM<br>Devicenamen: NAME<br><br>';}
 					   
 	if (from == 'addevent'){
-	text = text +  'Hier können manuell Events zugefügt werden , die in den Auswahllisten verfügbar sein sollen und auf die das Modul reagiert.<br>Grundsätzlich ist zu unterscheiden , ob das Device im Normal-, oder Globalmode betrieben wird<br>Im Normalmode bestehen die Events aus 2 Teilen , dem Reading und dem Wert \"state:on\"<br>Wenn sich das Device im GLOBAL Mode befindet müssen die Events aus 3 Teilen bestehen , dem Devicename, dem Reading und dem Wert \"device:state:on\".<br>Wird hier nur ein \"*\" angegeben , reagiert der entsprechende Zweig auf alle eingehenden Events.<br>Weitherhin sind folgende Syntaxmöglichkeiten vorgesehen :<br> device:state:*, device:*:*, *:state:* , etc.<br>Der Wert kann mehrere Auswahlmöglichkeiten haben , durch folgende Syntax: \"device:state:(on/off)\". In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.<br><br>Es können mehrere Evebts gleichzeitig angelegt werden . Diese sind durch Leerzeichen zu trennen .<br><br>Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.';}
+	text = text +  'Hier können manuell Events zugefügt werden , die in den Auswahllisten verfügbar sein sollen und auf die das Modul reagiert.<br>Grundsätzlich ist zu unterscheiden , ob das Device im Normal-, oder Globalmode betrieben wird<br>Im Normalmode bestehen die Events aus 2 Teilen , dem Reading und dem Wert \"state:on\"<br>Wenn sich das Device im GLOBAL Mode befindet müssen die Events aus 3 Teilen bestehen , dem Devicename, dem Reading und dem Wert \"device:state:on\".<br>Wird hier nur ein \"*\" angegeben , reagiert der entsprechende Zweig auf alle eingehenden Events.<br>Weitherhin sind folgende Syntaxmöglichkeiten vorgesehen :<br> device:state:*, device:*:*, *:state:* , etc.<br>Der Wert kann mehrere Auswahlmöglichkeiten haben , durch folgende Syntax: \"device:state:(on/off)\". In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.<br><br>Es können mehrere Evebts gleichzeitig angelegt werden . Diese sind durch Komma zu trennen .<br><br>Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.';}
 					   
 	if (from == 'condition'){
 	text = text + 
@@ -7733,8 +7803,18 @@ Increase
 	var werte = new Array();
 	for (var key in optionarray )
 	{
+	//FW_okDialog(optionarray[key]);
+	
+	
 	var satz = optionarray[key].split(\":\");
-	werte[satz[0]] = satz[1];
+	
+	
+	var wert1 = satz[0];
+	satz.shift() ;
+	
+	var wert2 = satz.join(\":\");
+	//FW_okDialog(wert2);
+	werte[wert1] = wert2;
 	}
 	var devicecmd = new Array();
 	if (typeof werte[state] === 'undefined') {werte[state]='textField';}
@@ -8034,7 +8114,7 @@ if (AttrVal( $Name, 'MSwitch_Language',AttrVal( 'global', 'language', 'EN' ) ) e
 	function transferevent(){
 		var values = \$('#lf').val();
 		if (values){
-		var string = values.join(' ');
+		var string = values.join(',');
 		document.getElementById('add_event').value = string;
 		}
 	}
