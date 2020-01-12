@@ -5455,7 +5455,7 @@ $controlhtml=~ s/#/\n/g;
             if ( $devicenamet ne 'FreeCmd' ) 
 			{
             # nicht freecmd
-		#$hidden='text';
+		#hidden='text';
 			$SET1 =	"<table border ='0'><tr><td>
 			Set <select class=\"devdetails2\" id='"
 					  . $_
@@ -5476,7 +5476,7 @@ $controlhtml=~ s/#/\n/g;
 					  . $_
 					  . "' name='cmdseton"
 					  . $nopoint
-					  . "' size='10'  value ='"
+					  . "' size='30'  value ='"
 					  . $cmdsatz{$devicenamet} . "'>
 					<input type='$hidden' id='cmdonopt"
 					  . $_
@@ -7770,56 +7770,108 @@ Increase
 	return;
 	}
 	
+	
+	
+	
 	function activate(state,target,options,copytofield) ////aufruf durch selctfield
 	{
-
+	debug = 'state: '+state+'<br>';
+	debug += 'target: '+target+'<br>';
+	debug += 'options: '+options+'<br>';
+	debug += 'copytofield: '+copytofield+'<br>';
+	
+	//FW_okDialog(debug);
+	
+	
 	var globaldetails3='undefined';
 	var x = document.getElementsByClassName('devdetails2');
     for (var i = 0; i < x.length; i++) 
-	{
-    var t  = x[i].id;
-	globaldetails3 +=document.getElementById(t).value;
-	}
+		{
+		var t  = x[i].id;
+		globaldetails3 +=document.getElementById(t).value;
+		}
 	
 	if ( globaldetails2 )
-	{
-	if (globaldetails3 != globaldetails2)
-	{
-	globallock =' unsaved device actions';
-		[ \"aw_trig\",\"aw_md1\",\"aw_md2\",\"aw_addevent\",\"aw_dev\"].forEach (lock,);
-		randomdev.forEach (lock);
+		{
+		if (globaldetails3 != globaldetails2)
+			{
+			globallock =' unsaved device actions';
+				[ \"aw_trig\",\"aw_md1\",\"aw_md2\",\"aw_addevent\",\"aw_dev\"].forEach (lock,);
+				randomdev.forEach (lock);
+			
+			}
+		else
+			{
+			[ \"aw_trig\",\"aw_md1\",\"aw_md2\",\"aw_addevent\",\"aw_dev\"].forEach (unlock,);
+					randomdev.forEach (unlock);
+			}
+		}
 	
-	}
-	else
-	{
-	[ \"aw_trig\",\"aw_md1\",\"aw_md2\",\"aw_addevent\",\"aw_dev\"].forEach (unlock,);
-			randomdev.forEach (unlock);
-	}
-	}
+	//var ausgabe = target + '<br>' + state + '<br>' + options;
 	
-	var ausgabe = target + '<br>' + state + '<br>' + options;
-	if (state == 'no_action'){noaction(target,copytofield);return}
+	
+	
+	if (state == 'no_action')
+		{
+		//FW_okDialog(state);
+		noaction(target,copytofield);
+		return;
+		}
 	var optionarray = options.split(\" \");
 	var werte = new Array();
 	for (var key in optionarray )
 	{
-	//FW_okDialog(optionarray[key]);
-	
-	
-	var satz = optionarray[key].split(\":\");
-	
-	
-	var wert1 = satz[0];
-	satz.shift() ;
-	
-	var wert2 = satz.join(\":\");
-	//FW_okDialog(wert2);
-	werte[wert1] = wert2;
+		//FW_okDialog(optionarray[key]);
+		
+		
+		var satz = optionarray[key].split(\":\");
+		
+		
+		var wert1 = satz[0];
+		wert3 = satz[1];
+		satz.shift() ;
+		
+		var wert2 = satz.join(\":\");
+		//FW_okDialog(wert2);
+		werte[wert1] = wert2;
+		
+		
+		//FW_okDialog(wert2);
+		//FW_okDialog(wert3);
 	}
+	
+	//FW_okDialog('state: '+state+'<br>inhalt: '+werte[state]);
+	
+	
+	
 	var devicecmd = new Array();
-	if (typeof werte[state] === 'undefined') {werte[state]='textField';}
+	
+	
+	if ( werte[state] == '') 
+		{
+		werte[state]='textField';
+		
+		}
+	
+
+	//if (typeof werte[state] === 'undefined') 
+	//	{
+	//	werte[state]='textField';
+	//	}
+		
+		
 	devicecmd = werte[state].split(\",\");
-	if (devicecmd[0] == 'noArg'){noarg(target,copytofield);return;}
+	
+	
+	//FW_okDialog(devicecmd[0]);
+	
+	
+	if (devicecmd[0] == 'noArg')
+		{
+		//FW_okDialog(devicecmd[0]);
+		noarg(target,copytofield);
+		return;
+		}
 	//else if (devicecmd[0] == 'slider'){slider(devicecmd[1],devicecmd[2],devicecmd[3],target,copytofield);return;}
 
 	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);return;}
@@ -7832,6 +7884,12 @@ Increase
 	
 	return;
 	}
+
+
+
+
+
+
 
 	function changesort(){
 	sortby = \$(\"[name=sort]\").val();
