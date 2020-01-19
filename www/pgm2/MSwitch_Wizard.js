@@ -1,5 +1,5 @@
 
-	var version = 'V0.5 beta';
+	var version = 'V0.6 beta';
 	var logging ='off';
 	var observer;
 	var target;
@@ -449,24 +449,15 @@ function makeconfig(){
 	// ############ nur für volle befehlseingabe
 	// affected devices und befehl
 	
-	if (document.getElementById('a11').value == 'FreeCmd'){
+	if (document.getElementById('a11').value == 'FreeCmd')
+	{
 	// nur für freie befehlseingabe
 	// alert('zweig nicht definiert');
 	var cmdstring = document.getElementById('tra23end').value;
-	
-	
-	
 	configstart[12] ='#S .Device_Affected -> '+ document.getElementById('a11').value +'-AbsCmd1';
-	
-	
-	
-	
     var newcmdline = '#S .Device_Affected_Details -> '+ document.getElementById('a11').value +'-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
 	//                #S .Device_Affected_Details ->                                       FreeCmd-AbsCmd1#[NF]undefined#[NF]cmd#[NF]{;;fhem("set test on"};;;}#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0
-
-	
 	//FW_okDialog(newcmdline);
-	
 	//return;
 	configstart[29]=newcmdline;
 	}
@@ -907,9 +898,6 @@ function selectcmdoptions(inhalt){
 function startconfig(){
 	
 	var html='<table><tr><td style=\"text-align: center; vertical-align: middle;\">';
-	// html+='<input name=\"makeconf\" id=\"makeconf\" type=\"button\" disabled=\"disabled\" value=\"make new config\" onclick=\"javascript: makeconfig()\"\">&nbsp;';
-	
-	// html+='<br>&nbsp;<br>';
 	html+='<textarea id=\"rawconfig1\" style=\"width: 950px; height: 600px\"></textarea>';
 	html+='</td>';
 	html+='</tr>';
@@ -927,8 +915,6 @@ function startconfig(){
 	fillconfig('rawconfig1');
 	
 }
-
-
 
 
 function startimportat(){
@@ -950,17 +936,12 @@ function startimportat(){
 		
 	ret +='</select>';
 	
+	var html='';
 	
+	html+='<table border=\"0\">';
+	html+='<tr><td style=\"vertical-align: top;\">';
 	
-	
-	
-	
-	
-	var html='<table border=\"0\">';
-	
-	
-	
-	
+	html+='<table border=\"0\">';
 	html+='<tr><td colspan=\"3\">';
 	html+='Es können nur periodisch wiederkehrende ATs importiert werden.<br>';
 	html+='MSwitch berücksichtigt keine Sekundenangaben.<br>';
@@ -977,32 +958,39 @@ function startimportat(){
 	html+='Definition:<br>';
 	html+='Comand:<br>';
 	html+='Timespec:<br>';
+	html+='Steuerflag:<br>';
+	html+='Triggertime:<br>';
 	html+='</td>';
 	
 	html+='<td>';
 	html+='<input id=\"def\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
 	html+='<input id=\"defcmd\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
 	html+='<input id=\"deftspec\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='<input id=\"defflag\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='<input id=\"trigtime\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
 	html+='</td>';
 	
-	
-	
-	
-
 	html+='</tr>';
 	
-	
-	//html+='<tr><td style=\"text-align: center; vertical-align: middle;\">';
-	//html+='<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: saveconfig(\'rawconfig1\')\"\">';
+	html+='<tr><td colspan=\"3\" style=\"text-align: center; vertical-align: middle;\">';
+	html+='<br><input name=\"\" id=\"\" type=\"button\" value=\"import this at\" onclick=\"javascript: saveat()\"\">';
 
-	//html+='</td>';
-	//html+='</tr>';
+	html+='</td>';
+	html+='</tr>';
+	
 	html+='</table>';
 	
+	html+='</td>';
+	html+='<td>';
+	html+='<textarea disabled id=\'rawconfig1\' style=\'width: 450px; height: 600px\'></textarea>';
+	html+='</td>';
+	html+='</tr>';
+	
+	html+='</table>';
 	
 	document.getElementById('importAT').innerHTML = html;
 	
-	
+	fillconfig('rawconfig1');
 	
 	return;
 	
@@ -1017,11 +1005,61 @@ function setat(name){
 	document.getElementById('defcmd').value=atcmd[name];
 	document.getElementById('deftspec').value=atspec[name];
 	
+	defflag = atdef[name].substr(0,1);
+	document.getElementById('defflag').value=defflag;
+	document.getElementById('trigtime').value=triggertime[name];
+	
+	
 	return;
 }
 
 
+function saveat(){
+	
+	//alert('ok');
+	
+	var cmdstring = document.getElementById('defcmd').value;
+	configstart[12] ='#S .Device_Affected -> FreeCmd-AbsCmd1';
+    var newcmdline = '#S .Device_Affected_Details -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
 
+	configstart[29]=newcmdline;
+	
+	
+	
+	if (document.getElementById('defflag').value == "*")
+	{
+		string = document.getElementById('deftspec').value;
+		// ersetze dp durch #[dp]
+		
+		string ="["+string+"]";
+		
+		string = string.replace(/:/gi,"#[dp]");
+		configstart[13] ='#S .Trigger_time -> on~off~ononly'+ string +'~offonly~onoffonly';
+	}
+	
+	
+	
+		if (document.getElementById('defflag').value == "+")
+	{
+		string = document.getElementById('deftspec').value;
+		// ersetze dp durch #[dp]
+		
+		//string ="["+string+"]";
+		
+		
+		string = '['+string+'*00:01-23:59]';
+		
+		string = string.replace(/:/gi,"#[dp]");
+		configstart[13] ='#S .Trigger_time -> on~off~ononly'+ string +'~offonly~onoffonly';
+	}
+	
+	
+	
+	fillconfig('rawconfig1');
+	saveconfig('rawconfig1');
+
+	
+}
 
 
 
