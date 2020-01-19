@@ -1392,7 +1392,7 @@ my %setlist;
 if ( $cmd eq 'wizard' ) 
 {
 $hash->{helper}{mode} ='absorb';
-
+$hash->{helper}{modesince} =time;
 }
 
 
@@ -3019,8 +3019,26 @@ sub MSwitch_Notify($$) {
 
 	
 	 if ($own_hash->{helper}{mode} eq "absorb"){
-	 
-	 
+	 if (time > $own_hash->{helper}{modesince}+600) # time bis wizardreset
+	 {
+		delete( $own_hash->{helper}{mode} );
+		delete( $own_hash->{helper}{modesince} );
+		delete( $own_hash->{NOTIFYDEV} );
+		delete( $own_hash->{READINGS} );
+		readingsBeginUpdate($own_hash);
+		readingsBulkUpdate( $own_hash, ".Device_Events",   "no_trigger", 1 );
+		readingsBulkUpdate( $own_hash, ".Trigger_cmd_off", "no_trigger", 1 );
+		readingsBulkUpdate( $own_hash, ".Trigger_cmd_on",  "no_trigger", 1 );
+		readingsBulkUpdate( $own_hash, ".Trigger_off",     "no_trigger", 1 );
+		readingsBulkUpdate( $own_hash, ".Trigger_on",      "no_trigger", 1 );
+		readingsBulkUpdate( $own_hash, "Trigger_device",   "no_trigger", 1 );
+		readingsBulkUpdate( $own_hash, "Trigger_log",      "off",        1 );
+		readingsBulkUpdate( $own_hash, "state",            "active",     1 );
+		readingsBulkUpdate( $own_hash, ".V_Check", 			$vupdate,    1 );
+		readingsBulkUpdate( $own_hash, ".First_init",      'done' );
+		readingsEndUpdate( $own_hash, 0 );
+		return;
+	 }
 	 return if $devName eq $ownName;
 	 #Log3( $ownName, 0, "DN: ".$devName);
 	 
@@ -3968,10 +3986,12 @@ sub MSwitch_fhemwebconf($$$$) {
 	
 	
 	my $comand;
-	my $insertcomand;
+	#my $insertcomand;
 	
 	my $timespec;
-	my $inserttimespec;	
+	#my $inserttimespec;	
+	my $flag;
+	my $trigtime;
 	
 	#my $periodic;
 	
@@ -3980,27 +4000,34 @@ sub MSwitch_fhemwebconf($$$$) {
 	for (@found_devices) 
 		{
 		$athash  = $defs{$_};
+		$insert = $athash->{DEF};
 		
+	    $flag= substr($insert,0,1);
+		
+		
+		
+		if ($flag ne "+")
+		{
 		next if $athash->{PERIODIC} eq 'no';
 		next if $athash->{RELATIVE} eq 'yes';
-		
+		}
 		 #my $test = getAllSets($_); 
 		$at .="'".$_."',";
 		
 		
 		
 		
+		$trigtime .="'".$athash->{TRIGGERTIME}."',";
 		
-		$insert = $athash->{DEF};
-		
+	
 		$atdef .="'".$insert."',";
 		
 		
-		$insertcomand = $athash->{COMMAND};
-		$comand .="'".$insertcomand."',";
+		#$insertcomand = $athash->{COMMAND};
+		$comand .="'".$athash->{COMMAND}."',";
 		
-		$inserttimespec = $athash->{TIMESPEC};
-		$timespec .="'".$inserttimespec."',";
+		#$inserttimespec = $athash->{TIMESPEC};
+		$timespec .="'".$athash->{TIMESPEC}."',";
 		
 		
 		
@@ -4009,11 +4036,13 @@ sub MSwitch_fhemwebconf($$$$) {
 	chop $atdef;
 	chop $comand;
 	chop $timespec;
+	chop $trigtime;
 	
 	$at = "[".$at."]";	
 	$atdef = "[".$atdef."]";	
 	$comand = "[".$comand."]";
 	$timespec = "[".$timespec."]";
+	$trigtime = "[".$trigtime."]";
 	
 	my $return="
 
@@ -4121,7 +4150,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	
 	var atspec = ".$timespec.";
 	
-	
+	var triggertime = ".$trigtime.";
 	var cmds = ".$cmds.";
 	var i;
 	var len = devices.length;
@@ -11986,8 +12015,6 @@ sub MSwitch_sort(@) {
 
         my $key  = $device . $typ;
         my $prio = $devicedetails{$key};
-        MSwitch_LOG( $name, 5,
-                 "$name:     device hat  $typ $device - $devicedetails{$key}" );
         $new{$device} = $prio;
     }
 
