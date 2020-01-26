@@ -354,7 +354,7 @@ sub MSwitch_summary($) {
 	
 	if ($hash->{helper}{mode} eq "absorb")
 	{
-	return "Device ist im Konfigurationsmodus";
+	return "Device ist im Konfigurationsmodus ! Die Funktion Wizard ist in dieser Version noch nicht Verfügbar - speichern nicht möglich";
 	}
 	
 	
@@ -1115,32 +1115,43 @@ if (AttrVal( $name, 'MSwitch_Language',AttrVal( 'global', 'language', 'EN' ) ) e
 
 
 if ($hash->{helper}{config} eq "no_config")
-		{
+	{
 	my $preconf     = "";
 	my $verzeichnis = "./FHEM/MSwitch";
-	if ( -d $verzeichnis ) {
-		opendir( DIR, $verzeichnis );
-		while ( my $entry = readdir(DIR) ) {
-			my $dat = $entry;
-			$entry = $verzeichnis . '/' . $entry;
-			next if $entry eq ".";
-			next if $entry eq "..";
-			unless ( -f $entry ) {
-				next;
+	if ( -d $verzeichnis ) 
+		{
+			opendir( DIR, $verzeichnis );
+			while ( my $entry = readdir(DIR) ) 
+			{
+				my $dat = $entry;
+				$entry = $verzeichnis . '/' . $entry;
+				next if $entry eq ".";
+				next if $entry eq "..";
+				unless ( -f $entry ) {
+					next;
 			}
-			$preconf .= $dat . ",";
+				$preconf .= $dat . ",";
 		}
-		closedir(DIR);
-		chop($preconf);
+	closedir(DIR);
+	chop($preconf);
 	}
-	else {
+	else 
+	{
 		$preconf = "";
 	}
-	if ( $preconf && $preconf ne "" ) {
+	
+	if ( $preconf && $preconf ne "" ) 
+	{
 		$preconf = "MSwitch_preconf:" . $preconf;
 	}	
-   return "Unknown argument $opt, choose one of config:noArg restore_MSwitch_Data:this_Device,all_Devices $preconf";
-		}
+	
+	
+	# deaktiviere preconf
+	$preconf = ""; 
+	
+	
+    return "Unknown argument $opt, choose one of config:noArg restore_MSwitch_Data:this_Device,all_Devices $preconf";
+	}
 
 
     if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) eq "Dummy" ) 
@@ -1182,7 +1193,7 @@ sub MSwitch_Set($@) {
     my $ic = 'leer';
     $ic = $hash->{IncommingHandle} if ( $hash->{IncommingHandle} );
     my $showevents = AttrVal( $name, "MSwitch_generate_Events", 1 );
-	    my $devicemode = AttrVal( $name, 'MSwitch_Mode',          'Notify' );
+	my $devicemode = AttrVal( $name, 'MSwitch_Mode',          'Notify' );
     my $delaymode  = AttrVal( $name, 'MSwitch_Delete_Delays', '0' );
 	
 ###################################################################################	
@@ -3946,6 +3957,11 @@ sub MSwitch_checkbridge($$$) {
 ############################
 sub MSwitch_fhemwebconf($$$$) {
 
+
+
+
+
+
 	my ( $FW_wname, $d, $room, $pageHash ) =@_;    # pageHash is set for summaryFn.
 	my $hash     = $defs{$d};
 	my $Name     = $hash->{NAME};
@@ -3959,78 +3975,43 @@ sub MSwitch_fhemwebconf($$$$) {
 	for (@found_devices) 
 		{
 		my $test = getAllSets($_); 
-		
-		#Log3( $Name, 0, "getset ".$test);
 		$cmds.="'".$test."',";
 		$devstring.="'".$_."',";
 		}
 	chop $devstring;
 	chop $cmds;
-	
 	$devstring = "[".$devstring."]";
-	
-	
 	$cmds = "[".$cmds."]";
 	
-	
-	my $fileend = "x".rand(1000);
-	
-
-		
+	my $fileend = "x".rand(1000);	
 	my $devicehash;	
 	my $at;
 	my $atdef;
 	my $athash;
 	my $insert;
-	
-	
-	
 	my $comand;
-	#my $insertcomand;
-	
 	my $timespec;
-	#my $inserttimespec;	
 	my $flag;
 	my $trigtime;
-	
-	#my $periodic;
-	
+
 	# suche at
 	my @found_devices = devspec2array("TYPE=at");
 	for (@found_devices) 
 		{
 		$athash  = $defs{$_};
 		$insert = $athash->{DEF};
-		
 	    $flag= substr($insert,0,1);
-		
-		
-		
+
 		if ($flag ne "+")
 		{
 		next if $athash->{PERIODIC} eq 'no';
 		next if $athash->{RELATIVE} eq 'yes';
 		}
-		 #my $test = getAllSets($_); 
 		$at .="'".$_."',";
-		
-		
-		
-		
 		$trigtime .="'".$athash->{TRIGGERTIME}."',";
-		
-	
 		$atdef .="'".$insert."',";
-		
-		
-		#$insertcomand = $athash->{COMMAND};
 		$comand .="'".$athash->{COMMAND}."',";
-		
-		#$inserttimespec = $athash->{TIMESPEC};
 		$timespec .="'".$athash->{TIMESPEC}."',";
-		
-		
-		
 		}
 	chop $at;	
 	chop $atdef;
@@ -4043,49 +4024,53 @@ sub MSwitch_fhemwebconf($$$$) {
 	$comand = "[".$comand."]";
 	$timespec = "[".$timespec."]";
 	$trigtime = "[".$trigtime."]";
+
+# suche notify
+
+	my $nothash;
+	my $notinsert;
+	my $notify;
+	my $notifydef;
 	
+	my @found_devices = devspec2array("TYPE=notify");
+	for (@found_devices) 
+		{
+		$nothash  = $defs{$_};
+		$notinsert = $nothash->{DEF};
+		$notifydef .="'".$notinsert."',";
+		$notify .="'".$_."',";
+		}
+	chop $notifydef;
+	chop $notify;
+
+	$notifydef = "[".$notifydef."]";
+	$notify= "[".$notify."]";
+	
+
 	my $return="
 
 	<div id='mode'>Konfigurationsmodus:&nbsp;
 	<input name=\"conf\" id=\"wizard\" type=\"button\" value=\"Wizard\" onclick=\"javascript: conf('importWIZARD',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"config\" type=\"button\" value=\"import MSwitch_Config\" onclick=\"javascript: conf('importCONFIG',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"importat\" type=\"button\" value=\"import AT\" onclick=\"javascript: conf('importAT',id)\"\">&nbsp;
-	<input disabled=\"disabled\" name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
+	<input name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
 	<input disabled=\"disabled\" name=\"conf\" id=\"importpreconf\" type=\"button\" value=\"import PRECONF\" onclick=\"javascript: conf('importPRECONF',id)\"\">
 	</div>
-	<br>&nbsp;<br>
-	
-	
+	<br><br>
 	<table border='0'>
 	<tr>
-	
 	<td id='help'>Hilfetext</td>
-	<td id='help'>&nbsp;</td>
+	<td id='help'></td>
 	<td>
-	<div>Funktion nicht verfügbar - comming soon</div>
-	<div>Modus kann derzeit nur durch Device-Reset verlassen werden.</div>
-	<div id ='version'>Wizzard Version</div>
-	<div id ='tf'>testfenster</div>
+	<div id ='version'></div>
+	<div id ='tf'></div>
 	</td>
-	
 	</tr></table>
-	
-
 	&nbsp;<br>
-	
-	
-	
-	
-	
-	
-	
-	
 	<div id='importWIZARD'>
 	<table border = '0'>
 	<tr>
 	<td style=\"text-align: left; vertical-align: top;\">
-	
-	
 	<table border = '0'>
 	<tr>
 	<td colspan='2'>Teil Trigger
@@ -4098,18 +4083,13 @@ sub MSwitch_fhemwebconf($$$$) {
 	<tr><td><div id='4step1' ></div></td><td><div id='4step2' ></div></td></tr>
 	<tr><td><div id='5step1' ></div></td><td><div id='5step2' ></div></td></tr>
 	</table>
-	
 	<div>&nbsp;</div>
-	
 	<div id='part2'>&nbsp;</div>
-	
-
 	<div id='monitor' >
 	<br>&nbsp;<br>
 	Eventmonitor:<br>
 	<select style=\"width: 50em;\" size=\"15\" id =\"eventcontrol\" multiple=\"multiple\"></select>
 	</div>
-	
 	</td>
 	<td>
 	&nbsp;
@@ -4117,39 +4097,28 @@ sub MSwitch_fhemwebconf($$$$) {
 	<td style=\"text-align: center; vertical-align: middle;\">
 	<input name=\"makeconf\" id=\"makeconf\" type=\"button\" disabled=\"disabled\" value=\"make new config\" onclick=\"javascript: makeconfig()\"\">&nbsp;
 	<input name=\"saveconf\" id=\"saveconf\" type=\"button\" disabled=\"disabled\" value=\"save new config\" onclick=\"javascript: saveconfig('rawconfig')\"\">
-
 	<br>&nbsp;<br>
 	<textarea disabled id='rawconfig' style='width: 450px; height: 600px'></textarea>
 	</td>
 	</tr>
 	</table>
-	
-	
-	
 	</div>
-	
-	
 	<div id='importAT'>@found_devices</div>
 	<div id='importNOTIFY'>import notify</div>
 	<div id='importCONFIG'>import config</div>
 	<div id='importPRECONF'>import preconf</div>
 	";
 
-	# javascript: document.getElementById(\"e1\").value=\'time\'; disabled=\"disabled\"
 	my  $j1 = "
-	
 	<script type=\"text/javascript\">
 	// VARS
 	// firstconfig
 	var logging ='off';
 	var devices = ".$devstring.";
-	
 	var at = ".$at.";
 	var atdef = ".$atdef.";
 	var atcmd = ".$comand.";
-	
 	var atspec = ".$timespec.";
-	
 	var triggertime = ".$trigtime.";
 	var cmds = ".$cmds.";
 	var i;
@@ -4157,8 +4126,8 @@ sub MSwitch_fhemwebconf($$$$) {
 	var o = new Object();
 	var devicename= '".$Name."';
 	var mVersion= '".$version."';
-
-// script nachladen
+	var notify = ".$notify.";
+	var notifydef = ".$notifydef.";
 
 	\$(document).ready(function() {
     \$(window).load(function() {
@@ -4168,12 +4137,8 @@ sub MSwitch_fhemwebconf($$$$) {
 	});
 	});
 	</script>";
-	
-
-	
 $return.="<br>&nbsp;<br>".$j1;
 return $return;
-
 }
 ############################
 sub MSwitch_fhemwebFn($$$$) {
@@ -4185,9 +4150,7 @@ sub MSwitch_fhemwebFn($$$$) {
     my $jsvarset = '';
     my $j1       = '';
     my $border   = 0;
-
 	my $ver = ReadingsVal( $Name, '.V_Check', '' );
-
 	my $expertmode = AttrVal( $Name, 'MSwitch_Expert', '0' );
 	my $noshow = 0;
 	my @hidecmds = split (/,/,AttrVal( $Name, 'MSwitch_Hidecmds', 'undef' )) ;
@@ -11687,7 +11650,7 @@ sub MSwitch_saveconf($$) {
         readingsSingleUpdate( $hash, ".change_info", $info, 0 );
     }
 delete( $hash->{helper}{config} );
-
+ fhem("deletereading $name EVENTCONF");
 # timrer berechnen
 MSwitch_Createtimer($hash);
 
@@ -11921,7 +11884,8 @@ sub MSwitch_EventBulk($$$$) {
         $hash->{eventsave} = "saved";
         readingsBeginUpdate($hash);
 
-        readingsBulkUpdate( $hash, "EVENT", $event, $showevents )
+       # readingsBulkUpdate( $hash, "EVENT", $event, $showevents )
+	    readingsBulkUpdate( $hash, "EVENT", $event, 1 )
           if $event ne '';
         readingsBulkUpdate( $hash, "EVTFULL", $evtfull, $showevents )
           if $evtfull ne '';
