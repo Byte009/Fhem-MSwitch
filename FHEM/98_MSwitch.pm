@@ -57,6 +57,7 @@ use strict;
 use warnings;
 use POSIX;
 use SetExtensions;
+use LWP::Simple;
 
 # Version #######################################################
 
@@ -83,7 +84,9 @@ use SetExtensions;
 # if ( $preconf && $preconf ne "" ) {
     # $preconf = "MSwitch_preconf:" . $preconf;
 # }
-  
+
+
+my $preconffile="https://raw.githubusercontent.com/Byte009/MSwitch_Addons/master/MSwitch_Preconf.conf";
 my $autoupdate = 'off';    #off/on
 my $version    = '3.02 alpha';
 my $vupdate    = 'V2.00'; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
@@ -354,7 +357,7 @@ sub MSwitch_summary($) {
 	
 	if ($hash->{helper}{mode} eq "absorb")
 	{
-	return "Device ist im Konfigurationsmodus ! Die Funktion Wizard ist in dieser Version noch nicht Verfügbar - speichern nicht möglich";
+	return "Device ist im Konfigurationsmodus.";
 	}
 	
 	
@@ -3968,6 +3971,37 @@ sub MSwitch_fhemwebconf($$$$) {
 	
 	delete( $hash->{NOTIFYDEV} );
 	readingsSingleUpdate( $hash, "EVENTCONF","start", 1 );
+	
+
+	
+	
+	
+	my $preconf = '';
+	#my $preconf = get( 'https://raw.githubusercontent.com/Byte009/MSwitch_Addons/master/FHEM/MSwitch/MSw_Preconf.conf' );
+	
+	my $preconf = get( $preconffile );
+	
+	
+	#$preconf =~ s/\n/\\\n/g;
+	
+	
+	#$preconf =~ s/\n/#[NL]\\\n/g;
+	$preconf =~ s/\n/#[NEWL]\\\n/g;
+	
+	$preconf =~ s/\r//g;
+	#$preconf =~ s/'/#[HKT]/g;
+	
+	$preconf =~ s/'/\\\'/g;
+	
+	#$preconf =~ s/[/#KLO/g;
+	#$preconf =~ s/]/#KLC/g;
+	
+	
+	
+	
+	
+	
+	
 	# devicelist to objeckt
 	my $devstring ;
 	my $cmds;
@@ -4054,13 +4088,13 @@ sub MSwitch_fhemwebconf($$$$) {
 	<input name=\"conf\" id=\"config\" type=\"button\" value=\"import MSwitch_Config\" onclick=\"javascript: conf('importCONFIG',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"importat\" type=\"button\" value=\"import AT\" onclick=\"javascript: conf('importAT',id)\"\">&nbsp;
 	<input name=\"conf\" id=\"importnotify\" type=\"button\" value=\"import NOTIFY\" onclick=\"javascript: conf('importNOTIFY',id)\"\">
-	<input disabled=\"disabled\" name=\"conf\" id=\"importpreconf\" type=\"button\" value=\"import PRECONF\" onclick=\"javascript: conf('importPRECONF',id)\"\">
+	<input name=\"conf\" id=\"importpreconf\" type=\"button\" value=\"import PRECONF\" onclick=\"javascript: conf('importPRECONF',id)\"\">
 	</div>
 	<br><br>
 	<table border='0'>
 	<tr>
 	<td id='help'>Hilfetext</td>
-	<td id='help'></td>
+	<td id='help1'></td>
 	<td>
 	<div id ='version'></div>
 	<div id ='tf'></div>
@@ -4112,6 +4146,12 @@ sub MSwitch_fhemwebconf($$$$) {
 	my  $j1 = "
 	<script type=\"text/javascript\">
 	// VARS
+	
+	//preconf
+	var preconf ='".$preconf."';
+	
+	
+	
 	// firstconfig
 	var logging ='off';
 	var devices = ".$devstring.";
@@ -4132,6 +4172,10 @@ sub MSwitch_fhemwebconf($$$$) {
 	\$(document).ready(function() {
     \$(window).load(function() {
 	name = '$Name';
+	
+	
+	// loadScript(\"pgm2/MSwitch_Preconf.js?v=".$fileend."\");
+	
     loadScript(\"pgm2/MSwitch_Wizard.js?v=".$fileend."\", function(){start1(name)});
 	return;
 	});
@@ -6114,13 +6158,13 @@ $detailhtml .= $modify;
         my $count  = 0;
         foreach my $changes (@change) {
             my @set = split( "#", $changes );
-            $out .= "<tr class='even'>";
-            $out .= "<td>";
+            #$out .= "<tr class='even'>";
+           # $out .= "<td>";
             $out .= $set[1];
-            $out .= "</td>";
-            $out .= "<td>";
-            $out .= "</td>";
-            $out .= "<td>";
+            #$out .= "</td>";
+            #$out .= "<td>";
+            #$out .= "</td>";
+            #$out .= "<td>";
             $out .=
                 "<input type='' id='cdorg"
               . $count
@@ -6140,19 +6184,30 @@ $detailhtml .= $modify;
                   . $count
                   . "' name='' size='20'  value =''>";
             }
-            $out .= "</td>";
-            $out .= "</tr>";
+            #$out .= "</td>";
+            #$out .= "</tr>";
             $count++;
         }
 #################################################
         $ret .= "
-		<table border='$border' class='block wide' id=''>
+		<table border='0' class='block wide' id=''>
 		<tr class='even'>
-		<td colspan ='3'><center>&nbsp;<br>$HELPNEEDED<br>&nbsp;";
+		<td>
+		<center>
+		<br>$HELPNEEDED<br>
+		</td></tr>
+		<tr class='even'>
+		<td>";
         $ret .= ReadingsVal( $Name, '.change_info', '' );
-        $ret .= "</td></tr>" . $out . "
+        $ret .= "</td></tr>
+
 		<tr class='even'>
-		<td colspan ='3'><center>&nbsp;<br>
+		<td><center>"
+		. $out . 
+		"</td></tr>
+		
+		<tr class='even'>
+		<td><center>&nbsp;<br>
 		<input type=\"button\" id=\"\"
 		value=\"save changes\" onClick=\"changedevices();\"> 
 		<br>&nbsp;<br>
