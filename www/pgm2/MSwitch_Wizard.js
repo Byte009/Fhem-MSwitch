@@ -8,6 +8,14 @@
 	var offtime =1000;
 	var sets = new Object();
 	
+	
+	var preconfparts = new Array;
+	var preconfpartsname = new Array;
+	var preconfpartshelp = new Array;
+	
+	
+	
+	
 	var configstart = [
 	'#V Version',
 	'#VS V2.00',
@@ -321,6 +329,15 @@ function conf(typ,but){
 	// neustart wizard
 	startimportnotify();
 	}
+	
+	if (but == 'importpreconf'){
+	// neustart wizard
+	//alert('aufruf');
+	startimportpreconf();
+	}
+	
+	
+	
 	return;
 }	
 	
@@ -1118,4 +1135,200 @@ function savenot(){
 	fillconfig('rawconfig2');
 	saveconfig('rawconfig2');
 	return;
+}
+
+
+
+
+
+function startimportpreconf(){
+	
+	
+	
+	
+	
+		//preconf = preconf.replace(/#\[NL\]/gi,"\n");
+	
+	//var preconfparts = new Array;
+	//var preconfpartsname = new Array;
+	//var preconfpartshelp = new Array;
+	
+	
+	
+	preconfparts = preconf.split("#-NEXT-");
+	
+	
+	var anzahl = preconfparts.length;
+	
+	//alert(anzahl);
+
+	
+	// #NAME Fader
+	
+	var count =0;
+	//var i = 0;
+	for (i=count; i<anzahl; i++)
+		{
+		treffer = preconfparts[i].match(/#NAME.(.*?)(#\[NEWL\])/);
+		help = preconfparts[i].match(/#HELP.(.*?)(#\[NEWL\])/);
+		
+		
+		
+		
+		preconfparts[i] = (preconfparts[i].split(treffer[0]).join(''));
+		preconfparts[i] = (preconfparts[i].split(help[0]).join(''));
+		preconfparts[i] = preconfparts[i].replace(/#\[NEWL\]/gi,"\n");
+		preconfpartsname.push(treffer[1]);
+		preconfpartshelp.push(help[1]); 
+		
+		//alert(help);
+		}
+	
+	
+	
+	
+	
+	
+	script = 'setpreconf';
+	ret = '<select id =\"\" name=\"\" onchange=\"javascript: '+script+'(this.value)\">';
+	ret +='<option value=\"empty\">bitte Device wählen</option>';
+	count =0;
+	
+	for (i=count; i<anzahl; i++)
+		{
+
+			ret +='<option value='+i+'>'+preconfpartsname[i]+'</option>';
+			
+		}
+		
+	ret +='</select>';
+	
+	
+	
+	
+	
+	
+	
+	//alert('ok');
+	var html='';
+	html+='<table width=\"100%\" border=\"0\">';
+	html+='<tr>';
+	html+='<td width=\"100%\" style=\"vertical-align: top;\">';
+	
+	
+	html+='';
+	
+	html+='<table width = \"100%\" border=\"0\">';
+	
+
+	
+	
+	
+	
+	html+='<tr>';
+	html+='<td id=\"infotext\" style=\"text-align: center; vertical-align: middle;\">';
+	html+='Beschreibung';
+	html+='</td>';
+	html+='</tr>';
+	
+	html+='<tr>';
+	html+='<td height=300 id=\"infotext1\" style=\"text-align: center;vertical-align: top;\">';
+	html+='';
+	html+='</td>';
+	html+='</tr>';
+	
+	
+	html+='<tr>';
+	html+='<td style=\"text-align: center; vertical-align: middle;\">';
+	html+=ret;
+	html+='</td>';
+	html+='</tr>';
+	
+	
+	html+='<tr>';
+	html+='<td id=\"infotext2\" style=\"text-align: center; vertical-align: middle;\">';
+	html+='<input disabled name=\"\" id=\"prec\" type=\"button\" value=\"import\" onclick=\"javascript: savepreconf()\"\">';
+	html+='</td>';
+	html+='</tr>';
+	
+	
+	
+	
+	html+='</table>';
+
+	
+	
+	
+	html+='</td>';
+	html+='<td>';
+	html+='<textarea disabled id=\"rawconfig4\" style=\"width: 400px; height: 400px\"></textarea>';
+	html+='</td>';
+	
+
+	
+	
+	html+='</tr>';
+	html+='</table>';
+	
+	
+	
+	document.getElementById('help').innerHTML = 'Hier können vorkonfigurierte Mswitch-Devices importiert werden';
+	document.getElementById('importPRECONF').innerHTML = html;
+	
+	
+	//document.getElementById('sat').style.backgroundColor='#ff0000';
+	document.getElementById('prec').style.backgroundColor='#ff0000';
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	//
+	
+	 // document.getElementById('rawconfig4').innerHTML = preconfpartsname;
+	
+	
+	//fillconfig('rawconfig4');
+	
+	
+	
+	
+	return;
+	
+	
+}
+
+
+function setpreconf(name){
+	
+	
+	if (name == "empty"){
+		document.getElementById('rawconfig4').innerHTML = "";
+		
+		document.getElementById('prec').disabled = true;
+		document.getElementById('prec').style.backgroundColor='#ff0000';
+		return;
+		
+	}
+	document.getElementById('rawconfig4').innerHTML = preconfparts[name];
+	
+	
+	document.getElementById('infotext1').innerHTML = preconfpartshelp[name];
+	document.getElementById('prec').disabled = false;
+	document.getElementById('prec').style.backgroundColor='';
+	
+	
+	//
+}
+
+function savepreconf(name){
+	saveconfig('rawconfig4');
+	return;
+	
 }
