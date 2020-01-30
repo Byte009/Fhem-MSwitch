@@ -343,9 +343,6 @@ function conf(typ,but){
 	
 function start1(name){
 	
-	
-	
-	
 	    // this code will run after all other $(document).ready() scripts
         // have completely finished, AND all page elements are fully loaded.
 		// alarm();
@@ -360,12 +357,40 @@ function start1(name){
 		r3 = $('<a href=\"javascript: reset()\">Reset this device ('+name+')</a>');
 		$(r3).appendTo('[class=\"detLink showDSI\"]');
 		
-// fülle configfenster
+		
+		
+		
+
+		
+		
+		// fülle configfenster
 		fillconfig('rawconfig');
 		startwizardtrigger();
+		
+
+
+		
+setTimeout(function() {
+	document.getElementById('wizard').value+=' N/A';
+	//document.getElementById('config').value+=' N/A';
+	//document.getElementById('importat').value+=' N/A';
+	document.getElementById('importnotify').value+=' N/A';
+
+  	document.getElementById('wizard').disabled = true;
+	//document.getElementById('config').disabled = true;
+	//document.getElementById('importat').disabled = true;
+	document.getElementById('importnotify').disabled = true;
+	//document.getElementById('importpreconf').disabled = true;
+  conf('importPRECONF','importpreconf');
+}, 50);
+
+		
 }
 
 function startwizardtrigger(){	
+	
+	
+
 	
 	document.getElementById('makeconf').style.backgroundColor='#ff0000';
 	document.getElementById('saveconf').style.backgroundColor='#ff0000';
@@ -447,6 +472,10 @@ document.getElementById('showall').disabled = true;
 		line ='<input id=\"5\" type=\"text\" value=\"\" >';
 		document.getElementById('5step2').innerHTML = line;
 		document.getElementById('5step2').style.display='none';
+
+
+
+
 
 	return ;
 
@@ -894,18 +923,17 @@ function selectcmdoptions(inhalt){
 
 
 function startconfig(){
-	
 	var html='<table><tr><td style=\"text-align: center; vertical-align: middle;\">';
 	html+='<textarea id=\"rawconfig3\" style=\"width: 950px; height: 600px\"></textarea>';
 	html+='</td>';
 	html+='</tr>';
 	html+='<tr><td style=\"text-align: center; vertical-align: middle;\">';
-	html+='<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"save new config\" onclick=\"javascript: saveconfig(\'rawconfig3\')\"\">';
+	html+='<input name=\"saveconf\" id=\"saveconf\" type=\"button\" value=\"Konfiguration speichern\" onclick=\"javascript: saveconfig(\'rawconfig3\')\"\">';
 	html+='</td>';
 	html+='</tr>';
 	html+='</table>';
-	
 	document.getElementById('importCONFIG').innerHTML = html;
+	document.getElementById('help').innerHTML = 'Hier können MSwitch_Konfigurationsdateien eingespielt werden. Dieses sollte nur von erfahrenen Usern genutzt werden. Es findet keine Prüfung auf Fehler statt und fehlerhafte Dateien können Fhem zum Absturz bringen.<br>Die vorgegebene Datei entspricht einem unkonfigurierten MSwitch';
 	fillconfig('rawconfig3');
 	return;
 }
@@ -933,8 +961,9 @@ function startimportat(){
 	html+='<tr><td colspan=\"3\">';
 	html+='';
 	html+='</td></tr>';
-	html+='<tr><td style=\"\">';
+	html+='<tr><td style=\"text-align: center;\">';
 	html+=ret;
+	html+='<br><br><input disabled name=\"\" id=\"sat\" type=\"button\" value=\"importiere dieses AT\" onclick=\"javascript: saveat()\"\">';
 	html+='</td>';
 	html+='<td>';
 	html+='Definition:<br>';
@@ -952,7 +981,7 @@ function startimportat(){
 	html+='</td>';
 	html+='</tr>';
 	html+='<tr><td colspan=\"3\" style=\"text-align: center; vertical-align: middle;\">';
-	html+='<br><input disabled name=\"\" id=\"sat\" type=\"button\" value=\"import this at\" onclick=\"javascript: saveat()\"\">';
+	//html+='<br><input disabled name=\"\" id=\"sat\" type=\"button\" value=\"importiere dieses AT\" onclick=\"javascript: saveat()\"\">';
 	html+='</td>';
 	html+='</tr>';
 	html+='</table>';
@@ -968,7 +997,7 @@ function startimportat(){
 		
 	
 	
-	document.getElementById('help').innerHTML = 'Es können nur periodisch wiederkehrende ATs importiert werden.<br>MSwitch berücksichtigt keine Sekundenangaben.<br>';
+	document.getElementById('help').innerHTML = 'Es können nur periodisch wiederkehrende ATs importiert werden und nur diese werden zur Auswahl angeboten. Mswitch ist für einmalige Ats ungeeignet. Bei importiertem At berücksichtigt MSwitch keine Sekundenangaben.<br>Es ist darauf zu achten , das nach dem Import sowohl das AT, als auch das MSwitch aktiv sind und eines der beiden deaktiviert werden sollte.';
 	document.getElementById('importAT').innerHTML = html;
 	document.getElementById('sat').style.backgroundColor='#ff0000';
 	fillconfig('rawconfig1');
@@ -1137,97 +1166,53 @@ function savenot(){
 	return;
 }
 
-
-
-
-
 function startimportpreconf(){
 	
-	
-	
-	
-	
-		//preconf = preconf.replace(/#\[NL\]/gi,"\n");
-	
+
+	//preconf = preconf.replace(/#\[NL\]/gi,"\n");
 	//var preconfparts = new Array;
 	//var preconfpartsname = new Array;
 	//var preconfpartshelp = new Array;
-	
-	
-	
 	preconfparts = preconf.split("#-NEXT-");
-	
-	
 	var anzahl = preconfparts.length;
-	
-	//alert(anzahl);
-
-	
-	// #NAME Fader
-	
 	var count =0;
-	//var i = 0;
 	for (i=count; i<anzahl; i++)
 		{
 		treffer = preconfparts[i].match(/#NAME.(.*?)(#\[NEWL\])/);
 		help = preconfparts[i].match(/#HELP.(.*?)(#\[NEWL\])/);
-		
-		
-		
-		
 		preconfparts[i] = (preconfparts[i].split(treffer[0]).join(''));
 		preconfparts[i] = (preconfparts[i].split(help[0]).join(''));
 		preconfparts[i] = preconfparts[i].replace(/#\[NEWL\]/gi,"\n");
 		preconfpartsname.push(treffer[1]);
 		preconfpartshelp.push(help[1]); 
-		
-		//alert(help);
 		}
-	
-	
-	
-	
-	
-	
 	script = 'setpreconf';
 	ret = '<select id =\"\" name=\"\" onchange=\"javascript: '+script+'(this.value)\">';
 	ret +='<option value=\"empty\">bitte Device wählen</option>';
 	count =0;
-	
 	for (i=count; i<anzahl; i++)
 		{
-
 			ret +='<option value='+i+'>'+preconfpartsname[i]+'</option>';
-			
 		}
-		
 	ret +='</select>';
 	
-	
-	
-	
-	
-	
-	
-	//alert('ok');
 	var html='';
 	html+='<table width=\"100%\" border=\"0\">';
 	html+='<tr>';
 	html+='<td width=\"100%\" style=\"vertical-align: top;\">';
-	
-	
 	html+='';
-	
 	html+='<table width = \"100%\" border=\"0\">';
 	
-
-	
-	
-	
+	html+='<tr>';
+	html+='<td style=\"text-align: center; vertical-align: middle;\">';
+	html+=ret;
+	html+='<br><br><input disabled name=\"\" id=\"prec\" type=\"button\" value=\"importiere dieses MSwitch\" onclick=\"javascript: savepreconf()\"\">';
+	html+='</td>';
+	html+='</tr>';
 	
 	html+='<tr>';
 	html+='<td id=\"infotext\" style=\"text-align: center; vertical-align: middle;\">';
-	html+='Beschreibung';
+	html+='&nbsp;';
 	html+='</td>';
 	html+='</tr>';
 	
@@ -1237,98 +1222,43 @@ function startimportpreconf(){
 	html+='</td>';
 	html+='</tr>';
 	
-	
-	html+='<tr>';
-	html+='<td style=\"text-align: center; vertical-align: middle;\">';
-	html+=ret;
-	html+='</td>';
-	html+='</tr>';
-	
-	
 	html+='<tr>';
 	html+='<td id=\"infotext2\" style=\"text-align: center; vertical-align: middle;\">';
-	html+='<input disabled name=\"\" id=\"prec\" type=\"button\" value=\"import\" onclick=\"javascript: savepreconf()\"\">';
+	//html+='<input disabled name=\"\" id=\"prec\" type=\"button\" value=\"importiere dieses MSwitch\" onclick=\"javascript: savepreconf()\"\">';
 	html+='</td>';
 	html+='</tr>';
-	
-	
-	
-	
+
 	html+='</table>';
 
-	
-	
-	
 	html+='</td>';
 	html+='<td>';
 	html+='<textarea disabled id=\"rawconfig4\" style=\"width: 400px; height: 400px\"></textarea>';
 	html+='</td>';
 	
-
-	
-	
 	html+='</tr>';
 	html+='</table>';
 	
-	
-	
-	document.getElementById('help').innerHTML = 'Hier können vorkonfigurierte Mswitch-Devices importiert werden';
+	document.getElementById('help').innerHTML = 'Hier können vorkonfigurierte Mswitch-Devices importiert werden. Bei diesen müssen in der Regel keine weiteren Einstellungen mehr vorgenommen werden. Falls doch Änderungen notwendig sind wird im Device darauf hingewiesen.';
 	document.getElementById('importPRECONF').innerHTML = html;
-	
-	
-	//document.getElementById('sat').style.backgroundColor='#ff0000';
 	document.getElementById('prec').style.backgroundColor='#ff0000';
-	
-	
-	
-	
-	
-	
-	
-	
-
-	
-	
-	//
-	
-	 // document.getElementById('rawconfig4').innerHTML = preconfpartsname;
-	
-	
-	//fillconfig('rawconfig4');
-	
-	
-	
-	
 	return;
-	
-	
 }
 
-
 function setpreconf(name){
-	
-	
 	if (name == "empty"){
 		document.getElementById('rawconfig4').innerHTML = "";
 		
 		document.getElementById('prec').disabled = true;
 		document.getElementById('prec').style.backgroundColor='#ff0000';
 		return;
-		
 	}
 	document.getElementById('rawconfig4').innerHTML = preconfparts[name];
-	
-	
 	document.getElementById('infotext1').innerHTML = preconfpartshelp[name];
 	document.getElementById('prec').disabled = false;
 	document.getElementById('prec').style.backgroundColor='';
-	
-	
-	//
 }
 
 function savepreconf(name){
 	saveconfig('rawconfig4');
 	return;
-	
 }
