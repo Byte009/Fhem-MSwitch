@@ -1,2 +1,5 @@
-V3.0 MSwitch.pm
-V1.0 MSwitch_Wizard.js
+In den kommenden Tage werde ich auf die Modulversion 3.1 Umstellen.
+Hier hat es massive Änderungen im Programmablauf geben, was leider zur folge hat ,
+das das vorkonfigurierte Device Slowdimmer geändert werden muss. Entsprechende notwendige Änderungen 
+werde ich mit der Umstellung bereitstellen
+
