@@ -3,3 +3,7 @@ Hier hat es massive Änderungen im Programmablauf geben, was leider zur folge ha
 das das vorkonfigurierte Device Slowdimmer geändert werden muss. Entsprechende notwendige Änderungen 
 werde ich mit der Umstellung bereitstellen
 
+Comandref wurde komplett entfernt - Hilfe über entsprechendes Attribut
+
+Weiterhin erfolgt kein Support mehr ueber das Fhem-Forum. Zukünftig werde ich individuellen Support ueber Whatsapp und Email 
+leisten - mehr dazu ebenfalls bei Umstellung auf 3.1
