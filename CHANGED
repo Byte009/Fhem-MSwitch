@@ -1,7 +1,6 @@
-In den kommenden Tage werde ich auf die Modulversion 3.1 Umstellen.
-Hier hat es massive Änderungen im Programmablauf geben, was leider zur folge hat ,
-das das vorkonfigurierte Device Slowdimmer geändert werden muss. Entsprechende notwendige Änderungen 
-werde ich mit der Umstellung bereitstellen
-Comandref wurde komplett entfernt - Hilfe über entsprechendes Attribut
-Weiterhin erfolgt kein Support mehr ueber das Fhem-Forum. Zukünftig werde ich individuellen Support ueber Whatsapp und Email 
-leisten - mehr dazu ebenfalls bei Umstellung auf 3.1
+Version: V3.02 - letzte öffentliche Version des Moduls.
+In dieser Version erfolgen nur noch Korrekturen gravierender Fehler.
+#####################################
+Weiterentwicklungen werde ich nicht mehr öffentlich zugänglich machen, sondern nur noch über ein privates Repository.
+Verfügbare Version: V3.1
+#####################################
