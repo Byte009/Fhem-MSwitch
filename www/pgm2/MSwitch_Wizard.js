@@ -119,10 +119,9 @@ function eventmonitorstart(){
 	var newselect = $('<option value="Event wählen">Event wählen:</option>');
 	$(newselect).appendTo('#6step');
 	observer.observe(target, config);
-	
 	return;
 }
-
+ 
 function closeall(){
 	
 		logging ='off';
