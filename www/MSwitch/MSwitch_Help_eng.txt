@@ -182,7 +182,7 @@ Available variables and expressions:
 - $ SELF
 
 $ EVENT variable:
-The variable EVENT contains the trigger which triggers, i.e. a reaction can take place in direct dependence on the trigger which triggers.
+The variable EVENT contains the trigger which triggers, i.e. there can be a reaction directly dependent on the trigger which triggers.
  - [$ EVENT] eq "state: on"
 would only execute the command branch if the trigger was "state: on".
 
@@ -248,7 +248,7 @@ Restricted to a certain time (the device is only triggered in the specified peri
  - [19: 10-23: 00]
 
 Restriction depending on the content of a reading (Devicec trigger only occurs if the condition is met)
-Attention ! When querying readings for strings (on, off, etc.), use "=" "eq" instead of "=" and the string must be set to ""!
+Watch out ! When querying readings for strings (on, off, etc.), use "=" "eq" instead of "=" and the string must be set to ""!
  - [Device name: Reading] = /> / <X or [Device name: Reading] eq "x"
 
 Restriction depending on the content of a reading (occurrence of a certain text, for example) (Devicec is only triggered if the condition is met)
@@ -579,7 +579,7 @@ If the attribute is not set, the specification of '[random]' always results in '
 
 <strong> MSwitch_Random_Number </strong>
 Format: X
-When activating this attribute with any integer, the device creates the two readings 'RandomNr' and 'RandomNr1' and with values ??between zero and n.
+When activating this attribute with any integer, the device creates the two readings 'RandomNr' and 'RandomNr1' and with values ​​between zero and n.
 RandomNr is regenerated each time a command is executed, even for different devices in one run.
 RandomNr1 remains constant after initialization.
 If this reading is accessed in a condition with, for example, '[$ NAME: ReadingNr1] = 1', the command is only executed if ReadingNr1 = 1.
@@ -625,8 +625,7 @@ Help Get
 The offered Get commands may depend on the basic configuration,
 dH not all commands are offered in every mode.
 <hr>
-<strong> get DEVICE active_timer show, delete </strong>
-
+<strong>get DEVICE active_timer show, delete </strong>
  - Show
 Shows all pending (set) timers of the device that result from time-dependent or delayed switching commands.
 
@@ -634,20 +633,19 @@ Shows all pending (set) timers of the device that result from time-dependent or 
 Deletes all pending (set) timers of the device that result from time-dependent or delayed switching commands.
 Switching commands based on purely time-dependent information are recalculated and set.
 
-<strong> get DEVICE get_config </strong>
+<strong>get DEVICE config </strong>
 
 Displays the configuration file of the MSwitch device; this can be edited in the window.
 This should only be done by experienced users!
 Normally, the device should only be configured via the web interface and incorrect configuration can lead to a FHEM crash. 
 
 
-<strong> get DEVICE get_support_info </strong>
+<strong>get DEVICE support_info </strong>
 
 Opens a window with a formatted view of all device settings.
 This should always be posted with support inquiries. 
 
-<strong> get restore_MSwitch_data this_device | all_devices </strong>
-
+<strong>get DEVICE restore_MSwitch_Data this_device | all_devices </strong>
  - this_device
 Restores the device data from the backup file if it is found in the backup file (the name of the device is searched for here).
 
@@ -658,8 +656,8 @@ A notification will be sent after completion.
 The devices are functional after a restore.
 We recommend restarting FHEM .. 
 
-<strong> get DEVICE event log sequence-formatted, timeline, clear </strong>
 
+<strong>get DEVICE event log sequence-formatted, timeline, clear </strong>
  - timeline
 Shows all (historical) received events (depending on the corresponding attribute setting) in the received order
 
@@ -668,6 +666,8 @@ Shows all incoming events pre-formatted for a sequence query
 
  - clear
 Deletes the list of incoming events
+
+<strong> </strong>
 <hr>
 ->
 
@@ -678,59 +678,70 @@ Help set
 Set commands offered may depend on the basic configuration,
 dH not all commands are offered in every mode.
 <hr>
-<strong> set DEVICE wizard </strong>
+<strong>set DEVICE wizard </strong>
 Switches the device to wizard mode.
 In this mode, at's, notifys and preconfigured devices can be imported.
 Devices can also be created using a wizard.
 This set is only available for newly created and unchanged devices. 
 
-<strong> set DEVICE reset_device </strong>
+<strong>set DEVICE reset_device </strong>
 Deletes all data of an MSwitch device and puts it in the state as if it had been created.
 Warning: this action cannot be undone.
 
-<strong> set DEVICE reload_timer </strong>
+<strong>set DEVICE reload_timer </strong>
 All pending timers (from time-controlled switching) are deleted and then recalculated.
 
-<strong> set DEVICE del_delays </strong>
+<strong>set DEVICE del_delays </strong>
 Deletes all pending commands that result from time-delayed switching
 
-<strong> set DEVICE set on | off [parameter] </strong>
-Sets the device to the 'on' or 'off' status. All commands of the 'on / off branches' are executed.
+<strong>set DEVICE on | off [parameter] </strong>
+Sets the device to the 'on' status. All commands of the 'on / off branches' are executed.
 Optionally, a further parameter can be passed to the 'on' and 'off' commands.
 This is stored in the Reading 'Parameter' and can be accessed immediately in 'Freecmds' or 'Conditions'. 
 
-<strong> set DEVICE active </strong>
+<strong>set DEVICE off [parameter] </strong>
+Sets the device to the 'off' status. All commands of the 'on / off branches' are executed.
+Optionally, a further parameter can be passed to the 'on' and 'off' commands.
+This is stored in the Reading 'Parameter' and can be accessed immediately in 'Freecmds' or 'Conditions'. 
+
+
+<strong>set DEVICE active </strong>
 Sets the MSwitch device to the 'active' status. 
 
-<strong> set DEVICE inactive </strong>
+<strong>set DEVICE inactive </strong>
 Sets the device to the 'inactive' status. No more commands are executed.
 This status corresponds to the 'disable' attribute, but is not linked to the red question mark (fhem save).
 
-<strong> set DEVICE set change_renamed oldname newname </strong>
+<strong>set DEVICE change_renamed oldname newname </strong>
 If device names have changed in the executing part (affected devices, conditions, etc.),
 the MSwitch can be adjusted with this command without having to adjust all settings manually.
 
-<strong> set DEVICE exec_cmd1 | set exec_cmd1 ID [ID] </strong>
-Causes the corresponding command branch to be executed immediately.
+<strong>set DEVICE exec_cmd_1 ID [ID] </strong>
+Causes the corresponding command branch 1 to be executed immediately.
 If an ID is specified, only the commands with the corresponding ID are executed. 
 
-<strong> set DEVICE MSwitch_backup </strong>
+<strong>set DEVICE exec_cmd_2 ID [ID] </strong>
+Causes the corresponding command branch 2 to be executed immediately.
+If an ID is specified, only the commands with the corresponding ID are executed. 
+
+<strong>set DEVICE backup_MSwitch </strong>
 Creates a backup file of all MSwitch devices under ./fhem/MSwitch_backup.cfg.
 If necessary, data from this file can be restored (produced) for individual or all MSwitch devices at the same time. 
 
-<strong> set DEVICE set reset_cmd_count: 1 | 2 </strong>
+<strong>set DEVICE reset_cmd_count: 1 | 2 </strong>
 Deletes the corresponding EVT_CMD_COUNT - Reading; corresponds to a reset to '0'.
 
-<strong> set DEVICE set fakeevent [device]: reading: arg </strong>
+<strong>set DEVICE fakeevent [device]: reading: arg </strong>
 Example: fakeevent state: on
 
 The MSwitch device reacts as if the triggering device had actually generated the event instead of the internal "fakes command" without this event.
 
-<strong> set DEVICE del_repeats </strong>
+<strong>set DEVICE del_repeats </strong>
 Deletes all command repetitions that result from command branches and were defined there.
 
-<strong> set DEVICE wait ss </strong>
+<strong>set DEVICE wait ss </strong>
 Causes the Mswitch to respond to no events for the specified period in seconds (ss)
 
+<strong> </strong>
 <hr>
 ->

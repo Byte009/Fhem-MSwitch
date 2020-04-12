@@ -358,7 +358,7 @@ Der im Logeintrag vorhandene Devicename ist Bedingung für die Funktion.
 Befehlszweige mit eine bestimmten ID können im Frontend ausgeblendet werden
 
 <strong>MSwitch_Help:0,1</strong>
-Schaltet die Hilfebuttons im Frontend an oder aus
+Schaltet die Hilfebuttons-/Funktionen im Frontend an oder aus
 
 <strong>MSwitch_Debug:0,1,2,3,4</strong>
 Erweiterte Optionen zur Fehlersuche
@@ -366,7 +366,7 @@ Erweiterte Optionen zur Fehlersuche
 1 - Schaltet Felder zum testen der Conditionstrings an
 2 - Alle ausgehenden Befehle werden nur simuliert und nicht ausgeführt. Der Inhalt der Protokolldatei wird direkt im Device angezeigt
 3 - Es erfolgt eine Protokollierung in einer separaten Datei. Diese wird direkt im Device angezeigt.
-4 - erweitertes Debugfür Entwickler mit wechselnden Funktionen
+4 - erweitertes Debug für Entwickler mit wechselnden Funktionen
 
 <strong>MSwitch_Expert:0,1</strong>
 erweiterter Modus
@@ -563,21 +563,22 @@ Erkennt das Device dieses Suchmuster in den Schaltvorgängen des Devices (Dummy)
 das Reading "SEQUENCE_NUMBER" auf die Nummer der gefundenen Sequenz, wenn es mehrere Suchmuster gibt.
 Beide Readings können in den "Conditions" eines Schaltbefehles abgefragt werden.
 
-<strong>Maximalzeit in Sekunden, um eine Sequenz vollständig auszuführen</strong>
+<strong>MSwitch_Sequenz_time:</strong>
+Maximalzeit in Sekunden, um eine Sequenz vollständig auszuführen.
 Steht in direktem zusammenhank mit MSwitch_Sequenz.
 
 Gibt die Zeit an , in der alle Events einer Sequenz ankommen müssen , um diese Sequenz als erkannt zu setzen.
 werden hier 5 Sekunden angenommen , so müssen alle gesuchten Events zur Sequenzwerkennung in diesem Zeitraum eintreffen
 um die Sequenz als erkannt zu setzen.
 
-<strong>MSwitch_Random_Time</strong>
+<strong>MSwitch_RandomTime</strong>
 Format: HH:MM:SS-HH:MM:SS
 Bei Aktivierung wird vor jedem Ausführen eines verzögerten Befehls (Delay) eine Zufallszeit generiert,
 die im Rahmen der hier angegebenen Zeitspanne liegt. Auf diese Zufallszahl kann in den Delays zugegriffen werden,
 durch die Angabe '[random]' statt einer direkten Zeitangabe.
 Bei nicht gesetztem Attribut ergibt die Angabe von '[random]' immer '00:00:00' 
 
-<strong>MSwitch_Random_Number</strong>
+<strong>MSwitch_RandomNumber</strong>
 Format: X
 Bei Aktivierung dieses Attributes mit einer beliebigen ganzen Zahl, werden vom Device die zwei Readings 'RandomNr' und 'RandomNr1' und mit Werten zwischen null und n angelegt.
 RandomNr wird vor jedem Ausführen eines Befehls, auch für unterschiedliche Geräte in einem Durchgang, neu generiert.
@@ -616,6 +617,8 @@ Version 2
  - status:[TYPE=dummy]
  erzeugt in der Dropdownliste den Eintrag status mit allen ddummys als Auswahloption verfügbar.  
  hier muss zusätzlich das Attribut 'readinglist' mit 'status' belegt werden, andernfalls wird der state mit der Auswahl belegt.
+
+<strong></strong>
 <hr>
 ->
 #################################################################################################
@@ -626,7 +629,6 @@ Angebotene Get-Befehle sind unter Umständen von der Grundkonfiguration abhängi
 d.H nicht in jedem Mode werden alle Befehle angeboten.
 <hr>
 <strong>get DEVICE active_timer show,delete</strong>
-
  - Show
 Zeigt alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen oder verzögerten Schaltbefehlen resultieren.
 
@@ -634,20 +636,19 @@ Zeigt alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen od
 Löscht alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen oder verzögerten Schaltbefehlen resultieren.
 Schaltbefehle basierend auf rein zeitabhängigen Angaben werden neu berechnet und gesetzt.
 
-<strong>get DEVICE get_config</strong>
+<strong>get DEVICE config</strong>
 
 Zeigt die Konfigurationsdatei des MSwitchdevices an; diese kann in dem Fenster editiert werden.
 Das sollte nur von erfahrenen Usern getan werden!
 Im Normalfall sollte das Device nur über die Weboberfläche konfiguriert werden und eine falsche Konfiguration kann hier zu einem FHEM Absturz führen. 
 
 
-<strong>get DEVICE get_support_info</strong>
+<strong>get DEVICE support_info</strong>
 
 Öffnet ein Fenster mit einer formatierten Ansicht aller Einstellungen des Devices.
 Bei Supportanfragen sollte dieses immer mit geposted werden. 
 
-<strong>get restore_MSwitch_data this_device|all_devices</strong>
-
+<strong>get DEVICE restore_MSwitch_Data this_device|all_devices</strong>
  - this_device
 Stellt die Daten des Devices aus der Backupdatei wieder her, sofern diese in der Backupdatei gefunden werden (gesucht wird hier nach dem Namen des Devices).
 
@@ -658,8 +659,8 @@ Nach Beendigung erfolgt eine Benachrichtigung.
 Die Devices sind nach einem Restore funktionsfähig.
 Empfohlen wird ein Neustart von FHEM.. 
 
-<strong>get DEVICE Eventlog sequenzformated,timeline,clear</strong>
 
+<strong>get DEVICE Eventlog sequenzformated,timeline,clear</strong>
  - timeline
 Zeigt alle (historischen) eingegangenen Events (abhängig von enzsprechender Attributeinstellung) in eingegangener Reihenfolge
 
@@ -668,6 +669,8 @@ Zeigt alle eingegangenen Events vorformatiert für eine Sequenzabfrage
 
  - clear
 Löscht die Liste der eingegangenen Events
+
+<strong></strong>
 <hr>
 ->
 
@@ -694,10 +697,16 @@ Alle anstehenden Timer (aus zeitgesteuerter Schaltung) werden gelöscht und im A
 <strong>set DEVICE del_delays</strong>
 Löscht alle anstehenden Befehle, die aus zeitverzögertem Schalten resultieren
 
-<strong>set DEVICE set on|off [parameter]</strong>
-Setzt das Device in den Status 'on' oder 'off'. Alle Befehle der 'on/off-Zweige' werden ausgeführt.
+<strong>set DEVICE on|off [parameter]</strong>
+Setzt das Device in den Status 'on'. Alle Befehle der 'on/off-Zweige' werden ausgeführt.
 Optional kann den Befehlen 'on' und 'off' ein weiterer Parameter mit übergeben werden.
 Dieser wird im Reading 'Parameter' hinterlegt und es kann sofort in 'Freecmds' oder 'Conditions' darauf zugegriffen werden. 
+
+<strong>set DEVICE off [parameter]</strong>
+Setzt das Device in den Status 'off'. Alle Befehle der 'on/off-Zweige' werden ausgeführt.
+Optional kann den Befehlen 'on' und 'off' ein weiterer Parameter mit übergeben werden.
+Dieser wird im Reading 'Parameter' hinterlegt und es kann sofort in 'Freecmds' oder 'Conditions' darauf zugegriffen werden. 
+
 
 <strong>set DEVICE active</strong>
 Setzt das MSwitch-Device in den Status 'active'. 
@@ -706,22 +715,26 @@ Setzt das MSwitch-Device in den Status 'active'.
 Setzt das Device in den Status 'inactive'. Es werden keine Befehle mehr ausgeführt.
 Dieser Status entspricht dem Attribut 'disable', ist aber nicht mit dem roten Fragezeichen (fhem save) verbunden.
 
-<strong>set DEVICE set change_renamed oldname newname</strong>
+<strong>set DEVICE change_renamed oldname newname</strong>
 Sollten sich Devicenamen im ausführenden Teil geändert habe (affected Devices, Conditions, etc.),
 kann das MSwitch mit diesem Befehl angepasst werden, ohne alle Einstellungen manuell anpassen zu müssen.
 
-<strong>set DEVICE exec_cmd1 | set exec_cmd1 ID [ID]</strong>
-Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges.
+<strong>set DEVICE exec_cmd_1 ID [ID]</strong>
+Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges 1.
 Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt. 
 
-<strong>set DEVICE MSwitch_backup</strong>
+<strong>set DEVICE exec_cmd_2 ID [ID]</strong>
+Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges 2.
+Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt. 
+
+<strong>set DEVICE backup_MSwitch</strong>
 Erstellt eine Backup-Datei aller MSwitch Devices unter ./fhem/MSwitch_backup.cfg.
 Daten dieser Datei können im Bedarfsfall für einzelne oder gleichzeitig alle MSwitch Devices wieder zurückgespielt (hergestellt) werden. 
 
-<strong>set DEVICE set reset_cmd_count: 1|2</strong>
+<strong>set DEVICE reset_cmd_count: 1|2</strong>
 Löscht das entsprechende EVT_CMD_COUNT - Reading; entspricht damit einer Rückstellung auf '0'. 
 
-<strong>set DEVICE set fakeevent [device]:reading:arg</strong>
+<strong>set DEVICE fakeevent [device]:reading:arg</strong>
 Beispiel:fakeevent state:on
 
 Das MSwitch Device reagiert so, als wäre statt des internen "fakes-Befehls" ohne dieses Event tatsächlich vom triggernden Gerät generiert worden.
@@ -732,5 +745,6 @@ Löscht ale Befehlswiederholungen , die aus Befehlszweigen resultieren und dort 
 <strong>set DEVICE wait ss</strong>
 Veranlasst das Mswitch für den angegebenen Zeitraum in Sekunden (ss) auf keine Events zu regieren
 
+<strong></strong>
 <hr>
 ->
