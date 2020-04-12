@@ -6,6 +6,7 @@
 	var info = '';
 	var debug ='off';
 	
+	//var innerset = $( "div[cmd='set']" ).html();
 //####################################################################################################
 
 	var globaldetails2 = 'start';
@@ -21,6 +22,92 @@
 	var config = { attributes: true, childList: true, characterData: true };  // logging
 	
 	
+	$(function(){
+				$( "<p style='text-align: left;' name='sethelp'>Hilfe</p>" ).appendTo( "div[cmd='get']" );
+				$("[name=sethelp]").css("display","none");
+				
+				
+				$( "<p style='text-align: left;' name='attrhelp'>Hilfe</p>" ).appendTo( "div[cmd='attr']" );
+				$("[name=attrhelp]").css("display","none");
+				
+	});
+
+
+
+$('#sel_set'+devicename).change(function(){
+	if( HELPMODE =="0"){ return; }
+	var inhalt = document.getElementById("sel_set"+devicename).value;
+	$("[name=attrhelp]").css("display","none");
+	$("[name=sethelp]").css("display","");		
+	var text = HELP;
+	text = text.replace(/#\[LINE\]/gi,"<br>");
+	text = text.replace(/#\[A\]/gi,"'");
+	text = text.replace(/#\[DA\]/gi,"\"");
+	var myRegEx = new RegExp('<strong>set DEVICE '+inhalt+'(.*?)</strong>(.*?)(<strong)');  
+	treffer = text.match(myRegEx);
+	if( treffer == null){
+	out = "dieser Hilfetext ist nicht vorhanden";
+	}else{
+	out = treffer[2];	
+	}
+	$( "[name=sethelp]" ).html(out);
+	return;
+	}); 
+	
+$('#sel_get'+devicename).change(function(){
+	if( HELPMODE =="0"){ return; }
+	var inhalt = document.getElementById("sel_get"+devicename).value;
+	$("[name=attrhelp]").css("display","none");
+	$("[name=sethelp]").css("display","");		
+	var text = HELP;
+	text = text.replace(/#\[LINE\]/gi,"<br>");
+	text = text.replace(/#\[A\]/gi,"'");
+	text = text.replace(/#\[DA\]/gi,"\"");
+	var myRegEx = new RegExp('<strong>get DEVICE '+inhalt+'(.*?)</strong>(.*?)(<strong)');  
+	treffer = text.match(myRegEx);
+	if( treffer == null){
+	out = "dieser Hilfetext ist nicht vorhanden";
+	}else{
+	out = treffer[2];	
+	}
+	$( "[name=sethelp]" ).html(out);
+	return;
+	}); 
+
+
+$('#sel_attr'+devicename).change(function(){
+	if( HELPMODE =="0"){ return; }
+	var inhalt = document.getElementById("sel_attr"+devicename).value;
+	$("[name=sethelp]").css("display","none");
+	$("[name=attrhelp]").css("display","");	
+	
+	var text = HELP;
+	text = text.replace(/#\[LINE\]/gi,"<br>");
+	text = text.replace(/#\[A\]/gi,"'");
+	text = text.replace(/#\[DA\]/gi,"\"");
+	var myRegEx = new RegExp('<strong>'+inhalt+'(.*?)</strong>(.*?)(<strong)');  
+	treffer = text.match(myRegEx);
+	if( treffer == null){
+	out = inhalt+" - dieser Hilfetext ist nicht vorhanden";
+	}else{
+	out = treffer[2];	
+	}
+	$( "[name=attrhelp]" ).html(out);
+	return;
+	}); 
+
+
+
+
+
+
+
+
+
+
+
+
+
 function teststart(){
 // alle startfunktionen ausführen 
 if (debug == 'on'){ alert(devicename+' Debug MSwitchweb an') };
@@ -450,8 +537,11 @@ return;
 
 
 
+
 function hilfe(field){
-	//var treffer;
+
+	
+	
 	//alert(field);
 	var text = HELP;
 	text = text.replace(/#\[LINE\]/gi,"<br>");
@@ -997,6 +1087,13 @@ if (debug == 'on'){ alert('checkcondition') }
 	
 	
 // next
+	
+	
+	
+	
+	
+	
+	
 	
 	$("#eventmonitor").click(function(){
 	var check = $("[name=eventmonitor]").prop("checked") ? "1":"0";
