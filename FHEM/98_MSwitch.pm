@@ -58,6 +58,12 @@ use POSIX;
 use SetExtensions;
 use LWP::Simple;
 
+
+
+my $updateinfo =""; # wird mit info zu neuen versionen besetzt
+my $generalinfo =""; # wird mit aktuellen informationen besetzt
+my $updateinfolink =
+"https://raw.githubusercontent.com/Byte009/FHEM-MSwitch/master/updateinfo.txt";
 my $preconffile =
 "https://raw.githubusercontent.com/Byte009/MSwitch_Addons/master/MSwitch_Preconf.conf";
 my $helpfile = "www/MSwitch/MSwitch_Help.txt";
@@ -95,6 +101,27 @@ my $startmode = "Notify";    # Startmodus des Devices nach Define
 #chop($ip);
 my $debugging = "0";
 #$debugging = "0" if $ip ne "192.168.178.109";
+
+
+
+		$updateinfo = get($updateinfolink);
+		
+        $updateinfo  =~ s/\n/[LINE]/g;
+
+my @uinfos = split( /\[LINE\]/, $updateinfo );
+
+
+		Log3( "MSwitch", 0, "Modul MSwitch: rufe Updateinformationen ab ..." );
+		
+
+$data{MSwitch}{Version} = $uinfos[1];
+$data{MSwitch}{Updateinformation} = $uinfos[2];
+$data{MSwitch}{Generalinformation} = $uinfos[3];
+
+
+Log3( "MSwitch", 0, "Verfuegbare Version: ".$data{MSwitch}{Version} );
+Log3( "MSwitch", 0, $data{MSwitch}{Updateinformation} );
+Log3( "MSwitch", 0, $data{MSwitch}{Generalinformation} );
 
 sub MSwitch_Checkcond_time($$);
 sub MSwitch_Checkcond_state($$);
@@ -769,6 +796,17 @@ sub MSwitch_Define($$) {
     $hash->{Version_autoupdate}            = $autoupdate;
     $hash->{MODEL}                         = $startmode." ".$version;
     $hash->{Support}                       = $support;
+
+
+
+if ($version ne $data{MSwitch}{Version})
+{
+$hash->{Update}                       = "Modulversion ".$data{MSwitch}{Version}." verfügbar" ;
+
+}
+
+
+
 
     if ( $defstring ne "" and $defstring =~ m/(\(.+?\))/ ) {
 
