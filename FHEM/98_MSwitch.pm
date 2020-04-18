@@ -10841,8 +10841,11 @@ sub MSwitch_Getsupport($) {
     $tmp = ReadingsVal( $Name, '.Trigger_cmd_off', 'undef' );
     $out .= "$tmp\\n";
 	$out .= "\\n----- Bridge Details -----\\n";
-	$tmp = ReadingsVal( $Name, '.Distributor', 'undef' );
-    $out .= "$tmp\\n";
+	my $tmp1 = ReadingsVal( $Name, '.Distributor', 'undef' );
+	$tmp1 =~ s/\n/#[nl]/g;
+	
+	
+    $out .= "$tmp1\\n";
 	
     my %savedetails = MSwitch_makeCmdHash($hash);
     $out .= "\\n----- Device Actions -----\\n";
