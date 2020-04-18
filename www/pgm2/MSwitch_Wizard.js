@@ -2,9 +2,8 @@
 // Autor:Byte09
 // #########################
 
-
-
-	var version = 'V1.2';
+  
+	var version = 'V1.3';
 	var info = '';
 	var logging ='off';
 	var observer;
@@ -1168,7 +1167,7 @@ function startimportpreconf(){
 	document.getElementById('importPRECONF').innerHTML = html;
 	document.getElementById('prec').style.backgroundColor='#ff0000';
 	return;
-}
+} 
 
 function setpreconf(name){
 	if (name == "empty"){
@@ -1178,6 +1177,38 @@ function setpreconf(name){
 		document.getElementById('prec').style.backgroundColor='#ff0000';
 		return;
 	}
+	
+	// teste auf version
+		
+		
+		
+		
+		var testversion = preconfparts[name];
+		var myRegEx = new RegExp('#VS.(V.*)');  
+		treffer = testversion.match(myRegEx);
+		//alert(treffer[1]+" "+MSDATAVERSION);
+		
+		
+		if (treffer[1] != MSDATAVERSION)
+		{
+			var wrongversion =' <strong><u>Versionskonflikt:</u><br>Diese Version ist nciht für die aktuelle Datenstruktur vorgesehen \
+			und kann nicht importiert werden.\
+			<br>Bitte den Support kontaktieren.\
+			<br>geforderte/benoetigte Version: '+MSDATAVERSION+'\
+			<br>Deviceversion: '+treffer[1]+'\
+			</strong><br><br>';
+			document.getElementById('rawconfig4').innerHTML = "";
+			document.getElementById('prec').disabled = true;
+			document.getElementById('prec').style.backgroundColor='#ff0000';
+			document.getElementById('rawconfig4').innerHTML = preconfparts[name];
+			document.getElementById('infotext1').innerHTML = wrongversion+preconfpartshelp[name];
+			
+			return;
+		}
+		
+		
+	// ende
+	
 	document.getElementById('rawconfig4').innerHTML = preconfparts[name];
 	document.getElementById('infotext1').innerHTML = preconfpartshelp[name];
 	document.getElementById('prec').disabled = false;

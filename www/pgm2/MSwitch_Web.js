@@ -9,6 +9,9 @@
 	//var innerset = $( "div[cmd='set']" ).html();
 //####################################################################################################
 
+// speichern von originalcodes für not avaible
+// var ORGdistricode = $( "#Distributor" ).html();
+
 	var globaldetails2 = 'start';
 	var globallock='';
 	var t=$("#MSwitchWebTR"), ip=$(t).attr("ip"), ts=$(t).attr("ts");
@@ -32,8 +35,8 @@
 				
 	});
 
-
-
+ 
+ 
 $('#sel_set'+devicename).change(function(){
 	if( HELPMODE =="0"){ return; }
 	var inhalt = document.getElementById("sel_set"+devicename).value;
@@ -98,19 +101,14 @@ $('#sel_attr'+devicename).change(function(){
 
 
 
-
-
-
-
-
-
-
-
-
-
 function teststart(){
 // alle startfunktionen ausführen 
+
+
+
+// funktion rename aktivieren
 if (debug == 'on'){ alert(devicename+' Debug MSwitchweb an') };
+//alert(RENAME);
 if (RENAME == 'on'){
 	var r1 = $('<input type="button" value="'+RENAMEBUTTON+'" onclick=" javascript: newname() "/>');
 	var r2 = $('<input type="button" value="'+RELOADBUTTON+'" onclick=" javascript: reload() \"/>');
@@ -120,13 +118,29 @@ if (RENAME == 'on'){
 	$(r2).appendTo('.col1');
 	$(r1).appendTo('.col1');
 	
-	// next teste auf quickedit an
-	if (QUICKEDIT == '0'){
+	
+	
+}
+
+
+// quickedit anpassen
+if (QUICKEDIT == '0'){
 	$("#devices").prop("disabled", false);
 	document.getElementById('aw_great').value='schow greater list';
 	document.getElementById('lockedit').checked = false  ;
 	}
-}
+	
+// devhelp ersetzen
+
+r3 = $('<a href=\"javascript: reset(\'check\')\">Reset this device ('+devicename+')</a>&nbsp;&nbsp;<a href=\"javascript: fullhelp()\">Device specific help</a>');
+$( "[class=\"detLink devSpecHelp\"]" ).html(r3);
+
+
+// zufügen des hilfebereichs
+r4 = $('<br><div id="helptext">Hilfetext<\div>');
+$(r4).appendTo("#content");
+$("#helptext").css("display","none");
+
 // EXEC1   ##################################################
 	
 	if (EXEC1 == '1'){
@@ -270,12 +284,12 @@ if (RENAME == 'on'){
 	if( changedetails != globaldetails)
 		{
 		globallock =' unsaved device actions';
-		[ "aw_trig","aw_md1","aw_md2","aw_addevent","aw_dev"].forEach (lock,);
+		[ "aw_dist1","aw_dist2","aw_dist","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (lock,);
 		randomdev.forEach (lock);
 		}
 	if( changedetails == globaldetails)
 		{
-		[ "aw_trig","aw_md1","aw_md2","aw_addevent","aw_dev"].forEach (unlock,);
+		[ "aw_dist1","aw_dist2","aw_dist","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
 			randomdev.forEach (unlock);
 		}
 	}
@@ -297,12 +311,12 @@ if ( DEVICETYP != 'dummy')
 	if (trigdev != TRIGGERDEVICEHTML)
 		{
 		globallock =' unsaved trigger';
-		["aw_dev", "aw_det"].forEach (lock);
+		["aw_md1","aw_md20","aw_md","aw_dist1","aw_dist2","aw_dist","aw_dev", "aw_det"].forEach (lock);
 		randomdev.forEach (lock,);
 		}
 	else
 		{	
-		["aw_dev", "aw_det"].forEach (unlock);
+		["aw_md1","aw_md20","aw_md","aw_dist1","aw_dist2","aw_dist","aw_dev", "aw_det"].forEach (lock);
 		randomdev.forEach (unlock);
 		document.getElementById('MSwitchWebTRDT').innerHTML = triggerdetails;	
 		}
@@ -402,9 +416,9 @@ if (document.getElementById('trigcmdon'))
 	var check = $("[name=eventmonitor]").prop("checked") ? "1":"0";
 	if (check == 0)
 		{
-		$( "#log2" ).text( "" );
+/* 		$( "#log2" ).text( "" );
 		$( "#log1" ).text( "" );
-		$( "#log3" ).text( "" );
+		$( "#log3" ).text( "" ); */
 		return;
 		}
 
@@ -428,17 +442,19 @@ if (document.getElementById('trigcmdon'))
 	var field = $('<input id ="editevent" type="button" value="'+editevent+'"/>');   // !!!!! #######
 	
 	$(field).appendTo('#log3');
+	
+	
 	$("#editevent").click(function(){
 	transferevent();
 	return;
 	});
-
+ 
 	// umwandlung des objekts in standartarray
 	var a3 = Object.keys(o).map(function (k) { return o[k];})
  
 	// array umdrehen
 	a3.reverse();
-  
+/*  
 	// eintrag in dropdown
 	if (atriwaaray[test] != 1)
 		{
@@ -452,7 +468,7 @@ if (document.getElementById('trigcmdon'))
 		var newselect = $('<option value="'+test+'">'+test+'</option>');
 		$(newselect).appendTo('#trigoff');
 		}
-  
+  */
 	// aktualisierung der divx max 5
 	var i;
 	for (i = 0; i < 10; i++) 
@@ -462,8 +478,12 @@ if (document.getElementById('trigcmdon'))
 			var newselect = $('<option value="'+a3[i]+'">'+a3[i]+'</option>');
 			$(newselect).appendTo('#lf'); 
 			}
+		else{
+			break;
+		}			
+			
 		}  
-
+ 
 });
 
 // next   ##################################################
@@ -489,14 +509,14 @@ if (document.getElementById('trigcmdon'))
 			if (UNLOCK == '1')
 			{
 				globallock =' this device is locked !';
-				[ "aw_dev","aw_det","aw_trig","aw_md","aw_md1","aw_md2","aw_addevent"].forEach (lock,);
+				["aw_dist1","aw_dist2", "aw_dist","aw_dev","aw_det","aw_trig","aw_md","aw_md1","aw_md20","aw_addevent"].forEach (lock,);
 				randomdev.forEach (lock);
 			}
 			
 			if (UNLOCK == '2')
 			{
 				globallock =' only trigger is changeable';
-				[ "aw_dev","aw_det","aw_md","aw_md1","aw_md2","aw_addevent"].forEach (lock,);
+				[ "aw_dist1","aw_dist2","aw_dist","aw_dev","aw_det","aw_md","aw_md1","aw_md20","aw_addevent"].forEach (lock,);
 				randomdev.forEach (lock);
 			}
 			
@@ -517,12 +537,12 @@ if (document.getElementById('trigcmdon'))
 			if (actaffected != globalaffected)
 				{
 				globallock =' unsaved affected device';
-				[ "aw_det","aw_trig","aw_md","aw_md1","aw_md2","aw_addevent"].forEach (lock,);
+				[ "aw_dist1","aw_dist2","aw_dist","aw_det","aw_trig","aw_md","aw_md1","aw_md20","aw_addevent"].forEach (lock,);
 				randomdev.forEach (lock);
 				}
 			else
 				{
-				[ "aw_det","aw_trig","aw_md","aw_md1","aw_md2","aw_addevent"].forEach (unlock,);
+				[ "aw_dist1","aw_dist2","aw_dist","aw_det","aw_trig","aw_md","aw_md1","aw_md20","aw_addevent"].forEach (unlock,);
 				randomdev.forEach (unlock);
 				}
 		}	 
@@ -535,13 +555,193 @@ return;
 
 //#####################################################################################################
 
+function deletedistributor(line){
+	//alert(line);
+	if (debug == 'on'){ alert('deletedistributor') };
+	document.getElementById('line1-'+line).innerHTML = '';
+	document.getElementById('line2-'+line).innerHTML = '';
+	checkdistricode()
+	return;
+	
+	
+}
+
+function adddistributor(){
+	if (debug == 'on'){ alert('adddistributor') };	//alert('line');
+	//alert(DISTRIBUTLINES);
+	var add = $( "#rawcode" ).html();
+	//
+	
+	add = add.replace(/LINENUMBER/gi,DISTRIBUTLINES);
+	add = add.replace(/line1-/gi,"line1-"+DISTRIBUTLINES);
+	add = add.replace(/line2-/gi,"line2-"+DISTRIBUTLINES);
+	add = add.replace(/ideventNR/gi,"ideventNR"+DISTRIBUTLINES);
+	add = add.replace(/ideventCMD/gi,"ideventCMD"+DISTRIBUTLINES);
+	add = add.replace(/ideventID/gi,"ideventID"+DISTRIBUTLINES);
+
+	//alert(add);
+	DISTRIBUTLINES++;
+	
+	
+	
+	//alert(add);
+	//alert(DISTRIBUTLINES);
+	var old = $( "#Distributor" ).html();
+	old = old.replace(/<!--newline-->/gi,add+"<!--newline-->");
+	$( "#Distributor" ).html(old);
+	
+	
+	checkdistricode()
+	return;
+}
 
 
+
+
+function savedistributor(){
+	if (debug == 'on'){ alert('savedistributor') };
+	
+	//alert('savedistributor')
+	var newidfile='';
+	for (i=0; i<DISTRIBUTLINES; i++)
+		{
+			aktline =  $("#ideventNR"+i).val();
+			if (aktline === undefined) { continue; }
+			if (aktline == 'undefined') { continue; }
+			aktcmd=  $("#ideventCMD"+i).val();
+			aktid=  $("#ideventID"+i).val();
+			newidfile +=aktline+"=>cmd"+aktcmd+"[SP]ID[SP]"+aktid+"[NL]";		
+		}
+		
+		
+		//alert(newidfile);
+		
+	//if 	(newidfile =="")
+	//{
+		
+		// alert('?cmd=deletereading '+devicename+' .Distributor&XHR=1');
+		
+		
+		// FW_cmd(FW_root+'?cmd=deletereading '+devicename+' .Distributor&XHR=1');
+	
+		//[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
+		//randomdev.forEach (unlock);
+		
+	//}else{
+		
+
+	 // FW_cmd(FW_root+'?cmd=setreading '+devicename+' .Distributor '+newidfile+'&XHR=1');
+	
+	
+	// } 
+	
+	 
+	FW_cmd(FW_root+'?cmd=set '+devicename+' setbridge '+newidfile+'&XHR=1');
+	[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
+	randomdev.forEach (unlock);
+	 
+	 
+	
+	//var nm = $(t).attr("nm");
+	//var  def = nm+" setbridge "+newidfile;
+	//location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
+	
+	return;
+}
+
+
+
+
+
+
+
+
+
+function checkdistricode(){
+	
+	// blockiert alles butttons wenn districode verändert
+	//var ORGdistricode = $( "#Distributor" ).html();
+	//var CHECKdistricode = $( "#Distributor" ).html();
+	
+	
+	//if (CHECKdistricode != ORGdistricode){
+		//alert('ungleich');
+				globallock =' unsaved disributor ';
+				[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (lock,);
+				randomdev.forEach (lock);
+	/*	}
+	 	else
+			{
+				alert('gleich');
+			[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
+					randomdev.forEach (unlock);
+			} */
+			
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+function fullhelp(){
+
+$("#helptext").css("display","block");
+
+
+
+var text ="Mswitch hat eine im Frontend integrierte Hilfe.<br><br>\
+Dafür bitte das Attribut MSwitch_Help auf 1 setzen.\n<br>\
+Soll dieses Attribut jetzt aktiviert werden ? \
+<input type='button' value='Ja' onclick='javascript: aktivatehelp()'>\
+<br>\
+<br>\
+<br>&nbsp;\
+";
+
+$("#helptext").html(text);
+ $('html, body').animate({
+          scrollTop: $("#helptext").offset().top -80
+        }, 500);
+
+
+return;
+}
+
+
+function aktivatehelp(){
+FW_cmd(FW_root+'?cmd=attr '+devicename+' MSwitch_Help 1&XHR=1');
+
+
+var text ="<br><br>Hilfe wurde aktiviert. \
+<input type='button' value='Seite neu laden' onclick='javascript: reload()'>\
+<br>\
+<br>\
+<br>\
+<br>\
+<br>&nbsp;\
+";
+
+
+$("#helptext").html(text);
+ $('html, body').animate({
+          scrollTop: $("#helptext").offset().top -80
+        }, 500);
+
+
+return;
+}
 
 function hilfe(field){
 
 	
-	
+	if (debug == 'on'){ alert('hilfe') };
 	//alert(field);
 	var text = HELP;
 	text = text.replace(/#\[LINE\]/gi,"<br>");
@@ -647,12 +847,12 @@ function selectfield(args,target,copytofield){
 		if (globaldetails3 != globaldetails2)
 			{
 			globallock =' unsaved device actions';
-				[ "aw_trig","aw_md1","aw_md2","aw_addevent","aw_dev"].forEach (lock,);
+				[ "aw_dist1","aw_dist2","aw_dist","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (lock,);
 				randomdev.forEach (lock);
 			}
 		else
 			{
-			[ "aw_trig","aw_md1","aw_md2","aw_addevent","aw_dev"].forEach (unlock,);
+			[ "aw_dist1","aw_dist2","aw_dist","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
 					randomdev.forEach (unlock);
 			}
 		}
@@ -788,13 +988,15 @@ function  switchlock()
 	
 
 function closetrigger(){
+	if (debug == 'on'){ alert('closetrigger') }
 			globallock =' unsaved trigger details';
-			["aw_dev", "aw_det","aw_trig","aw_md1","aw_md2","aw_addevent"].forEach (lock,);
+			["aw_dist1","aw_dist2","aw_dist","aw_dev", "aw_det","aw_trig","aw_md1","aw_md20","aw_addevent"].forEach (lock,);
 			randomdev.forEach (lock);
 	}
 	
 function opentrigger(){
-			[ "aw_dev","aw_det","aw_trig","aw_md1","aw_md2","aw_addevent"].forEach (unlock,);
+	if (debug == 'on'){ alert('opentrigger') }
+			["aw_dist1","aw_dist2","aw_dist", "aw_dev","aw_det","aw_trig","aw_md1","aw_md20","aw_addevent"].forEach (unlock,);
 			randomdev.forEach (unlock);
 	}
 
@@ -836,16 +1038,19 @@ if (debug == 'on'){ alert('lock') }
 
 function unlock(elem, index){
 if (debug == 'on'){ alert('unlock') }
-
 //alert('unlock: '+elem+' --- '+index) ;
-
 	if (document.getElementById(elem)){
-	
 	//alert(elem+' '+document.getElementById(elem).model);
-		
 	document.getElementById(elem).style.backgroundColor = "";
 	document.getElementById(elem).disabled = false;
+	
+	if (document.getElementById(elem).model === undefined)
+	{
+		return;
+	}	
 	document.getElementById(elem).value=document.getElementById(elem).model;
+	
+	
 	}
 }
 	
@@ -942,10 +1147,20 @@ if (debug == 'on'){ alert('removefn') };
 
 	
 // reset device	
-function reset() {
+function reset(option) {
 if (debug == 'on'){ alert('reset') };
 	var nm = $(t).attr("nm");
+	
+	if (option == "check"){
+	
+	
+	var  def = nm+" reset_device";
+	
+	}else{
 	var  def = nm+" reset_device checked";
+	
+	
+	}
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	return;
 	}	
@@ -1172,7 +1387,8 @@ if (debug == 'on'){ alert('checkcondition') }
 	trigcmdoff = $("[name=trigcmdoff]").val();
 	if(typeof(trigcmdoff)=="undefined"){trigcmdoff="no_trigger"}
 	trigcmdoff = trigcmdoff.replace(/ /g,'~');
-	trigsave = $("[name=aw_save]").prop("checked") ? "ja":"nein";
+	//trigsave = $("[name=aw_save]").prop("checked") ? "ja":"nein";
+	trigsave = 'nosave';
 	trigwhite = $("[name=triggerwhitelist]").val();
 	if (trigcmdon == trigon  && trigcmdon != 'no_trigger' && trigon != 'no_trigger'){
 	FW_okDialog('on triggers for \'switch Test on + execute on commands\' and \'execute on commands only\' may not be the same !');
@@ -1191,6 +1407,18 @@ if (debug == 'on'){ alert('checkcondition') }
 	});
 
 
+	// umschalten permanentes eventsave
+	$("#eventsave").click(function(){
+	if (debug == 'on'){ alert('#eventsave') };
+	
+	trigsave = $("[name=aw_save]").prop("checked") ? "on":"off";
+	FW_cmd(FW_root+'?cmd=setreading '+devicename+' Trigger_log '+trigsave+'&XHR=1');
+	
+	
+	    return;
+	});
+
+
 
 	// unbekannt
 	$("#aw_little").click(function(){
@@ -1204,8 +1432,9 @@ if (debug == 'on'){ alert('checkcondition') }
 	});
 	
 	//delete trigger
-	$("#aw_md2").click(function(){
-	if (debug == 'on'){ alert('#aw_md2') };
+	$("#aw_md20").click(function(){
+	if (debug == 'on'){ alert('#aw_md20') };
+	//alert('#aw_md20')
 	var nm = $(t).attr("nm");
 	var  def = nm+" del_trigger ";
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
