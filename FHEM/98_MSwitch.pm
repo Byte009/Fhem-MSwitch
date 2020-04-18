@@ -58,20 +58,18 @@ use POSIX;
 use SetExtensions;
 use LWP::Simple;
 
-#my (%attr, %modules, %defs,$readingFnAttributes,%logInform,$init_done,$fhem_started,$FW_CSRF);
-
 my $preconffile =
 "https://raw.githubusercontent.com/Byte009/MSwitch_Addons/master/MSwitch_Preconf.conf";
 my $helpfile = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
-my $autoupdate   = 'off';    #off/on
-my $version      = '3.1';
+my $autoupdate   = 'on';    #off/on
+my $version      = '3.11';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
-my $vupdate      = 'V2.00'
+my $vupdate      = 'V2.01'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
 my $savecount = 50
   ; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
@@ -92,11 +90,11 @@ my @doignore =
 my $startmode = "Notify";    # Startmodus des Devices nach Define
 
 # degug
-my $ip = qx(hostname -I);
-chop($ip);
-chop($ip);
+#my $ip = qx(hostname -I);
+#chop($ip);
+#chop($ip);
 my $debugging = "0";
-$debugging = "0" if $ip ne "192.168.178.109";
+#$debugging = "0" if $ip ne "192.168.178.109";
 
 sub MSwitch_Checkcond_time($$);
 sub MSwitch_Checkcond_state($$);
@@ -148,6 +146,7 @@ sub MSwitch_Writesequenz($);
 sub MSwitch_del_singlelog($$);
 sub MSwitch_Checkcond_history($$);
 sub MSwitch_fhemwebconf($$$$);
+sub MSwitch_setbridge($$);
 
 ##############################
 my %sets = (
@@ -252,18 +251,18 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Safemode:0,1"
       . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
       . "  MSwitch_Wait"
-      . "  MSwitch_Event_Id_Distributor:textField-long "
       . "  MSwitch_Sequenz:textField-long "
       . "  MSwitch_Sequenz_time"
       . "  MSwitch_setList:textField-long "
       . "  setList:textField-long "
       . "  readingList:textField-long "
+	  . "  MSwitch_Event_Id_Distributor:textField-long "
       . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
       . "  textField-long "
 
       . $readingFnAttributes;
     $hash->{FW_addDetailToSummary} = 0;
-
+# 
 }
 ####################
 sub MSwitch_Rename($) {
@@ -291,10 +290,7 @@ sub MSwitch_Rename($) {
     delete( $hash_new->{helper}{repeats} );
     delete( $modules{MSwitch}{defptr}{$old_name} );
     $modules{MSwitch}{defptr}{$new_name} = $hash_new;
-
     return;
-
-    # return undef; #pbp
 }
 #####################################
 sub MSwitch_Shutdown($) {
@@ -310,11 +306,9 @@ sub MSwitch_Shutdown($) {
     }
     delete( $hash->{helper}{devicecmds1} );
     delete( $hash->{helper}{last_devicecmd_save} );
-
-    #eturn undef; #pbp
     return;
 }
-####################
+#####################################
 sub MSwitch_Copy ($) {
     my ( $old_name, $new_name ) = @_;
     my $hash = $defs{$new_name};
@@ -331,6 +325,7 @@ sub MSwitch_Copy ($) {
         fhem( "setreading " . $new_name . " " . $key . " " . $tmp );
     }
     MSwitch_LoadHelper($hash);
+	return;
 }
 
 ####################
@@ -338,19 +333,19 @@ sub MSwitch_summary($) {
     my ( $wname, $name, $room, $test1 ) = @_;
     my $hash = $defs{$name};
     my $testroom = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
-
+    my $mode =  AttrVal( $name, 'MSwitch_Mode', 'Notify' );
     if ( exists $hash->{helper}{mode} && $hash->{helper}{mode} eq "absorb" ) {
         return "Device ist im Konfigurationsmodus.";
     }
 
     my @areadings = ( keys %{$test1} );
-    if ( !grep /group/, @areadings ) {
-        return;
-    }
+    # if ( !grep /group/, @areadings ) {
+        # return;
+    # }
+	return if !grep /group/, @areadings;
+    return if  $testroom ne $room ;
 
-    if ( $testroom ne $room ) { return; }
-
-    my $test = AttrVal( $name, 'comment', '0' );
+   
     my $info = AttrVal( $name, 'comment', 'No Info saved at ATTR omment' );
     my $image    = ReadingsVal( $name, 'state', 'undef' );
     my $ret      = '';
@@ -390,7 +385,7 @@ sub MSwitch_summary($) {
     $devtime[2] =~ s/ononly/only cmd1: /g  if defined $devtime[2];
     $devtime[3] =~ s/offonly/only cmd2: /g if defined $devtime[3];
 
-    if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) ne "Notify" ) {
+    if ( $mode ne "Notify" ) {
         $optiontime .=
           "<option value=\"$devtime[0]\">" . $devtime[0] . "</option>"
           if defined $devtime[0];
@@ -438,7 +433,7 @@ sub MSwitch_summary($) {
     }
 
     $ret .= " <input disabled name='Text1' size='10' type='text' value='Mode: "
-      . AttrVal( $name, 'MSwitch_Mode', 'Notify' ) . "'> ";
+      . $mode . "'> ";
 
     if ( $trigger eq 'no_trigger' || $trigger eq 'undef' || $trigger eq '' ) {
         $triggerc = 0;
@@ -447,7 +442,7 @@ sub MSwitch_summary($) {
 "<select style='width: 18em;' title=\"\" disabled ><option value=\"Trigger:\">Trigger: inaktiv</option></select>";
         }
         else {
-            if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) ne "Dummy" ) {
+            if ( $mode ne "Dummy" ) {
                 $affectedtime = "";
                 $ret .=
                   "&nbsp;&nbsp;Multiswitchmode (no trigger / no timer)&nbsp;";
@@ -510,7 +505,7 @@ sub MSwitch_summary($) {
               . "-state\">"
               . ReadingsVal( $name, 'state', '' ) . "</div>
 		</td><td informId=\"" . $name . "tmp\">";
-            if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) ne "Notify" ) {
+            if ( $mode ne "Notify" ) {
                 $ret .=
                     "<div informid=\""
                   . $name
@@ -542,12 +537,13 @@ sub MSwitch_summary($) {
 sub MSwitch_check_init($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-    Log3( $Name, 5, "start checkinit !" );    #LOG
+    Log3( $Name, 5, "start checkinit !" );
     my $oldtrigger = ReadingsVal( $Name, 'Trigger_device', 'undef' );
     if ( $oldtrigger ne 'undef' ) {
         $hash->{NOTIFYDEV} = $oldtrigger;
         readingsSingleUpdate( $hash, "Trigger_device", $oldtrigger, 0 );
     }
+	return;
 }
 
 ####################
@@ -595,10 +591,8 @@ sub MSwitch_LoadHelper($) {
         $hash->{NOTIFYDEV} = $oldtrigger;
         readingsSingleUpdate( $hash, "Trigger_device", $oldtrigger, 0 );
     }
-#################
-
+################
     MSwitch_set_dev($hash);
-
 ################
     if ( AttrVal( $Name, 'MSwitch_Activate_MSwitchcmds', "0" ) eq '1' ) {
         addToAttrList('MSwitchcmd');
@@ -612,7 +606,6 @@ sub MSwitch_LoadHelper($) {
 ################
     if ( ReadingsVal( $Name, '.First_init', 'undef' ) ne 'done' ) {
         $hash->{helper}{config} = "no_config";
-
         readingsBeginUpdate($hash);
         readingsBulkUpdate( $hash, ".V_Check", $vupdate );
         readingsBulkUpdate( $hash, "state",    'active' );
@@ -646,7 +639,6 @@ sub MSwitch_LoadHelper($) {
         if ( $testdev ne '' ) {
             $attr{$Name}{MSwitch_Inforoom} = $testdev,;
         }
-
         #setze alle attrs
         $attr{$Name}{MSwitch_Eventhistory}        = '0';
         $attr{$Name}{MSwitch_Safemode}            = '1';
@@ -691,12 +683,74 @@ sub MSwitch_LoadHelper($) {
         $counter++;
     }
     fhem("deletereading $Name SaveDelay_.*");
+	
+	
+	# eventtoid einlesen
+	delete( $hash->{helper}{eventtoid} );
+	my $bridge= ReadingsVal( $Name, '.Distributor', 'undef' );
+	if ($bridge ne "undef")
+	{
+	 my @test = split( /\n/, $bridge );
+     foreach my $testdevices (@test) {
+            my ( $key, $val ) = split( /=>/, $testdevices );
+            $hash->{helper}{eventtoid}{$key} = $val;
+        }
+	
+	}
+	# nur temporär für versionswechsel
+	
+	    my $attrzerolist =
+        "  disable:0,1"
+      . "  disabledForIntervals"
+      . "  MSwitch_Language:EN,DE"
+      . "  stateFormat:textField-long"
+      . "  MSwitch_Comments:0,1"
+      . "  MSwitch_Read_Log:0,1"
+      . "  MSwitch_Hidecmds"
+      . "  MSwitch_Help:0,1"
+      . "  MSwitch_Debug:0,1,2,3,4"
+      . "  MSwitch_Expert:0,1"
+      . "  MSwitch_Delete_Delays:0,1"
+      . "  MSwitch_Include_Devicecmds:0,1"
+      . "  MSwitch_generate_Events:0,1"
+      . "  MSwitch_Include_Webcmds:0,1"
+      . "  MSwitch_Include_MSwitchcmds:0,1"
+      . "  MSwitch_Activate_MSwitchcmds:0,1"
+      . "  MSwitch_Lock_Quickedit:0,1"
+      . "  MSwitch_Ignore_Types:textField-long "
+      . "  MSwitch_Reset_EVT_CMD1_COUNT"
+      . "  MSwitch_Reset_EVT_CMD2_COUNT"
+      . "  MSwitch_Trigger_Filter"
+      . "  MSwitch_Extensions:0,1"
+      . "  MSwitch_Inforoom"
+      . "  MSwitch_DeleteCMDs:manually,automatic,nosave"
+      . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
+      . "  MSwitch_Condition_Time:0,1"
+      . "  MSwitch_Selftrigger_always:0,1"
+      . "  MSwitch_RandomTime"
+      . "  MSwitch_RandomNumber"
+      . "  MSwitch_Safemode:0,1"
+      . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
+      . "  MSwitch_Wait"
+      . "  MSwitch_Sequenz:textField-long "
+      . "  MSwitch_Sequenz_time"
+      . "  MSwitch_setList:textField-long "
+      . "  setList:textField-long "
+      . "  readingList:textField-long "
+      . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
+      . "  textField-long "
+      . $readingFnAttributes;
+	
+	setDevAttrList( $Name, $attrzerolist );
+	
+	return;
 }
 
 ####################
 sub MSwitch_Define($$) {
-    my $loglevel = 0;
+  
     my ( $hash, $def ) = @_;
+	my $loglevel = 0;
     my @a          = split( "[ \t][ \t]*", $def );
     my $name       = $a[0];
     my $devpointer = $name;
@@ -718,13 +772,8 @@ sub MSwitch_Define($$) {
 
     if ( $defstring ne "" and $defstring =~ m/(\(.+?\))/ ) {
 
-        Log3( $name, 0, "ERROR MSwitch define over onelinemode deactivated" )
-          ;    #LOG
+        Log3( $name, 0, "ERROR MSwitch define over onelinemode deactivated" );    #LOG
         return "This mode is deactivated";
-
-        # $hash->{INIT} = 'define';
-        # MSwitch_Define1( $hash, $defstring );
-        return;
     }
     else {
         $hash->{INIT} = 'fhem.save';
@@ -1134,7 +1183,6 @@ sub MSwitch_Set($@) {
     my $dynlist = "";
 
 ############# Befehle  aus web.js
-
     if ( $cmd eq 'logging' ) {
         if ( $args[0] eq "1" ) {
             $hash->{helper}{aktivelog} = "on";
@@ -1144,11 +1192,25 @@ sub MSwitch_Set($@) {
         }
         return;
     }
-
+############################
     if ( $cmd eq 'clearlog' ) {
         MSwitch_clearlog($hash);
         return;
     }
+############################
+    if ( $cmd eq 'setbridge' ) {
+        MSwitch_setbridge($hash,$args[0]);
+        return;
+    }
+############################
+
+ # korrigiere version 
+  if ( ReadingsVal( $name, '.V_Check', 'undef' ) ne $vupdate
+         && $autoupdate eq "on" )
+    {
+        MSwitch_VUpdate($hash);
+    }
+##########################
 
     if ( $cmd ne "?" ) {
         MSwitch_LOG( $name, 6, "----------------------------------------" );
@@ -1505,8 +1567,8 @@ sub MSwitch_Set($@) {
             $hash->{Version_Datenstruktur} = $vupdate;
             $hash->{Version_autoupdate}    = $autoupdate;
             $hash->{MODEL}                 = $startmode." ".$version;
-            $hash->{Support_Fhemforum} =
-              "https://forum.fhem.de/index.php/topic,86199.0.html";
+            # $hash->{Support_Fhemforum} =
+              # "https://forum.fhem.de/index.php/topic,86199.0.html";
 
             readingsBeginUpdate($hash);
             readingsBulkUpdate( $hash, ".Device_Events",   "no_trigger", 1 );
@@ -1861,6 +1923,9 @@ sub MSwitch_Set($@) {
         readingsSingleUpdate( $hash, "Trigger_device",     $args[0], '1' );
         readingsSingleUpdate( $hash, ".Trigger_condition", $args[6], 0 );
 
+
+
+
         if ( !defined $args[7] ) {
             readingsDelete( $hash, '.Trigger_Whitelist' );
         }
@@ -1914,6 +1979,11 @@ sub MSwitch_Set($@) {
             $hash->{NOTIFYDEV} = 'no_trigger';
             delete $hash->{DEF};
         }
+		
+		
+		readingsSingleUpdate( $hash, "EVENT","init", 0 );
+		
+		
         return;
     }
 ##############################
@@ -1942,12 +2012,18 @@ sub MSwitch_Set($@) {
         readingsBulkUpdate( $hash, ".Trigger_on",  $triggeron );
         readingsBulkUpdate( $hash, ".Trigger_off", $triggeroff );
 
-        if ( $args[2] eq 'nein' ) {
-            readingsBulkUpdate( $hash, "Trigger_log", 'off' );
-        }
-        if ( $args[2] eq 'ja' ) {
-            readingsBulkUpdate( $hash, "Trigger_log", 'on' );
-        }
+
+
+
+        # if ( $args[2] eq 'nein' ) {
+            # readingsBulkUpdate( $hash, "Trigger_log", 'off' );
+        # }
+        # if ( $args[2] eq 'ja' ) {
+            # readingsBulkUpdate( $hash, "Trigger_log", 'on' );
+        # }
+		
+		
+		
         readingsBulkUpdate( $hash, ".Trigger_cmd_on",  $triggercmdon );
         readingsBulkUpdate( $hash, ".Trigger_cmd_off", $triggercmdoff );
         readingsEndUpdate( $hash, 0 );
@@ -2835,7 +2911,6 @@ sub MSwitch_Attr(@) {
       . "  MSwitch_Safemode:0,1"
       . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
       . "  MSwitch_Wait"
-      . "  MSwitch_Event_Id_Distributor:textField-long "
       . "  MSwitch_Sequenz:textField-long "
       . "  MSwitch_Sequenz_time"
       . "  MSwitch_setList:textField-long "
@@ -2843,8 +2918,10 @@ sub MSwitch_Attr(@) {
       . "  readingList:textField-long "
       . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
       . "  textField-long "
-
       . $readingFnAttributes;
+	  
+	  
+	  
     $hash->{FW_addDetailToSummary} = 0;
 
     if ( $aName eq 'MSwitch_Debug' && ( $aVal == 2 || $aVal == 3 ) ) {
@@ -2903,7 +2980,20 @@ sub MSwitch_Attr(@) {
 ##################################
 
     if ( $cmd eq 'set' && $aName eq 'MSwitch_Event_Id_Distributor' ) {
-        delete( $hash->{helper}{eventtoid} );
+        
+		# versionswechsel
+		#delete( $hash->{helper}{eventtoid} );
+        return;
+		
+		###
+		
+		
+		$aVal =~ s/\[NL\]/\n/g;
+		$_[3]=$aVal;
+		
+		   #Log3( $name, 0, $aVal );
+		
+		
         return "Invalid Regex $aVal: $@" if $aVal eq "";
         return "Invalid Regex $aVal: $@" if !$aVal;
         return "Invalid Regex $aVal: $@" if $aVal eq "1";
@@ -2917,6 +3007,8 @@ sub MSwitch_Attr(@) {
 "wrong syntax. The syntax must be: \n\n[DEVICE:]READING:STATE=>cmd<1|2> ID x[,y,z] \n\n[] = optional \n<1|2> = 1 or 2 \nseveral entries are separated by a line break";
             }
         }
+		
+		delete( $hash->{helper}{eventtoid} );
 
         foreach my $testdevices (@test) {
             my ( $key, $val ) = split( /=>/, $testdevices );
@@ -2926,7 +3018,7 @@ sub MSwitch_Attr(@) {
     }
 
     if ( $cmd eq 'del' && $aName eq 'MSwitch_Event_Id_Distributor' ) {
-        delete( $hash->{helper}{eventtoid} );
+       # delete( $hash->{helper}{eventtoid} );
         return;
     }
 
@@ -3050,7 +3142,6 @@ sub MSwitch_Attr(@) {
           . "  MSwitch_Selftrigger_always:0,1"
           . "  useSetExtensions:0,1"
           . "  MSwitch_setList:textField-long "
-          . "  MSwitch_Event_Id_Distributor:textField-long "
           . "  setList:textField-long "
           . "  readingList:textField-long "
           . "  textField-long ";
@@ -3134,6 +3225,17 @@ sub MSwitch_Notify($$) {
     my $devName;
     $devName = $dev_hash->{NAME};
     my $events = deviceEvents( $dev_hash, 1 );
+	
+	
+	
+	
+########## korrigiere version 
+  if ( ReadingsVal( $ownName, '.V_Check', 'undef' ) ne $vupdate
+         && $autoupdate eq "on" )
+    {
+        MSwitch_VUpdate($own_hash);
+    }	
+	
 ############################
 
     if ( exists $own_hash->{helper}{mode}
@@ -4062,7 +4164,10 @@ sub MSwitch_Notify($$) {
 #########################
 sub MSwitch_checkbridge($$$) {
     my ( $hash, $name, $event ) = @_;
-    my $bridgemode = AttrVal( $name, 'MSwitch_Event_Id_Distributor', '0' );
+   # my $bridgemode = AttrVal( $name, 'MSwitch_Event_Id_Distributor', '0' );
+	
+	
+	my $bridgemode = ReadingsVal( $name, '.Distributor', '0' );
     my $expertmode = AttrVal( $name, 'MSwitch_Expert', '0' );
 
     return "no_bridge" if $expertmode eq "0";
@@ -4294,6 +4399,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	var o = new Object();
 	var devicename= '" . $Name . "';
 	var mVersion= '" . $version . "';
+	var MSDATAVERSION = '".$vupdate."';
 	var notify = " . $notify . ";
 	var notifydef = " . $notifydef . ";
 	\$(document).ready(function() {
@@ -4326,6 +4432,18 @@ sub MSwitch_fhemwebFn($$$$) {
     my $noshow     = 0;
     my @hidecmds = split( /,/, AttrVal( $Name, 'MSwitch_Hidecmds', 'undef' ) );
 
+
+
+
+
+########## korrigiere version 
+  if ( ReadingsVal( $Name, '.V_Check', 'undef' ) ne $vupdate
+         && $autoupdate eq "on" )
+    {
+        MSwitch_VUpdate($hash);
+    }	
+	
+###########################
 ##### konfigmode
 
     if ( exists $hash->{helper}{mode} && $hash->{helper}{mode} eq "absorb" ) {
@@ -5018,12 +5136,10 @@ sub MSwitch_fhemwebFn($$$$) {
     my $controlhtml;
     $controlhtml = "
 <!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
-
 <!-- 
 info: festlegung einer zellenhöhe
 MS-cellhigh=30;
 -->
-
 <!-- 
 start:textersetzung:ger
 Set->Schaltbefehl
@@ -5051,12 +5167,10 @@ display->Anzeige verbergen
 test comand->Befehl testen
 end:textersetzung:ger
 -->
-
 <!-- 
 start:textersetzung:eng
 end:textersetzung:eng
 -->
-
 <!--
 MS-cellhighstandart
 MS-cellhighexpert
@@ -5082,8 +5196,8 @@ MS-HELPrepeats
 MS-HELPexeccmd
 MS-HELPdelay
 --> 
- 
 <!-- start htmlcode -->
+<!--start devices -->
 <table border='0' class='block wide' id='MSwitchWebTR' nm='test1' cellpadding='4' style='border-spacing:0px;'>
 	<tr>
 		<td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
@@ -5156,7 +5270,8 @@ MS-HELPdelay
 		<td style='height: MS-cellhighstandart;'colspan='3'>&nbsp;MS-ACTIONSATZ</td>
 	</tr>
 </table>
-<br>
+<!-- end devices-->
+
 ";
 
     $controlhtml = AttrVal( $Name, 'MSwitch_Develop_Affected', $controlhtml );
@@ -6060,7 +6175,7 @@ MS-HELPdelay
             if ( grep { $_ eq $aktpriority } @hidecmds ) {
                 $noshow++;
                 $detailhtml .=
-"<div id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
+"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
                   . $controlhtmldevice
                   . "</div>";
             }
@@ -6069,13 +6184,13 @@ MS-HELPdelay
                 if ( $savedetails{ $aktdevice . '_hidecmd' } eq "1" ) {
                     $noshow++;
                     $detailhtml .=
-"<div id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
+"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
                       . $controlhtmldevice
                       . "</div>";
                 }
                 else {
                     $detailhtml .=
-"<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
+"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
                       . $controlhtmldevice
                       . "</div>";
                 }
@@ -6445,6 +6560,7 @@ MS-HELPdelay
     # trigger start
 
     my $triggerhtml = "
+<!--start Auslösendes Gerät -->
 <!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
 <!-- 
 info: festlegung einer zelleknöhe
@@ -6547,7 +6663,8 @@ MS-HELPcond
 	<tr class='even'>
 		<td colspan ='4'>MS-modify</td>
 	</tr>
-</table>
+</table><br>
+<!--end Auslösendes Gerät -->
 ";
 
     $triggerhtml = AttrVal( $Name, 'MSwitch_Develop_Trigger', $triggerhtml );
@@ -6723,43 +6840,9 @@ MS-HELPcond
     $ret .=
 "<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
       . $triggerhtml
-      . "</div><br>";
+      . "</div>";
+################### eventsteuerung
 
-#################################################################
-
-    # id event bridge
-
-    my $idmode = AttrVal( $Name, 'MSwitch_Event_Id_Distributor', 'undef' );
-
-    if (    $hash->{helper}{eventtoid}
-         && $idmode ne "undef"
-         && $expertmode eq "1" )
-    {
-        $ret .=
-"<table border='$border' class='block wide' id='MSwitchWebBridge' nm='$hash->{NAME}'>
-	<tr class=\"even\">
-	<td>$MSDISTRIBUTORTEXT</td></tr>
-	<tr class=\"even\">
-	<td>&nbsp;</td></tr>";
-        my $toid = $hash->{helper}{eventtoid};
-        foreach my $a ( keys %{$toid} ) {
-            $ret .=
-"<tr class=\"even\"><td>&nbsp;&nbsp;&nbsp;&nbsp;$MSDISTRIBUTOREVENT "
-              . $a
-              . " =\> execute "
-              . $hash->{helper}{eventtoid}{$a}
-              . "</td></tr>";
-        }
-        $ret .= "<tr class=\"even\"><td>&nbsp;</td></tr></table></p>";
-    }
-
-###############################################################
-    # id event bridge neu
-###############################################################
-
-    # trigger ende
-
-####################
 
     my $MSTRIGGER;
     my $MSCMDONTRIGGER  = "";
@@ -6779,40 +6862,400 @@ MS-HELPcond
     my $MSHELP10 = "";
     my $MSHELP11 = "";
 
-    my $triggerdetailhtml = "
+    my $eventhtml = "
 <!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
-
 <!-- 
-info: festlegung einer zelleknöhe
+info: festlegung einer zellenhöhe
 MS-cellhigh=30;
 -->
-
 <!-- 
 start:textersetzung:ger
-execute only cmd1->nur CMD1 ausführen
-execute only cmd2->nur CMD2 ausführen
 Save incomming events permanently->eingehende Events permanent speichern
 Add event manually->Event manuell eintragen
-switch $Name on and execute cmd1->$Name anschalten und CMD1 ausführen
-switch $Name off and execute cmd2->$Name ausschalten und CMD2 ausführen
-trigger details:->Trigger Details
+event details:->Eventdetails
 test event->Event testen
 add event->Event einfügen
-modify Trigger->Triggerdetails speichern
 apply filter to saved events->Filter auf gespeicherte Events anwenden
 clear saved events->Eventliste löschen
 event monitor->Eventmonitor
 end:textersetzung:ger
 -->
-
 <!-- 
 start:textersetzung:eng
 end:textersetzung:eng
 -->
-
-
 <!-- start htmlcode -->
-<table border='0' cellpadding='4' class='block wide' style='border-spacing:0px;'>
+<!-- start Event Details-->
+<table border='0' cellpadding='2' class='block wide' style='border-spacing:0px;'>
+		<tr>
+		<td colspan='4'>event details:</td>
+	</tr>
+
+	<tr>
+		<td>MS-HELP5</td>
+		<td>Save incomming events permanently</td>
+		<td>MS-SAVEEVENT</td>
+		<td>&nbsp;</td>
+	</tr>
+		<tr>
+		<td>MS-HELP7</td>
+		<td>event monitor</td>
+		<td><input id =\"eventmonitor\" name=\"eventmonitor\" type=\"checkbox\"></td>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<td>MS-HELP6</td>
+		<td>Add event manually</td>
+		<td nowrap>MS-ADDEVENT</td>
+		<td>&nbsp;</td>
+	</tr>
+	
+	<tr>
+		<td id='log' colspan='1'></td>
+		<td id='log1' colspan='1'></td>
+		<td id='log2' colspan='1'></td>
+		<td id='log3' colspan='1'></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td colspan='3'>MS-TESTEVENT MS-MODLINE</td>	
+	</tr>
+</table>
+<br>
+<!-- end Event Details-->
+";
+
+
+
+ my $extrakt7 = $eventhtml;
+    $extrakt7 =~ s/\n/#/g;
+
+    if (
+         AttrVal(
+                  $Name, 'MSwitch_Language',
+                  AttrVal( 'global', 'language', 'EN' )
+         ) eq "DE"
+      )
+    {
+        $extrakt7 =~ m/start:textersetzung:ger(.*)end:textersetzung:ger/;
+        $extrakt7 = $1;
+    }
+    else {
+        $extrakt7 =~ m/start:textersetzung:eng(.*)end:textersetzung:eng/;
+        $extrakt7 = $1;
+    }
+
+    @translate = "";
+    if ( defined $extrakt7 ) {
+        $extrakt7 =~ s/^.//;
+        $extrakt7 =~ s/.$//;
+        @translate = split( /#/, $extrakt7 );
+    }
+
+
+
+ my $selectedcheck3 = "";
+    my $SELF           = $Name;
+    my $testlog        = ReadingsVal( $Name, 'Trigger_log', 'on' );
+    if ( $testlog eq 'on' ) {
+        $selectedcheck3 = "checked=\"checked\"";
+    }
+
+   $MSSAVEEVENT =
+          "<input id ='eventsave'  $selectedcheck3 name=\"aw_save\" type=\"checkbox\" $disable>";
+
+        if ( AttrVal( $Name, 'MSwitch_Help', "0" ) eq '1' ) 
+		{
+            $MSHELP5 =
+"<input name='info' type='button' value='?' onclick=\"hilfe('saveevent')\">&nbsp;";
+            $MSHELP6 =
+"<input name='info' type='button' value='?' onclick=\"hilfe('addevent')\">&nbsp;";
+            $MSHELP7 =
+"<input name='info' type='button' value='?' onclick=\"hilfe('eventmonitor')\">&nbsp;";
+        }
+		
+		
+        $MSADDEVENT =
+"<input type='text' id='add_event' name='add_event' size='40'  value =''>
+		<input type=\"button\" id=\"aw_addevent\" value=\"add event\"$disable>";
+        $MSMODLINE =
+"<input type=\"button\" id=\"aw_md1\" value=\"apply filter to saved events\" $disable>
+		<input type=\"button\" id=\"aw_md20\" value=\"clear saved events\" $disable>";
+
+        if (
+             (
+                  AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '1'
+               || AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '3'
+             )
+             && $optiongeneral ne ''
+          )
+        {
+            $MSTESTEVENT =
+                "<select id = \"eventtest\" name=\"eventtest\">"
+              . $optiongeneral
+              . "</select><input type=\"button\" id=\"aw_md2\" value=\"test event\"$disable onclick=\"javascript: checkevent(document.querySelector('#eventtest').value)\">";
+
+        }
+
+
+	$eventhtml =~ s/MS-SAVEEVENT/$MSSAVEEVENT/g;
+    $eventhtml =~ s/MS-ADDEVENT/$MSADDEVENT/g;
+    $eventhtml =~ s/MS-MODLINE/$MSMODLINE/g;
+    $eventhtml =~ s/MS-TESTEVENT/$MSTESTEVENT/g;
+    # $eventhtml =~ s/MS-CHANGETEXT/$inhalt5/g;
+    # $eventhtml =~ s/MS-HIDE1/$displayntog/g;
+    $eventhtml =~ s/MS-HELP5/$MSHELP5/g;
+    $eventhtml =~ s/MS-HELP6/$MSHELP6/g;
+    $eventhtml =~ s/MS-HELP7/$MSHELP7/g;
+
+  foreach (@translate) {
+        my ( $wert1, $wert2 ) = split( /->/, $_ );
+        $eventhtml =~ s/$wert1/$wert2/g;
+    }
+
+
+if ( ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) ne 'no_trigger'
+         || AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1" ){
+    $ret .=
+"<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
+      . $eventhtml
+      . "</div>";
+}
+#################################################################
+
+    # id event bridge
+
+    # my $idmode = AttrVal( $Name, 'MSwitch_Event_Id_Distributor', 'undef' );
+
+    # if (    $hash->{helper}{eventtoid}
+         # && $idmode ne "undef"
+         # && $expertmode eq "1" )
+    # {
+        # $ret .=
+# "<table border='$border' class='block wide' id='MSwitchWebBridge' nm='$hash->{NAME}'>
+	# <tr class=\"even\">
+	# <td>$MSDISTRIBUTORTEXT</td></tr>
+	# <tr class=\"even\">
+	# <td>&nbsp;</td></tr>";
+        # my $toid = $hash->{helper}{eventtoid};
+        # foreach my $a ( keys %{$toid} ) {
+            # $ret .=
+# "<tr class=\"even\"><td>&nbsp;&nbsp;&nbsp;&nbsp;$MSDISTRIBUTOREVENT "
+              # . $a
+              # . " =\> execute "
+              # . $hash->{helper}{eventtoid}{$a}
+              # . "</td></tr>";
+        # }
+        # $ret .= "<tr class=\"even\"><td>&nbsp;</td></tr></table></p>";
+    # }
+
+###############################################################
+    # id event bridge neu
+###############################################################
+
+
+
+###########################################################
+my $distributline = 0;
+
+my $dist='';
+
+if ( $expertmode eq "1" && (ReadingsVal( $Name, 'Trigger_device', 'no_trigger' ) ne 'no_trigger'
+         || AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1" ))
+	{
+
+
+
+
+			my $MSDELETE= 'delete';
+			my $MSADDDISTRI='add distributor';
+			my $MSSAVEDISTRI='modify distributor';
+			if (
+					 AttrVal(
+							  $Name, 'MSwitch_Language',
+							  AttrVal( 'global', 'language', 'EN' )
+					 ) eq "DE"
+				  )
+				{
+				$MSDELETE= 'löschen';
+				$MSADDDISTRI='neuer Verteiler';
+				$MSSAVEDISTRI='Verteiler speichern';
+				}
+
+
+
+			$dist=
+			"<div id='Distributor'>
+			<table border='0'  class='block wide' nm='$hash->{NAME}'>
+			<tr class=\"even\"><td colspan='2'nowrap>";
+
+				
+				 if ( AttrVal( $Name, 'MSwitch_Help', "0" ) eq '1' ) {
+					 $dist.="<input name='info' type='button' value='?' onclick=\"hilfe('eventdistributor')\">&nbsp;";
+				}
+				
+
+
+			$dist.="$MSDISTRIBUTORTEXT&nbsp;
+			<input id ='aw_dist1' name='' type='button' value='$MSADDDISTRI' onclick='adddistributor()'>
+			</td></tr>
+			<tr class=\"even\"><td>&nbsp;</td><td></td></tr>";
+				
+				
+				my $toid = $hash->{helper}{eventtoid};
+				foreach my $a ( keys %{$toid} ) {
+				
+				my $sel1="";
+				my $sel2 ="";
+				my @toid = split (/ /,$hash->{helper}{eventtoid}{$a});
+				if ($toid[0] eq "cmd1"){$sel1="selected";}
+				if ($toid[0] eq "cmd2"){$sel2="selected";}
+				
+				my $finaloptionid='';
+			for ( my $i = 1 ; $i < $anzahl+1; $i++ ) {
+
+					my $idsel = "";
+					if ($toid[2] eq $i){$idsel="selected";}
+					 $finaloptionid.=  "<option $idsel value='".$i."'>".$i."</option>";
+					}
+				
+			$dist.="<tr class=\"even\">
+				<td id='line1-".$distributline."'nowrap>
+				$MSDISTRIBUTOREVENT:
+				<select id = 'ideventNR".$distributline."' name='' onchange='checkdistricode()'>
+				<option selected='selected' value='$a'>$a</option>
+				$optiongeneral
+				</select>
+				</td>
+				<td id='line2-".$distributline."' width='100%'>
+				execute
+				CMD
+				<select id = 'ideventCMD".$distributline."' name='' onchange='checkdistricode()'>
+				<option $sel1 value='1'>1</option>
+				<option $sel2 value='2'>2</option>
+				</select>
+				&nbsp;
+				ID
+				<select id = 'ideventID".$distributline."' name='' onchange='checkdistricode()'>
+				 $finaloptionid
+				</select>
+				
+				&nbsp;
+				
+				<input id ='aw_dist_del$distributline' name='' type='button' value='$MSDELETE' onclick='deletedistributor(".$distributline.")'>
+				</td></tr>
+				
+				";
+				$distributline++;
+				}
+				 
+				
+				$dist.="<!--newline-->";
+				
+				
+				
+				$dist.="
+				<tr class=\"even\"><td colspan='2'>
+				&nbsp;
+				</td></tr>
+			<tr class=\"even\"><td colspan='2'>
+			<input id ='aw_dist' name='' type='button' value='$MSSAVEDISTRI' onclick='savedistributor()'>
+			</td>
+			</tr>
+			</table>
+			</div>";
+
+
+
+
+
+			my $finaloptionid='';
+			for ( my $i = 1 ; $i < $anzahl+1; $i++ ) {
+
+					my $idsel = "";
+					 $finaloptionid.=  "<option value='".$i."'>".$i."</option>";
+					}
+					
+
+			$dist.="<table style='display:none;' id ='rawcode'>
+			<tr class=\"even\">
+			<td id='line1-' nowrap>
+				$MSDISTRIBUTOREVENT:
+				<select id = 'ideventNR' name='' onchange='checkdistricode()'>
+				<option selected='selected' value='undefined'>no_trigger</option>
+				$optiongeneral
+				</select>
+				</td>
+				<td id='line2-' width='100%'>
+				execute
+				CMD
+				<select id = 'ideventCMD' name='' onchange='checkdistricode()'>
+				<option value='1'>1</option>
+				<option value='2'>2</option>
+				</select>
+				&nbsp;
+				ID
+				<select id = 'ideventID' name='' onchange='checkdistricode()'>
+				 $finaloptionid
+				</select>
+				&nbsp;
+				<input id ='aw_dist2' name='' type='button' value='$MSDELETE' onclick='deletedistributor(LINENUMBER)'>
+				</td></tr>
+			</table>
+			<br>
+			";
+	}
+
+
+$ret.= $dist;
+#  $optiongeneral
+###################################################################
+
+    # trigger ende
+
+####################
+
+    # my $MSTRIGGER;
+    # my $MSCMDONTRIGGER  = "";
+    # my $MSCMDOFFTRIGGER = "";
+    # my $MSCMD1TRIGGER   = "";
+    # my $MSCMD2TRIGGER   = "";
+    # my $MSSAVEEVENT     = "";
+    # my $MSADDEVENT      = "";
+    # my $MSMODLINE       = "";
+    # my $MSTESTEVENT     = "";
+    # my $MSHELP5         = "";
+    # my $MSHELP6         = "";
+    # my $MSHELP7         = "";
+
+    # my $MSHELP8  = "";
+    # my $MSHELP9  = "";
+    # my $MSHELP10 = "";
+    # my $MSHELP11 = "";
+
+    my $triggerdetailhtml = "
+<!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
+<!-- 
+info: festlegung einer zelleknöhe
+MS-cellhigh=30;
+-->
+<!-- 
+start:textersetzung:ger
+execute only cmd1->nur CMD1 ausführen
+execute only cmd2->nur CMD2 ausführen
+switch $Name on and execute cmd1->$Name anschalten und CMD1 ausführen
+switch $Name off and execute cmd2->$Name ausschalten und CMD2 ausführen
+trigger details:->Trigger Details
+modify Trigger->Triggerdetails speichern
+end:textersetzung:ger
+-->
+<!-- 
+start:textersetzung:eng
+end:textersetzung:eng
+-->
+<!-- start htmlcode -->
+<!-- start Trigger Details-->
+<table border='0' cellpadding='2' class='block wide' style='border-spacing:0px;'>
 		<tr>
 		<td colspan='4'>trigger details:</td>
 	</tr>
@@ -6846,36 +7289,17 @@ end:textersetzung:eng
 		<td>MS-TRIGGER</td>
 		<td nowrap>MS-CMD2TRIGGER</td>
 	</tr>
-	<tr>
-		<td>MS-HELP5</td>
-		<td>Save incomming events permanently</td>
-		<td>MS-SAVEEVENT</td>
-		<td>&nbsp;</td>
-	</tr>
-		<tr>
-		<td>MS-HELP7</td>
-		<td>event monitor</td>
-		<td><input id =\"eventmonitor\" name=\"eventmonitor\" type=\"checkbox\"></td>
-		<td>&nbsp;</td>
-	</tr>
-	<tr>
-		<td>MS-HELP6</td>
-		<td>Add event manually</td>
-		<td nowrap>MS-ADDEVENT</td>
-		<td>&nbsp;</td>
-	</tr>
 	
+
+
 	<tr>
-		<td id='log' colspan='1'></td>
-		<td id='log1' colspan='1'></td>
-		<td id='log2' colspan='1'></td>
-		<td id='log3' colspan='1'></td>
-	</tr>
-	<tr>
-		<td colspan='3'>MS-MODLINE</td>
-		<td>MS-TESTEVENT</td>
+		<td colspan='4'>MS-MODLINE</td>
+		
 	</tr>
 </table>
+<br>
+<!-- end Trigger Details-->
+
 ";
 
     my $extrakt2 = $triggerdetailhtml;
@@ -6910,12 +7334,12 @@ end:textersetzung:eng
     $triggerdetailhtml = $1;
     $triggerdetailhtml =~ s/#/\n/g;
 
-    my $selectedcheck3 = "";
-    my $SELF           = $Name;
-    my $testlog        = ReadingsVal( $Name, 'Trigger_log', 'on' );
-    if ( $testlog eq 'on' ) {
-        $selectedcheck3 = "checked=\"checked\"";
-    }
+    # my $selectedcheck3 = "";
+    # my $SELF           = $Name;
+    # my $testlog        = ReadingsVal( $Name, 'Trigger_log', 'on' );
+    # if ( $testlog eq 'on' ) {
+        # $selectedcheck3 = "checked=\"checked\"";
+    # }
     my $selftrigger       = "";
     my $showtriggerdevice = $Triggerdevice;
     if (    AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1"
@@ -7016,11 +7440,11 @@ end:textersetzung:eng
 
         if ( AttrVal( $Name, 'MSwitch_Help', "0" ) eq '1' ) {
             $MSHELP5 =
-"<input name='info' type='button' value='?' onclick=\"hilfe('saveevent')\">&nbsp;";
-            $MSHELP6 =
-"<input name='info' type='button' value='?' onclick=\"hilfe('addevent')\">&nbsp;";
-            $MSHELP7 =
-"<input name='info' type='button' value='?' onclick=\"hilfe('eventmonitor')\">&nbsp;";
+# "<input name='info' type='button' value='?' onclick=\"hilfe('saveevent')\">&nbsp;";
+            # $MSHELP6 =
+# "<input name='info' type='button' value='?' onclick=\"hilfe('addevent')\">&nbsp;";
+            # $MSHELP7 =
+# "<input name='info' type='button' value='?' onclick=\"hilfe('eventmonitor')\">&nbsp;";
             $MSHELP8 =
 "<input name='info' type='button' value='?' onclick=\"hilfe('cmd2off')\">&nbsp;";
             $MSHELP9 =
@@ -7032,31 +7456,29 @@ end:textersetzung:eng
 "<input name='info' type='button' value='?' onclick=\"hilfe('cmd2offonly')\">&nbsp;";
 
         }
-        $MSADDEVENT =
-"<input type='text' id='add_event' name='add_event' size='40'  value =''>
-		<input type=\"button\" id=\"aw_addevent\" value=\"add event\"$disable>";
+        # $MSADDEVENT =
+# "<input type='text' id='add_event' name='add_event' size='40'  value =''>
+		# <input type=\"button\" id=\"aw_addevent\" value=\"add event\"$disable>";
         $MSMODLINE =
-"<input type=\"button\" id=\"aw_md\" value=\"modify Trigger\" $disable>
-		<input type=\"button\" id=\"aw_md1\" value=\"apply filter to saved events\" $disable>
-		<input type=\"button\" id=\"aw_md2\" value=\"clear saved events\" $disable>";
+"<input type=\"button\" id=\"aw_md\" value=\"modify Trigger\" $disable>";
 
-        if (
-             (
-                  AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '1'
-               || AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '3'
-             )
-             && $optiongeneral ne ''
-          )
-        {
-            $MSTESTEVENT =
-                "<select id = \"eventtest\" name=\"eventtest\">"
-              . $optiongeneral
-              . "</select><input type=\"button\" id=\"aw_md2\" value=\"test event\"$disable onclick=\"javascript: checkevent(document.querySelector('#eventtest').value)\">";
+        # if (
+             # (
+                  # AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '1'
+               # || AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '3'
+             # )
+             # && $optiongeneral ne ''
+          # )
+        # {
+            # $MSTESTEVENT =
+                # "<select id = \"eventtest\" name=\"eventtest\">"
+              # . $optiongeneral
+              # . "</select><input type=\"button\" id=\"aw_md2\" value=\"test event\"$disable onclick=\"javascript: checkevent(document.querySelector('#eventtest').value)\">";
 
-        }
+        # }
     }
     else {
-        $triggerdetailhtml = "<p id=\"MSwitchWebTRDT\"></p>";
+        $triggerdetailhtml = "<div style='display:none;border-spacing:0px;'><p id=\"MSwitchWebTRDT\">no show</p></div>";
     }
 
 ##############################################################
@@ -7066,11 +7488,11 @@ end:textersetzung:eng
     $triggerdetailhtml =~ s/MS-ONCMD1TRIGGER/$MSCMDONTRIGGER/g;
     $triggerdetailhtml =~ s/MS-CMD2TRIGGER/$MSCMD2TRIGGER/g;
     $triggerdetailhtml =~ s/MS-CMD1TRIGGER/$MSCMD1TRIGGER/g;
-    $triggerdetailhtml =~ s/MS-SAVEEVENT/$MSSAVEEVENT/g;
+    #$triggerdetailhtml =~ s/MS-SAVEEVENT/$MSSAVEEVENT/g;
     $triggerdetailhtml =~ s/MS-TRIGGER/$MSTRIGGER/g;
-    $triggerdetailhtml =~ s/MS-ADDEVENT/$MSADDEVENT/g;
+    #$triggerdetailhtml =~ s/MS-ADDEVENT/$MSADDEVENT/g;
     $triggerdetailhtml =~ s/MS-MODLINE/$MSMODLINE/g;
-    $triggerdetailhtml =~ s/MS-TESTEVENT/$MSTESTEVENT/g;
+    #$triggerdetailhtml =~ s/MS-TESTEVENT/$MSTESTEVENT/g;
     $triggerdetailhtml =~ s/MS-CHANGETEXT/$inhalt5/g;
     $triggerdetailhtml =~ s/MS-HIDE1/$displayntog/g;
     $triggerdetailhtml =~ s/MS-HIDE/$displaynot/g;
@@ -7091,7 +7513,7 @@ end:textersetzung:eng
     $ret .=
 "<div id='MSwitchWebTRDT' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
       . $triggerdetailhtml
-      . "</div><br>";
+      . "</div>";
 
     #
 
@@ -7117,6 +7539,7 @@ end:textersetzung:eng
     my $MSLOCK             = "";
     my $MSMOD              = "";
     my $selectaffectedhtml = "
+<!--start zu schaltende Geräte -->
 <!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
 <!-- 
 start:textersetzung:ger
@@ -7152,7 +7575,7 @@ end:textersetzung:eng
 		<td>&nbsp;</td>
 	</tr>
 </table>
-";
+<!--end zu schaltende Geräte -->";
     my $extrakt3 = $selectaffectedhtml;
 
     $extrakt3 =~ s/\n/#/g;
@@ -7214,10 +7637,9 @@ end:textersetzung:eng
         $selectaffectedhtml =~ s/$wert1/$wert2/g;
     }
     $selectaffectedhtml =~ s/#/\n/g;
-    $ret .=
-"<div id='MSwitchWebAF' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
+    $ret .="<div t='2' id='MSwitchWebAF' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
       . $selectaffectedhtml
-      . "</div>";
+. "</div>";
 
 ####################
     #javascript$jsvarset
@@ -7242,9 +7664,6 @@ end:textersetzung:eng
      else{
 	 open( HELP, "<./$helpfile" ) || return "no Helpfile found";
 	 }
-
-
-
 	   while (<HELP>) {
             $Help = $Help . $_;
         }
@@ -7297,6 +7716,7 @@ end:textersetzung:eng
 	var UNLOCK ='" . ReadingsVal( $Name, '.lock', 'undef' ) . "';
 	var RENAME = '" . $rename . "';
 	var DEBUGMODE = '" . $debugmode . "';
+	var DISTRIBUTLINES = ".$distributline.";
 	
 	
 	
@@ -10213,6 +10633,49 @@ sub MSwitch_VUpdate($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
     readingsSingleUpdate( $hash, ".V_Check", $vupdate, 0 );
+	
+	if ( AttrVal( $Name, 'MSwitch_Event_Id_Distributor', 'undef' ) ne "undef" )
+	{
+	my $test = AttrVal( $Name, 'MSwitch_Event_Id_Distributor', 'undef' );
+	MSwitch_LOG( $Name, 0, "### Mswitch $Name Systemwechsel ###" );
+	MSwitch_LOG( $Name, 0, "Found: $test" );
+	readingsSingleUpdate( $hash, ".Distributor", $test, 0 );
+	MSwitch_LOG( $Name, 0, "Inhalt in Reading gespeichert" );
+	fhem("deletereading $Name Exec_cmd");
+	MSwitch_LOG( $Name, 0, "Attribut geloescht" );
+	fhem("deleteattr $Name MSwitch_Event_Id_Distributor");
+	fhem("einlesen der Bridge in ein Hash");
+	delete( $hash->{helper}{eventtoid} );
+	my $bridge= ReadingsVal( $Name, '.Distributor', 'undef' );
+	if ($bridge ne "undef")
+	{
+	 my @test = split( /\n/, $bridge );
+     foreach my $testdevices (@test) {
+            my ( $key, $val ) = split( /=>/, $testdevices );
+            $hash->{helper}{eventtoid}{$key} = $val;
+        }
+	
+	}
+	
+	
+	
+	
+	MSwitch_LOG( $Name, 0, "Attributlist geaendert");
+	MSwitch_LOG( $Name, 0, "### System umgestellt ###");
+	}
+	
+	
+	
+	
+	
+	
+	return;
+	
+	
+	# 
+    #
+	
+	
   # my $devs = ReadingsVal( $Name, '.Device_Affected_Details', '' );
   # encode from old format
   # $devs =~ s/,/#[NF]/g;
@@ -10668,7 +11131,7 @@ sub MSwitch_saveconf($$) {
             my $na = $1;
             my $ih = $2;
             $ih =~ s/#\[nl\]/\n/g;
-
+ 
             if ( $na eq "userattr" ) {
                 fhem("attr $name $na $ih");
             }
@@ -10689,6 +11152,9 @@ sub MSwitch_saveconf($$) {
         }
     }
     ################# helperkeys abarbeiten #######
+	
+	readingsSingleUpdate( $hash, ".V_Check", $vupdate, 0 );
+	
     delete( $hash->{helper}{safeconf} );
     delete( $hash->{helper}{mode} );
     ##############################################
@@ -11054,6 +11520,27 @@ sub MSwitch_clearlog($) {
     return;
 }
 ################################################################
+
+sub MSwitch_setbridge($$) {
+    my ( $hash, $bridge ) = @_;
+	my $name = $hash->{NAME};
+	$bridge =~ s/\[NL\]/\n/g;
+	$bridge =~ s/\[SP\]/ /g;
+	readingsSingleUpdate( $hash, ".Distributor", $bridge, 0 );
+	delete( $hash->{helper}{eventtoid} );
+	return if $bridge eq "undef";
+	 my @test = split( /\n/, $bridge );
+     foreach my $testdevices (@test) {
+            my ( $key, $val ) = split( /=>/, $testdevices );
+            $hash->{helper}{eventtoid}{$key} = $val;
+        }
+	return;
+}
+################################################################
+
+
+
+
 
 sub MSwitch_debug2($$) {
     my ( $hash, $cs ) = @_;
