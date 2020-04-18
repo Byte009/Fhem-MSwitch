@@ -1,4 +1,4 @@
 Version
-3.11
-Änderungen:
+3.12
+Änderungen: Bugfix nicht deklarierte Variable
 Info:
