@@ -1,5 +1,30 @@
 
 Help Frontend 
+
+#################################################################################################
+<- eventdistributor-
+<hr>
+Bietet die Möglichkeit eingehende Events unabhängig von den einzelnen
+Befehlszweigen auf einen durch eine ID gekennzeichneten Befehlszweig umzuleiten.
+Diese Option ist dafür gedacht, durch bestimmten Events (zusätzlich) speziell definierte Befehle auszuführen.
+Es handelt sich um eine "Experten"-Funktion , die für den 'normalen' Betrieb eher unüblich ist.
+
+Die Syntax ist vorgegeben:
+ - eingehendes Event: 
+ist das eingehende Event, welches die Auslösung eines Kommandos triggert
+
+ - execute CMD1|2
+gibt den auszuführenden Kommandozweig an (cmd1/cmd2)
+
+ - ID x
+gibt die ID des auszuführenden Befehles an. Diese kann in den einzelnen Befehlszweigen vergeben werden.
+
+Events, die durch diese Option umgeleitet werden, werden danach nicht weiter behandelt , d.H sie finden bei den weitern 'Triggedetails'
+keine Berücksichtigung.
+
+
+<hr>
+->
 #################################################################################################
 <- cmd2on-
 <hr>
