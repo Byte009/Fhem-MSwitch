@@ -10840,6 +10840,10 @@ sub MSwitch_Getsupport($) {
     $out .= "Trigger cmd4: ";
     $tmp = ReadingsVal( $Name, '.Trigger_cmd_off', 'undef' );
     $out .= "$tmp\\n";
+	$out .= "\\n----- Bridge Details -----\\n";
+	$tmp = ReadingsVal( $Name, '.Distributor', 'undef' );
+    $out .= "$tmp\\n";
+	
     my %savedetails = MSwitch_makeCmdHash($hash);
     $out .= "\\n----- Device Actions -----\\n";
     my @affecteddevices = split(
@@ -10914,6 +10918,11 @@ sub MSwitch_Getconfig($) {
             $tmp =~ s/'/\\'/g;
             $tmp =~ s/#\[bs\]/\\\\/g;
         }
+		
+		if ( $key eq ".Distributor" ) {
+		$tmp =~ s/\n/#[nl]/g;
+		}
+		
         $tmp =~ s/#\[tr\]/ /g;
         if (
                $key eq ".Device_Events"
@@ -11119,8 +11128,13 @@ sub MSwitch_saveconf($$) {
                     $newstring =~ s/#\[se\]#\[se\]/#[nl]/g;
                 }
                 if ( $1 eq ".sysconf" ) { }
+				
                 if ( $1 eq ".Device_Events" ) {
                     $newstring =~ s/ /#[tr]/g;
+                }
+				
+				 if ( $1 eq ".Distributor" ) {
+                    $newstring =~ s/#\[nl\]/\n/g;
                 }
                 readingsSingleUpdate( $hash, "$1", $newstring, 0 );
             }
