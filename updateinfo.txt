@@ -1,4 +1,4 @@
 Version
 3.12
-Änderungen: Bugfix nicht deklarierte Variable
+Aenderungen: Bugfix nicht deklarierte Variable
 Info:
