@@ -1,4 +1,4 @@
 Version
-3.12
-Change:  Test do not update
-Info:
+3.13
+Change: FREECMD in devicesettings eingefüht - interne speicherverwaltung geandert 
+Info: benoetigte Zwischenversion fuer 3.14
