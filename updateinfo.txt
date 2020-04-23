@@ -1,4 +1,4 @@
 Version
-3.14
-Change: FREECMD in devicesettings eingefuehrt - interne speicherverwaltung geaendert 
-Info: benoetigte Zwischenversion fuer 3.15
+3.15
+Change: bugfix frontend 
+Info: 
