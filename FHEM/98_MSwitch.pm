@@ -71,7 +71,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';    #off/on
-my $version      = '3.15';
+my $version      = '3.14';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -4791,6 +4791,8 @@ sub MSwitch_fhemwebFn($$$$) {
             $optionon .= "<option value=\"$_\">" . $_ . "</option>";
         }
 
+
+
         if ( $triggercmdon eq $_ ) {
             $optioncmdon =
                 $optioncmdon
@@ -4874,12 +4876,12 @@ foreach (@alloptions)
     if ( $toc eq '1' ) {
         $optioncmdon =
           "<option value=\"no_trigger\">no_trigger</option>" .
-		  $optionon;
+		  $optioncmdon;
     }
     else {
         $optioncmdon =
 "<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>".
-		  $optionon;
+		  $optioncmdon;
     }
 
     my $optioncmdoff = '';
@@ -4897,6 +4899,8 @@ foreach (@alloptions)
         else {
             $optionoff = $optionoff . "<option value=\"$_\">$_</option>";
         }
+		
+		
         if ( $triggercmdoff eq $_ ) {
             $optioncmdoff = $optioncmdoff
               . "<option selected=\"selected\" value=\"$_\">$_</option>";
@@ -4907,6 +4911,7 @@ foreach (@alloptions)
         }
     }
 
+
     if ( $to eq '1' ) {
         $optionoff =
           "<option value=\"no_trigger\">no_trigger</option>" . $optionoff;
@@ -4916,6 +4921,8 @@ foreach (@alloptions)
 "<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>"
           . $optionoff;
     }
+
+
 
     if ( $toc eq '1' ) {
         $optioncmdoff =
@@ -11889,18 +11896,33 @@ sub MSwitch_dec($$) {
 	$todec =~ s/\[FREECMD\]//;
 	
 	
+	my $ersetzung;
+	$ersetzung = ReadingsVal( $name, "EVTPART3", "" );
+    $todec =~ s/\$EVTPART3/$ersetzung/g;
+    $ersetzung = ReadingsVal( $name, "EVTPART2", "" );
+    $todec =~ s/\$EVTPART2/$ersetzung/g;
+    $ersetzung = ReadingsVal( $name, "EVTPART1", "" );
+    $todec =~ s/\$EVTPART1/$ersetzung/g;
+    $ersetzung = ReadingsVal( $name, "EVENT", "" );
+    $todec =~ s/\$EVENT/$ersetzung/g;
+    $ersetzung = ReadingsVal( $name, "EVENTFULL", "" );
+    $todec =~ s/\$EVENTFULL/$ersetzung/g;
 	
-    my $x = 0;
-    while ( $todec =~ m/(.*?)(\$SELF)(.*)?/ ) {
-        my $firstpart  = $1;
-        my $secondpart = $2;
-        my $lastpart   = $3;
-        $todec = $firstpart . $name . $lastpart;
-        $x++;
-        last if $x > 10;    #notausstieg
-    }
+    $todec =~ s/\$SELF/$name/;
+	
+	$todec =~ s/\$EVENTFULL/$ersetzung/g;
+	
+    # my $x = 0;
+    # while ( $todec =~ m/(.*?)(\$SELF)(.*)?/ ) {
+        # my $firstpart  = $1;
+        # my $secondpart = $2;
+        # my $lastpart   = $3;
+        # $todec = $firstpart . $name . $lastpart;
+        # $x++;
+        # last if $x > 10;    #notausstieg
+    # }
     # setmagic ersetzun
-    $x = 0;
+    my $x = 0;
     while ( $todec =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) {
         $x++;               # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
