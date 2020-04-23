@@ -1,4 +1,4 @@
 Version
 3.14
-Change: FREECMD in devicesettings eingefüht - interne speicherverwaltung geandert 
+Change: FREECMD in devicesettings eingefuehrt - interne speicherverwaltung geandert 
 Info: benoetigte Zwischenversion fuer 3.15
