@@ -8032,29 +8032,47 @@ my $testname = "EVENT";
 // \$( \"div:contains(\'" . $testname . "\')\" ).css('display','none');
 // \$( \"table[data-name|=\'" . $testname . "\']\" ).css('display','none');
 // \$(\".makeTable.wide.readings\").css('display','none');
-	 \$(\".block.wide.readings.wrapcolumns\").html('".$inhalt."');
-	 
 
 	 
+	 \$(\".block.wide.readings\").html('".$inhalt."');
+
+
+
 	 var internals = \$(\".makeTable.wide.internals\").html();
 	 var readings  = \$(\".makeTable.wide.readings\").html();
 	 
 
 	 
+	 \$(\".makeTable.wide.readings\").html(internals);
+	 \$(\".makeTable.wide.internals\").html(readings);
+
 	 
-	\$(\".makeTable.wide.readings\").html(internals);
-	\$(\".makeTable.wide.internals\").html(readings);
+	 
+ 
+	return;
 	 
 	 
+
+ }
+	";
+	
+	
+	
+	
+		 # \$(\".block.wide.readings.wrapcolumns\").html('".$inhalt."');
 	 
+
+	 
+	 # var internals = \$(\".makeTable.wide.internals\").html();
+	 # var readings  = \$(\".makeTable.wide.readings\").html();
 	 
 
 	 
 	 
+	# \$(\".makeTable.wide.readings\").html(internals);
+	# \$(\".makeTable.wide.internals\").html(readings);
 	 
-	return;
- }
-	";
+	 
 	
 	
 		# \$(\".makeTable.wide.internals\").attr(\"id\",\"mwi\");
