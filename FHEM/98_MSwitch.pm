@@ -71,7 +71,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';    #off/on
-my $version      = '3.14a';
+my $version      = '3.14b';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -4518,10 +4518,6 @@ sub MSwitch_fhemwebconf($$$$) {
 	// firstconfig
 	var logging ='off';
 	var devices = " . $devstring . ";
-	var at = " . $at . ";
-	var atdef = " . $atdef . ";
-	var atcmd = " . $comand . ";
-	var atspec = " . $timespec . ";
 	var triggertime = " . $trigtime . ";
 	var cmds = " . $cmds . ";
 	var i;
@@ -4542,6 +4538,15 @@ sub MSwitch_fhemwebconf($$$$) {
 	}); 
 	});
 	</script>";
+	
+	
+	# at vorübergehend deaktiviert
+	# var at = " . $at . ";
+	# var atdef = " . $atdef . ";
+	# var atcmd = " . $comand . ";
+	# var atspec = " . $timespec . ";
+	
+	
     $return .= "<br>&nbsp;<br>" . $j1;
     return $return;
 }
