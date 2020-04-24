@@ -438,6 +438,8 @@ function startwizardtrigger(){
 	}
 	
 function makeconfig(){
+	
+	alert('makeconfig');
 	// configstart[0] = '#V '+mVersion;
 	if (document.getElementById('first').value == 'time'){
 		// ändere config für timeevent
@@ -491,7 +493,7 @@ function makeconfig(){
 	fillconfig('rawconfig')
 	
 	return;
-}
+} 
 
 function fillconfig(name){
 	var showconf='';
@@ -511,10 +513,20 @@ function saveconfig(name,mode){
 	makeconfig();
 	}
 	conf = document.getElementById(name).value;
+	
+	
+	
 	conf = conf.replace(/\n/g,'#[EOL]');
+	conf = conf.replace(/#\[REGEXN\]/g,'\\n');
+	
 	conf = conf.replace(/:/g,'#c[dp]');
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
+	
+	//alert(conf);
+	//return;
+	
+	
 	
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
@@ -1101,16 +1113,28 @@ function startimportpreconf(){
 	preconfparts = preconf.split("#-NEXT-");
 	var anzahl = preconfparts.length;
 	var count =0;
+	
+	
 	for (i=count; i<anzahl; i++)
 		{
 		treffer = preconfparts[i].match(/#NAME.(.*?)(#\[NEWL\])/);
 		help = preconfparts[i].match(/#HELP.(.*?)(#\[NEWL\])/);
 		preconfparts[i] = (preconfparts[i].split(treffer[0]).join(''));
 		preconfparts[i] = (preconfparts[i].split(help[0]).join(''));
+		
+		
+		
+		preconfparts[i] = preconfparts[i].replace(/\n/g,'#[REGEXN]');
 		preconfparts[i] = preconfparts[i].replace(/#\[NEWL\]/gi,"\n");
+		
+		
+		
+		
 		preconfpartsname.push(treffer[1]);
 		preconfpartshelp.push(help[1]); 
 		}
+		
+		
 	script = 'setpreconf';
 	ret = '<select id =\"\" name=\"\" onchange=\"javascript: '+script+'(this.value)\">';
 	ret +='<option value=\"empty\">bitte Device wählen</option>';
