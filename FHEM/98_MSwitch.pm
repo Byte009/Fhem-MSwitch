@@ -71,7 +71,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';    #off/on
-my $version      = '3.14b';
+my $version      = '3.14c';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -1672,7 +1672,7 @@ sub MSwitch_Set($@) {
             my $oldroom     = AttrVal( $name, 'MSwitch_Inforoom', 'undef' );
             foreach my $attrdevice ( keys %{ $attr{$name} } )    #geht
             {
-                fhem("deleteattr $name $attrdevice ");
+                fhem "deleteattr $name $attrdevice";
             }
 
             $hash->{Version_Modul}         = $version;
@@ -1681,6 +1681,51 @@ sub MSwitch_Set($@) {
             $hash->{MODEL}                 = $startmode." ".$version;
             # $hash->{Support_Fhemforum} =
               # "https://forum.fhem.de/index.php/topic,86199.0.html";
+%setlist =();
+%sets =();
+
+%sets = (
+             "wizard"            => "noArg",
+             "on"                => "noArg",
+             "reset_device"      => "noArg",
+             "off"               => "noArg",
+             "reload_timer"      => "noArg",
+             "active"            => "noArg",
+             "inactive"          => "noArg",
+             "devices"           => "noArg",
+             "details"           => "noArg",
+             "del_trigger"       => "noArg",
+             "del_delays"        => "noArg",
+             "del_function_data" => "noArg",
+             "trigger"           => "noArg",
+             "filter_trigger"    => "noArg",
+             "add_device"        => "noArg",
+             "del_device"        => "noArg",
+             "addevent"          => "noArg",
+             "backup_MSwitch"    => "noArg",
+             "import_config"     => "noArg",
+             "saveconfig"        => "noArg",
+             "savesys"           => "noArg",
+             "sort_device"       => "noArg",
+             "fakeevent"         => "noArg",
+             "exec_cmd_1"        => "noArg",
+             "exec_cmd_2"        => "noArg",
+             "del_repeats"       => "noArg",
+             "wait"              => "noArg",
+             "VUpdate"           => "noArg",
+             "Writesequenz"      => "noArg",
+             "confchange"        => "noArg",
+             "clearlog"          => "noArg",
+             "set_trigger"       => "noArg",
+             "reset_cmd_count"   => "",
+             "delcmds"           => "",
+             "deletesinglelog"   => "noArg",
+             "change_renamed"    => ""
+);
+
+
+
+
 
             readingsBeginUpdate($hash);
             readingsBulkUpdate( $hash, ".Device_Events",   "no_trigger", 1 );
