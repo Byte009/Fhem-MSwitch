@@ -71,7 +71,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';    #off/on
-my $version      = '3.14c';
+my $version      = '3.14d';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -6006,10 +6006,12 @@ MS-HELPdelay
 					  ";
             }
             else {
+			
+			#style='width: 808px; height: 230px;'
                 # freecmd
                 $savedetails{ $aktdevice . '_onarg' } =~ s/'/&#039/g;
                 $SET1 =
-"<textarea class=\"devdetails\" cols='50' rows='3' id='cmdonopt"
+"<textarea onclick=\"javascript: checklines(id+'$_')\" class=\"devdetails\" rows='10' id='cmdonopt' style=\"width:97%;\" "
                   . $_
                   . "1' name='cmdonopt"
                   . $nopoint . "'
@@ -6087,7 +6089,7 @@ MS-HELPdelay
                 $savedetails{ $aktdevice . '_offarg' } =~ s/'/&#039/g;
 
                 $SET2 =
-"<textarea class=\"devdetails\" cols='50' rows='3' id='cmdoffopt"
+"<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdoffopt' style=\"width:97%;\""
                   . $_
                   . "1' name='cmdoffopt"
                   . $_ . "'
@@ -8004,6 +8006,10 @@ end:textersetzung:eng
 	$javaform
 	//eval(JAVAFORM);
 	//return;
+	
+	
+	devices = devices.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+	
 	devices = devices.replace(/:/g,'#[dp]');
 	devices = devices.replace(/;/g,'#[se]');
 	devices = devices.replace(/ /g,'#[sp]');
