@@ -1,4 +1,4 @@
 Version
-3.14c
-Change: bugfix wizard - neue Version der MSwitchUpdaters 
+3.14d
+Change: Freecmdfelder Frontend geaendert 
 Info: 
