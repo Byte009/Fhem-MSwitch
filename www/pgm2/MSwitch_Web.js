@@ -9,6 +9,14 @@
 	//var innerset = $( "div[cmd='set']" ).html();
 //####################################################################################################
 
+
+	var checkfield ='';
+
+
+
+
+
+
 // speichern von originalcodes für not avaible
 // var ORGdistricode = $( "#Distributor" ).html();
 
@@ -1546,6 +1554,30 @@ if (debug == 'on'){ alert('checkcondition') }
 	});
 	
 
+
+function checklines(name)
+{
+	if (checkfield != name){
+	text = $("[name="+name+"]").val();
+	var zeilen = 0;
+	var pos = 0;
+	while (pos !== -1) {
+	zeilen++;
+	pos = text.indexOf("\n", pos + 1);
+ } 
+	checkfield = name;
+	if (zeilen < 10){
+	zeilen = 10;
+	}
+	
+	if (zeilen > 100){
+	zeilen = 100;
+	}
+	
+	$("[name="+name+"]").attr('rows', zeilen);
+	}
+	return;
+}
 
 
 
