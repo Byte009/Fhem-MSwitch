@@ -1,4 +1,4 @@
 Version
-3.14d
-Change: Freecmdfelder Frontend geaendert 
+3.15
+Change: attribut MSwitch_Device_Groups - Freecmd Perlabarbeitung geaendert
 Info: 
