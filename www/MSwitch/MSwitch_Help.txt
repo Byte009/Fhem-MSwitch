@@ -391,12 +391,18 @@ Sonderformate:
 ->
 #################################################################################################
 
-
-
 Help Attribute
 #################################################################################################
 <- attr-
+
 <hr>
+<strong>MSwitch_Device_Groups</strong>
+Erlaubt die Anlage von Devicegruppen. Diese Gruppen sind dan bei den Affected Devices zur Auswahl verfügbar.
+Das Format lautet: GRUPPENNAME-\>devicename,decicename ....
+
+mehrere Gruppen sind durch Zeilenumbruch zu trennen. 
+Statt der Devicenamen kann RegEx angewendet werden.
+
 <strong>MSwitch_Language:EN,DE</strong>
 Umschaltung der Frontendsprache.
 
@@ -814,3 +820,4 @@ Veranlasst das Mswitch für den angegebenen Zeitraum in Sekunden (ss) auf keine 
 <strong></strong>
 <hr>
 ->
+
