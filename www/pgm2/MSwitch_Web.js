@@ -1115,7 +1115,19 @@ if (debug == 'on'){ alert('deviceselect') };
 	FW_okDialog(sel,'',removeFn) ; 
 	}
 	 
+	 function  showgroup(group){
+		//alert(group);
+	cmd ='set '+devicename+' showgroup '+group;
+	FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
+		 return;
+	 }
 	 
+	 
+
+
+	
+	
+	
  		 
 // lösche log
 function deletelog() {
