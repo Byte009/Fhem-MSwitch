@@ -1,1 +1,3 @@
-Version: V3.14d
+Version: V3.15
+add attr MSwicth_Device_Groups
+change Freecmd_Perl
