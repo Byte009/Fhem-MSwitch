@@ -2927,16 +2927,26 @@ sub MSwitch_Cmd(@) {
 #############################
     }
     my $showpool = join( ',', @cmdpool );
+	
+	
+	  if ( AttrVal( $Name, 'MSwitch_Debug', "0" ) ne '0' ) {
+                
+         
+			
+			
+			
     if ( length($showpool) > 100 ) {
         $showpool = substr( $showpool, 0, 100 ) . '....';
     }
-    readingsSingleUpdate( $hash, "last_exec_cmd", $showpool, $showevents )
-      if $showpool ne '';
+    readingsSingleUpdate( $hash, "last_exec_cmd", $showpool, $showevents )if $showpool ne '';
     if ( AttrVal( $Name, 'MSwitch_Expert', '0' ) eq "1" ) {
         readingsSingleUpdate( $hash, "last_cmd",
                               $hash->{helper}{priorityids}{$lastdevice},
                               $showevents );
     }
+	   }
+	
+	
 }
 ####################
 sub MSwitch_toggle($$) {
@@ -4602,8 +4612,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	var devicename= '" . $Name . "';
 	var mVersion= '" . $version . "';
 	var MSDATAVERSION = '".$vupdate."';
-	var notify = " . $notify . ";
-	var notifydef = " . $notifydef . ";
+
 	\$(document).ready(function() {
     \$(window).load(function() {
 	name = '$Name';
@@ -4621,7 +4630,8 @@ sub MSwitch_fhemwebconf($$$$) {
 	# var atdef = " . $atdef . ";
 	# var atcmd = " . $comand . ";
 	# var atspec = " . $timespec . ";
-	
+	#	var notify = " . $notify . ";
+	# var notifydef = " . $notifydef . ";
 	
     $return .= "<br>&nbsp;<br>" . $j1;
     return $return;
@@ -4631,8 +4641,7 @@ sub MSwitch_fhemwebconf($$$$) {
 sub MSwitch_fhemwebFn($$$$) {
 
     #  my $loglevel = 5;
-    my ( $FW_wname, $d, $room, $pageHash ) =
-      @_;    # pageHash is set for summaryFn.
+    my ( $FW_wname, $d, $room, $pageHash ) =@_;    # pageHash is set for summaryFn.
     my $hash       = $defs{$d};
     my $Name       = $hash->{NAME};
     my $jsvarset   = '';
