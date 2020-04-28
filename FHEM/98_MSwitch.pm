@@ -4451,6 +4451,12 @@ sub MSwitch_fhemwebconf($$$$) {
     }
     chop $devstring;
     chop $cmds;
+	
+	$cmds =~ s/\n//g;
+    $cmds =~ s/\r//g;
+	
+	
+	
     $devstring = "[" . $devstring . "]";
     $cmds      = "[" . $cmds . "]";
 
@@ -4539,7 +4545,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	
 	<table border = '0'>
 	<tr>
-	<td colspan='2'>Teil 1 (Auslöser des Devices)
+	<td colspan='2'>Teil 1 (Ausloeser des Devices)
 	<br>&nbsp;
 	</td>
 	</tr>
