@@ -397,8 +397,15 @@ Help Attribute
 
 <hr>
 <strong>MSwitch_Device_Groups</strong>
-Erlaubt die Anlage von Devicegruppen. Diese Gruppen sind dan bei den Affected Devices zur Auswahl verfügbar.
-Das Format lautet: GRUPPENNAME-\>devicename,decicename ....
+Erlaubt die Anlage von Devicegruppen.
+Diese Gruppen sind dan bei den Affected Devices zur Auswahl verfügbar, 
+wobei dort nur Befehleangeboten werden , die ALLE Geräte in der Gruppe gemeinsam haben.
+Sollte der benötigte Befehl nicht aufgeführt sein kann alternativ [FREECMD] genutzt werden.
+
+
+Das Format lautet:
+GRUPPENNAME-\>devicename,decicename ....
+GRUPPENNAME1-\>devicename1,decicename2 ....
 
 mehrere Gruppen sind durch Zeilenumbruch zu trennen. 
 Statt der Devicenamen kann RegEx angewendet werden.
