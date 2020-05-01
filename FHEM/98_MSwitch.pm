@@ -152,6 +152,7 @@ sub MSwitch_priority;
 sub MSwitch_sort;
 sub MSwitch_dec($$);
 sub MSwitch_makefreecmd($$);
+sub MSwitch_makefreecmdonly($$);
 sub MSwitch_clearlog($);
 sub MSwitch_LOG($$$);
 sub MSwitch_Getsupport($);
@@ -2542,12 +2543,23 @@ sub MSwitch_Set($@) {
 "set $devicenamet $devicedetails{$device.'_on'} $devicedetails{$device.'_onarg'}"
                   if $cmd eq "on";
 
-                if ( $devicenamet eq 'FreeCmd' ) {
+
+
+my $pos=index($cs,"[FREECMD]");
+#MSwitch_LOG( $name, 0, "$devicenamet $pos Befehl gefunden: -> " . $cs . " " . __LINE__ );
+if ( $pos > 0 ) 
+				{
+				$cs = MSwitch_makefreecmdonly( $hash, $cs );
+				}
+
+                if ( $devicenamet eq 'FreeCmd' ) 
+				{
                     $cs = "$devicedetails{$device.'_'.$cmd.'arg'}";
                     $cs = MSwitch_makefreecmd( $hash, $cs );
                     MSwitch_LOG( $name, 5,
                                  "zurück von freecmd: -> " . __LINE__ );
                 }
+				
 
                 MSwitch_LOG( $name, 6,
                              "Befehl gefunden: -> " . $cs . " " . __LINE__ );
@@ -5234,7 +5246,7 @@ sub MSwitch_fhemwebFn($$$$) {
             $errors .= ' ' . 'MSwitchtoggle';
         }
 
-        $errors .= ' ' . '[FREECMD]';
+        $errors .= ' ' . '[FREECMD]:textfielfLong';
 
         if ( $errors ne '' ) {
             $selected = "";
@@ -5659,7 +5671,7 @@ MS-HELPdelay
             if ( grep( /$re/, @msgruppen ) > 0 ) {
 
                 my $gruppencmd = MSwitch_makegroupcmd( $hash, $devicenamet );
-                $cmdsatz{$devicenamet} = $gruppencmd . ' [FREECMD]';
+                $cmdsatz{$devicenamet} = $gruppencmd . ' [FREECMD]:textfieldLong';
             }
 
             my $devicenumber = $devicesplit[1];
@@ -8423,8 +8435,14 @@ sub MSwitch_Exec_Notif($$$$$) {
                 #variableersetzung erfolgt in freecmd
             }
             else {
-                $cs =
-"set $devicenamet $devicedetails{$device.'_'.$comand} $devicedetails{$device.'_'.$comand.'arg'}";
+                $cs ="set $devicenamet $devicedetails{$device.'_'.$comand} $devicedetails{$device.'_'.$comand.'arg'}";
+
+my $pos=index($cs,"[FREECMD]");
+#MSwitch_LOG( $name, 0, "$devicenamet $pos Befehl gefunden: -> " . $cs . " " . __LINE__ );
+if ( $pos > 0 ) 
+				{
+				$cs = MSwitch_makefreecmdonly( $hash, $cs );
+				}
 
             }
 
@@ -12099,6 +12117,66 @@ sub MSwitch_dec($$) {
 
 ################################################################
 
+
+sub MSwitch_makefreecmdonly($$) {
+
+    #ersetzungen und variablen für freecmd
+    # nur für freecmdperl
+
+    my ( $hash, $cs ) = @_;
+    my $name = $hash->{NAME};
+    #MSwitch_LOG( $name, 0, "vor freecmdonly: " . $cs );
+    if ( $cs =~ m/(.*)({)(.*)(})/s ) {
+    my $firstpart = $1;
+        ## variablendeklaration für perlcode / wird anfangs eingefügt
+		MSwitch_LOG( $name, 5, "firstpart -> " . $firstpart . " " . __LINE__ );
+        MSwitch_LOG( $name, 5, "ersetzung -> " . $3 . " " . __LINE__ );
+        my $newcode = "";
+		
+		if (exists $hash->{helper}{eventfrom}){
+        $newcode .= "my \$NAME = \"" . $hash->{helper}{eventfrom} . "\";";
+		}else{
+		$newcode .= "my \$NAME = \"\";";
+		}
+		
+		
+		
+        $newcode .= "my \$SELF = \"" . $name . "\";\n";
+        $newcode .=
+          "my \$EVTPART1 = \"" . ReadingsVal( $name, "EVTPART1", "" ) . "\";";
+        $newcode .=
+          "my \$EVTPART2 = \"" . ReadingsVal( $name, "EVTPART2", "" ) . "\";";
+        $newcode .=
+          "my \$EVTPART3 = \"" . ReadingsVal( $name, "EVTPART3", "" ) . "\";";
+        $newcode .= "my \$EVENTFULL = \""
+          . ReadingsVal( $name, "EVENTFULL", "" ) . "\";";
+        
+        $newcode .= $3;
+        $cs = "{\n$newcode}";
+      
+
+        # entferne kommntarzeilen
+        $cs =~ s/#\[SR\]/|/g;
+
+        # maskiere raute die nicht zu kommentar gehören !
+        $cs =~ s/\\#/comment/g;
+        $cs =~ s/#.*\n//g;
+        $cs =~ s/comment/#/g;
+       
+	   
+	   $cs=$firstpart."".eval($cs);
+	#MSwitch_LOG( $name, 0, "NACH freecmdonly:" . $cs );
+    return $cs;
+    }
+	
+	#MSwitch_LOG( $name, 0, "NACH freecmdonly:" . $cs );
+	return $cs;
+
+}
+
+
+
+################################################################
 sub MSwitch_makefreecmd($$) {
 
     #ersetzungen und variablen für freecmd
@@ -12106,13 +12184,23 @@ sub MSwitch_makefreecmd($$) {
 
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
-    MSwitch_LOG( $name, 5, "vor freecmd: " . $cs );
+    MSwitch_LOG( $name, 0, "vor freecmd: " . $cs );
     if ( $cs =~ m/({)(.*)(})/s ) {
 
         ## variablendeklaration für perlcode / wird anfangs eingefügt
         MSwitch_LOG( $name, 5, "ersetzung -> " . $2 . " " . __LINE__ );
         my $newcode = "# variablendeklaration von MSwitch eingefuegt\n";
-        $newcode .= "my \$NAME = \"" . $hash->{helper}{eventfrom} . "\";\n";
+		
+        #$newcode .= "my \$NAME = \"" . $hash->{helper}{eventfrom} . "\";\n";
+		
+		if (exists $hash->{helper}{eventfrom}){
+        $newcode .= "my \$NAME = \"" . $hash->{helper}{eventfrom} . "\";";
+		}else{
+		$newcode .= "my \$NAME = \"\";";
+		}
+		
+		
+		
         $newcode .= "my \$SELF = \"" . $name . "\";\n";
         $newcode .=
           "my \$EVTPART1 = \"" . ReadingsVal( $name, "EVTPART1", "" ) . "\";\n";
@@ -12140,7 +12228,7 @@ sub MSwitch_makefreecmd($$) {
         $cs =~ s/\\#/comment/g;
         $cs =~ s/#.*\n//g;
         $cs =~ s/comment/#/g;
-        MSwitch_LOG( $name, 5, "NACH freecmd:" . $cs );
+        MSwitch_LOG( $name, 0, "NACH freecmd:" . $cs );
     }
     return $cs;
 
