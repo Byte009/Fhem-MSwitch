@@ -12228,7 +12228,7 @@ sub MSwitch_makefreecmd($$) {
         $cs =~ s/\\#/comment/g;
         $cs =~ s/#.*\n//g;
         $cs =~ s/comment/#/g;
-        MSwitch_LOG( $name, 0, "NACH freecmd:" . $cs );
+        MSwitch_LOG( $name, 5, "NACH freecmd:" . $cs );
     }
     return $cs;
 
