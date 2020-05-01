@@ -797,20 +797,48 @@ function noaction(target,copytofield){
 	return;
 	}  
 
-function textfield(copytofield,target)
+
+
+function textfieldlong(copytofield,target)
 	{
 	if (debug == 'on'){ alert('textfield') };
 		var selected =document.getElementById(copytofield).value;
+		var ID = Math.random();
+		var ID1 = Math.random();
+		var IDFinish =ID1+ID;
+		//alert(IDFinish);
 		if (copytofield.indexOf('cmdonopt') != -1) {
-		var selectfield = "<input type='text' size='30' value='" + selected +"' onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\">"  ;
+		var selectfield = "<input id='"+IDFinish+"' onClick='javascript:bigwindow(this.id);' type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"     onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"  >"  ;
 		document.getElementById(target).innerHTML = selectfield + '<br>';	
 		}
 		else{
-		var selectfield = "<input type='text' size='30' value='" + selected +"' onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\">"  ;
+		var selectfield = "<input id='"+IDFinish+"' onClick='javascript:bigwindow(this.id);' type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\" onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\">"  ;
 		document.getElementById(target).innerHTML = selectfield + '<br>';
 		}
 		return;
 	}
+
+
+
+function textfield(copytofield,target)
+	{
+	if (debug == 'on'){ alert('textfield') };
+		var selected =document.getElementById(copytofield).value;
+	
+		if (copytofield.indexOf('cmdonopt') != -1) {
+		var selectfield = "<input type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"     onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"  >"  ;
+		document.getElementById(target).innerHTML = selectfield + '<br>';	
+		}
+		else{
+		var selectfield = "<input type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\" onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\">"  ;
+		document.getElementById(target).innerHTML = selectfield + '<br>';
+		}
+		return;
+	}
+
+
+
+
 
 function selectfield(args,target,copytofield){
 	if (debug == 'on'){ alert('selectfield') };
@@ -836,8 +864,10 @@ function selectfield(args,target,copytofield){
 	
 	
 
-	function activate(state,target,options,copytofield) ////aufruf durch selctfield
-	{
+function activate(state,target,options,copytofield){
+
+	////aufruf durch selctfield
+	
 	if (debug == 'on'){ alert('activate') };
 	debug = 'state: '+state+'<br>';
 	debug += 'target: '+target+'<br>';
@@ -885,11 +915,15 @@ function selectfield(args,target,copytofield){
 		werte[state]='textField';
 		}	
 	devicecmd = werte[state].split(",");
+	//alert(devicecmd[0]);
 	if (devicecmd[0] == 'noArg')
 		{
 		noarg(target,copytofield);
 		return;
 		}
+		
+	else if (devicecmd[0] == 'textfieldLong'){textfieldlong(copytofield,target);return;}	
+		
 	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);return;}
 	else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);return;}
 	else if (devicecmd[0] == 'textField'){textfield(copytofield,target);return;}
@@ -897,7 +931,7 @@ function selectfield(args,target,copytofield){
 	else if (devicecmd[0] == 'RGB'){textfield(copytofield,target);return;}
 	else if (devicecmd[0] == 'no_Action'){noaction();return;}
 	else {selectfield(werte[state],target,copytofield);return;}
-	alert('beende activate');
+	//alert('beende activate');
 	return;
 	}
 	
