@@ -12184,7 +12184,7 @@ sub MSwitch_makefreecmd($$) {
 
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
-    MSwitch_LOG( $name, 0, "vor freecmd: " . $cs );
+    MSwitch_LOG( $name, 5, "vor freecmd: " . $cs );
     if ( $cs =~ m/({)(.*)(})/s ) {
 
         ## variablendeklaration für perlcode / wird anfangs eingefügt
