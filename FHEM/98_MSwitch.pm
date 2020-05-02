@@ -69,7 +69,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.16';
+my $version      = '3.17';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -1356,12 +1356,25 @@ sub MSwitch_Set($@) {
         foreach my $test (@dynsetlist) {
             if ( $test =~ m/(.*)\[(.*)\]:?(.*)/ ) {
 
+
+ #Log3( $name, 0, "found $test " );
+
+
+
+
                 my @found_devices = devspec2array($2);
                 my $s1            = $1;
                 my $s2            = $2;
                 my $s3            = $3;
+				
+#Log3( $name, 0, "1 typ1 $s1" );
+#Log3( $name, 0, "2 typ1 $s2" );
+#Log3( $name, 0, "3 typ1 $s3" );
 
                 if ( $s1 ne "" && $1 =~ m/.*:/ ) {
+
+
+#Log3( $name, 0, "found typ1 " );
 
                     my $reading = $s1;
                     chop($reading);
@@ -1373,28 +1386,55 @@ sub MSwitch_Set($@) {
                 if ( $s3 ne "" ) {
 
                     my $sets = $s3;
-                    my @test = split( /:/, $sets );
+                    my @test = split( /,/, $sets );
+
+
+#Log3( $name, 0, "test @test " );
+#Log3( $name, 0, "test0 $test[0] " );
+#Log3( $name, 0, "test1 $test[1] " );
+
 
                     my $namezusatzback  = $sets;
                     my $namezusatzfront = $s1;
 
-                    if ( $test[1] ne "" ) {
-                        $namezusatzback = $test[0];
-                        $sets           = $test[1];
-                    }
+                   # if ( $test[1] ne "" ) {
+                  #      $namezusatzback = $test[0];
+                  #      $sets           = $test[1];
+                  #  }
 
-                    foreach my $test1 (@found_devices) {
-                        push @arraydynsetlist,
-                          $namezusatzfront . $test1 . $namezusatzback;
-                        $dynsetlist =
-                            $dynsetlist
-                          . $namezusatzfront
-                          . $test1
-                          . $namezusatzback . ":"
-                          . $sets . " ";
+                    foreach my $test1 (@found_devices)
+					# {
+                        # push @arraydynsetlist,
+                          # $namezusatzfront . $test1 . $namezusatzback;
+                        # $dynsetlist =
+                            # $dynsetlist
+                          # . $namezusatzfront
+                          # . $test1
+                          # . $namezusatzback . ":"
+                          # . $sets . " ";
+                    # }
+					
+					{
+					
+					
+					if ($sets eq "Arg"){
+					
+					#Log3( $name, 0, "push: ".$test1 );
+                        push @arraydynsetlist,$test1;
+					
+					}else{
+					
+					}
+					#Log3( $name, 0, "push: ".$test1.":".$sets );
+                        push @arraydynsetlist,$test1.":".$sets;
+                         
                     }
-                    @arraydynreadinglist = @found_devices;
+					
+                  	 @arraydynreadinglist = @found_devices;
+				 $dynsetlist = join(' ',@arraydynsetlist);
                 }
+			
+				
             }
             else {
                 $dynsetlist = $dynsetlist . $test;
@@ -1402,6 +1442,7 @@ sub MSwitch_Set($@) {
         }
 
     }
+	
 ###########################
 
     # nur bei funktionen in setlist !!!!
@@ -5382,8 +5423,13 @@ MS-HELPrepeats
 MS-HELPexeccmd
 MS-HELPdelay
 --> 
+
+
+
 <!-- start htmlcode -->
 <!--start devices -->
+
+
 <table border='0' class='block wide' id='MSwitchWebTR' nm='test1' cellpadding='4' style='border-spacing:0px;'>
 	<tr>
 		<td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
@@ -7981,16 +8027,52 @@ end:textersetzung:eng
 			<input type='button' id='' value='Help get' onclick=\"hilfe('get')\">
 			<input type='button' id='' value='Help attr'onclick=\"hilfe('attr')\" >
 			</td></tr></table>
-			";
+			"; 
     }
 
     my $hidecode = "";
     my $inhalt   = "";
 
-    if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
+
+if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
+
+    my @arraydynsetlist;
+ my @arraydynreadinglist=();
+###
+
+ if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) 
+ {
+
+    my $mswitchsetlist = AttrVal( $Name, 'MSwitch_setList', "undef" );
+    if ( $mswitchsetlist ne "undef" )
+	{
+        my @dynsetlist = split( / /, $mswitchsetlist );
+
+        foreach my $test (@dynsetlist)
+		{
+            if ( $test =~ m/(.*)\[(.*)\]:?(.*)/ ) 
+
+			{
+
+				my @found_devices = devspec2array($2);
+				my $s1            = $1;
+				my $s2            = $2;
+				my $s3            = $3;
+			
+				if ( $s3 ne "" )
+					{
+					@arraydynreadinglist = @found_devices;
+					}
+			}
+		}
+	}
+}
+
+###
 
         my $oddeven = "odd";
         my @readlist = split( / /, AttrVal( $Name, 'readingList', "" ) );
+		@readlist = (@readlist, @arraydynreadinglist);
 
         for (@readlist) {
 
@@ -11582,6 +11664,21 @@ sub MSwitch_saveconf($$) {
 
     # timrer berechnen
     MSwitch_Createtimer($hash);
+	
+	
+	    # eventtoid einlesen
+    delete( $hash->{helper}{eventtoid} );
+    my $bridge = ReadingsVal( $name, '.Distributor', 'undef' );
+    if ( $bridge ne "undef" ) {
+        my @test = split( /\n/, $bridge );
+        foreach my $testdevices (@test) {
+            my ( $key, $val ) = split( /=>/, $testdevices );
+            $hash->{helper}{eventtoid}{$key} = $val;
+        }
+
+    }
+	
+	
     return;
 }
 ################################################
@@ -11662,7 +11759,7 @@ sub MSwitch_repeat($) {
         MSwitch_LOG( $name, 5, "$name: fround toggle -> " . $cs );
 
     }
-    MSwitch_LOG( $name, 5, "$name: execute repeat $time -> " . $cs );
+    MSwitch_LOG( $name, 5, "$name: execute repeat $time -> " . $cs ) if $time;
     if ( AttrVal( $name, 'MSwitch_Debug', "0" ) ne '2' ) {
 
         if ( $cs =~ m/{.*}/ ) {
@@ -12426,17 +12523,21 @@ sub MSwitch_makegroupcmd($$) {
         my @cmdsatz = split( / /, $test );
 
         foreach my $aktsatz (@cmdsatz) {
+		
+		
             $data{MSwitch}{gruppentest}{$aktsatz} = 'ok';
             push( @unfilter, $aktsatz );
         }
     }
 
     my @testout = ( keys %{ $data{MSwitch}{gruppentest} } );
+	
+	
     my @exitcmd = ();
     foreach my $allkeys (@testout) {
         next if $allkeys eq "";
         next if $allkeys eq " ";
-        my $re       = qr/$allkeys/;
+        my $re       = qr/^$allkeys$/;
         my @gefischt = grep( /$re/, @unfilter );
         my $tmpanz   = @gefischt;
         if ( $tmpanz == $anzahldevices ) {
