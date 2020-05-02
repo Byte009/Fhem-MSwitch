@@ -2890,7 +2890,7 @@ sub MSwitch_Cmd(@) {
         MSwitch_LOG( $Name, 6, "vor dec -> " . $cmds );
 
         $cmds = MSwitch_dec( $hash, $todec );
-        MSwitch_LOG( $Name, 5, "nach dec -> " . $cmds );
+        MSwitch_LOG( $Name, 6, "nach dec -> " . $cmds );
 
         MSwitch_LOG( $Name, 6,
                      "Comand nach decodierung -> " . $cmds . " " . __LINE__ );
@@ -2902,7 +2902,15 @@ sub MSwitch_Cmd(@) {
         }
         else {
             if ( $cmds =~ m/({)(.*)(})/ ) {
+			
+			
+			
+			 MSwitch_LOG( $Name, 6,"vor ersetzung  $cmds" . __LINE__ );
+			
                 $cmds =~ s/\[SR\]/\|/g;
+				
+			MSwitch_LOG( $Name, 6,"nach ersetzung  $cmds" . __LINE__ );	
+				
                 my $out = eval($cmds);
                 if ($@) {
                     MSwitch_LOG( $Name, 0,
@@ -12140,18 +12148,21 @@ sub MSwitch_dec($$) {
 
         # ersetzung für perlcode
 
-        MSwitch_LOG( $name, 5, "#### CODE Perlcode #### " . $todec );
+        #MSwitch_LOG( $name, 0, "#### CODE Perlcode #### " . $todec );
 
         $todec =~ s/\n//g;
 
         $todec =~ s/\[\$SELF:/[$name:/g;
 
-        MSwitch_LOG( $name, 5, "#### CODE Perlcode #### " . $todec );
+       # MSwitch_LOG( $name, 0, "#### CODE Perlcode #### " . $todec );
 
     }
     else {
         # ersetzung für fhemcode
-        MSwitch_LOG( $name, 5, "#### CODE Fhemcode ####" . $todec );
+        
+		
+		
+		
 
         $todec =~ s/\$NAME/$hash->{helper}{eventfrom}/;
         $todec =~ s/\$SELF/$name/;
@@ -12174,13 +12185,21 @@ sub MSwitch_dec($$) {
 
     }
 
+MSwitch_LOG( $name, 6, "vor setmagik $todec " );
+
     # setmagic ersetzung
     my $x = 0;
-    while ( $todec =~ m/(.*)\[(.*)\:(.*)\](.*)/ ) {
+    while ( $todec =~ m/(.*)\[([a-zA-Z0-9._]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/) {
+	
+	
+	
+	MSwitch_LOG( $name, 6, "setmagik $3 $2 " );
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
         my $setmagic = ReadingsVal( $2, $3, 0 );
         $todec = $1 . $setmagic . $4;
+		
+		
     }
 
     # ersetzung für beide codes
@@ -12208,6 +12227,9 @@ sub MSwitch_dec($$) {
         }
 
     }
+
+
+MSwitch_LOG( $name, 0, "nach dec" . $todec );
 
     return $todec;
 }
