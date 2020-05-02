@@ -787,16 +787,49 @@ function noaction(target,copytofield){
 	document.getElementById(target).innerHTML = '';
 	return;}
 
+
+
+// widgets frontend
+
  function slider(first,step,last,target,copytofield){
 	if (debug == 'on'){ alert('slider') };
 	var selected =document.getElementById(copytofield).value;
-	var selectfield = "<input type='text' id='" + target +"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;" + first +"<input type='range' min='" + first +"' max='" + last + "' value='" + selected +"' step='" + step + "' onchange=\"javascript: showValue(this.value,'" + copytofield + "','" + target + "')\">" + last  ;
+	//var selectfield = "<input type='text' id='" + target +"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;" + first +"<input type='range' min='" + first +"' max='" + last + "' value='" + selected +"' step='" + step + "' onchange=\"javascript: showValue(this.value,'" + copytofield + "','" + target + "')\">" + last  ;
+	
+	var selectfield = "<div class='col3'><div class='fhemWidget' cmd='pct' reading='state' dev='webtestdummy' arg='slider,1,10,100' current='farbe test1'></div></div>";
+	
+	
 	document.getElementById(target).innerHTML = selectfield + '<br>';
-	var opt = target + '_opt';
-	document.getElementById(opt).value=selected;
+	
+	FW_replaceWidgets();
+	//var opt = target + '_opt';
+	//document.getElementById(opt).value=selected;
 	return;
 	}  
+	
+	
+	
+	
+	
+	
+	
 
+ function colorpicker(aktuell,target,copytofield){
+	if (debug == 'on'){ alert('slider') };
+	var selected =document.getElementById(copytofield).value;
+	
+	
+	//var selectfield = "<input type='text' id='" + target +"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;" + first +"<input type='range' min='" + first +"' max='" + last + "' value='" + selected +"' step='" + step + "' onchange=\"javascript: showValue(this.value,'" + copytofield + "','" + target + "')\">" + last  ;
+	
+	
+	
+	var selectfield = "<input type='color' id='favcolor' name='favcolor' value='#ff0000'>";
+	
+	document.getElementById(target).innerHTML = selectfield + '<br>';
+	//var opt = target + '_opt';
+	//document.getElementById(opt).value=selected;
+	return;
+	}  
 
 
 function textfieldlong(copytofield,target)
@@ -914,7 +947,14 @@ function activate(state,target,options,copytofield){
 		{
 		werte[state]='textField';
 		}	
+		
+		
+		
 	devicecmd = werte[state].split(",");
+	
+	
+	
+	
 	//alert(devicecmd[0]);
 	if (devicecmd[0] == 'noArg')
 		{
@@ -925,8 +965,10 @@ function activate(state,target,options,copytofield){
 	else if (devicecmd[0] == 'textfieldLong'){textfieldlong(copytofield,target);return;}	
 		
 	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);return;}
+	//else if (devicecmd[0] == 'slider'){slider(devicecmd[1],devicecmd[2],devicecmd[3],target,copytofield);return;}
 	else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);return;}
 	else if (devicecmd[0] == 'textField'){textfield(copytofield,target);return;}
+	//else if (devicecmd[0] == 'colorpicker'){colorpicker(devicecmd[1],target,copytofield);return;}
 	else if (devicecmd[0] == 'colorpicker'){textfield(copytofield,target);return;}
 	else if (devicecmd[0] == 'RGB'){textfield(copytofield,target);return;}
 	else if (devicecmd[0] == 'no_Action'){noaction();return;}
