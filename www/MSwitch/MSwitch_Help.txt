@@ -688,9 +688,14 @@ Format für den Zugriff in Bedingungsfeldern:
 dieses kann zusätzlich zur Setlist oder alleinstehend belegt werden. Hier besteht die Möglichkeit eine setList dynamisch zu belegen.
 
 Version 1
- - [TYPE=dummy]:on,off
+ - [TYPE=dummy]:on,off              dropdownliste on und off
+ - [TYPE=dummy]:slider,1,1,100      slider 
+ - [TYPE=dummy]:noArg               keine Option
+ - [TYPE=dummy]:Arg                 freies Optionseld
+ etc. ..
+ 
 macht alle dummys per Dropdownlist verfügbar,
-für jeden dieser Dummys wird ein gleichlautendes Reading angelegt, welches die Schaltoptionen on und off besitzt.
+für jeden dieser Dummys wird ein gleichlautendes Reading angelegt, welches die angelegte Schaltoption beinhalten kann 
  
 Version 2
  - status:[TYPE=dummy]
