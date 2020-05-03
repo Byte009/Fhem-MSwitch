@@ -580,9 +580,15 @@ sub MSwitch_LoadHelper($) {
     my $devhash    = undef;
     my $cdev       = '';
     my $ctrigg     = '';
+	
+	#Log3( $Name, 0, "Loadhelper gestartet $Name" ); 
+	
+	
+	
     if ( $hash->{INIT} eq "def" ) {
         return;
     }
+	
     if ( defined $hash->{DEF} ) {
         $devhash = $hash->{DEF};
         my @dev = split( /#/, $devhash );
@@ -630,7 +636,14 @@ sub MSwitch_LoadHelper($) {
         MSwitch_VUpdate($hash);
     }
 ################
-    if ( ReadingsVal( $Name, '.First_init', 'undef' ) ne 'done' ) {
+    if ( ReadingsVal( $Name, '.First_init', 'undef' ) ne 'done' ) 
+	{
+	
+	
+	
+	
+	
+	
         $hash->{helper}{config} = "no_config";
         readingsBeginUpdate($hash);
         readingsBulkUpdate( $hash, ".V_Check", $vupdate );
@@ -666,63 +679,11 @@ sub MSwitch_LoadHelper($) {
             $attr{$Name}{MSwitch_Inforoom} = $testdev,;
         }
 
-        #setze alle attrs
-        $attr{$Name}{MSwitch_Eventhistory}        = '0';
-        $attr{$Name}{MSwitch_Safemode}            = '1';
-        $attr{$Name}{MSwitch_Help}                = '0';
-        $attr{$Name}{MSwitch_Debug}               = '0';
-        $attr{$Name}{MSwitch_Expert}              = '0';
-        $attr{$Name}{MSwitch_Delete_Delays}       = '1';
-        $attr{$Name}{MSwitch_Include_Devicecmds}  = '1';
-        $attr{$Name}{MSwitch_Include_Webcmds}     = '0';
-        $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
-        $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
-        $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
-        $attr{$Name}{MSwitch_Extensions}          = '0';
-        $attr{$Name}{MSwitch_Mode}                = $startmode;
-        fhem("attr $Name room MSwitch_Devices");
-    }
 
-    # NEU; ZUVOR IN SET
-    my $testnew = ReadingsVal( $Name, '.Trigger_on', 'undef' );
-    if ( $testnew eq 'undef' ) {
-        readingsBeginUpdate($hash);
-        readingsBulkUpdate( $hash, ".Device_Events",   'no_trigger' );
-        readingsBulkUpdate( $hash, ".Trigger_on",      'no_trigger' );
-        readingsBulkUpdate( $hash, ".Trigger_off",     'no_trigger' );
-        readingsBulkUpdate( $hash, "Trigger_log",      'on' );
-        readingsBulkUpdate( $hash, ".Device_Affected", 'no_device' );
-        readingsEndUpdate( $hash, 0 );
-    }
 
-    MSwitch_Createtimer($hash);    #Neustart aller timer
-    #### savedelays einlesen
-    my $counter = 1;
-    while ( ReadingsVal( $Name, 'SaveDelay_' . $counter, 'undef' ) ne "undef" )
-    {
-        my $del = ReadingsVal( $Name, 'SaveDelay_' . $counter, 'undef' );
-        my @msgarray = split( /#\[tr\]/, $del );
-        my $timecond = $msgarray[4];
-        if ( $timecond > time ) {
-            $hash->{helper}{delays}{$del} = $timecond;
-            InternalTimer( $timecond, "MSwitch_Restartcmd", $del );
-        }
-        $counter++;
-    }
-    fhem("deletereading $Name SaveDelay_.*");
-
-    # eventtoid einlesen
-    delete( $hash->{helper}{eventtoid} );
-    my $bridge = ReadingsVal( $Name, '.Distributor', 'undef' );
-    if ( $bridge ne "undef" ) {
-        my @test = split( /\n/, $bridge );
-        foreach my $testdevices (@test) {
-            my ( $key, $val ) = split( /=>/, $testdevices );
-            $hash->{helper}{eventtoid}{$key} = $val;
-        }
-
-    }
-
+############################
+ 
+		
     # nur temporär für versionswechsel
 
     my $attrzerolist =
@@ -770,6 +731,131 @@ sub MSwitch_LoadHelper($) {
       . $readingFnAttributes;
 
     setDevAttrList( $Name, $attrzerolist );
+		
+		
+		
+		
+		
+		##############
+		
+	if ($defs{MSwitch_Config})
+	{
+	#Log3( $Name, 0, "Konfiguratur gefunden" ); 
+	my $confighash = $defs{MSwitch_Config};
+	my $configtype = $confighash ->{TYPE}; 
+	
+	#Log3( $Name, 0, "configtype $configtype" );
+	
+	if ($configtype eq "MSwitch")
+		{
+		#Log3( $Name, 0, "Konfiguratur wird angewendet" );
+		
+		my $testreading = $confighash->{READINGS};
+		my @areadings   = ( keys %{$testreading} );
+		foreach my $key (@areadings) 
+			{
+			#Log3( $Name, 0, "key vor regex: -$key- " );
+			next if ( $key !~ m/^MSwitch_.*/ )   ;
+			#Log3( $Name, 0, "key nach regex: -$key- " );
+			#my $attrkey = $key;
+			#$attrkey =~ s/MSwitch_/[SR]/g;
+		
+		#
+		
+		
+		
+		
+		#Log3( $Name, 0, "key: $key -".ReadingsVal( "MSwitch_Config", $key, 'undef') ."-" );
+		
+		
+		if ($key ne "MSwitch_Help" && $key ne "MSwitch_Ignore_Types"){
+		
+		#next;
+		}
+		next if ReadingsVal( "MSwitch_Config", $key, 'undef') eq "";
+		
+		#fhem("attr $Name $key ".ReadingsVal( "MSwitch_Config", $key, 'undef' ));
+		my $aktset = ReadingsVal( "MSwitch_Config", $key, 'undef' );
+		$attr{$Name}{$key}        = "$aktset";
+		
+		#Log3( $Name, 0, "attr{$Name}{$key} = \"$aktset\";  " );
+
+		
+			}
+		
+		
+		}
+	
+	
+	}
+	else{
+	
+	       #setze alle attrs
+        # $attr{$Name}{MSwitch_Eventhistory}        = '0';
+        # $attr{$Name}{MSwitch_Safemode}            = '1';
+        # $attr{$Name}{MSwitch_Help}                = '0';
+        # $attr{$Name}{MSwitch_Debug}               = '0';
+        # $attr{$Name}{MSwitch_Expert}              = '0';
+        # $attr{$Name}{MSwitch_Delete_Delays}       = '1';
+        # $attr{$Name}{MSwitch_Include_Devicecmds}  = '1';
+        # $attr{$Name}{MSwitch_Include_Webcmds}     = '0';
+        # $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
+        # $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
+        # $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
+        # $attr{$Name}{MSwitch_Extensions}          = '0';
+        # $attr{$Name}{MSwitch_Mode}                = $startmode;
+        # fhem("attr $Name room MSwitch_Devices");
+	
+	
+	}
+	
+		
+		
+		################
+		
+		
+    }
+
+    # NEU; ZUVOR IN SET
+    my $testnew = ReadingsVal( $Name, '.Trigger_on', 'undef' );
+    if ( $testnew eq 'undef' ) {
+        readingsBeginUpdate($hash);
+        readingsBulkUpdate( $hash, ".Device_Events",   'no_trigger' );
+        readingsBulkUpdate( $hash, ".Trigger_on",      'no_trigger' );
+        readingsBulkUpdate( $hash, ".Trigger_off",     'no_trigger' );
+        readingsBulkUpdate( $hash, "Trigger_log",      'on' );
+        readingsBulkUpdate( $hash, ".Device_Affected", 'no_device' );
+        readingsEndUpdate( $hash, 0 );
+    }
+
+    MSwitch_Createtimer($hash);    #Neustart aller timer
+    #### savedelays einlesen
+    my $counter = 1;
+    while ( ReadingsVal( $Name, 'SaveDelay_' . $counter, 'undef' ) ne "undef" )
+    {
+        my $del = ReadingsVal( $Name, 'SaveDelay_' . $counter, 'undef' );
+        my @msgarray = split( /#\[tr\]/, $del );
+        my $timecond = $msgarray[4];
+        if ( $timecond > time ) {
+            $hash->{helper}{delays}{$del} = $timecond;
+            InternalTimer( $timecond, "MSwitch_Restartcmd", $del );
+        }
+        $counter++;
+    }
+    fhem("deletereading $Name SaveDelay_.*");
+
+    # eventtoid einlesen
+    delete( $hash->{helper}{eventtoid} );
+    my $bridge = ReadingsVal( $Name, '.Distributor', 'undef' );
+    if ( $bridge ne "undef" ) {
+        my @test = split( /\n/, $bridge );
+        foreach my $testdevices (@test) {
+            my ( $key, $val ) = split( /=>/, $testdevices );
+            $hash->{helper}{eventtoid}{$key} = $val;
+        }
+
+    }
+
 
     return;
 }
@@ -799,24 +885,30 @@ sub MSwitch_Define($$) {
     $hash->{Support}                       = $support;
 
     if ( $version ne $data{MSwitch}{Version} ) {
-        $hash->{Update} =
-          "Modulversion " . $data{MSwitch}{Version} . " verfügbar";
+        $hash->{Update} ="Modulversion " . $data{MSwitch}{Version} . " verfügbar";
 
     }
 
-    if ( $defstring ne "" and $defstring =~ m/(\(.+?\))/ ) {
+    if ( $defstring ne "" and $defstring =~ m/(\(.+?\))/ ) 
+	{
 
         Log3( $name, 0, "ERROR MSwitch define over onelinemode deactivated" )
           ;    #LOG
         return "This mode is deactivated";
     }
-    else {
+    else 
+	{
         $hash->{INIT} = 'fhem.save';
     }
+	
     if ( $init_done && !defined( $hash->{OLDDEF} ) ) {
         my $timecond = gettimeofday() + 5;
+		
+		# Log3( $name, 0, "Loadhelper initiiert $name" ); 
         InternalTimer( $timecond, "MSwitch_check_init", $hash );
-    }
+    }else{
+	#Log3( $name, 0, "Loadhelper uebersprungen $name" ); 
+	}
     return;
 }
 
@@ -6689,15 +6781,18 @@ MS-HELPdelay
     }
 
     # einblendung info
+	
+	my $info ="";
     if ( ReadingsVal( $Name, '.info', 'undef' ) ne "undef" ) {
-        $ret .= "
+        $info  .= "
 		<table border='$border' class='block wide' id=''>
 		<tr class='even'>
 		<td colspan ='3'><center><br>&nbsp;";
-        $ret .= ReadingsVal( $Name, '.info', '' );
-        $ret .= "<br>&nbsp;</td></tr></table><br>
+        $info  .= ReadingsVal( $Name, '.info', '' );
+        $info  .= "<br>&nbsp;</td></tr></table><br>
 		
 		 ";
+		 $ret.=$info;
     }
 
     # anpassung durch configeinspielung
@@ -8183,7 +8278,7 @@ if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
     }
 
     if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
-        return "$hidecode";
+        return "$info$hidecode";
     }
 
     return "$ret<br>$detailhtml$helpfile<br>$j1$hidecode";
@@ -12229,7 +12324,7 @@ MSwitch_LOG( $name, 6, "vor setmagik $todec " );
     }
 
 
-MSwitch_LOG( $name, 0, "nach dec" . $todec );
+MSwitch_LOG( $name, 5, "nach dec" . $todec );
 
     return $todec;
 }
