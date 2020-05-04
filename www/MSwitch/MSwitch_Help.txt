@@ -197,6 +197,8 @@ Verfügbare Variablen und Ausdrücke:
 
 - isday (!isday)
 - $we / !$we
+- $min
+- $hour
 - $month
 - $year
 - $month
@@ -205,6 +207,10 @@ Verfügbare Variablen und Ausdrücke:
 - $EVTPART1
 - $EVTPART2
 - $SELF
+- $hms
+
+die Variable $hms enthält die aktuelle Systemzeit im Format HH:MM:SS . Hier ist zu beachten , das es 
+sich um einen String handelt , der entsprechend zu behandeln ist ( eq ) .
 
 $EVENT Variable:
 Die Variable EVENT enthält den auslösenden Trigger, d.H. es kann eine Reaktion in direkter Abhängigkeit zum auslösenden Trigger erfolgen.
