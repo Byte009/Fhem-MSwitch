@@ -791,20 +791,20 @@ sub MSwitch_LoadHelper($) {
 	else{
 	
 	       #setze alle attrs
-        # $attr{$Name}{MSwitch_Eventhistory}        = '0';
-        # $attr{$Name}{MSwitch_Safemode}            = '1';
-        # $attr{$Name}{MSwitch_Help}                = '0';
-        # $attr{$Name}{MSwitch_Debug}               = '0';
-        # $attr{$Name}{MSwitch_Expert}              = '0';
-        # $attr{$Name}{MSwitch_Delete_Delays}       = '1';
-        # $attr{$Name}{MSwitch_Include_Devicecmds}  = '1';
-        # $attr{$Name}{MSwitch_Include_Webcmds}     = '0';
-        # $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
-        # $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
-        # $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
-        # $attr{$Name}{MSwitch_Extensions}          = '0';
-        # $attr{$Name}{MSwitch_Mode}                = $startmode;
-        # fhem("attr $Name room MSwitch_Devices");
+        $attr{$Name}{MSwitch_Eventhistory}        = '0';
+        $attr{$Name}{MSwitch_Safemode}            = '1';
+        $attr{$Name}{MSwitch_Help}                = '0';
+        $attr{$Name}{MSwitch_Debug}               = '0';
+        $attr{$Name}{MSwitch_Expert}              = '0';
+        $attr{$Name}{MSwitch_Delete_Delays}       = '1';
+        $attr{$Name}{MSwitch_Include_Devicecmds}  = '1';
+        $attr{$Name}{MSwitch_Include_Webcmds}     = '0';
+        $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
+        $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
+        $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
+        $attr{$Name}{MSwitch_Extensions}          = '0';
+        $attr{$Name}{MSwitch_Mode}                = $startmode;
+        fhem("attr $Name room MSwitch_Devices");
 	
 	
 	}
@@ -3011,7 +3011,7 @@ sub MSwitch_Cmd(@) {
                          "Comand ausgeführt -> " . $cmds . " " . __LINE__ );
         }
         else {
-            if ( $cmds =~ m/({)(.*)(})/ ) {
+            if ( $cmds =~ m/(\{)(.*)(\})/ ) {
 			
 			
 			
@@ -5422,7 +5422,7 @@ sub MSwitch_fhemwebFn($$$$) {
             $errors .= ' ' . 'MSwitchtoggle';
         }
 
-        $errors .= ' ' . '[FREECMD]:textfielfLong';
+        $errors .= ' ' . '[FREECMD]:textfieldLong';
 
         if ( $errors ne '' ) {
             $selected = "";
@@ -12286,7 +12286,7 @@ sub MSwitch_dec($$) {
 
     #$todec =~ s/\n//g;
 
-    if ( $todec =~ m/({)(.*)(})/s ) {
+    if ( $todec =~ m/(\{)(.*)(\})/s ) {
 
         # ersetzung für perlcode
 
@@ -12387,7 +12387,7 @@ sub MSwitch_makefreecmdonly($$) {
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
     #MSwitch_LOG( $name, 0, "vor freecmdonly: " . $cs );
-    if ( $cs =~ m/(.*)({)(.*)(})/s ) {
+    if ( $cs =~ m/(.*)(\{)(.*)(\})/s ) {
     my $firstpart = $1;
         ## variablendeklaration für perlcode / wird anfangs eingefügt
 		MSwitch_LOG( $name, 5, "firstpart -> " . $firstpart . " " . __LINE__ );
@@ -12426,11 +12426,11 @@ sub MSwitch_makefreecmdonly($$) {
        
 	   
 	   $cs=$firstpart."".eval($cs);
-	#MSwitch_LOG( $name, 0, "NACH freecmdonly:" . $cs );
+	MSwitch_LOG( $name, 5, "NACH freecmdonly0:" . $cs );
     return $cs;
     }
 	
-	#MSwitch_LOG( $name, 0, "NACH freecmdonly:" . $cs );
+	MSwitch_LOG( $name, 5, "NACH freecmdonly1:" . $cs );
 	return $cs;
 
 }
@@ -12446,7 +12446,7 @@ sub MSwitch_makefreecmd($$) {
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
     MSwitch_LOG( $name, 5, "vor freecmd: " . $cs );
-    if ( $cs =~ m/({)(.*)(})/s ) {
+    if ( $cs =~ m/(\{)(.*)(\})/s ) {
 
         ## variablendeklaration für perlcode / wird anfangs eingefügt
         MSwitch_LOG( $name, 5, "ersetzung -> " . $2 . " " . __LINE__ );
