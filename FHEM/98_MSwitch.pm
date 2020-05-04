@@ -755,7 +755,7 @@ sub MSwitch_LoadHelper($) {
 		foreach my $key (@areadings) 
 			{
 			#Log3( $Name, 0, "key vor regex: -$key- " );
-			next if ( $key !~ m/^MSwitch_.*/ )   ;
+			next if ( $key !~ m/(^MSwitch_.*|^disabled.*)/ )   ;
 			#Log3( $Name, 0, "key nach regex: -$key- " );
 			#my $attrkey = $key;
 			#$attrkey =~ s/MSwitch_/[SR]/g;
@@ -1341,7 +1341,25 @@ sub MSwitch_Set($@) {
     #my $TESTVAR ="testvar";
 
     #MSwitch_LOG( $name, 6, "$name Set $cmd, @args " . __LINE__ );
+	
+	
+	
+	
+	
+	
+	
     my $dynlist = "";
+	
+	
+	
+	
+	
+	# if ($data{MSwitch}{Showinfo}{$name})
+	# {
+	# asyncOutput( $hash->{CL},"<html>".$data{MSwitch}{Showinfo}{$name}."</html>" );
+	# delete $data{MSwitch}{Showinfo}{$name};
+	# }
+	
 
     #################################
     if ( $cmd eq 'showgroup' ) {
@@ -3034,6 +3052,23 @@ sub MSwitch_Cmd(@) {
                               $hash->{helper}{priorityids}{$lastdevice},
                               $showevents );
     }
+
+
+# if ($data{MSwitch}{Showinfo}{$Name})
+	 # {
+	 # asyncOutput( $hash->{CL},"<html>".$data{MSwitch}{Showinfo}{$Name}."</html>" );
+	 # delete $data{MSwitch}{Showinfo}{$Name};
+	 
+	 # }
+
+
+# MSwitch_LOG( $Name, 0,"return erreicht  " );
+
+# return "test";
+
+
+
+
 
 }
 ####################
@@ -9035,6 +9070,12 @@ sub MSwitch_Restartcmd($) {
     my $hash       = $modules{MSwitch}{defptr}{$name};
     my $showevents = AttrVal( $name, "MSwitch_generate_Events", 1 );
     return "" if ( IsDisabled($name) );
+	
+	
+
+	
+	
+	
     $hash->{eventsave} = 'unsaved';
     MSwitch_LOG(
         $name,
@@ -9262,6 +9303,7 @@ sub MSwitch_checkcondition($$$) {
     $condition =~ s/\$day/[DAY]/g;
     $condition =~ s/\$min/[MIN]/g;
     $condition =~ s/\$hour/[HOUR]/g;
+	$condition =~ s/\$hms/[HMS]/g;
 
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
@@ -9275,8 +9317,10 @@ sub MSwitch_checkcondition($$$) {
     my $funktionstring = "";
     my $funktionsstringavg;
     my $funktionsstringinc;
+	
+	my $hms = AnalyzeCommand( 0, '{return $hms}' );
 
-    if ( $condition =~ m/YEAR|MONTH|DAY|MIN|HOUR/ ) {
+    if ( $condition =~ m/YEAR|MONTH|DAY|MIN|HOUR|HMS/ ) {
         while ( $condition =~ m/(.*)\[YEAR\](.*)([\d]{4})(.*)/ ) {
             $condition = $1 . "$year$2$3" . $4;
         }
@@ -9293,6 +9337,9 @@ sub MSwitch_checkcondition($$$) {
         }
         while ( $condition =~ m/(.*)\[HOUR\](.*)([\d]{1,2})(.*)/ ) {
             $condition = $1 . "$hour$2$3" . $4;
+        }
+		while ( $condition =~ m/(.*)\[HMS\](.*)/ ) {
+            $condition = $1 . "\"$hms\"" . $2;
         }
     }
 
