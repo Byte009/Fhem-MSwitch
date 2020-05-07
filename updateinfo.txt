@@ -1,4 +1,4 @@
 Version
-3.17
-Change: interne Aenderungen
+3.18
+Change: code clean up - ausdünnung der Logs auf für den Anwender relevante Zeilen
 Info: Update empfohlen
