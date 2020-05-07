@@ -69,7 +69,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.18';
+my $version      = '3.19';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -11413,12 +11413,30 @@ sub MSwitch_dec($$) {
     # setmagic ersetzung
     my $x = 0;
     while (
-         $todec =~ m/(.*)\[([a-zA-Z0-9._]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/ )
+         $todec =~ m/(.*)\[([a-zA-Z0-9._\$]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/ )
     {
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
-        my $setmagic = ReadingsVal( $2, $3, 0 );
-        $todec = $1 . $setmagic . $4;
+		
+		MSwitch_LOG( $name, 6, "- found setmagic ersetzung: $2:$3"  );
+       
+		
+		
+		my $firstpart =$1;
+		my $lastpart = $4;
+		my $readingname = $3;
+		my $devname =$2;
+		$devname =~ s/\$SELF/$name/;
+		 my $setmagic = ReadingsVal( $devname, $readingname, 0 );
+		
+		MSwitch_LOG( $name, 6, "- found setmagic ersetzung: ReadingsVal( \"$devname\", \"$readingname\", 0 )"  );
+		
+		
+		MSwitch_LOG( $name, 6,  "- change setmagic ersetzung: $setmagic"  );
+		
+        $todec = $firstpart . $setmagic . $lastpart;
+		
+		
     }
 
     # ersetzung für beide codes
@@ -11572,7 +11590,10 @@ sub MSwitch_check_setmagic_i($$) {
     my $name = $hash->{NAME};
 
     # setmagic ersetzung
-
+			 
+							 
+							 
+							 
     my $x = 0;
     while ( $msg =~ m/(.*)\[(.*)\:(.*)\:i\](.*)/ ) {
         $x++;    # notausstieg notausstieg
