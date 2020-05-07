@@ -1,4 +1,4 @@
 Version
-3.18
-Change: code clean up - ausduennung der Logs auf fuer den Anwender relevante Zeilen
+3.19
+Change: code clean up - fix: setmagic - ausduennung der Logs auf fuer den Anwender relevante Zeilen
 Info: Update empfohlen
