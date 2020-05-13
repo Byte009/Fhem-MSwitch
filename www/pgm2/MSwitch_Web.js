@@ -236,8 +236,12 @@ $("#helptext").css("display","none");
  	var olddest;
 	// init reaktion auf auf Änderungen der INFORMID
 	$("body").on('DOMSubtreeModified', "div[informId|='"+devicename+"-Debug']", function() {
-	var test = $( "div[informId|='"+devicename+"-Debug']" ).text();
-	test= test.substring(0, test.length - 19);
+	var test = $( "div[informId='"+devicename+"-Debug']" ).text();
+	
+	//alert(test);
+	//test= test.substring(0, test.length - 19);
+	
+	
 	var old = document.getElementById("log").value;
 	if (olddest != test)
 		{
@@ -1161,14 +1165,43 @@ function vupdate(){
 
 
 // Fenster für Schaltbedingungen	
-function bigwindow(targetid){
+function bigwindow(targetid,fromsc){
 if (debug == 'on'){ alert('bigwindow') };
+
+if(typeof fromsc == 'undefined'){
+	fromsc = "noweb";
+}
+
+
 	targetval =document.getElementById(targetid).value;
+	
+	targetval = targetval.replace(/\u2424/g,'\n');
+	
+	//alert (targetval);
+	
 	sel ='<div style="white-space:nowrap;"><br>';
-	sel = sel+'<textarea id="valtrans" cols="80" name="TextArea1" rows="10" onChange=" document.getElementById(\''+targetid+'\').value=this.value; ">'+targetval+'</textarea>';
+	sel = sel+'<textarea id="valtrans" cols="80" name="TextArea1" rows="10" onChange="bigwindowformat(\''+targetid+'\',\''+fromsc+'\')">'+targetval+'</textarea>';
 	sel = sel+'</div>';
 	FW_okDialog(sel,''); 
 	}	
+
+
+function bigwindowformat(targetid,fromsc){
+	//return;
+	// alert(fromsc);
+	var value = document.getElementById('valtrans').value
+	
+	if (fromsc == "web"){
+	value = value.replace(/\n/g, '\u2424');
+	}
+	
+	//alert(targetid+"-"+value);
+	
+	
+	
+ document.getElementById(targetid).value=value; 
+ 
+}
 
 // Deviceauswahl
 function  deviceselect(){
@@ -1347,6 +1380,7 @@ if (debug == 'on'){ alert('savesys') };
 	conf = conf.replace(/;/g,'#[se]');
 	conf = conf.replace(/ /g,'#[sp]');
 	conf = conf.replace(/'/g,'#[st]');
+	conf = conf.replace(/\t/g,'#[tab]');
 	var nm = $(t).attr("nm");
 	var  def = nm+" savesys "+encodeURIComponent(conf);
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
