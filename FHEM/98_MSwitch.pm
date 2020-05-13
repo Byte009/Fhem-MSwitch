@@ -69,7 +69,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.19';
+my $version      = '3.20';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -719,7 +719,7 @@ sub MSwitch_LoadHelper($) {
 
         setDevAttrList( $Name, $attrzerolist );
         ##############
-        if ( $defs{MSwitch_Config} ) {
+        if ( $defs{MSwitch_Config} && 	ReadingsVal( "MSwitch_Config", 'status', 'settings_nicht_anwenden' ) eq 'settings_anwenden'	) {
             my $confighash = $defs{MSwitch_Config};
             my $configtype = $confighash->{TYPE};
 
@@ -743,7 +743,14 @@ sub MSwitch_LoadHelper($) {
                     $attr{$Name}{$key} = "$aktset";
                 }
             }
+			
+			
+			
+			
+			
         }
+		
+		
         else {
 
             #setze alle attrs
@@ -1228,7 +1235,7 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
 ### modulmode - no sets
     if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
         return
-"Unknown argument $opt, choose one of config:noArg support_info:noArg restore_MSwitch_Data:this_Device active_timer:show,delete";
+"Unknown argument $opt, choose one of support_info:noArg active_timer:show";
 
     }
 #######
@@ -1323,30 +1330,30 @@ sub MSwitch_Set($@) {
 ###################################################################################
 
     # verry special commands readingactivated (
-    my $special = '';
-    my $cs = ReadingsVal( $name, '.sysconf', 'undef' );
-    if ( $cs ne "undef" ) {
-        $cs =~ s/#\[tr\]/[tr]/g;
-        $cs =~ s/#\[wa\]/|/g;
-        $cs =~ s/#\[sp\]/ /g;
-        $cs =~ s/#\[nl\]/\n/g;
-        $cs =~ s/#\[se\]/;/g;
-        $cs =~ s/#\[dp\]/:/g;
-        $cs =~ s/#\[st\]/'/g;
-        $cs =~ s/#\[dst\]/\"/g;
-        $cs =~ s/#\[tab\]/    /g;
-        $cs =~ s/#\[ko\]/,/g;
-        $cs =~ s/#.*\n//g;
-        $cs =~ s/\n//g;
-        $cs =~ s/\[tr\]/#[tr]/g;
-        my $return = "no value";
-        $return = eval($cs);
-        if ($@) {
-            MSwitch_LOG( $name, 1,
-                         "$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
-        }
-        return if $return eq "exit";
-    }
+     my $special = '';
+    # my $cs = ReadingsVal( $name, '.sysconf', 'undef' );
+    # if ( $cs ne "undef" ) {
+        # $cs =~ s/#\[tr\]/[tr]/g;
+        # $cs =~ s/#\[wa\]/|/g;
+        # $cs =~ s/#\[sp\]/ /g;
+        # $cs =~ s/#\[nl\]/\n/g;
+        # $cs =~ s/#\[se\]/;/g;
+        # $cs =~ s/#\[dp\]/:/g;
+        # $cs =~ s/#\[st\]/'/g;
+        # $cs =~ s/#\[dst\]/\"/g;
+        # $cs =~ s/#\[tab\]/    /g;
+        # $cs =~ s/#\[ko\]/,/g;
+        # $cs =~ s/#.*\n//g;
+        # $cs =~ s/\n//g;
+        # $cs =~ s/\[tr\]/#[tr]/g;
+        # my $return = "no value";
+        # $return = eval($cs);
+        # if ($@) {
+            # MSwitch_LOG( $name, 1,
+                         # "$name MSwitch_repeat: ERROR $cs: $@ " . __LINE__ );
+        # }
+        # return if $return eq "exit";
+    # }
 
 ##########################
 
@@ -1540,11 +1547,11 @@ sub MSwitch_Set($@) {
 
         if ( $devicemode eq "Notify" ) {
             return
-"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList ";#$special
         }
         elsif ( $devicemode eq "Toggle" ) {
             return
-"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:all_devices fakeevent wait reload_timer:noArg del_repeats:noArg change_renamed $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:all_devices fakeevent wait reload_timer:noArg del_repeats:noArg change_renamed $setList ";#$special
         }
         elsif ( $devicemode eq "Dummy" ) {
 
@@ -4284,6 +4291,27 @@ sub MSwitch_fhemwebFn($$$$) {
 
     my $testgroups = $data{MSwitch}{$Name}{groups};
     my @msgruppen  = ( keys %{$testgroups} );
+    my $info='';
+
+#systemintegration 
+my $system = ReadingsVal( $Name, '.sysconf', '' );
+
+if ( $system ne '' ) {
+        $system =~ s/#\[tr\]/[tr]/g;
+        $system =~ s/#\[wa\]/|/g;
+        $system =~ s/#\[sp\]/ /g;
+        $system =~ s/#\[nl\]/\n/g;
+        $system =~ s/#\[se\]/;/g;
+        $system =~ s/#\[bs\]/\\/g;
+		$system =~ s/#\[dp\]/:/g;
+        $system =~ s/#\[st\]/'/g;
+        $system =~ s/#\[dst\]/\"/g;
+        $system =~ s/#\[tab\]/    /g;
+        $system =~ s/#\[ko\]/,/g;
+        #$system =~ s/#.*\n//g;
+        #$system =~ s/\n//g;
+        $system =~ s/\[tr\]/#[tr]/g;
+     }
 
 ########## korrigiere version
     if ( ReadingsVal( $Name, '.V_Check', 'undef' ) ne $vupdate
@@ -6354,9 +6382,18 @@ MS-HELPdelay
 		 ";
     }
 
-    # einblendung info
+   # einblendung system
+	
 
-    my $info = "";
+	if ($system ne '')
+	{
+	$ret .=$system;
+	
+	}
+	
+
+ 
+    
     if ( ReadingsVal( $Name, '.info', 'undef' ) ne "undef" ) {
         $info .= "
 		<table border='$border' class='block wide' id=''>
@@ -7072,29 +7109,34 @@ end:textersetzung:eng
 				<option selected='selected' value='$a'>$a</option>
 				$optiongeneral
 				</select>
-				</td>
-				<td id='line2-" . $distributline . "' width='100%'>
-				execute
-				CMD
+				</td>";
+				
+			$dist .= "<td id='line2-" . $distributline . "' width='100%'>";
+				
+				
+			$dist .= "execute ID
+				<select id = 'ideventID"
+              . $distributline . "' name='' onchange='checkdistricode()'>
+				 $finaloptionid
+				</select>
+				&nbsp;";
+				
+				
+			$dist .= "CMD
 				<select id = 'ideventCMD"
               . $distributline . "' name='' onchange='checkdistricode()'>
 				<option $sel1 value='1'>1</option>
 				<option $sel2 value='2'>2</option>
 				</select>
 				&nbsp;
-				ID
-				<select id = 'ideventID"
-              . $distributline . "' name='' onchange='checkdistricode()'>
-				 $finaloptionid
-				</select>
-				
-				&nbsp;
-				
 				<input id ='aw_dist_del$distributline' name='' type='button' value='$MSDELETE' onclick='deletedistributor("
-              . $distributline . ")'>
-				</td></tr>
+              . $distributline . ")'>";	
 				
-				";
+			
+			  
+			$dist .= "</td></tr>";
+				
+				
             $distributline++;
         }
 
@@ -7829,7 +7871,7 @@ end:textersetzung:eng
     }
 
     if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
-        return "$info$hidecode";
+        return "$info$system$hidecode";
     }
 
     return "$ret<br>$detailhtml$helpfile<br>$j1$hidecode";
@@ -10342,6 +10384,10 @@ sub MSwitch_checktrigger(@) {
     my ( $own_hash, $ownName, $eventstellen, $triggerfield, $device, $zweig,
          $eventcopy, @eventsplit )
       = @_;
+	  
+	  
+	MSwitch_LOG( $ownName, 6,"prüfe trigger $triggerfield und Event $eventcopy L:" . __LINE__ );  
+	  
     my $triggeron     = ReadingsVal( $ownName, '.Trigger_on',      '' );
     my $triggeroff    = ReadingsVal( $ownName, '.Trigger_off',     '' );
     my $triggercmdon  = ReadingsVal( $ownName, '.Trigger_cmd_on',  '' );
@@ -10381,20 +10427,46 @@ sub MSwitch_checktrigger(@) {
     if ( $eventcopy =~ m/^$triggerfield/ ) {
         $answer = "wahr";
     }
-    return 'on'
-      if $zweig eq 'on'
+		  
+
+	
+    
+      if ($zweig eq 'on'
       && $answer eq 'wahr'
       && $eventcopy ne $triggercmdoff
       && $eventcopy ne $triggercmdon
-      && $eventcopy ne $triggeroff;
-    return 'off'
-      if $zweig eq 'off'
+      && $eventcopy ne $triggeroff){
+	  MSwitch_LOG( $ownName, 6,"rückgabe trigger: ON and CMD1 L:" . __LINE__ );
+	  return 'on';
+	  }
+	  
+	  
+	  
+   
+      if ($zweig eq 'off'
       && $answer eq 'wahr'
       && $eventcopy ne $triggercmdoff
       && $eventcopy ne $triggercmdon
-      && $eventcopy ne $triggeron;
-    return 'offonly' if $zweig eq 'offonly' && $answer eq 'wahr';
-    return 'ononly'  if $zweig eq 'ononly'  && $answer eq 'wahr';
+      && $eventcopy ne $triggeron){
+	  MSwitch_LOG( $ownName, 6,"rückgabe trigger: OFF and CMD1 L:" . __LINE__ );
+	  return 'off';
+	  }
+	  
+	  
+    if ($zweig eq 'offonly' && $answer eq 'wahr'){
+	MSwitch_LOG( $ownName, 6,"rückgabe trigger: CMD2 L:" . __LINE__ );
+	return 'offonly';
+	}
+	
+	
+	
+    if ($zweig eq 'ononly'  && $answer eq 'wahr'){
+	MSwitch_LOG( $ownName, 6,"rückgabe trigger: CMD1 L:" . __LINE__ );
+	return 'ononly' ; 
+	}
+	
+	
+	MSwitch_LOG( $ownName, 6,"rückgabe trigger: kein treffer - es wird kein Zweig ausgeführt L:" . __LINE__ );
     return 'undef';
 }
 ###############################
@@ -10717,9 +10789,18 @@ sub MSwitch_Sysextension($) {
     $out =~ s/#\[ko\]/,/g;
     $out =~ s/#\[wa\]/|/g;
     $out =~ s/#\[bs\]/\\\\/g;
+	
+	
+	$out =~ s/</&lt;/g;
+    $out =~ s/>/&gt;/g;
+    $out =~ s/#\[bs\]/\\\\/g;
+	
+	
+	
+	
     my $client_hash = $hash->{CL};
     asyncOutput( $hash->{CL},
-"<html><center>Achtung! Hier angegebener Code greift direkt in das Programm 98_MSwitch ein und wird unmittelbar zu beginn der Routine X_Set ausgeführt<br><textarea name=\"sys\" id=\"sys\" rows=\""
+"<html><center>Code (Html/Javascript) wird unmittelbar unter DeviceOverview eingebettet<br><textarea name=\"sys\" id=\"sys\" rows=\""
           . $count
           . "\" cols=\"160\" STYLE=\"font-family:Arial;font-size:9pt;\">"
           . $out
@@ -11566,8 +11647,8 @@ sub MSwitch_makefreecmd($$) {
           "my \$EVTPART2 = \"" . ReadingsVal( $name, "EVTPART2", "" ) . "\";\n";
         $newcode .=
           "my \$EVTPART3 = \"" . ReadingsVal( $name, "EVTPART3", "" ) . "\";\n";
-        $newcode .= "my \$EVENTFULL = \""
-          . ReadingsVal( $name, "EVENTFULL", "" ) . "\";\n";
+        $newcode .=
+		  "my \$EVTFULL = \"". ReadingsVal( $name, "EVTFULL", "" ) . "\";\n";
         $newcode .= "# deklaration ende\n";
         $newcode .= $2;
         $cs = "{\n$newcode}";
