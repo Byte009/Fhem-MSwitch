@@ -69,7 +69,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.20';
+my $version      = '3.21';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -3685,17 +3685,25 @@ MSwitch_LOG( $ownName, 6,"eigegangenes Event $event L:" . __LINE__ );
 
 ##########################################
 
+
+#aktualisiere Readings
+
+                MSwitch_EventBulk( $own_hash, $eventcopy1, '0',
+                                   'MSwitch_Notify' );
+##########################################
                 ### pruefe Bridge
 
                 my ( $chbridge, $zweig, $bridge ) =
-                  MSwitch_checkbridge( $own_hash, $ownName, $eventcopy1, );
+                MSwitch_checkbridge( $own_hash, $ownName, $eventcopy1, );
 
                 next EVENT if $chbridge eq "found bridge";
 
                 ########################## prüfe Bridge
 
-                MSwitch_EventBulk( $own_hash, $eventcopy1, '0',
-                                   'MSwitch_Notify' );
+								   
+								   
+								   
+								   
             }
 
             # Teste auf einhaltung Triggercondition ENDE
@@ -4066,7 +4074,7 @@ sub MSwitch_checkbridge($$$) {
     $zweig = "on"  if $bridge[0] eq "cmd1";
     $zweig = "off" if $bridge[0] eq "cmd2";
 
-MSwitch_LOG( $name, 6,"ID Bridge gefunden: $zweig, $bridge[2]  L:" . __LINE__ );
+MSwitch_LOG( $name, 6,"ID Bridge gefunden: zweig $bridge[0] , $bridge[2] ".@bridge." L:" . __LINE__ );
 
     MSwitch_Exec_Notif( $hash, $zweig, 'nocheck', '', $bridge[2] );
 
@@ -11456,11 +11464,22 @@ sub MSwitch_confchange($$) {
 ##############################################################
 sub MSwitch_dec($$) {
 
-    # ersetzungen direkt vor befehlsausführung
-    # gilt für fhemcode, freecmdperl freecmd fhem
+
 
     my ( $hash, $todec ) = @_;
     my $name = $hash->{NAME};
+
+
+   
+
+
+
+
+
+    # ersetzungen direkt vor befehlsausführung
+    # gilt für fhemcode, freecmdperl freecmd fhem
+
+
 
     if ( $todec =~ m/(\{)(.*)(\})/s ) {
 
@@ -11491,7 +11510,9 @@ sub MSwitch_dec($$) {
         $todec =~ s/\$EVENTFULL/$ersetzung/g;
     }
 
-    # setmagic ersetzung
+ # ersetzung für beide codes
+
+ # setmagic ersetzung
     my $x = 0;
     while (
          $todec =~ m/(.*)\[([a-zA-Z0-9._\$]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/ )
@@ -11499,8 +11520,11 @@ sub MSwitch_dec($$) {
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
 		
+		MSwitch_LOG( $name, 6, "TODEC : $todec"  );
+		
+		MSwitch_LOG( $name, 6, "- found : $1"  );
 		MSwitch_LOG( $name, 6, "- found setmagic ersetzung: $2:$3"  );
-       
+       MSwitch_LOG( $name, 6, "- found : $4"  );
 		
 		
 		my $firstpart =$1;
@@ -11520,7 +11544,7 @@ sub MSwitch_dec($$) {
 		
     }
 
-    # ersetzung für beide codes
+   
     $todec =~ s/\[FREECMD\]//g;
 
     ###########################################################################
