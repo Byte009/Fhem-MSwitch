@@ -1,4 +1,4 @@
 Version
-3.21
-Change: Bugfix ID to Event
+3.22
+Change: Bugfix ID to Event Darstellung - Bugfix ID to Event Darstellung speichern - Perl Kommentare - Vorbereitung Konfigurator
 Info: Update empfohlen
