@@ -614,10 +614,18 @@ function savedistributor(){
 	if (debug == 'on'){ alert('savedistributor') };
 	
 	//alert('savedistributor')
+	
+	//alert(DISTRIBUTLINES);
 	var newidfile='';
 	for (i=0; i<DISTRIBUTLINES; i++)
 		{
 			aktline =  $("#ideventNR"+i).val();
+			
+			
+			//alert(aktline);
+			
+			
+			
 			if (aktline === undefined) { continue; }
 			if (aktline == 'undefined') { continue; }
 			aktcmd=  $("#ideventCMD"+i).val();
@@ -647,6 +655,8 @@ function savedistributor(){
 	
 	// } 
 	
+	//alert(newidfile);
+	//return;
 	 
 	FW_cmd(FW_root+'?cmd=set '+devicename+' setbridge '+newidfile+'&XHR=1');
 	[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
