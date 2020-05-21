@@ -69,7 +69,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.23';
+my $version      = '3.24';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -11587,12 +11587,12 @@ sub MSwitch_dec($$) {
     }
     else {
         # ersetzung für fhemcode
-        $todec =~ s/\$NAME/$hash->{helper}{eventfrom}/;
-        $todec =~ s/\$SELF/$name/;
+        $todec =~ s/\$NAME/$hash->{helper}{eventfrom}/g;
+        $todec =~ s/\$SELF/$name/g;
         $todec =~ s/\n//g;
         $todec =~ s/#\[wa\]/|/g;
-        $todec =~ s/\$NAME/$hash->{helper}{eventfrom}/;
-        $todec =~ s/MSwitch_Self/$name/;
+        $todec =~ s/\$NAME/$hash->{helper}{eventfrom}/g;
+        $todec =~ s/MSwitch_Self/$name/g;
         my $ersetzung;
         $ersetzung = ReadingsVal( $name, "EVTPART3", "" );
         $todec =~ s/\$EVTPART3/$ersetzung/g;
@@ -11608,6 +11608,11 @@ sub MSwitch_dec($$) {
 
  # ersetzung für beide codes
 
+
+
+#MSwitch_LOG( $name, 6,  "- vor setmagic: $todec"  );
+
+
  # setmagic ersetzung
     my $x = 0;
     while (
@@ -11617,10 +11622,9 @@ sub MSwitch_dec($$) {
         last if $x > 20;    # notausstieg notausstieg
 		
 		MSwitch_LOG( $name, 6, "TODEC : $todec"  );
-		
 		MSwitch_LOG( $name, 6, "- found : $1"  );
 		MSwitch_LOG( $name, 6, "- found setmagic ersetzung: $2:$3"  );
-       MSwitch_LOG( $name, 6, "- found : $4"  );
+		MSwitch_LOG( $name, 6, "- found : $4"  );
 		
 		
 		my $firstpart =$1;
