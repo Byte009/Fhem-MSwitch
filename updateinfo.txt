@@ -1,4 +1,4 @@
 Version
-3.23
-Change: Anpasung Konfigurator
+3.24
+Change: Bugfix SetMagic
 Info: Update empfohlen
