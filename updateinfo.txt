@@ -1,4 +1,4 @@
 Version
-3.24
-Change: Bugfix SetMagic
+3.25
+Change: Bugfix Event to ID , Bugfix Eventupdates
 Info: Update empfohlen
