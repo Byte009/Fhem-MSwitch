@@ -69,7 +69,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.24';
+my $version      = '3.25';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -1431,6 +1431,9 @@ sub MSwitch_Set($@) {
             if ( !defined $arg2 or $arg2 eq "" ) { $arg2 = "noArg" }
             $setlist{$arg1} = $arg2;
         }
+		
+		
+		#Log3("test",0,"starte eventcheck");
         MSwitch_Check_Event( $hash, "MSwitch_self:" . $cmd . ":" . $args[0] )
           if defined $setlist{$cmd};
     }
@@ -1445,6 +1448,7 @@ sub MSwitch_Set($@) {
             if ( !defined $arg2 or $arg2 eq "" ) { $arg2 = "noArg" }
             $setlist{$arg1} = $arg2;
         }
+		#Log3("test",0,"starte eventcheck");
         MSwitch_Check_Event( $hash, "MSwitch_self:" . $cmd . ":" . $args[0] )
           if defined $setlist{$cmd};
     }
@@ -3450,14 +3454,27 @@ sub MSwitch_Notify($$) {
 
     # notify für eigenes device
     my $devcopyname = $devName;
-    $own_hash->{helper}{eventfrom} = $devName;
+   
     my @eventscopy;
     if ( defined( $own_hash->{helper}{testevent_event} ) ) {
         @eventscopy = "$own_hash->{helper}{testevent_event}";
+		
+		
+		$devName = $own_hash->{helper}{testevent_device};
+	#Log3("test",0,"Event ist simuliert: @eventscopy ".@eventscopy);	#HELPLOG
+	
+		
+		
+		
     }
     else {
         @eventscopy = ( @{$events} ) if $events ne "x";
     }
+
+
+ $own_hash->{helper}{eventfrom} = $devName;
+
+
 
     my $triggerlog = ReadingsVal( $ownName, 'Trigger_log', 'off' );
 
@@ -3546,6 +3563,11 @@ MSwitch_LOG( $ownName, 6,"eigegangenes Event $event L:" . __LINE__ );
 
            # fügt dem event den devicenamen hinzu , wenn global getriggert wird
                     $eventcopy1 = "$devName:$eventcopy";
+				
+				
+				#Log3("test",0,"global- name zugefügt: $eventcopy1");	#HELPLOG
+
+					
                 }
 
                 my $ret = MSwitch_checkcondition( $triggercondition, $ownName,
@@ -3676,15 +3698,20 @@ MSwitch_LOG( $ownName, 6,"eigegangenes Event $event L:" . __LINE__ );
                     $x++;
                 }
             }
-            #
+           
+
 
 ################ alle events für weitere funktionen speichern
 #############################################################
             #anzahl checken / ggf nicht mehr nötig
             #check checken  / ggf nicht mehr nötig
 
+
+
+
             my $check = 0;
-            if ( $event ne '' ) {
+            if ( $event ne '' ) 
+			{
                 my $eventcopy1 = $eventcopy;
                 if ( $triggerdevice eq "all_events" ) {
 
@@ -3711,25 +3738,20 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1"
 				}
 				
 				
-if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "0"
+elsif ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "0"
                      && $incommingdevice ne "MSwitch_Self" )
                 {
 				
 				MSwitch_EventBulk( $own_hash, $eventcopy1, '0','MSwitch_Notify' ); 
 				}			
-				
-
-
-
-
-               
-				
-				
-				
+		else{
+MSwitch_EventBulk( $own_hash, $eventcopy1, '0','MSwitch_Notify' );
+		}			
 				
 				
 ##########################################
                 ### pruefe Bridge
+	#Log3("test",6,"aufruf checkbridge");
 
                 my ( $chbridge, $zweig, $bridge ) =
                 MSwitch_checkbridge( $own_hash, $ownName, $eventcopy1, );
@@ -3746,6 +3768,10 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "0"
 
             # Teste auf einhaltung Triggercondition ENDE
 ############################################################################################################
+
+
+	
+
 
             my $eventcopy1 = $eventcopy;
             if ( $triggerdevice eq "all_events" ) {
@@ -4356,6 +4382,11 @@ sub MSwitch_fhemwebFn($$$$) {
     my @msgruppen  = ( keys %{$testgroups} );
     my $info='';
 
+
+
+
+
+#readingsSingleUpdate( $hash, 'MSwitchWeb', "updated", 1 );
 #systemintegration 
 my $system = ReadingsVal( $Name, '.sysconf', '' );
 
@@ -4740,6 +4771,9 @@ $system="<script type=\"text/javascript\">var nameself ='".$Name."';</script>".$
     $optionoff =~ s/\[bs\]/|/g;
     $optioncmdon =~ s/\[bs\]/|/g;
     $optioncmdoff =~ s/\[bs\]/|/g;
+    $optiongeneral=~ s/\[bs\]/|/g;
+
+
 
 ####################
     # mögliche affected devices und mögliche triggerdevices
@@ -8309,7 +8343,7 @@ sub MSwitch_Exec_Notif($$$$$) {
                         my $setmagic = ReadingsVal( $1, $2, 0 );
                         $devicedetails{ $device . '_repeatcount' } = $setmagic;
                     }
-
+ 
                     $x = 0;
                     while ( $devicedetails{ $device . '_repeattime' } =~
                             m/\[(.*)\:(.*)\]/ )
@@ -8722,8 +8756,8 @@ sub MSwitch_checkcondition($$$) {
     $year += 1900;
  my ( $condition, $name, $event ) = @_;
 
-MSwitch_LOG( $name, 6,"Bedingungsprüfung: $condition L:" . __LINE__ );
-
+MSwitch_LOG( $name, 6,"Bedingungsprüfung Bedingung: $condition L:" . __LINE__ );
+MSwitch_LOG( $name, 6,"Bedingungsprüfung Event: $event L:" . __LINE__ );
 
     # antwort execute 0 oder 1
    
@@ -10382,12 +10416,43 @@ sub MSwitch_Check_Event($$) {
     my $Name = $hash->{NAME};
     $eventin =~ s/~/ /g;
     my $dev_hash = "";
+	
+	
+	
+	
+	
     if ( $eventin ne $hash ) {
         if ( ReadingsVal( $Name, 'Trigger_device', '' ) eq "all_events" ) {
+			
+		# Log3("test",0,"eventin: $eventin");	#HELPLOG
+			
             my @eventin = split( /:/, $eventin );
             $dev_hash                         = $defs{ $eventin[0] };
-            $hash->{helper}{testevent_device} = $eventin[0];
+			
+			if ($eventin[0] eq "MSwitch_self")
+			{
+			$hash->{helper}{testevent_device} = $eventin[0];
+            #$hash->{helper}{testevent_event}  = $eventin[0] .":". $eventin[1] . ":" . $eventin[2];	
+			$hash->{helper}{testevent_event}  = $eventin[1] . ":" . $eventin[2];
+				
+			}
+			else
+			{
+				
+			$hash->{helper}{testevent_device} = $eventin[0];
             $hash->{helper}{testevent_event}  = $eventin[1] . ":" . $eventin[2];
+				
+			}
+			
+			
+			
+            
+		
+		#Log3("test",0,"testevent_device: $hash->{helper}{testevent_device}");	#HELPLOG
+		#Log3("test",0,"testevent event  : $hash->{helper}{testevent_event}");	#HELPLOG
+			
+			
+			
         }
         else {
             my @eventin = split( /:/, $eventin );
@@ -11263,6 +11328,12 @@ sub MSwitch_EventBulk($$$$) {
     return if !defined $event;
     return if !defined $hash;
     if ( $hash eq "" ) { return; }
+	
+	#Log3("test",2,"everntbulk - $name : $event");
+	MSwitch_LOG( $name, 6,"aktualisiere Eventreadings L:" . __LINE__ );
+
+	
+	
     my @evtparts = split( /:/, $event );
     $update = '1';
     my $evtsanzahl = @evtparts;
@@ -11292,6 +11363,9 @@ sub MSwitch_EventBulk($$$$) {
          && $hash->{eventsave} ne 'saved' )
 
     {
+		
+	MSwitch_LOG( $name, 6,"ausführung aktualisiere Eventreadings: $event  L:" . __LINE__ );
+
         $hash->{eventsave} = "saved";
         readingsBeginUpdate($hash);
         readingsBulkUpdate( $hash, "EVENT", $event, 1 )
