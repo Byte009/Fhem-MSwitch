@@ -1,4 +1,4 @@
 Version
-3.25
-Change: Bugfix Event to ID , Bugfix Eventupdates
+3.26
+Change: Vorbereitung fuer Templatesteuerung
 Info: Update empfohlen
