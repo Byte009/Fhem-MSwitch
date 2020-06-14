@@ -1,4 +1,3 @@
 Version
-3.26
-Change: Vorbereitung fuer Templatesteuerung
-Info: Update empfohlen
+MSwitch V3.27
+Wizzard V2.0
