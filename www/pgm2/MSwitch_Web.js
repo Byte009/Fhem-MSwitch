@@ -13,10 +13,6 @@
 	var checkfield ='';
 
 
-
-
-
-
 // speichern von originalcodes für not avaible
 // var ORGdistricode = $( "#Distributor" ).html();
 
@@ -117,7 +113,10 @@ function teststart(){
 // funktion rename aktivieren
 if (debug == 'on'){ alert(devicename+' Debug MSwitchweb an') };
 //alert(RENAME);
+
 if (RENAME == 'on'){
+	//alert("RENAME");
+	
 	var r1 = $('<input type="button" value="'+RENAMEBUTTON+'" onclick=" javascript: newname() "/>');
 	var r2 = $('<input type="button" value="'+RELOADBUTTON+'" onclick=" javascript: reload() \"/>');
 	var r3 = $('<input type="text" id = "newname" value="'+devicename+'"/>');

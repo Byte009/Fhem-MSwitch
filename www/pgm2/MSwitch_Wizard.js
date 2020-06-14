@@ -3,7 +3,28 @@
 // #########################
 
   
-	var version = 'V1.3';
+   window.addEventListener("error", fehlerbehandlung);
+
+    function fehlerbehandlung (errorEvent) {
+      var fehler = "Fehlermeldung:\n" + errorEvent.message + "\n" + errorEvent.filename + "\n" + errorEvent.lineno;
+      zeigeFehler(fehler);
+      errorEvent.preventDefault();
+    }
+
+    function zeigeFehler(meldung) {
+      alert(meldung);
+    }
+  
+  
+  
+	var version = 'V2.0';
+	
+	const Devices = [];
+	var result= 0; // wird für waittimer in templates gebraucht
+    var template;
+	var nosave =0;
+	var monitorid = "eventcontrol";
+	
 	var info = '';
 	var logging ='off';
 	var observer;
@@ -12,14 +33,18 @@
 	var show = 'off';
 	var offtime =50;
 	var sets = new Object();
-	
 	var preconfparts = new Array;
 	var preconfpartsname = new Array;
 	var preconfpartshelp = new Array;
 	
+	var style ="style='display:none'";
+	// debugger
+	// style ="";
+	
+	
 	var configstart = [
 	'#V Version',
-	'#VS V2.00',
+	'#VS V2.01',
 	'#S .First_init -> done',
 	'#S .Trigger_off -> no_trigger',
 	'#S .Trigger_cmd_off -> no_trigger',
@@ -28,7 +53,7 @@
 	'#S .Trigger_on -> no_trigger',
 	'#S .Trigger_cmd_on -> no_trigger',
 	'#S .Trigger_condition -> ',
-	'#S .V_Check -> V2.00',
+	'#S .V_Check -> V2.01',
 	'#S .Device_Events -> no_trigger',
 	'#S .Device_Affected -> no_device',
 	'#S .Trigger_time -> ',
@@ -47,8 +72,54 @@
 	'#A MSwitch_Expert -> 0',
 	'#A MSwitch_Include_Devicecmds -> 1'];
 
+
+
+
+	var configtemplate = [
+	'#V Version',
+	'#VS V2.01',
+	'#S .First_init -> done',
+	'#S .Trigger_off -> no_trigger',
+	'#S .Trigger_cmd_off -> no_trigger',
+	'#S Trigger_device -> no_trigger',
+	'#S Trigger_log -> off',
+	'#S .Trigger_on -> no_trigger',
+	'#S .Trigger_cmd_on -> no_trigger',
+	'#S .Trigger_condition -> ',
+	'#S .V_Check -> V2.01',
+	'#S .Device_Events -> no_trigger',
+	'#S .Device_Affected -> no_device',
+	'#S .Trigger_time -> ',
+	'#S .Device_Affected_Details -> '];
+
+
+	var emptydevice = [
+	'',
+	'#[NF]no_action',
+	'#[NF]no_action',
+	'#[NF]',
+	'#[NF]',
+	'#[NF]delay1',
+	'#[NF]delay1',
+	'#[NF]00:00:00',
+	'#[NF]00:00:00',
+	'#[NF]',
+	'#[NF]',
+	'#[NF]undefined',
+	'#[NF]undefined',
+	'#[NF]1',
+	'#[NF]0',
+	'#[NF]',
+	'#[NF]0',
+	'#[NF]0',
+	'#[NF]1',
+	'#[NF]0'];
+
 // starte Hauptfenster
-conf('importWIZARD','wizard');
+
+
+
+// conf('importWIZARD','wizard');
 
 //####################################################################################################
 // init eventmonitor
@@ -66,12 +137,21 @@ conf('importWIZARD','wizard');
 	var test = $( "div[informId='"+devicename+"-EVENTCONF']" ).text();
 	test = test.replace(/ /gi,"");
 
+
+//alert(test);
+
+document.getElementById('bank6').value=test;
+
+
 	if(o[test]){return;}
 
 	var event = test.split(':');
 	var newevent =  event[1]+':'+event[2]
-	if (event[0] != document.getElementById('3').value)
+	if ( event[0] != document.getElementById('bank1').value  )
 		{
+			//document.getElementById('bank3').value=document.getElementById('3').value;
+			document.getElementById('bank4').value=document.getElementById('bank1').value;
+			document.getElementById('bank2').value=event[0];
 			return;
 		}
 	if (logging == 'off')
@@ -89,14 +169,14 @@ conf('importWIZARD','wizard');
 	var a3 = Object.keys(o).map(function (k) { return o[k];})
 	// array umdrehen
 	a3.reverse();
-	$( '#eventcontrol' ).text( '' );
+	$( '#'+monitorid ).text( '' );
 	var i;
 	for (i = 0; i < 30; i++) 
 		{
 		if (a3[i])
 			{
 			var newselect = $('<option value=\"'+a3[i]+'\">'+a3[i]+'</option>');
-			$(newselect).appendTo('#eventcontrol'); 
+			$(newselect).appendTo('#'+monitorid ); 
 			}
 		}  
   });    
@@ -122,152 +202,14 @@ function eventmonitorstart(){
 }
  
 function closeall(){
-	
 		logging ='off';
 		o = new Object();
 		eventmonitorstop()
-		
-		if (show == 'off'){
-		document.getElementById('4step1').style.display='none';
-		document.getElementById('4step2').style.display='none';
-		document.getElementById('5step1').style.display='none';
-		document.getElementById('5step2').style.display='none';
-		document.getElementById('2step1').style.display='none';
-		document.getElementById('2step2').style.display='none';
-		document.getElementById('3step1').style.display='none';
-		document.getElementById('3step2').style.display='none';
-		
-		document.getElementById('part2').innerHTML ='';
-		}
 		document.getElementById('monitor').style.display='none';
-	
-	return;
+		return;
 }
-// settyp
-function settypptime(inhalt,open,fill) {
-	openraw=open;
-	//  #inh1 =inhalt
-	//  #open = freizuschaltendezeile
-	//  #fill = zu füllendes feld
-	open=openraw+'1';
-	open1=openraw+'2';
-	
-	if (open == '3step1')
-	{
-		document.getElementById('help').innerHTML = 'Bitte in der Dropdownliste das Gerät wählen , dessen Events als Auslöser dienen soll.';	
-	}
-	
-	if (open == '2step1')
-	{
-		document.getElementById('help').innerHTML = 'Bitte die Zeit angeben, zu der das MSwitch-Device auslösen soll.<br>';	
-		document.getElementById('help').innerHTML += 'Hier stehen mehrere Formate zur Verfügung<br>';
-		document.getElementById('help').innerHTML += 'Bitte in der Dropdownliste eine Vorauswahl treffen :<br>&nbsp;<br>';
-	}
-		
-	if (open == '4step1')
-	{
-		
-		if (inhalt == 'select')
-		{
-			document.getElementById('monitor').style.display='none';
-			document.getElementById('4step1').style.display='none';
 
-			return;
-		}
 
-		document.getElementById('monitor').style.display='block';
-		document.getElementById('help').innerHTML = 'Bitte das entsprechende Event des gewählen Gerätes auslösen. Entweder durch betätigen gewählter Hardware, oder durch schalten des entsprechenden Devices in Fhem.<br>Wenn das gewünschte Event im Monitor sichtbar ist auf den Button \'Event eingetroffen\' klicken';	
-
-		$( '#6step' ).text( '' );
-		$( '#eventcontrol' ).text( '' );
-		text = 'Warte auf eingehende Events des Devices '+inhalt+' ... ';
-		text =text+'<input name=\"5th\" id=\"5step\" type=\"button\" value=\"Event eingetroffen\" onclick=\"javascript: settypptime(this.value,id,name)\">&nbsp;';
-		document.getElementById('4step1').innerHTML = text;
-	
-		logging='on';
-		eventmonitorstart();
-	}	
-	
-	if (open == '5step1')
-	{
-		eventmonitorstop();
-		logging = 'off';
-		document.getElementById('monitor').style.display='none';
-		document.getElementById('5').value=lastevent;
-		document.getElementById('help').innerHTML = 'Bitte das auslösende Event aus der Dropdownliste wählen. Im rechten Feld kann das Event manuell angepasst werden.';	
-	}
-
-	if (document.getElementById(fill)){document.getElementById(fill).value=inhalt;}
-
-	if (document.getElementById(open)) {
-		document.getElementById(open).style.display='block';
-	}
-	if (document.getElementById(open1)) {
-		document.getElementById(open1).style.display='block';
-	}
-	
-	if (open == '6step1')
-	{
-		// wird von fertig gewähltem event aufgerufen
-		// starte Teil2
-		// endptime();
-		setTimeout(endptime, offtime);
-	}
-	
-	if (open == '7step1')
-	{
-		// auswahl time event fertig 
-		// starte Teil2
-		setTimeout(endptime, offtime);
-	}
-	 
-	return;
-	}
-	
-	
-function reset() {
-	var nm = devicename;
-	var  def = nm+' reset_device checked';
-	location = location.pathname+'detail='+devicename+'&cmd=set '+addcsrf(def);
-	return;
-	}
-	
-function endptime() {
-
-	// starte teil2
-	createpart2();
-	return;
-	}
-	
-function togglep1() {
-		//show = 'on';
-
-		if (show == 'on'){
-			show = 'off';
-			insert = 'none';
-		}
-		else if(show == 'off'){
-			show = 'on';
-			insert = 'block';
-		}
-		
-		// schliessen aller P1Fenster
-		document.getElementById('help').innerHTML = '';
-		document.getElementById('1step1').style.display=insert;
-		document.getElementById('1step2').style.display=insert;
-		document.getElementById('4step1').style.display=insert;
-		document.getElementById('4step2').style.display=insert;
-		document.getElementById('5step1').style.display=insert;
-		document.getElementById('5step2').style.display=insert;
-		document.getElementById('2step1').style.display=insert;
-		document.getElementById('2step2').style.display=insert;
-		document.getElementById('3step1').style.display=insert;
-		document.getElementById('3step2').style.display=insert;
-		document.getElementById('monitor').style.display='block';
-
-	return;
-	}
-	
 	
 // hauptfenster wählen
 function conf(typ,but){
@@ -280,21 +222,26 @@ function conf(typ,but){
 	document.getElementById('importCONFIG').style.display='none';
 	document.getElementById('importWIZARD').style.display='none';
 	document.getElementById('importPRECONF').style.display='none';
+	document.getElementById('importTemplate').style.display='none';
 	
-	document.getElementById('wizard').style.backgroundColor='';
+	//document.getElementById('wizard').style.backgroundColor='';
 	document.getElementById('config').style.backgroundColor='';
 	document.getElementById('importat').style.backgroundColor='';
 	document.getElementById('importnotify').style.backgroundColor='';
 	document.getElementById('importpreconf').style.backgroundColor='';
-	
+	document.getElementById('importTEMPLATE').style.backgroundColor='';
+	document.getElementById('empty').style.display='none';
 	document.getElementById(typ).style.display='block';
 	document.getElementById(but).style.backgroundColor='#ffb900';
+	
+	
+	document.getElementById('showtemplate').style.display='none';
 
-	if (but == 'wizard'){
+/* 	if (but == 'wizard'){
 		// neustart wizard
 		
 		startwizardtrigger();
-	}
+	} */
 	
 	if (but == 'config'){
 		// neustart wizard
@@ -321,6 +268,9 @@ function conf(typ,but){
 }	
 	
 function start1(name){
+	//alert("start");
+	// return;
+
 	
 	    // this code will run after all other $(document).ready() scripts
         // have completely finished, AND all page elements are fully loaded.
@@ -337,110 +287,54 @@ function start1(name){
 
 		document.getElementById('mode').innerHTML += '<br>Wizard Version:'+version+'<br>Info:'+info;
 		// fülle configfenster
-		fillconfig('rawconfig');
-		startwizardtrigger();
-			
+		
+		// --------------------------
+		//fillconfig('rawconfig');
+		//startwizardtrigger();
+		
+	document.getElementById('importAT').style.display='none';
+	document.getElementById('importNOTIFY').style.display='none';
+	document.getElementById('importCONFIG').style.display='none';
+	document.getElementById('importWIZARD').style.display='none';
+	document.getElementById('importPRECONF').style.display='none';
+	document.getElementById('importTemplate').style.display='none';
+	document.getElementById('empty').style.display='none';
+	document.getElementById('help').innerHTML ="";
+	
+	document.getElementById('config').style.backgroundColor='';
+	document.getElementById('importat').style.backgroundColor='';
+	document.getElementById('importnotify').style.backgroundColor='';
+	document.getElementById('importpreconf').style.backgroundColor='';
+	document.getElementById('importTEMPLATE').style.backgroundColor='';
+	
+	document.getElementById('speicherbank').style.display='none';
+	document.getElementById('speicherbank1').style.display='none';
+	
+	
+		
 setTimeout(function() {
-	//document.getElementById('wizard').value+=' N/A';
-	//document.getElementById('config').value+=' N/A';
-	document.getElementById('importat').value+=' N/A';
+
+	/* document.getElementById('importat').value+=' N/A';
 	document.getElementById('importnotify').value+=' N/A';
-  	//document.getElementById('wizard').disabled = true;
-	//document.getElementById('config').disabled = true;
+
 	document.getElementById('importat').disabled = true;
 	document.getElementById('importnotify').disabled = true;
-
-	//document.getElementById('importpreconf').disabled = true;
-    // conf('importPRECONF','importpreconf');
+*/
 }, 50);
 
 		
 }
 
-function startwizardtrigger(){	
-	
-
-	document.getElementById('saveconf').style.backgroundColor='#ff0000';
-	document.getElementById('saveconf').disabled = true;
-// help
-	document.getElementById('help').innerHTML = 'Auslöser: Bitte wählen ob die Auslösung zeit- oder eventgesteuert sein soll ( Button \'time\' oder \'event\' )';	
-// htmlaufbau	
-// document.getElementById('showall').disabled = true;
-
-
-		document.getElementById('monitor').style.display='none';
-		
-		line = 'Was für ein Ereigniss soll das MSwitch auslösen ( Trigger ) ?&nbsp;&nbsp;&nbsp;&nbsp;';
-		line =line+'<input name=\"first\" id=\"2step\" type=\"button\" value=\"time\" onclick=\"javascript: settypptime(this.value,id,name)\">&nbsp;';
-		line =line+'<input name=\"first\" id=\"3step\" type=\"button\" value=\"event\" onclick=\"javascript: settypptime(this.value,id,name)\">&nbsp;';
-		document.getElementById('1step1').innerHTML = line;
-
-		line ='<input id =\"first\" type=\"text\" value=\"\" disabled=\"disabled\">';
-		document.getElementById('1step2').innerHTML = line;
-
-		line = '<table border ="0"><tr>';
-		line += '<td>';
-		
-		line += '<select id="timetyps" name="timetyp" name="timetyp" onchange=\"javascript: settimetyp(this.value)\">';
-		line += '<option id ="" value="typ0">wähle Zeit-Typ:</option>';
-		line += '<option id ="" value="typ1">exakte Zeitangabe</option>';
-		line += '<option id ="" value="typ2">zufällige Schaltzeit zwischen zwei Zeitpunkten</option>';
-		line += '<option id ="" value="typ3">periodische Auslösung zwischen zwei Zeitpunkten</option>';
-		line += '</select>';
-		line += '</td>'
-		line += '</tr>'
-		line += '<tr>'
-		
-		line += '<td>';
-		
-		fbutton = '<input name=\"selecttyp\" id=\"selecttyp\" type=\"button\" value=\"übernehmen\" onclick=\"javascript: settime()\">';
-			
-		line += '<div id ="typ1" style="display:none">Um '+gettime('normal')+' Uhr '+getday('day1')+fbutton+'</div>';
-		line += '<div id ="typ2" style="display:none">zwischen '+gettime('zufall')+' Uhr und '+gettime('zufall1') +'Uhr '+getday('zufal3')+fbutton+'</div>';
-		line += '<div id ="typ3" style="display:none">periodisch alle '+gettime('periodic')+' zwischen '+gettime('periodic1') +'Uhr und'+gettime('periodic3')+'Uhr'+getday('periodic4')+fbutton+'</div>';
-			
-		line += '</td>'
-		line += '</tr></table>';		
-
-		document.getElementById('2step1').innerHTML = line;
-		document.getElementById('2step1').style.display='none';
-		line ='<input id=\"2\" type=\"text\" value=\"\" disabled=\"disabled\"> ';
-		document.getElementById('2step2').innerHTML = line;
-		document.getElementById('2step2').style.display='none';
-		document.getElementById('1step1').style.display='block';
-		document.getElementById('1step2').style.display='block';
-
-		line = 'Welches Gerärt soll der Auslöser sein ? &nbsp;&nbsp;&nbsp;&nbsp;';
-		line += devicelist('4step','3','settypptime');
-
-		document.getElementById('3step1').innerHTML = line;
-		document.getElementById('3step1').style.display='none';
-		line ='<input id=\"3\" type=\"text\" value=\"\" disabled=\"disabled\">';
-		document.getElementById('3step2').innerHTML = line;
-		document.getElementById('3step2').style.display='none';
-	
-		line = 'Warte auf eingehende Events des Devices ';
-		document.getElementById('4step1').innerHTML = line;
-		document.getElementById('4step1').style.display='none';
-		
-		line = 'Auslösendes Event wählen ? &nbsp;&nbsp;&nbsp;&nbsp;';
-		line =line+'<select id =\"6step\" name=\"5\" onchange=\"javascript: settypptime(this.value,id,name)\">';
-	
-		line =line+'</select>';
-		document.getElementById('5step1').innerHTML = line;
-		document.getElementById('5step1').style.display='none';
-		line ='<input id=\"5\" type=\"text\" value=\"\" >';
-		document.getElementById('5step2').innerHTML = line;
-		document.getElementById('5step2').style.display='none';
-
-	return ;
-
+function reset() {
+	var nm = devicename;
+	var  def = nm+' reset_device checked';
+	location = location.pathname+'detail='+devicename+'&cmd=set '+addcsrf(def);
+	return;
 	}
 	
-function makeconfig(){
 	
-	alert('makeconfig');
-	// configstart[0] = '#V '+mVersion;
+
+function XXXmakeconfig(){
 	if (document.getElementById('first').value == 'time'){
 		// ändere config für timeevent
 		string = document.getElementById('2').value;
@@ -463,8 +357,10 @@ function makeconfig(){
 	// nur für freie befehlseingabe
 	// alert('zweig nicht definiert');
 	var cmdstring = document.getElementById('tra23end').value;
+
 	configstart[12] ='#S .Device_Affected -> '+ document.getElementById('a11').value +'-AbsCmd1';
     var newcmdline = '#S .Device_Affected_Details -> '+ document.getElementById('a11').value +'-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
+	
 	configstart[29]=newcmdline;
 	}
 	else{
@@ -474,7 +370,6 @@ function makeconfig(){
 	configstart[12] ='#S .Device_Affected -> '+ document.getElementById('a11').value +'-AbsCmd1';
 	// befehl aufteilen
 	savedcmd = document.getElementById('tra33end').value;
-	
 	cmdarray= savedcmd.split(" ");
 	if (cmdarray[1] != " "){
 	secondstring = cmdarray[1];
@@ -482,9 +377,7 @@ function makeconfig(){
 	if (cmdarray[2] != " "){
 	secondstring = cmdarray[2];
 	}
-	
     var newcmdline = '#S .Device_Affected_Details -> '+ document.getElementById('a11').value +'-AbsCmd1'+'#[NF]'+cmdarray[0]+'#[NF]no_action#[NF]'+secondstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
-	
 	configstart[29]=newcmdline;
 		
 	}
@@ -503,8 +396,7 @@ function fillconfig(name){
 		{
 			showconf = showconf+configstart[i]+'\n';
 		}
-	document.getElementById(name).innerHTML = showconf;
-	
+	document.getElementById(name).innerHTML = showconf;	
 }
 
 function saveconfig(name,mode){
@@ -514,197 +406,43 @@ function saveconfig(name,mode){
 	}
 	conf = document.getElementById(name).value;
 	
-	
-	
 	conf = conf.replace(/\n/g,'#[EOL]');
 	conf = conf.replace(/#\[REGEXN\]/g,'\\n');
-	
 	conf = conf.replace(/:/g,'#c[dp]');
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
 	
-	//alert(conf);
-	//return;
-	
-	
-	
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
-
 	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
 	return;
 }
 
-function getday(name){
-	var addon = '<select id="'+name+'day">';
-	addon += '<option value="">jeden Tag</option>';
-	addon += '<option value="|$we">am Wochenende</option>';
-	addon += '<option value="|!$we">an Wochentagen</option>';
-	addon += '<option value="|1">Montag</option>';
-	addon += '<option value="|2">Dienstag</option>';
-	addon += '<option value="|3">Mitwoch</option>';
-	addon += '<option value="|4">Donnerstag</option>';
-	addon += '<option value="|5">Freitag</option>';
-	addon += '<option value="|6">Samstag</option>';
-	addon += '<option value="|7">Sonntag</option>';
-	addon += '</select>';
-	return addon;
-}
-
-
-function settimetyp(name){
-	
-	document.getElementById('typ1').style.display='none';
-	document.getElementById('typ2').style.display='none';
-	document.getElementById('typ3').style.display='none';
-
-	if (name == 'typ0'){
-		document.getElementById('help').innerHTML = 'Bitte die Zeit angeben, zu der das MSwitc-Device auslösen soll.<br>';	
-		document.getElementById('help').innerHTML += 'Hier stehen mehrere Formate zur Verfügung<br>';
-		document.getElementById('help').innerHTML += 'Bitte eine Vorauswahl treffen :<br>&nbsp;<br>';
-		return;
-		}
-	
-	document.getElementById('help').innerHTML = 'Bitte die gewünschten Zeiten angeben.';	
-	document.getElementById(name).style.display='block';
-	return;
-	
-}
-
-
-function gettime(name){	
-	var hour;
-	for (i=0; i<24; i++)
-				{
-				change = ("00" + i).slice(-2);
-				hour += '<option>'+change+'</option>';
-				}
-	var min;
-	for (i=0; i<60; i++)
-				{
-				change=("00" + i).slice(-2);
-				min += '<option>'+change+'</option>';
-				}
-
-	var sel1 = '<select id="'+name+'1">';
-	sel1 += hour;
-	sel1 += '</select>';
-	sel1 += ':';
-	sel1 += '<select id="'+name+'2">';
-	sel1 += min;
-	sel1 += '</select>';
-
-return sel1;
-}
-
-function settime(){	
-	typ = document.getElementById('timetyps').value;
-	//alert(typ)
-	var ret;
-	if ( typ =='typ0'){
-		return;
-	}
-	
-	if ( typ =='typ1'){
-		// exakte Zeitangabe
-		hh = document.getElementById('normal1').value;
-		mm = document.getElementById('normal2').value;
-		// tag
-		dd = document.getElementById('day1day').value;
-		ret = '['+hh+':'+mm+dd+']';
-		//alert(ret);
-	}
-	
-	if ( typ =='typ2'){
-		// exakte Zeitangabe
-		// zeitpunkt 1
-		hh = document.getElementById('zufall1').value;
-		mm = document.getElementById('zufall2').value;
-		// zeitpunkt 2
-		hh1 = document.getElementById('zufall11').value;
-		mm1 = document.getElementById('zufall12').value;
-		//  tag
-		dd1 = document.getElementById('zufal3day').value;
-		ret = '[?'+hh+':'+mm+'-'+hh1+':'+mm1+dd1+']';
-	}
-	
-	if ( typ =='typ3'){
-		// exakte Zeitangabe
-		// zeitpunkt 1
-		hh = document.getElementById('periodic11').value;
-		mm = document.getElementById('periodic12').value;
-		// zeitpunkt 2
-		hh1 = document.getElementById('periodic31').value;
-		mm1 = document.getElementById('periodic32').value;
-		//  tag
-		dd1 = document.getElementById('periodic4day').value;
-		// intrtvall
-		intervallhh=document.getElementById('periodic1').value;
-		intervallmm=document.getElementById('periodic2').value;
-
-		ret = '['+intervallhh+':'+intervallmm+'*'+hh+':'+mm+'-'+hh1+':'+mm1+dd1+']';
-	}
-
-	settypptime(ret,'7step','2');
-	return;
-}
-
-function createpart2(){
-
-	eventmonitorstop();
-	// hole geräteliste
-	ret = devicelist('a1','a1','setaffected',1); 
-	// hole befehlsliste dur gewähltes gerät
-	
-	line = '<table border = \'0\'><tr>';
-	line += '<td>Teil 2 (auszuführende Aktion des MSwitch-Devices)';
-	line += '<br>&nbsp;</td>';
-	line += '<td></td>';
-	line += '<td></td>';
-	line += '</tr>';
-
-	line +='<tr>';
-	line +='<td>Welches Gerät soll geschaltet werden ?</td>';
-	line +='<td>'+ret+'</td>';
-	line +='<td><input id=\"a11\" type=\"text\" value=\"\" disabled=\"disabled\"></td>';
-	line +='</tr>';
-	line +='<tr id=\"tra2\">';
-	line +='<td><div style=\"display:none\" id=\"tra21\">Auszuführender Befehl:</div></td>';
-	line +='<td style=\" text-align: center; vertical-align: middle;\"><div style=\"display:none\" id=\"tra22\"><textarea id=\"freecmd\" cols=\"50\" name=\"TextArea1\" rows=\"4\"></textarea>';
-	line +='<br><input type=\"button\" value=\"übernehmen\" onclick=\"javascript: setaffected(\'a2\',\'a2\',\'a2\'); \">';
-	line +='</div></td>';
-	line +='<td><div style=\"display:none\" id=\"tra23\"><input id=\"tra23end\" type=\"text\" value=\"\" disabled=\"disabled\"></div></td>';
-	line +='</tr>';
-	line +='<tr id=\"tra3\">';
-	line +='<td><div style=\"display:none\" id=\"tra31\">Auszuführender Befehl:</div></td>';
-	line +='<td><div style=\"display:none\" id=\"tra32\">';
-	line +='<span id =\"setcmd\"></span>';
-	line +='<span id=\"setcmd1\"></span>';
-	line +='<span id=\"setcmd2\">test</span>';
-	line +='</div></td>';
-	line +='<td><div style=\"display:none\" id=\"tra33\"><input id=\"tra33end\" type=\"text\" value=\"\" disabled=\"disabled\"></div></td>';
-	line +='</tr>';
-	line += '</table>';
-	document.getElementById('part2').innerHTML =line;
-	document.getElementById('help').innerHTML = 'Bitte das zu schaltende Gerät in der Dropdownliste auswählen';	
-		
-
-}
 
 function devicelist(id,name,script,flag){
+	ret="";
 	
+	if (script == "no_script"){
+		ret = '<select id =\"'+id+'\" name=\"'+name+'\" >';
+	}
+	else{
+		ret = '<select id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: '+script+'(this.value,id,name)\">';
+	}
 	// erstelle geräteliste'+id+'+name+'
-	ret = '<select id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: '+script+'(this.value,id,name)\">';
+	
 	count =0;
 	
 	ret +='<option value=\"select\">bitte wählen:</option>';
-	if (flag == '1'){
+	if (flag == '1' || flag =="3"){
 		ret +='<option value=\"free\">freie Befehlseingabe</option>';
+	}
+	
+	if (flag == '2'){
+		ret +='<option value=\'all_events\'>GLOBAL</option>';
 	}
 	
 	for (i=count; i<len; i++)
 		{
-			
 		if (flag == '1'){
 			ret +='<option value='+i+'>'+devices[i]+'</option>';
 			}
@@ -713,166 +451,39 @@ function devicelist(id,name,script,flag){
 			ret +='<option value='+devices[i]+'>'+devices[i]+'</option>';
 			}
 		}
-		
 	ret +='</select>';
 	return ret;
 		
 }
 
-function setaffected(inhalt,id,name){
-	
-	if (inhalt == 'select'){
-		document.getElementById('tra31').style.display='none';
-		document.getElementById('tra32').style.display='none';
-		document.getElementById('tra33').style.display='none';
-		document.getElementById('tra21').style.display='none';
-		document.getElementById('tra22').style.display='none';
-		document.getElementById('tra23').style.display='none';
-		return;
-	}
-	if (inhalt == 'free'){
-		// wähle fenster 'freie eingabe'
-		document.getElementById('tra31').style.display='none';
-		document.getElementById('tra32').style.display='none';
-		document.getElementById('tra33').style.display='none';
-		document.getElementById('tra21').style.display='block';
-		document.getElementById('tra22').style.display='block';
-		document.getElementById('tra23').style.display='block';
-		document.getElementById(id+'1').value='FreeCmd';
-		return;
-	}
-	
-	
-	if (id == 'a1'){
-		//schritt 1 deviceauswahl
-		device  = devices[inhalt];
-		document.getElementById(id+'1').value= device;
-		seloptions = makecmdhash(cmds[inhalt]);
-		document.getElementById('setcmd').innerHTML = 'set '+device+' ';
-		document.getElementById('setcmd').innerHTML += seloptions;
-		document.getElementById('setcmd1').innerHTML ='';
-		out = '<input type=\"button\" value=\"übernehmen\" onclick=\"javascript: setaffected(\'a3\',\'a3\',\'a3\'); \">';
-		document.getElementById('setcmd2').innerHTML =out;
-		document.getElementById('tra31').style.display='block';
-		document.getElementById('tra32').style.display='block';
-		document.getElementById('tra33').style.display='block';
-		document.getElementById('tra21').style.display='none';
-		document.getElementById('tra22').style.display='none';
-		document.getElementById('tra23').style.display='none';
-		
-		document.getElementById('help').innerHTML = 'Bitte auszuführenden Befehl eingeben und übernehmen drücken.';	
-	}
-	
-	
-	if (id == 'a2'){
-		//übernahme der befehle aus schritt 2 - freie befehlseingabe
-		comand1 = document.getElementById('freecmd').value;
-		document.getElementById('help').innerHTML = 'Bitte auszuführenden Befehl eingeben und übernehmen drücken.';
-		if (comand1 == ''){
-			comand1='';
-			FW_okDialog('Bitte Befehl eingeben');
-			return;
-			}
+function attrlist(id,name,attr){
+ret="";
 
-		comand1 = comand1.replace(/\n/g,';;');
-	
-		document.getElementById('tra23end').value=comand1;
-		document.getElementById('tra33end').value='';
-		document.getElementById('saveconf').style.backgroundColor='';
-		document.getElementById('saveconf').disabled = false;
-	}
-	
-	if (id == 'a3'){
-	//übernahme der befehle aus schritt 3
-	comand1='';
-	comand2='';
-	comand3='';
-	device = document.getElementById('a11').value;
-	comand1 = document.getElementById('comand').value;
-	if (comand1 == '0'){
-			comand1='';
-			FW_okDialog('Bitte Befehl wählen');
-			return;
-			}
+attrset = (ownattr[attr]).split(",");
 
-	if (document.getElementById('comand1')){
-		comand2 = document.getElementById('comand1').value  ;
-		if (comand2 == '0'){
-			comand2='';
-			FW_okDialog('Bitte Befehlszusatz wählen');
-			return;
-			}
-	}
-	
-	if (document.getElementById('comand2')){
-			//alert('test cmd2');
-			comand3 = document.getElementById('comand2').value ; 
-		}
-	document.getElementById('tra23end').value='';
-	document.getElementById('tra33end').value=comand1+' '+comand2+' '+comand3;
-	
-	document.getElementById('saveconf').style.backgroundColor='';
-	document.getElementById('saveconf').disabled = false;
-	}
-	return;
-}
+if (attrset == "textField-long"){
 
-function makecmdhash(line){
-	document.getElementById('setcmd1').value='';	
-	document.getElementById('setcmd2').value='';	
+ret += '<textarea id =\"'+id+'\" name=\"'+name+'\" cols="40" rows="4"></textarea>';
+
+}else if(attrset == ""){
 	
-	if (line === undefined){
-		return;
-	}
-	var retoption = '<select id =\"comand\" name=\"\" onchange=\"javascript: selectcmdoptions(this.value)\">';
-	retoption +='<option selected value=\"0\">Befehl wählen</option>';
-	
-	sets = new Object();
-	var cmdset = new Array;
-	cmdset = line.split(" ");
-	var anzahl = cmdset.length;
-	
+ret += '<input id =\"'+id+'\" name=\"'+name+'\" value=\"\">';
+}else{
+
+//alert (attrset);
+ret += '<select id =\"'+id+'\" name=\"'+name+'\" >';
+	var anzahl = attrset.length;
 	for (i=0; i<anzahl; i++)
 		{
-		aktset = cmdset[i].split(":");	
-		sets[aktset[0]]=aktset[1];
-		if (aktset[0] != ""){
-		retoption +='<option value='+aktset[0]+'>'+aktset[0]+'</option>';
-			}
+		ret +='<option value='+attrset[i]+'>'+attrset[i]+'</option>';
 		}
-	retoption +='</select>';
-	var arraysetskeys = Object.keys(sets);
-	return retoption;
+
+ret +='</select>';
 }
 
-function selectcmdoptions(inhalt){
-	document.getElementById('setcmd1').innerHTML ='';
-	// wenn undefined textfeld erzeugen
-	if (sets[inhalt] == 'noArg'){ return;}
-	// wenn noarg befehl übernehmen
-	if (sets[inhalt] === undefined){ 
-	
-	retoption1 = '<input name=\"\" id=\"comand2\" type=\"text\" value=\"\">&nbsp;';
-	document.getElementById('setcmd1').innerHTML = retoption1;
-	return;
-	}
-	// wenn liste subcmd erzeugen
-
-	var retoption1;
-	retoption1 = '<select id =\"comand1\" name=\"\">';
-	retoption1 +='<option selected value=\"0\">Option wählen</option>';
-	
-	var cmdset1= new Array;
-	cmdset1= sets[inhalt].split(",");
-	console.log(cmdset1);
-	var anzahl = cmdset1.length;
-	for (i=0; i<anzahl; i++)
-		{
-		retoption1 +='<option value='+cmdset1[i]+'>'+cmdset1[i]+'</option>';
-		}
-	retoption1 +='</select>';
-	document.getElementById('setcmd1').innerHTML = retoption1;
+return ret;
 }
+
 
 
 function startconfig(){
@@ -902,7 +513,7 @@ function startimportat(){
 	var len = at.length;
 	for (i=count; i<len; i++)
 		{
-			ret +='<option value='+i+'>'+at[i]+'</option>';
+			ret +='<option value='+at[i]+'>'+at[i]+'</option>';
 		}
 		 
 	ret +='</select>';
@@ -919,18 +530,43 @@ function startimportat(){
 	html+='<br><br><input disabled name=\"\" id=\"sat\" type=\"button\" value=\"importiere dieses AT\" onclick=\"javascript: saveat()\"\">';
 	html+='</td>';
 	html+='<td>';
-	html+='Definition:<br>';
-	html+='Comand:<br>';
-	html+='Timespec:<br>';
-	html+='Steuerflag:<br>';
-	html+='Triggertime:<br>';
-	html+='</td>';
+
+	html+='<table border=\"0\">';
+	
+	html+='<tr>'
+	html+='<td>Comand: </td>';
 	html+='<td>';
-	html+='<input id=\"def\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"defcmd\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"deftspec\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"defflag\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"trigtime\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='<textarea id ="def" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='<tr>'
+	html+='<td>Timespec: </td>';
+	html+='<td>';
+	html+='<textarea id ="defcmd" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='<tr>'
+	html+='<td>Steuerflag </td>';
+	html+='<td>';
+	html+='<textarea id ="deftspec" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='<tr>'
+	html+='<td>defflag </td>';
+	html+='<td>';
+	html+='<textarea id ="defflag" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	
+	html+='<tr>'
+	html+='<td>Triggertime: </td>';
+	html+='<td>';
+	html+='<textarea id ="trigtime" cols="40" rows="2"></textarea>';	
+	html+='</td></tr>';
+	
+	html+='</table>';
+	
+	
 	html+='</td>';
 	html+='</tr>';
 	html+='<tr><td colspan=\"3\" style=\"text-align: center; vertical-align: middle;\">';
@@ -954,6 +590,13 @@ function startimportat(){
 
 
 function setat(name){
+	
+	
+//	alert("firstname: "+name);
+	
+	
+	
+	
 	if (name == "empty"){
 		document.getElementById('sat').disabled = true;
 		document.getElementById('def').value='';
@@ -964,14 +607,33 @@ function setat(name){
 		document.getElementById('sat').style.backgroundColor='#ff0000';
 		return;
 	}
+	
+	FW_cmd(FW_root+'?cmd=set '+devicename+' loadat '+name+' &XHR=1', function(data){setat1(data)})
+
+	
+}
+
+
+	
+	
+	
+function setat1(name){	
+
+
+//alert("NAME: "+name);
+//return;
+
+atarray= name.split("\[TRENNER\]");
+
+
 	document.getElementById('sat').style.backgroundColor='';
 	document.getElementById('sat').disabled = false;
-	document.getElementById('def').value=atdef[name];
-	document.getElementById('defcmd').value=atcmd[name];
-	document.getElementById('deftspec').value=atspec[name];
-	defflag = atdef[name].substr(0,1);
+	document.getElementById('def').value=atarray[0];
+	document.getElementById('defcmd').value=atarray[1];
+	document.getElementById('deftspec').value=atarray[2];
+	defflag = atarray[0].substr(0,1);
 	document.getElementById('defflag').value=defflag;
-	document.getElementById('trigtime').value=triggertime[name];
+	document.getElementById('trigtime').value=atarray[3];
 	return;
 }
 
@@ -979,6 +641,23 @@ function setat(name){
 function saveat(){
 
 	var cmdstring = document.getElementById('defcmd').value;
+	
+	
+	
+	cmdstring = cmdstring.replace(/\n/g,'#[nl]');
+	cmdstring = cmdstring.replace(/:/g,'#[dp]');
+	cmdstring = cmdstring.replace(/;/g,'#[se]');
+	cmdstring = cmdstring.replace(/ /g,'#[sp]');
+	cmdstring = cmdstring.replace(/'/g,'#[st]');
+	cmdstring = cmdstring.replace(/\t/g,'#[tab]');
+	cmdstring = cmdstring.replace(/\\/g,'#[bs]');
+	cmdstring = cmdstring.replace(/,/g,'#[ko]');
+	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
+	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
+	
+	
+	
+	
 	configstart[12] ='#S .Device_Affected -> FreeCmd-AbsCmd1';
     var newcmdline = '#S .Device_Affected_Details -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
 
@@ -1018,7 +697,7 @@ function startimportnotify(){
 	for (i=count; i<len; i++)
 		{
 
-			ret +='<option value='+i+'>'+notify[i]+'</option>';
+			ret +='<option value='+notify[i]+'>'+notify[i]+'</option>';
 			
 		}
 		
@@ -1030,22 +709,64 @@ function startimportnotify(){
 	html+='<table border=\"0\">';
 	html+='<tr><td colspan=\"3\">';
 	html+='</td></tr>';
+	
+	
+	
+	
 	html+='<tr><td style=\"text-align: center;\">';
 	html+=ret;
 	html+='<br><br><input disabled name=\"\" id=\"not\" type=\"button\" value=\"import this NOTIFY\" onclick=\"javascript: savenot()\"\">';
 
 	html+='</td>';
 	html+='<td>';
-	html+='Definition:<br>';
-	html+='Comand:<br>';
-	html+='Trigger-Device:<br>';
-	html+='Trigger-Event:<br>';
-	html+='</td>';
+	
+	html+='<table border=\"0\">';
+	
+	
+	html+='<tr>'
+	html+='<td>Definition: </td>';
 	html+='<td>';
-	html+='<input id=\"defnotify\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"comandnotify\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"trigdev\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
-	html+='<input id=\"trigevent\" type=\"text\" value=\"\" disabled=\"\" style=\"width:400pt;\"><br>';
+	html+='<textarea id ="defnotify" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='<tr>'
+	html+='<td>Comand: </td>';
+	html+='<td>';
+	html+='<textarea id ="comandnotify" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='<tr>'
+	html+='<td>Trigger-Device: </td>';
+	html+='<td>';
+	html+='<textarea id ="trigdev" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='<tr>'
+	html+='<td>Trigger-Event: </td>';
+	html+='<td>';
+	html+='<textarea id ="trigevent" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	
+	html+='<tr>'
+	html+='<td>Control: </td>';
+	html+='<td>';
+	html+='<textarea id ="globaltest" cols="40" rows="2"></textarea>';	
+	html+='</td></tr>';
+	
+	
+	html+='<tr>'
+	html+='<td>Control: </td>';
+	html+='<td>';
+	html+='<textarea id ="notifytest" cols="40" rows="2"></textarea>';
+	html+='</td></tr>';
+	
+	html+='</table>';
+
+
+
+
+
 	html+='</td>';
 	html+='</tr>';
 	html+='<tr><td colspan=\"3\" style=\"text-align: center; vertical-align: middle;\">';
@@ -1067,69 +788,198 @@ function startimportnotify(){
 	
 }
 
+
 function setnotify(name){
 	
-	if (name == "empty"){
+	
 		document.getElementById('not').disabled = true;
 		document.getElementById('not').style.backgroundColor='#ff0000';
 		document.getElementById('defnotify').value='';
 		document.getElementById('comandnotify').value='';
 		document.getElementById('trigdev').value='';
-		document.getElementById('trigevent').value='';
+		document.getElementById('trigevent').value='';	
+		document.getElementById('globaltest').value='';	
+		document.getElementById('notifytest').value='';	
+	
+	if (name == "empty"){
+		
+		return;
+		}
+		FW_cmd(FW_root+'?cmd=set '+devicename+' loadnotify '+name+' &XHR=1', function(data){setnotify1(data)})
+}
+	
+	
+function setnotify1(name){
+	document.getElementById('not').style.backgroundColor='';
+	document.getElementById('not').disabled = false;
+	document.getElementById('defnotify').value=name;
+	var first =  name.indexOf(" ");
+	var laenge = name.length;
+	var cmd = name.substring(first+1,laenge);
+	document.getElementById('comandnotify').value=cmd;
+	
+	
+	
+	var trigger = name.substring(0,first);
+	//alert(trigger);
+	
+	
+	var mapp = trigger.match(/^(\()(.*)(\))/);
+	if (mapp!=null && mapp.length!=0)
+		{	
+	//alert(mapp[0]);
+		trigger=mapp[0];
+		
+		
+		// voll globales triggern
+		
+		// im cmd eventausdrücke auf mswitchausdrücke mappen !!!
+		trigger = trigger.replace(/:\./g,':.*');
+		trigger = "\"\$EVENT\" =~m/"+trigger+"/";
+	//alert(trigger);
+		
+		
+		
+		document.getElementById('globaltest').value=trigger;
+		document.getElementById('trigevent').value=".*";
+		document.getElementById('trigdev').value="all_events";
 		return;
 		}
 	
-	document.getElementById('not').style.backgroundColor='';
-	document.getElementById('not').disabled = false;
-	document.getElementById('defnotify').value=notifydef[name];
-	var first =  notifydef[name].indexOf(" ");
-	var laenge = notifydef[name].length;
-	var cmd = notifydef[name].substring(first+1,laenge);
-	document.getElementById('comandnotify').value=cmd;
-	var trigger = notifydef[name].substring(0,first);
-	var tlaenge = trigger.length;
-	var trenner =  trigger.indexOf(":");
-	var tdevice = notifydef[name].substring(0,trenner);
-	document.getElementById('trigdev').value=tdevice;
-	var tevent = notifydef[name].substring(trenner+1,tlaenge);
-	document.getElementById('trigevent').value=tevent;
+	
+	var mapp1 = trigger.match(/(.*):(.*:.*)/);
+	if (mapp1!=null && mapp1.length!=0)
+		{	
+		var tdevice = mapp1[1];
+		var tevent = mapp1[2];
+		tevent = tevent.replace(/:\./g,':');
+		document.getElementById('trigdev').value=tdevice;
+		document.getElementById('trigevent').value=tevent;
+		return;	
+		}
+		else
+		{
+		var mapp2 = trigger.match(/(.*):(.*)/);
+		var tdevice = mapp2[1];
+		var tevent = mapp2[2];
+		tevent = tevent.replace(/:\./g,':');
+		document.getElementById('trigdev').value=tdevice;
+		document.getElementById('trigevent').value=tevent;
+			
+		}
+	
+	
 	return;	
 }
 
 
+
+
 function savenot(){
 	var cmdstring = document.getElementById('comandnotify').value;
+	//return;
+	// funktionsfähige ersetzung für detailübertragung
+	cmdstring = cmdstring.replace(/\n/g,'#[nl]');
+	cmdstring = cmdstring.replace(/:/g,'#[dp]');
+	cmdstring = cmdstring.replace(/;/g,'#[se]');
+	cmdstring = cmdstring.replace(/ /g,'#[sp]');
+	cmdstring = cmdstring.replace(/'/g,'#[st]');
+	cmdstring = cmdstring.replace(/\t/g,'#[tab]');
+	cmdstring = cmdstring.replace(/\\/g,'#[bs]');
+	cmdstring = cmdstring.replace(/,/g,'#[ko]');
+	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
+	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
+	
+	// hier notify to mswitch mappen
+	// EVENT - EVTPART3
+	// NAME
+	//
+	cmdstring = cmdstring.replace(/\$NAME/g,'$NAME');
+	cmdstring = cmdstring.replace(/\$EVENT/g,'$EVTPART3');
+	
+	
+	document.getElementById('notifytest').value=cmdstring;
+	
+	
+	
+	
+	//alert(cmdstring);
+	//return;
 	configstart[12] ='#S .Device_Affected -> FreeCmd-AbsCmd1';
     var newcmdline = '#S .Device_Affected_Details -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
 	configstart[29]=newcmdline;
+	
+	
+	
 	configstart[5] ='#S Trigger_device -> '+ document.getElementById('trigdev').value;
-	configstart[8] ='#S .Trigger_cmd_on -> '+ document.getElementById('trigevent').value;
+	
+	
+	
+	
+	
+	var testevent = document.getElementById('trigevent').value.indexOf(":")
+	if (testevent == -1 && document.getElementById('trigdev').value != 'global' && document.getElementById('trigevent').value != '.*')
+	{
+		configstart[8] ='#S .Trigger_cmd_on -> state:'+ document.getElementById('trigevent').value;
+	}
+	else{
+		configstart[8] ='#S .Trigger_cmd_on -> '+ document.getElementById('trigevent').value;
+	}
+	
+	
+	
+	
+	
+	
+
+
+if (document.getElementById('trigdev').value =="all_events")
+{
+	configstart[26] ='#A MSwitch_Expert -> 1';
+	configstart[9] ='#S .Trigger_condition -> '+document.getElementById('globaltest').value;
+	
+	
+	//#S .Trigger_Whitelist -> NAME!=Template
+	
+	configstart[28] ='#S .Trigger_Whitelist -> NAME!='+devicename;
+	//#S .Trigger_condition -> "$EVENT"#[sp]=#[ti]m/(G_Steckdosen_2E070C#[dp]ENERGY_Power#[dp].*|G_Steckdosen_2E070C/
+}
+	
 	fillconfig('rawconfig2');
+	
+	
+	//return;
+	
 	saveconfig('rawconfig2');
+	
+	
 	return;
+	
 }
 
 function startimportpreconf(){
+	
+	FW_cmd(FW_root+'?cmd=set '+devicename+' loadpreconf &XHR=1', function(data){startimportpreconf1(data)})
+	return;
+}
+
+function startimportpreconf1(data){
+	preconf = data;
 	preconfparts = preconf.split("#-NEXT-");
 	var anzahl = preconfparts.length;
 	var count =0;
-	
-	
+	//alert("anzahl: "+anzahl);
+	//alert(preconfparts);
 	for (i=count; i<anzahl; i++)
 		{
 		treffer = preconfparts[i].match(/#NAME.(.*?)(#\[NEWL\])/);
+		//alert(treffer);
 		help = preconfparts[i].match(/#HELP.(.*?)(#\[NEWL\])/);
+		//alert(help);
 		preconfparts[i] = (preconfparts[i].split(treffer[0]).join(''));
 		preconfparts[i] = (preconfparts[i].split(help[0]).join(''));
-		
-		
-		
-		preconfparts[i] = preconfparts[i].replace(/\n/g,'#[REGEXN]');
+		//preconfparts[i] = preconfparts[i].replace(/\n/g,'#[REGEXN]');
 		preconfparts[i] = preconfparts[i].replace(/#\[NEWL\]/gi,"\n");
-		
-		
-		
-		
 		preconfpartsname.push(treffer[1]);
 		preconfpartshelp.push(help[1]); 
 		}
@@ -1239,8 +1089,1042 @@ function setpreconf(name){
 	document.getElementById('prec').style.backgroundColor='';
 }
 
+// #################
+
 function savepreconf(name){
 	mode = 'preconf';
 	saveconfig('rawconfig4',mode);
 	return;
 }
+
+// #################
+
+function toggletemplate(){
+
+	if (document.getElementById('empty').style.display == "none"){
+	document.getElementById('empty').style.display='block';
+	//document.getElementById('showtemplate').style.display='block';
+	document.getElementById('showtemplate').value="verberge Template";
+	}
+	else{
+		document.getElementById('showtemplate').value="zeige Template";
+		document.getElementById('empty').style.display='none';
+	}
+	
+	return;
+	
+}
+
+
+
+// TEMPLATE BELOW
+//templatesteuerung
+// #################
+
+function loadtemplate(){
+
+	document.getElementById('help').innerHTML = '';	
+	document.getElementById('importAT').style.display='none';
+	document.getElementById('importNOTIFY').style.display='none';
+	document.getElementById('importCONFIG').style.display='none';
+	document.getElementById('importWIZARD').style.display='none';
+	document.getElementById('importPRECONF').style.display='none';
+	document.getElementById('importTemplate').style.display='block';
+	
+	//document.getElementById('wizard').style.backgroundColor='';
+	document.getElementById('config').style.backgroundColor='';
+	document.getElementById('importat').style.backgroundColor='';
+	document.getElementById('importnotify').style.backgroundColor='';
+	document.getElementById('importpreconf').style.backgroundColor='';
+	document.getElementById('importTEMPLATE').style.backgroundColor='#ffb900';
+	
+	
+	
+	
+	//document.getElementById('newtemplate').style.display='none';
+	
+	
+	
+	
+	
+
+	for (elem in INQ) {
+		delete INQ[elem];
+		}
+	var html = '<table width="100%">';
+	html += '<tr>'
+	html += '<td width ="100%" id="importTemplate1" valign=top ></td>';
+	html += '<td id="importTemplate2">';
+	html+='Configfile:<br><textarea disabled id=\"rawconfig10\" style=\"width: 400px; height: 400px\"></textarea>';
+	html += '</td>';
+	html += '</tr>';
+	html += '</table>';
+	document.getElementById('importTemplate').innerHTML = html;
+	var file = document.getElementById('templatefile').value;
+	
+	document.getElementById('bank5').value='';
+	document.getElementById('templatename').value=file;
+	
+	
+	nosave=0;
+	if (file == "empty_template")
+	{
+		document.getElementById('empty').style.display='block';
+		
+		// cookie einlesen
+		
+		
+		
+		var cookie = getCookieValue("Mswitch_template");
+		
+	
+		if (cookie != "")
+		{
+			
+			//alert(cookie);
+		
+				  var Wert = cookie;
+			 // if (document.cookie) 
+			/* 
+				var Wertstart = cookie.indexOf("=") + 1;
+				var Wertende = cookie.indexOf(";");
+				if (Wertende == -1) 
+				{
+				  Wertende =cookie.length;
+				} */
+			  
+			  Wert=Wert.split("[TRENNER]");
+			  Wert=Wert.join("\n");
+			  document.getElementById('emptyarea').value=Wert;
+			  FW_okDialog("Templatedaten wurden aus letztem bearbeitetem Template wieder hergestellt");
+		}
+
+		document.getElementById('showtemplate').style.display='none';
+		document.getElementById('execbutton').value="Template ausführen";
+		nosave=1;
+		return;
+	}
+	
+	
+	document.getElementById('empty').style.display='none';
+	document.getElementById('showtemplate').style.display='block';
+	file+=".txt";
+	
+	
+	//FW_cmd(FW_root+'?cmd=set '+devicename+' template '+file+'&XHR=1', function(data){starttemplate(data)})
+	//return;
+	
+	FW_cmd(FW_root+'?cmd=set '+devicename+' template '+file+'&XHR=1', function(data){filltemplate(data)})
+	
+	
+	
+	return;
+	
+}
+
+
+// #################
+function getCookieValue(a) {
+   const b = document.cookie.match('(^|;)\\s*' + a + '\\s*=\\s*([^;]+)');
+   return b ? b.pop() : '';
+}
+
+
+
+// #################
+function filltemplate(data){
+
+document.getElementById('emptyarea').value=data;
+document.getElementById('execbutton').value="Template neu starten";
+	starttemplate(data);
+}
+
+
+
+// mainloop aller lines
+// #################
+
+function schreibespeicher(aktline){
+	if (aktline.length == "0"){
+	return;
+	}
+	var inhalt = document.getElementById('bank5').value;
+	inhalt = aktline+"\n"+inhalt;
+	document.getElementById('bank5').value=inhalt;
+	return;
+}
+
+// #################
+
+function saveempty(){
+//alert("safeempty");
+//document.getElementById('importTemplate1').innerHTML = out;
+	conf = document.getElementById('rawconfig10').value;
+	conf = conf.replace(/\n/g,'#[EOL]');
+	conf = conf.replace(/#\[REGEXN\]/g,'\\n');
+	conf = conf.replace(/:/g,'#c[dp]');
+	conf = conf.replace(/;/g,'#c[se]');
+	conf = conf.replace(/ /g,'#c[sp]');
+	
+	
+	//alert(conf);
+	//return;
+	
+	
+	var nm = devicename;
+	var def = nm+' saveconfig '+encodeURIComponent(conf);
+	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
+	return;
+}
+
+// #################
+
+function execempty(){
+	if (nosave =="1"){
+	var jetzt = new Date();
+	var Verfall = 1000 * 60 * 60 *12;
+	var Auszeit = new Date(jetzt.getTime() + Verfall);
+	var Wert = document.getElementById('emptyarea').value.split("\n");;
+	Wert=Wert.join("[TRENNER]");
+	document.cookie = "Mswitch_template" + "=" + Wert + "; expires=" + Auszeit.toGMTString() + ";";
+	}
+	
+	
+	
+	data = document.getElementById('emptyarea').value;
+	for (elem in INQ) {
+		delete INQ[elem];
+}
+	document.getElementById('rawconfig10').value = configtemplate.join("\n");
+	document.getElementById('bank5').value='';
+	starttemplate(data);
+	return;
+}
+
+// #################
+
+function starttemplate(template){
+	
+	closeall();
+	if (document.getElementById('rawconfig10').value ==""){
+	document.getElementById('rawconfig10').value = configtemplate.join("\n");
+	}
+	var tmplsatz = template.split("\n");
+	var len= tmplsatz.length;
+	var newtmp = "";
+	
+	
+	for (lines=0; lines<len; lines++){
+		if (tmplsatz[lines].match(/^#/)){
+			continue;
+		}
+	var aktline = tmplsatz[lines];
+	schreibespeicher(aktline);
+	tmplsatz[lines]="# abgearbeitet";
+	newtemplate = tmplsatz.join("\n");
+    var check = testline(aktline,newtemplate);
+	if ( check == "stop" ){
+		break;
+	}
+	
+	tmplsatz[lines]="# abgearbeitet";
+	execcmd(aktline); // durchreichung von set befehlen
+	}
+	
+	
+	
+	if (len == lines)
+	{
+		if (nosave =="0"){
+		var out ="Configfile wurde erstellt !  .... wird gespeichert .....";
+		}
+		else{
+		var out ="Configfile wurde erstellt.<br><input type='button' value='MSwitch erstellen' onclick='javascript: saveempty()'>";
+		}
+	document.getElementById('importTemplate1').innerHTML = out;
+	conf = document.getElementById('rawconfig10').value;
+	conf = conf.replace(/\n/g,'#[EOL]');
+	conf = conf.replace(/#\[REGEXN\]/g,'\\n');
+	conf = conf.replace(/:/g,'#c[dp]');
+	conf = conf.replace(/;/g,'#c[se]');
+	conf = conf.replace(/ /g,'#c[sp]');
+	
+	//  doppelt - auch im execute vorhanden
+	if (nosave =="1"){
+	// cookie setzen
+	var jetzt = new Date();
+	//var Verfall = 1000 * 60 * 60 * 24 * 365;
+	var Verfall = 1000 * 60 * 60 *12;
+	var Auszeit = new Date(jetzt.getTime() + Verfall);
+	var Wert = document.getElementById('emptyarea').value.split("\n");;
+	Wert=Wert.join("[TRENNER]");
+	document.cookie = "Mswitch_template" + "=" + Wert + "; expires=" + Auszeit.toGMTString() + ";";
+	//
+	}
+
+	if (nosave =="0"){
+		var nm = devicename;
+		var def = nm+' saveconfig '+encodeURIComponent(conf);
+		location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
+		}
+	}
+	return;	
+}
+
+// #################
+
+function testline(line,newtemplate){
+var cmdsatz = line.split(">>");
+if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
+if (cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+	
+	//alert(cmdsatz[0]);
+	
+	if (INQ[cmdsatz[0]]== "1")
+	{
+	cmdsatz.shift(); 	
+	}
+	else{
+		//alert("returned");
+	return;
+	}
+}
+
+if (cmdsatz[0] == "INQ"){
+	 text = cmdsatz[4];
+	 benenner = cmdsatz[3];
+	 setINQ(text,cmdsatz[1],cmdsatz[2],benenner,newtemplate);
+	 return "stop";
+}
+
+
+if (cmdsatz[0] == "REPEAT"){
+	 text = cmdsatz[2];
+	 anzahl = cmdsatz[1];
+	 //alert("found REPEAT:"+cmdsatz[1]);
+	 setREPEAT(text,anzahl,newtemplate);
+	 return "stop";
+}
+
+
+
+// aufbau - ASK : TRIGGERTIME : Zu welcher Zeit soll dea MSwitch ausgelöst werden ? : <HELP>
+// 0 -setting
+// 1 -befehl
+// 2 -text
+// aufbau - OPT : TRIGGERTIME :d3,d2,d3: Zu welcher Zeit soll dea MSwitch ausgelöst werden ? : <HELP>
+// 0 -setting
+// 1 -befehl
+// 2 -text
+
+var typ="";
+if (cmdsatz[0] == "ATTR"){
+	typ="A";
+	cmdsatz.shift(); 
+	}
+	else{
+	typ="S";
+	}
+		var befehl = cmdsatz[0];
+
+
+		if (befehl == "ASK"){
+			var toset = cmdsatz[1];
+			var text = cmdsatz[2];
+			freeinput(text,toset,newtemplate,typ);
+			return "stop";
+		}
+		
+		if (befehl == "EVENT"){
+			var toset = cmdsatz[1];
+			var text = cmdsatz[2];
+			eventinput(text,toset,newtemplate,typ);
+			return "stop";
+		}
+		
+		if (befehl == "OPT"){
+			var toset = cmdsatz[1];
+			var options = cmdsatz[2];
+			var text = cmdsatz[3];
+			optioninput(text,toset,options,newtemplate,typ);
+			return "stop";
+		}
+
+		if (befehl == "SELECT"){
+			var toset = cmdsatz[1];
+			//var options = cmdsatz[2];
+			var text = cmdsatz[2];
+			selectinput(text,toset,newtemplate,typ);
+			return "stop";
+		}
+	
+		if (befehl == "SET"){
+		var befehl =cmdsatz.join(">>");
+		if (typ =="A"){
+			befehl="ATTR>>"+befehl;
+			}
+		execcmd(befehl);
+		starttemplate(newtemplate);
+		return "stop";
+		}
+return "go";
+}
+
+
+
+
+
+// #################
+
+
+function setREPEAT(text,anzahl,newtemplate){
+var out ="";
+out+=text;
+out+="<br>&nbsp;<br>";
+out+="<fieldset>";
+
+out+="<input type=\"radio\" id=\"REPEAT1\" name=\"radio\" value=\"0\">";
+out+="<label for=\"REPEAT1\"> ja</label><br> ";
+
+out+="<input type=\"radio\" id=\"REPEAT2\" name=\"radio\" value=\"1\">";
+out+="<label for=\"REPEAT2\"> nein</label><br> ";	
+out+="</fieldset>";		
+out+="<br><input type='button' value='weiter' onclick='javascript: setREPEATok(\""+anzahl+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+
+
+// #################
+function setREPEATok(anzahl)
+{
+var radios = document.getElementsByName('radio');
+var value;
+for (var i = 0; i < radios.length; i++) {
+    if (radios[i].type === 'radio' && radios[i].checked) {
+        // get value, set checked flag or do whatever you need to
+        value = radios[i].value;   
+    }
+}
+var template = document.getElementById('newtemplate').value;
+if (value =="0"){
+	var alllastlines = document.getElementById('bank5').value.split("\n");
+	for (var i = 0; i < anzahl; i++) {
+		newtemplate=alllastlines[i]+"\n"+newtemplate;
+	}
+}
+starttemplate(newtemplate);
+return;
+}
+
+// #################
+
+
+function setINQ(text,inq,inq1,benenner,newtemplate){
+var names = benenner.split(",");
+var out ="";
+out+=text;
+out+="<br>&nbsp;<br>";
+out+="<fieldset>";
+out+="<input type=\"radio\" id=\"INQ1\" name=\"radio\" value=\"0\">";
+out+="<label for=\"INQ1\"> "+names[0]+"</label><br> ";
+out+="<input type=\"radio\" id=\"INQ2\" name=\"radio\" value=\"1\">";
+out+="<label for=\"INQ2\"> "+names[1]+"</label><br> ";	
+out+="</fieldset>";		
+out+="<br><input type='button' value='weiter' onclick='javascript: setINQok(\""+inq+"\",\""+inq1+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+// #################
+
+function setINQok(toset1,toset2)
+{
+var radios = document.getElementsByName('radio');
+var value;
+for (var i = 0; i < radios.length; i++) {
+    if (radios[i].type === 'radio' && radios[i].checked) {
+        // get value, set checked flag or do whatever you need to
+        value = radios[i].value;   
+		
+    }
+}
+var template = document.getElementById('newtemplate').value;
+if (value =="0"){
+	INQ[toset1]  = "1";
+}
+if (value =="1"){
+	INQ[toset2]  = "1";
+}
+starttemplate(newtemplate);
+return;
+}
+
+// #################
+
+function eventinput(text,toset,newtemplate,typ){
+monitorid ="eventcontrol1";
+logging="on";
+observer.observe(target, config);
+var out ="";
+out+=text;
+out+="<br>&nbsp;<br>";
+out+="<select style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" ></select><br>&nbsp;<br>";
+//out+="<input id='input' type='text' value=''><br>&nbsp;<br>";
+out+=" <input type='button' value='weiter' onclick='javascript: eventinputok(\""+toset+"\",\""+typ+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+// #################
+
+function eventinputok(toset,typ)
+{
+monitorid ="eventcontrol";
+logging="off";
+eventmonitorstop();
+var event = document.getElementById('eventcontrol1').value.split(":");
+event.shift();
+var befehl = "SET>>"+toset+">>"+event.join(":");
+//alert (befehl);
+execcmd(befehl);
+starttemplate(newtemplate);
+return;
+}
+
+// #################
+
+function freeinput(text,toset,newtemplate,typ){
+	
+	
+	var ret = "<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
+	if( document.getElementById('bank1').value == "FreeCmd" && (toset =="comand_cmd1" || toset =="comand_cmd1"))
+	{
+		//alert ("toset: "+toset);
+		
+		ret = '<textarea id ="input" cols="40" rows="4"></textarea><br>&nbsp;<br>';
+	}
+	
+var out ="";
+out+=text;
+out+="<br>&nbsp;<br>";
+out+=ret;
+out+=" <input type='button' value='weiter' onclick='javascript: freeinputok(\""+toset+"\",\""+typ+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="Test<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+// #################
+
+function freeinputok(toset,typ)
+{
+var befehl = "SET>>"+toset+">>"+document.getElementById('input').value;
+	if (typ =="A"){
+		befehl="ATTR>>"+befehl;
+	}
+execcmd(befehl);
+starttemplate(newtemplate);
+return;
+}
+// #################
+function optioninput(text,toset,options,newtemplate,typ){
+var out ="";
+out+=text;
+out+="<br>&nbsp;<br>";
+out+="<fieldset>";
+var mapp = options.match(/(.*)\{(.*)\}/);
+if (mapp!=null && mapp.length!=0)
+	{	
+	var optionssatz = mapp[1].split(",");
+	var mapsatz= mapp[2].split(",");
+	}
+else{
+	var optionssatz = options.split(",");
+	var mapsatz = optionssatz;
+	}
+	var len= optionssatz.length;
+	for (i=0; i<len; i++){
+	out+="<input type=\"radio\" id=\"ID"+i+"\" name=\"radio\" value=\""+optionssatz[i]+"\">";
+	out+="<label for=\"ID"+i+"\"> "+mapsatz[i]+"</label><br> ";
+	}
+	out+="</fieldset>";		
+	out+="<br><input type='button' value='weiter' onclick='javascript: optioninputok(\""+toset+"\",\""+typ+"\")'>";
+	out+="<br>&nbsp;<br>&nbsp;<br>";
+	out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+	document.getElementById('importTemplate1').innerHTML = out;
+	return;
+}
+
+// #################
+
+function optioninputok(toset,typ)
+{
+var radios = document.getElementsByName('radio');
+var value;
+for (var i = 0; i < radios.length; i++) {
+    if (radios[i].type === 'radio' && radios[i].checked) {
+        value = radios[i].value;   
+    }
+}
+var befehl = "SET>>"+toset+">>"+value;
+if (typ =="A"){
+	befehl="ATTR>>"+befehl;
+}
+var template = document.getElementById('newtemplate').value;
+execcmd(befehl);
+starttemplate(newtemplate);
+return;
+}
+
+// #################
+
+function cmdselect(text,toset,newtemplate,typ){
+var devicetocmd = document.getElementById('bank1').value
+var number = devices.indexOf(devicetocmd);
+seloptions = makecmdhashtemp(cmds[number]);
+return seloptions+"<span id=\"setcmd1temp\"></span>";
+
+}
+// #################
+
+function cmdselectok(toset,typ)
+{
+	var befehlfirst = "";
+	var befehlsecond = "";
+	befehlfirst = document.getElementById('comand').value;
+	if( $("#comand1").length > 0 ) {
+	befehlsecond = document.getElementById('comand1').value;
+	}
+var befehl = "SET>>"+toset+">>"+befehlfirst+" "+befehlsecond;
+var template = document.getElementById('newtemplate').value;
+execcmd(befehl);
+starttemplate(newtemplate);
+return;
+}
+
+// #################
+
+function selectinput(text,toset,newtemplate,typ){
+var out ="";
+out+=text;
+out+="<br>&nbsp;<br>";
+	if (typ =="S")
+	{
+		if(toset == "Device_to_switch")
+		{
+			selectlist = devicelist('selectlist','name','no_script',3)
+		}
+		else if(toset == "comand_cmd1" || toset == "comand_cmd2")
+		{
+			selectlist =cmdselect(text,toset,newtemplate,typ)
+			out+=selectlist;
+			out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: cmdselectok(\""+toset+"\",\""+typ+"\")'>";
+			out+="<br>&nbsp;<br>&nbsp;<br>";
+			out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+			document.getElementById('importTemplate1').innerHTML = out;
+			return;
+		}
+		else
+		{
+			selectlist = devicelist('selectlist','name','no_script',2)
+		}
+	}
+	else// typ = A
+	{
+	selectlist = attrlist('selectlist','name',toset)	
+	}
+
+out+=selectlist;
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: selectinputok(\""+toset+"\",\""+typ+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+// #################
+function selectinputok(toset,typ)
+{
+var befehl = "SET>>"+toset+">>"+document.getElementById('selectlist').value;
+if (typ =="A"){
+	befehl="ATTR>>"+befehl;
+}
+var template = document.getElementById('newtemplate').value;
+execcmd(befehl);
+starttemplate(newtemplate);
+return;
+}
+// #################
+function execcmd(befehl)
+{
+var cmdsatz = befehl.split(">>");
+if (cmdsatz[0] == "ATTR"){
+	typa="A";
+	cmdsatz.shift(); 
+}
+else{
+typa="S";
+}
+	var befehl = cmdsatz[1];
+	var typ = cmdsatz[0];
+	var inhalt = cmdsatz[2];
+	// hole config
+	
+	//alert("eingehender befehl: "+befehl);
+	
+	
+	
+	if (befehl == "INFO"){
+	document.getElementById('help').innerHTML = inhalt;
+	return;
+	}
+	// #A MSwitch_Expert -> 1	
+	var configuration=document.getElementById('rawconfig10').value;
+	configuration = configuration.split("\n");
+	conflenght = configuration.length;
+if (typa == "A" ){
+	newattr = "#A "+befehl+" -> "+inhalt;
+	var newconfig =configuration.join("\n");
+	if (inhalt != ""){
+	newconfig=newconfig+"\n"+newattr;
+	}
+	document.getElementById('rawconfig10').value = newconfig;
+	return;
+	}
+	//timerfelder vorbereiten
+	var fields = configuration[13].split("->");
+	//alert(fields[0]+'-'+fields[1]+'-');
+	if (fields[1] ==" "){
+		fields[1]="on~off~ononly~offonly~onoffonly";
+	}
+	var satz = fields[1].split("~");
+	if (befehl == "Trigger_device"){
+	configuration[5] = "#S Trigger_device -> "+inhalt;
+	document.getElementById('bank1').value = inhalt;
+	}
+
+	if (befehl == "Trigger_Whitelist"){
+	configuration[conflenght] = "#S .Trigger_Whitelist -> "+inhalt;
+	}
+	
+	if (befehl == "Time_on"){
+	inhalt = inhalt.replace(/:/gi,"#[dp]");
+	satz[0]= satz[0]+inhalt;
+	var newsatz = satz.join("~");
+	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	}
+	//time_off
+	if (befehl == "Time_off"){
+	inhalt = inhalt.replace(/:/gi,"#[dp]");
+	satz[1]= satz[1]+inhalt;
+	var newsatz = satz.join("~");
+	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	}
+	// Time_cmd1
+	if (befehl == "Time_cmd1"){
+	inhalt = inhalt.replace(/:/gi,"#[dp]");
+	satz[2]= satz[2]+inhalt;
+	var newsatz = satz.join("~");
+	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	}
+	// Time_cmd2
+	if (befehl == "Time_cmd2"){
+	inhalt = inhalt.replace(/:/gi,"#[dp]");
+	satz[3]= satz[3]+inhalt;
+	var newsatz = satz.join("~");
+	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	}
+	
+	// Trigger_condition
+ 	if (befehl == "Trigger_condition"){
+	configuration[9] = "#S .Trigger_condition -> "+inhalt;
+	} 
+	
+	// Trigger_on
+ 	if (befehl == "MSwitch_on"){
+	configuration[7] = "#S .Trigger_on -> "+inhalt;
+	} 
+	
+	// Trigger_on
+ 	if (befehl == "MSwitch_off"){
+	configuration[3] = "#S .Trigger_off -> "+inhalt;
+	} 
+	
+	// Trigger_cmd1
+ 	if (befehl == "MSwitch_cmd1"){
+	configuration[8] = "#S .Trigger_cmd_on -> "+inhalt;
+	//alert(configuration);
+	} 
+	
+	// Trigger_cmd2
+ 	if (befehl == "MSwitch_cmd2"){
+	configuration[4] = "#S .Trigger_cmd_off -> "+inhalt;
+	} 
+	
+	// comand_cmd1 und 2
+	if (befehl == "comand_cmd1" || befehl == "comand_cmd2"){
+		if (befehl == "comand_cmd1"){
+			var field1 =1;
+			var field2 =3;
+		}
+		if (befehl == "comand_cmd2"){
+			var field1 =2;
+			var field2 =4;
+		}
+		
+	inhalt = inhalt.split(" ");
+	var first =  inhalt.shift();
+	var second = inhalt.join(" ");
+	var device =  document.getElementById('bank6').value.split("\n");	
+	if (document.getElementById('bank1').value == "FreeCmd"){	
+	first = first.replace(/\n/g,';;');	
+	second = second.replace(/\n/g,';;');
+
+
+
+	first = first.replace(/\n/g,'#[nl]');
+	first = first.replace(/:/g,'#[dp]');
+	first = first.replace(/;/g,'#[se]');
+	first = first.replace(/ /g,'#[sp]');
+	first = first.replace(/'/g,'#[st]');
+	first = first.replace(/\t/g,'#[tab]');
+	first = first.replace(/\\/g,'#[bs]');
+	first = first.replace(/,/g,'#[ko]');
+	first = first.replace(/\|/g,'#[wa]');
+	first = first.replace(/\|/g,'#[wa]');
+
+
+	second = second.replace(/\n/g,'#[nl]');
+	second = second.replace(/:/g,'#[dp]');
+	second = second.replace(/;/g,'#[se]');
+	second = second.replace(/ /g,'#[sp]');
+	second = second.replace(/'/g,'#[st]');
+	second = second.replace(/\t/g,'#[tab]');
+	second = second.replace(/\\/g,'#[bs]');
+	second = second.replace(/,/g,'#[ko]');
+	second = second.replace(/\|/g,'#[wa]');
+	second = second.replace(/\|/g,'#[wa]');
+
+
+
+
+
+	
+	device[field1]= "#[NF]"
+	device[field2]="#[NF]"+first+" "+second;
+	}
+	else
+	{
+	device[field1]= "#[NF]"+first;
+	device[field2]="#[NF]"+second;
+	}
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	
+	// cmd_repeat
+	if (befehl == "cmd_repeat"){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[11]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	// cmd_repeat_time
+	if (befehl == "cmd_repeat_time"){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[12]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	// delay_cmd1
+	if (befehl == "delay_cmd1"){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[7]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	// delay_cmd2
+	if (befehl == "delay_cmd2"){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[8]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	// condition_cmd1
+	if (befehl == "condition_cmd1"){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[9]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	// condition_cmd2
+	if (befehl == "condition_cmd2"){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[10]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	
+	// Device_to_switch
+	if (befehl == "Device_to_switch"){
+		
+	//alert(inhalt);
+	if (inhalt == "free"){ inhalt = "FreeCmd";}
+	var inhalt1 = configuration[12].split("-> ");	
+	var inhalt2 = inhalt1[1].split("#\[ND\]");
+	var anzdevices=inhalt2.lenght;
+	if (anzdevices === undefined){anzdevices=0;}
+	var satz = inhalt1[1].split(",");
+	if (satz[0] == "no_device"){
+		satz.shift(); 
+	}
+	satz.push(inhalt+"-AbsCmd1"); 
+	var newsatz = satz.join(",");
+	configuration[12] = "#S .Device_Affected -> "+newsatz;
+	emptydevice[0]=inhalt+"-AbsCmd1";
+	document.getElementById('bank6').value = emptydevice.join("\n");
+	document.getElementById('bank1').value = inhalt;
+	configuration =  makedevice(configuration);
+	} 
+	
+	
+//alert(configuration);
+
+var newconfig =configuration.join("\n");
+document.getElementById('rawconfig10').value = newconfig;
+return;
+}
+
+// #################
+
+function makedevice(configuration){
+	//alert("makedevice");
+	//var configuration=document.getElementById('rawconfig10').value;
+	//configuration = configuration.split("\n");
+	var device=document.getElementById('bank6').value;
+	device = device.replace(/#\[NF\]/g,'');
+	device =device.split("\n");
+	document.getElementById('bank7').value=device.join("#[NF]");
+	
+	// fertige line in bank 7
+	
+	
+	var key  = document.getElementById('bank1').value+"-AbsCmd1"
+	
+	Devices[key] = document.getElementById('bank7').value;
+	// hier aufruf um das device in config einzufügen !!!
+	
+	//alert("KEY: "+key);
+	//alert(Devices[key]);
+	var newmasterline ="";
+	var affected= configuration[12].split("-> ");
+	var affecteddevices = affected[1].split(",");
+	
+	//alert(affecteddevices);
+	
+	for (var i = 0; i < affecteddevices.length; i++) {
+		
+		
+		var name = affecteddevices[i];
+		newmasterline += Devices[name]+"#[ND]";
+    }
+	
+	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
+	
+	
+	//alert("newmaster: "+newmasterline);
+	
+	
+	
+	
+/* 	var inhalt1 = configuration[14].split("-> ");	
+	var inhalt2 = inhalt1[1].split("#\[ND\]");
+	
+	
+
+	var anzdevices=inhalt2.lenght;
+	
+	//alert ("anzahl devices: "+anzdevices);
+	
+	if (anzdevices === undefined){anzdevices=0;}
+	
+	inhalt2[anzdevices] = document.getElementById('bank7').value;
+	
+	var newstring = inhalt2.join("#[ND]"); */
+	
+	configuration[14] = "#S .Device_Affected_Details -> "+newmasterline;
+	
+	return configuration;
+}
+
+// #################
+
+function makecmdhashtemp(line){
+	if (line === undefined){
+		return;
+	}
+	var retoption = '<select id =\"comand\" name=\"\" onchange=\"javascript: selectcmdoptionstemp(this.value)\">';
+	retoption +='<option selected value=\"0\">Befehl wählen</option>';
+	
+	sets = new Object();
+	var cmdset = new Array;
+	cmdset = line.split(" ");
+	var anzahl = cmdset.length;
+	
+	for (i=0; i<anzahl; i++)
+		{
+		aktset = cmdset[i].split(":");	
+		sets[aktset[0]]=aktset[1];
+		if (aktset[0] != ""){
+		retoption +='<option value='+aktset[0]+'>'+aktset[0]+'</option>';
+			}
+		}
+	retoption +='</select>';
+	var arraysetskeys = Object.keys(sets);
+	return retoption;
+}
+
+// #################
+
+function selectcmdoptionstemp(inhalt){
+	document.getElementById('setcmd1temp').innerHTML ='';
+	// wenn undefined textfeld erzeugen
+	if (sets[inhalt] == 'noArg'){ return;}
+	// wenn noarg befehl übernehmen
+	if (sets[inhalt] === undefined){ 
+	retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"\">&nbsp;';
+	document.getElementById('setcmd1temp').innerHTML = retoption1;
+	return;
+	}
+	// wenn liste subcmd erzeugen
+	var retoption1;
+	retoption1 = '<select id =\"comand1\" name=\"\">';
+	retoption1 +='<option selected value=\"0\">Option wählen</option>';
+	
+	var cmdset1= new Array;
+	cmdset1= sets[inhalt].split(",");
+	console.log(cmdset1);
+	var anzahl = cmdset1.length;
+	for (i=0; i<anzahl; i++)
+		{
+		retoption1 +='<option value='+cmdset1[i]+'>'+cmdset1[i]+'</option>';
+		}
+	retoption1 +='</select>';
+	document.getElementById('setcmd1temp').innerHTML = retoption1;
+}
+
