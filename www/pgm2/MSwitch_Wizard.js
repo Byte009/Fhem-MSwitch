@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.0';
+	var version = 'V2.1';
 	
 	const Devices = [];
 	var result= 0; // wird für waittimer in templates gebraucht
@@ -648,7 +648,7 @@ function saveat(){
 	cmdstring = cmdstring.replace(/:/g,'#[dp]');
 	cmdstring = cmdstring.replace(/;/g,'#[se]');
 	cmdstring = cmdstring.replace(/ /g,'#[sp]');
-	cmdstring = cmdstring.replace(/'/g,'#[st]');
+	//cmdstring = cmdstring.replace(/'/g,'#[st]');
 	cmdstring = cmdstring.replace(/\t/g,'#[tab]');
 	cmdstring = cmdstring.replace(/\\/g,'#[bs]');
 	cmdstring = cmdstring.replace(/,/g,'#[ko]');
@@ -883,7 +883,7 @@ function savenot(){
 	cmdstring = cmdstring.replace(/:/g,'#[dp]');
 	cmdstring = cmdstring.replace(/;/g,'#[se]');
 	cmdstring = cmdstring.replace(/ /g,'#[sp]');
-	cmdstring = cmdstring.replace(/'/g,'#[st]');
+	//cmdstring = cmdstring.replace(/'/g,'#[st]');
 	cmdstring = cmdstring.replace(/\t/g,'#[tab]');
 	cmdstring = cmdstring.replace(/\\/g,'#[bs]');
 	cmdstring = cmdstring.replace(/,/g,'#[ko]');
@@ -1894,7 +1894,7 @@ if (typa == "A" ){
 	first = first.replace(/:/g,'#[dp]');
 	first = first.replace(/;/g,'#[se]');
 	first = first.replace(/ /g,'#[sp]');
-	first = first.replace(/'/g,'#[st]');
+	//first = first.replace(/'/g,'#[st]');
 	first = first.replace(/\t/g,'#[tab]');
 	first = first.replace(/\\/g,'#[bs]');
 	first = first.replace(/,/g,'#[ko]');
@@ -1906,7 +1906,7 @@ if (typa == "A" ){
 	second = second.replace(/:/g,'#[dp]');
 	second = second.replace(/;/g,'#[se]');
 	second = second.replace(/ /g,'#[sp]');
-	second = second.replace(/'/g,'#[st]');
+	//second = second.replace(/'/g,'#[st]');
 	second = second.replace(/\t/g,'#[tab]');
 	second = second.replace(/\\/g,'#[bs]');
 	second = second.replace(/,/g,'#[ko]');
