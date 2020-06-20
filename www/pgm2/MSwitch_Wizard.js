@@ -17,9 +17,13 @@
   
   
   
-	var version = 'V2.1';
+	var version = 'V2.2';
 	
 	const Devices = [];
+	const WIZARDVARS = [];
+	const ATTRS = [];
+	
+	
 	var result= 0; // wird für waittimer in templates gebraucht
     var template;
 	var nosave =0;
@@ -404,6 +408,14 @@ function saveconfig(name,mode){
 	if (mode == 'wizard'){
 	makeconfig();
 	}
+	
+	
+	
+	
+	
+	
+	
+	
 	conf = document.getElementById(name).value;
 	
 	conf = conf.replace(/\n/g,'#[EOL]');
@@ -411,6 +423,12 @@ function saveconfig(name,mode){
 	conf = conf.replace(/:/g,'#c[dp]');
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
+	
+	
+	conf = changevar(conf);
+	
+	
+	
 	
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
@@ -1244,10 +1262,12 @@ document.getElementById('execbutton').value="Template neu starten";
 // mainloop aller lines
 // #################
 
-function schreibespeicher(aktline){
-	if (aktline.length == "0"){
-	return;
-	}
+function schreibespeicher(aktline)
+{
+	if (aktline.length == "0")
+		{
+		return;
+		}
 	var inhalt = document.getElementById('bank5').value;
 	inhalt = aktline+"\n"+inhalt;
 	document.getElementById('bank5').value=inhalt;
@@ -1266,11 +1286,7 @@ function saveempty(){
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
 	
-	
-	//alert(conf);
-	//return;
-	
-	
+	conf = changevar(conf);
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
 	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
@@ -1376,7 +1392,7 @@ function starttemplate(template){
 function testline(line,newtemplate){
 var cmdsatz = line.split(">>");
 if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-if (cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+if (cmdsatz[0] != "VAR" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 	
 	//alert(cmdsatz[0]);
 	
@@ -1396,6 +1412,44 @@ if (cmdsatz[0] == "INQ"){
 	 setINQ(text,cmdsatz[1],cmdsatz[2],benenner,newtemplate);
 	 return "stop";
 }
+
+
+
+
+// VAR>>VARNAME>>VARTEXT
+if (cmdsatz[0] == "VAR"){
+
+
+var testvar = cmdsatz[1].match(/^\$.*/);
+//alert (testvar);
+if (testvar!=null && testvar.length!=0)
+{
+	
+	
+	
+	text = cmdsatz[2];
+	 varname = cmdsatz[1];
+	 setVAR(text,varname,newtemplate);
+	 return "stop";
+	 
+	
+}
+	else{
+
+
+alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+
+	 
+	}
+	 
+	 
+}
+
+
+
+
+
+
 
 
 if (cmdsatz[0] == "REPEAT"){
@@ -1477,9 +1531,55 @@ return "go";
 // #################
 
 
+
+function setVAR(text,varname,newtemplate){
+
+var out ="";
+out+=text;
+
+out=changevar(out);
+
+out+="<br>&nbsp;<br>";
+
+
+//out+=varname+"=<input id='input' type='text' value='' size='40'><br>&nbsp;<br>";
+
+out+="<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
+
+
+	
+out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+
+
+
+// 
+
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+
+
+function setVARok(input){
+
+WIZARDVARS[varname] = document.getElementById('input').value
+
+//execcmd(befehl);
+starttemplate(newtemplate);
+return;
+}
+
+
+
+
+
+
 function setREPEAT(text,anzahl,newtemplate){
 var out ="";
 out+=text;
+out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<fieldset>";
 
@@ -1527,6 +1627,7 @@ function setINQ(text,inq,inq1,benenner,newtemplate){
 var names = benenner.split(",");
 var out ="";
 out+=text;
+out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<fieldset>";
 out+="<input type=\"radio\" id=\"INQ1\" name=\"radio\" value=\"0\">";
@@ -1573,6 +1674,7 @@ logging="on";
 observer.observe(target, config);
 var out ="";
 out+=text;
+out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<select style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" ></select><br>&nbsp;<br>";
 //out+="<input id='input' type='text' value=''><br>&nbsp;<br>";
@@ -1613,6 +1715,7 @@ function freeinput(text,toset,newtemplate,typ){
 	
 var out ="";
 out+=text;
+out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+=ret;
 out+=" <input type='button' value='weiter' onclick='javascript: freeinputok(\""+toset+"\",\""+typ+"\")'>";
@@ -1638,6 +1741,7 @@ return;
 function optioninput(text,toset,options,newtemplate,typ){
 var out ="";
 out+=text;
+out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<fieldset>";
 var mapp = options.match(/(.*)\{(.*)\}/);
@@ -1781,6 +1885,17 @@ typa="S";
 	//alert("eingehender befehl: "+befehl);
 	
 	
+	//
+	
+	
+	//alert(inhalt.type);
+	//if ( inhalt === undefined || inhalt != "undefined"){ 
+	//inhalt="";
+	//}
+	
+	//alert(inhalt);
+	
+	//inhalt = changevar(inhalt);
 	
 	if (befehl == "INFO"){
 	document.getElementById('help').innerHTML = inhalt;
@@ -1790,15 +1905,31 @@ typa="S";
 	var configuration=document.getElementById('rawconfig10').value;
 	configuration = configuration.split("\n");
 	conflenght = configuration.length;
+	
+	
+	
+	
+	
 if (typa == "A" ){
-	newattr = "#A "+befehl+" -> "+inhalt;
+	
+	if (inhalt != "")
+	{
+	//alert(inhalt);
+	inhalt1 = changevar(inhalt);
+	//alert("inhalt1 "+inhalt1);
+	
+	newattr = "#A "+befehl+" -> "+inhalt1;
 	var newconfig =configuration.join("\n");
-	if (inhalt != ""){
+	
+	ATTRS[befehl] = inhalt1;	
+		
 	newconfig=newconfig+"\n"+newattr;
 	}
 	document.getElementById('rawconfig10').value = newconfig;
 	return;
 	}
+	
+	
 	//timerfelder vorbereiten
 	var fields = configuration[13].split("->");
 	//alert(fields[0]+'-'+fields[1]+'-');
@@ -2128,3 +2259,37 @@ function selectcmdoptionstemp(inhalt){
 	document.getElementById('setcmd1temp').innerHTML = retoption1;
 }
 
+
+// ######################
+function changevar(text){
+	//alert("text- "+text);
+	
+	if ( text === undefined || text == "undefined"){ 
+	return text;
+	}
+	
+ 	for (var key in WIZARDVARS) {
+		//alert (key);
+		var replace = "\\"+key+"\\b";
+        var re = new RegExp(replace,"g");
+        newtest=text.replace(re, WIZARDVARS[key]);
+		text= newtest;
+		}
+
+return text;
+
+}
+
+
+// ##################################
+function setATTRS()
+{
+	
+	
+	
+	
+	//newconfig=newconfig+"\n"+newattr;
+	
+	
+	
+}
