@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.2';
+	var version = 'V2.3';
 	
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -473,6 +473,57 @@ function devicelist(id,name,script,flag){
 	return ret;
 		
 }
+
+
+
+
+// ############################
+
+
+
+
+function devicelistmultiple(id,name){
+	ret="";
+	
+	//if (script == "no_script"){
+		ret = '<select style="width: 50em;" size="5" multiple id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: takeselected(id,name)\">';
+/* 	}
+	else{
+		ret = '<select style="width: 30em;" size="5" multiple id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: '+script+'(this.value,id,name)\">';
+	} */
+	// erstelle geräteliste'+id+'+name+'
+	
+	count =0;
+	
+	//ret +='<option value=\"select\">bitte wählen:</option>';
+
+	for (i=count; i<len; i++)
+		{
+		//if (flag == '1'){
+			ret +='<option value='+devices[i]+'>'+devices[i]+'</option>';
+			//}
+/* 		else{
+			
+			ret +='<option value='+devices[i]+'>'+devices[i]+'</option>';
+			} */
+		}
+	ret +='</select>';
+	return ret;
+		
+}
+
+/// #######################
+
+function takeselected(id,name){
+	
+	var values = $('#'+id).val();
+	//alert(values);
+	
+	document.getElementById('input').value = values;
+	return;
+}
+
+//#####################
 
 function attrlist(id,name,attr){
 ret="";
@@ -1392,7 +1443,7 @@ function starttemplate(template){
 function testline(line,newtemplate){
 var cmdsatz = line.split(">>");
 if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-if (cmdsatz[0] != "VAR" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+if (cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VAR" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 	
 	//alert(cmdsatz[0]);
 	
@@ -1418,36 +1469,41 @@ if (cmdsatz[0] == "INQ"){
 
 // VAR>>VARNAME>>VARTEXT
 if (cmdsatz[0] == "VAR"){
-
-
 var testvar = cmdsatz[1].match(/^\$.*/);
 //alert (testvar);
 if (testvar!=null && testvar.length!=0)
 {
-	
-	
-	
 	text = cmdsatz[2];
-	 varname = cmdsatz[1];
-	 setVAR(text,varname,newtemplate);
-	 return "stop";
-	 
-	
+	varname = cmdsatz[1];
+	setVAR(text,varname,newtemplate);
+	return "stop";
 }
 	else{
-
-
 alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
-
-	 
 	}
-	 
-	 
 }
 
 
+// VARDEVICES>>VARNAME>>VARTEXT
+if (cmdsatz[0] == "VARDEVICES"){
+var testvar = cmdsatz[1].match(/^\$.*/);
+//alert (testvar);
+if (testvar!=null && testvar.length!=0)
+{
+	text = cmdsatz[2];
+	varname = cmdsatz[1];
+	setVARDEVICES(text,varname,newtemplate);
+	return "stop";
+}
+	else{
+alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+} 
 
 
+
+
+//##############################
 
 
 
@@ -1529,9 +1585,85 @@ return "go";
 
 
 // #################
+function setVARDEVICES(text,varname,newtemplate){
+	
+	
+	
+
+	
+	
+	
+var out ="";
+out+=text;
+out=changevar(out);
+out+="<br>&nbsp;<br>";
+
+		// if(toset == "Device_to_switch")
+		// {
+			// selectlist = devicelist('selectlist','name','no_script',3)
+		// }
+		
+		// else if(toset == "comand_cmd1" || toset == "comand_cmd2")
+		// {
+			// selectlist =cmdselect(text,toset,newtemplate,typ)
+			// out+=selectlist;
+			// out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: cmdselectok(\""+toset+"\",\""+typ+"\")'>";
+			// out+="<br>&nbsp;<br>&nbsp;<br>";
+			// out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+			// document.getElementById('importTemplate1').innerHTML = out;
+			// return;
+		// }
+		// else
+		// {
+			selectlist = devicelistmultiple('selectlist','name')
+		//}
+	
+
+
+out+=selectlist;
 
 
 
+out+="<br>&nbsp;<br><input id='input' type='text' value='' size='60'>";
+
+out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
+
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
+
+// #################
 function setVAR(text,varname,newtemplate){
 
 var out ="";
@@ -1540,27 +1672,15 @@ out+=text;
 out=changevar(out);
 
 out+="<br>&nbsp;<br>";
-
-
-//out+=varname+"=<input id='input' type='text' value='' size='40'><br>&nbsp;<br>";
-
 out+="<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
-
-
-	
 out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
-
-
-
-// 
-
 document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
 
-
+// ###########################################
 
 function setVARok(input){
 
