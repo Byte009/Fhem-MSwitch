@@ -17,11 +17,15 @@
   
   
   
-	var version = 'V2.3';
+	var version = 'V2.4';
 	
 	const Devices = [];
 	const WIZARDVARS = [];
 	const ATTRS = [];
+	
+	
+	const GROUPS = [];
+	const GROUPSCMD = [];
 	
 	
 	var result= 0; // wird für waittimer in templates gebraucht
@@ -311,9 +315,12 @@ function start1(name){
 	document.getElementById('importpreconf').style.backgroundColor='';
 	document.getElementById('importTEMPLATE').style.backgroundColor='';
 	
-	document.getElementById('speicherbank').style.display='none';
+/* 	document.getElementById('speicherbank').style.display='none';
 	document.getElementById('speicherbank1').style.display='none';
 	
+	
+	document.getElementById('speicherbank').style.display='block';
+	document.getElementById('speicherbank1').style.display='block'; */
 	
 		
 setTimeout(function() {
@@ -459,7 +466,7 @@ function devicelist(id,name,script,flag){
 		ret +='<option value=\'all_events\'>GLOBAL</option>';
 	}
 	
-	for (i=count; i<len; i++)
+	for (i=count; i<(len); i++)
 		{
 		if (flag == '1'){
 			ret +='<option value='+i+'>'+devices[i]+'</option>';
@@ -469,9 +476,25 @@ function devicelist(id,name,script,flag){
 			ret +='<option value='+devices[i]+'>'+devices[i]+'</option>';
 			}
 		}
+			
+		var test = GROUPS.length ;
+ 		//alert(test);
+		
+		test1 = GROUPS.join("\n-");
+		//alert(test1); 
+		 
+		for (i=count; i<=test; i++)
+		{
+			//alert("GUPPEN-"+GROUPS[i]);
+		//if (flag == '1'){
+		//	ret +='<option value='+i+'>'+GROUPS[i]+'</option>';
+		//	}
+		//else{
+			ret +='<option value='+GROUPS[i]+'>'+GROUPS[i]+' (MSwitch Gruppe)</option>';
+			//}
+		} 
 	ret +='</select>';
 	return ret;
-		
 }
 
 
@@ -1212,10 +1235,15 @@ function loadtemplate(){
 	
 	//document.getElementById('newtemplate').style.display='none';
 	
-	
-	
-	
-	
+
+
+
+/* 	for (elem in GROUPSCMD) {
+		delete GROUPSCMD[elem];
+		}
+	for (elem in GROUPS) {
+		delete GROUPS[elem];
+		} */
 
 	for (elem in INQ) {
 		delete INQ[elem];
@@ -1262,7 +1290,19 @@ function loadtemplate(){
 				  Wertende =cookie.length;
 				} */
 			  
-			  Wert=Wert.split("[TRENNER]");
+			  
+			  
+			  
+			  
+			  
+			  Wert=Wert.split("\[TRENNER\]");
+			  
+			  
+			  
+			  
+			  
+			  
+			  
 			  Wert=Wert.join("\n");
 			  document.getElementById('emptyarea').value=Wert;
 			  FW_okDialog("Templatedaten wurden aus letztem bearbeitetem Template wieder hergestellt");
@@ -1364,6 +1404,22 @@ function execempty(){
 }
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	document.getElementById('bank5').value='';
+	
+	
+/* 		for (elem in GROUPSCMD) {
+		delete GROUPSCMD[elem];
+		}
+	for (elem in GROUPS) {
+		delete GROUPS[elem];
+		}
+
+	for (elem in INQ) {
+		delete INQ[elem];
+		} */
+	
+	
+	
+	
 	starttemplate(data);
 	return;
 }
@@ -1373,6 +1429,18 @@ function execempty(){
 function starttemplate(template){
 	
 	closeall();
+	
+
+	
+/* 	while(GROUPS.length > 0) {
+    GROUPS.pop();
+}
+	while(GROUPSCMD.length > 0) {
+    GROUPSCMD.pop();
+} */	
+	
+	
+	
 	if (document.getElementById('rawconfig10').value ==""){
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	}
@@ -1445,7 +1513,10 @@ var cmdsatz = line.split(">>");
 if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
 if (cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VAR" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 	
-	//alert(cmdsatz[0]);
+	// SELECT - comand_cmd1 - FreeCmd
+	
+
+
 	
 	if (INQ[cmdsatz[0]]== "1")
 	{
@@ -1456,6 +1527,19 @@ if (cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VAR" && cmdsatz[0] != "REPEAT" 
 	return;
 	}
 }
+
+
+	//alert(cmdsatz[0]+' - '+cmdsatz[1]+' - '+document.getElementById('bank1').value);  
+	
+	
+if (cmdsatz[0] == "SELECT"){
+
+
+	if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd1" ) && document.getElementById('bank1').value == "FreeCmd"){
+	cmdsatz[0] ="ASK";	 
+	} 
+}
+
 
 if (cmdsatz[0] == "INQ"){
 	 text = cmdsatz[4];
@@ -1911,9 +1995,31 @@ return;
 // #################
 
 function cmdselect(text,toset,newtemplate,typ){
+	
+	
+	
+	
+	
+	
 var devicetocmd = document.getElementById('bank1').value
 var number = devices.indexOf(devicetocmd);
-seloptions = makecmdhashtemp(cmds[number]);
+
+//alert(devicetocmd);
+//alert(number);
+
+if ( number >-1)
+{
+seloptions = makecmdhashtemp(cmds[number]);	
+
+}
+else {
+	//alert(number);
+	//alert("search in GROUPS");
+	number = GROUPS.indexOf(devicetocmd);
+	seloptions = makecmdhashtemp(GROUPSCMD[number]);
+}
+	
+
 return seloptions+"<span id=\"setcmd1temp\"></span>";
 
 }
@@ -2045,6 +2151,18 @@ if (typa == "A" ){
 		
 	newconfig=newconfig+"\n"+newattr;
 	}
+	
+	if (befehl == 'MSwitch_Device_Groups'){
+		
+		//alert(befehl);
+		
+		
+		FW_cmd(FW_root+'?cmd=set '+devicename+' reloaddevices '+inhalt1+' &XHR=1', function(data){renewdevices(data)})
+		
+	}
+		
+	
+	
 	document.getElementById('rawconfig10').value = newconfig;
 	return;
 	}
@@ -2405,11 +2523,19 @@ return text;
 function setATTRS()
 {
 	
-	
-	
-	
-	//newconfig=newconfig+"\n"+newattr;
-	
-	
-	
 }
+
+
+// ##################################
+function renewdevices(data)
+{
+	//alert(data);
+	parts = data.split("\[TRENNER\]");
+	GROUPS.push(parts[0]); 
+	GROUPSCMD.push(parts[1]); 
+	
+	//alert(GROUPS);
+	return;
+}
+
+
