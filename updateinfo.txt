@@ -1,3 +1,3 @@
 Version
-3.3
-Change: Templates, Import Notify At
+3.4
+Change: Wizzard V 2.4
