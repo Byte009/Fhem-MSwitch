@@ -460,9 +460,15 @@ Dies bewirkt eine n-fache Wiederholung des gesetzten Befehls mit x Sekunden Verz
 Das Auswahlfeld 'priority' erscheint bei jedem 'affectes device'.
 So kann die Reihenfolge der Befehlsabarbeitung beeinflusst werden.
 
-<strong>MSwitch_Delete_Delays:0,1</strong>
+<strong>MSwitch_Delete_Delays:0,1,2</strong>
 Option '1' bewirkt das Löschen aller anstehende Delays (Verögerungen) bei dem Auftreten eines erneuten passenden Events.
+Es werden nur die Delays geloescht, die in dem cmd-zweig erzeugt wurden , der erneut ausgefüehrt wird.
+
+Option '2' bewirkt das löschen aller Delays, due Aufgrund dees eingehenden Events angelegt wurden. DAzu werden alle Events mit dem 
+auslösenden Trigger markiert . Bei erneutem Auftreten dieses Triggers werden alle zugehörigen Delays gelöscht.
+
 Bei der Option '0' bleiben bereits gesetzte Delays aus einem vorher getriggerten Event erhalten und werden ausgeführt.
+
 Empfohlene Einstellung: 1 
 
 <strong>MSwitch_Include_Devicecmds:0,1</strong>
