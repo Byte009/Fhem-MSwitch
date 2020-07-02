@@ -78,7 +78,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.4';
+my $version      = '3.5';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -177,6 +177,8 @@ sub MSwitch_setbridge($$);
 sub MSwitch_makegroupcmd($$);
 sub MSwitch_makegroupcmdout($$);
 sub MSwitch_gettemplate($$);
+sub MSwitch_Delete_specific_Delay($$$);
+sub MSwitch_whitelist($$);
 
 ##############################
 my %sets = (
@@ -190,7 +192,7 @@ my %sets = (
              "devices"           => "noArg",
              "details"           => "noArg",
              "del_trigger"       => "noArg",
-             "del_delays"        => "noArg",
+             "del_delays"        => "",
              "del_function_data" => "noArg",
              "trigger"           => "noArg",
              "filter_trigger"    => "noArg",
@@ -259,7 +261,7 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Help:0,1"
       . "  MSwitch_Debug:0,1,2,3,4"
       . "  MSwitch_Expert:0,1"
-      . "  MSwitch_Delete_Delays:0,1"
+      . "  MSwitch_Delete_Delays:0,1,2"
       . "  MSwitch_Include_Devicecmds:0,1"
       . "  MSwitch_Modul_Mode:0,1"
       . "  MSwitch_generate_Events:0,1"
@@ -694,7 +696,7 @@ sub MSwitch_LoadHelper($) {
           . "  MSwitch_Help:0,1"
           . "  MSwitch_Debug:0,1,2,3,4"
           . "  MSwitch_Expert:0,1"
-          . "  MSwitch_Delete_Delays:0,1"
+          . "  MSwitch_Delete_Delays:0,1,2"
           . "  MSwitch_Include_Devicecmds:0,1"
           . "  MSwitch_generate_Events:0,1"
           . "  MSwitch_Include_Webcmds:0,1"
@@ -1140,6 +1142,10 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
     }
 #################################################
     if ( $opt eq 'active_timer' && $args[0] eq 'show' ) {
+		
+		
+		#Log3("test",0,"showtimer");
+		
 
         if ( defined $hash->{helper}{wrongtimespec}
              and $hash->{helper}{wrongtimespec} ne "" )
@@ -1153,7 +1159,14 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
 
         #timer
         my $timehash = $hash->{helper}{timer};
+		
+		#Log3("test",0,$timehash);
+		
         foreach my $a ( sort keys %{$timehash} ) {
+			
+			#Log3("test",0,$a);
+			
+			
             my @string  = split( /-/,  $hash->{helper}{timer}{$a} );
             my @string1 = split( /ID/, $string[1] );
             my $number  = $string1[0];
@@ -1229,11 +1242,31 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
         #delays
         $ret .= "<br>&nbsp;<br><div nowrap>aktive Delays:</div><hr>";
         $timehash = $hash->{helper}{delays};
+		
+		
+		
+		
         foreach my $a ( sort keys %{$timehash} ) {
+			
+			#Log3("test",0,$a);
+			
             my $b      = substr( $hash->{helper}{delays}{$a}, 0, 10 );
             my $time   = FmtDateTime($b);
             my @timers = split( /#\[tr\]/, $a );
-            $ret .= "<div nowrap>" . $time . " " . $timers[0] . "</div>";
+			
+			
+			
+			
+            $ret .= "<div nowrap><strong>Ausführungszeitpunkt:</strong> " . $time . "<br>";
+			
+			$ret .= "<strong>Indikator: </strong>" . $timers[3] . "<br>";
+			$ret .= "<strong>auszuführender Befehl:</strong><br>" . $timers[0] . "<br>";
+			
+			$ret .= "</div><hr>";
+			
+			
+			
+			
         }
         if (   $ret ne "<div nowrap>"
              . $SCHALTZEIT
@@ -1313,6 +1346,16 @@ sub MSwitch_Set($@) {
 		my $ret=MSwitch_reloaddevices( $hash, $args[0] );
         return $ret;
     }
+	
+	
+	  #################################
+    if ( $cmd eq 'whitelist' ) {
+        #MSwitch_makegroupcmdout( $hash, $args[0] );
+	#Log3("test",0,"args @args");
+		my $ret=MSwitch_whitelist( $hash, $args[0] );
+        return $ret;
+    }
+	
 	
 	
 	
@@ -1613,7 +1656,7 @@ sub MSwitch_Set($@) {
 
         if ( $devicemode eq "Notify" ) {
             return
-"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList ";#$special
+"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList ";#$special
         }
         elsif ( $devicemode eq "Toggle" ) {
             return
@@ -1628,7 +1671,7 @@ sub MSwitch_Set($@) {
                 if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
                 {
                     return
-"Unknown argument $cmd, choose one of $dynsetlist del_repeats:noArg del_delays:noArg exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:all_devices $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:all_devices $setList $special";
                 }
                 else {
                     return
@@ -1639,7 +1682,7 @@ sub MSwitch_Set($@) {
         else {
             #full
             return
-"Unknown argument $cmd, choose one of $dynsetlist del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays:noArg backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special";
         }
     }
 
@@ -1726,7 +1769,7 @@ sub MSwitch_Set($@) {
                       "devices"           => "noArg",
                       "details"           => "noArg",
                       "del_trigger"       => "noArg",
-                      "del_delays"        => "noArg",
+                      "del_delays"        => "",
                       "del_function_data" => "noArg",
                       "trigger"           => "noArg",
                       "filter_trigger"    => "noArg",
@@ -1777,7 +1820,7 @@ sub MSwitch_Set($@) {
               . "  MSwitch_Help:0,1"
               . "  MSwitch_Debug:0,1,2,3,4"
               . "  MSwitch_Expert:0,1"
-              . "  MSwitch_Delete_Delays:0,1"
+              . "  MSwitch_Delete_Delays:0,1,2"
               . "  MSwitch_Include_Devicecmds:0,1"
               . "  MSwitch_generate_Events:0,1"
               . "  MSwitch_Include_Webcmds:0,1"
@@ -1837,12 +1880,30 @@ sub MSwitch_Set($@) {
 ##############################
     if ( $cmd eq 'del_delays' ) {
 
-        # löschen aller delays
+        
+		
+		
+		#Log3($name,0,"args0-".$args[0]);
+		
+	if ($args[0] eq ""){
+		# löschen aller delays
         MSwitch_Delete_Delay( $hash, $name );
-        MSwitch_Createtimer($hash);
+	}
+		else{
+			MSwitch_Delete_specific_Delay( $hash, $name ,$args[0]);
+			
+			
+		}
+		
+		# delete spezific delay
+		
+		
+		
+		
+        #MSwitch_Createtimer($hash);
   
-		MSwitch_LOG( $name, 6,"Delays gelöscht, Timer neu berechnet L:" . __LINE__ );
-   
+		#MSwitch_LOG( $name, 6,"Delays gelöscht, Timer neu berechnet L:" . __LINE__ );
+		MSwitch_LOG( $name, 6,"Delays gelöscht L:" . __LINE__ );
         return;
     }
 ##############################
@@ -2657,14 +2718,17 @@ sub MSwitch_Set($@) {
                         my $msg =
                             $cs . "#[tr]"
                           . $name . "#[tr]"
-                          . $conditionkey
-                          . "#[tr]#[tr]"
+                          . $conditionkey. "#[tr]"
+                          . "MSWITCH:SET:$cmd#[tr]"
                           . $timecond . "#[tr]"
                           . $device;
 
                         # variabelersetzung
                         $msg = MSwitch_check_setmagic_i( $hash, $msg );
-                        $hash->{helper}{delays}{$msg} = $timecond;
+                       
+#$hash->{helper}{delaynames}{$event} = $msg;  
+
+					   $hash->{helper}{delays}{$msg} = $timecond;
 						MSwitch_LOG( $name, 6,"setze verzögerte Befehl: $cmd @args L:" . __LINE__ );
                         InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
                         if ( $out eq '1' ) {
@@ -2951,7 +3015,7 @@ sub MSwitch_Attr(@) {
       . "  MSwitch_Help:0,1"
       . "  MSwitch_Debug:0,1,2,3,4"
       . "  MSwitch_Expert:0,1"
-      . "  MSwitch_Delete_Delays:0,1"
+      . "  MSwitch_Delete_Delays:0,1,2"
       . "  MSwitch_Include_Devicecmds:0,1"
       . "  MSwitch_generate_Events:0,1"
       . "  MSwitch_Include_Webcmds:0,1"
@@ -3170,7 +3234,7 @@ sub MSwitch_Attr(@) {
           . "  MSwitch_Modul_Mode:0,1"
           . "  stateFormat:textField-long"
           . "  MSwitch_Eventhistory:0,10"
-          . "  MSwitch_Delete_Delays:0,1"
+          . "  MSwitch_Delete_Delays:0,1,2"
           . "  MSwitch_Help:0,1"
           . "  MSwitch_Ignore_Types:textField-long "
           . "  MSwitch_Extensions:0,1"
@@ -8433,6 +8497,15 @@ sub MSwitch_Exec_Notif($$$$$) {
     return ""
       if ( IsDisabled($name) )
       ;    # Return without any further action if the module is disabled
+	  
+	  
+	  
+	  if ( $delaymode eq '2' ) {
+             MSwitch_Delete_specific_Delay( $hash, $name ,$event);
+         } 
+	  
+	  
+	  
     my %devicedetails = MSwitch_makeCmdHash($name);
 
     # betroffene geräte suchen
@@ -8451,9 +8524,16 @@ sub MSwitch_Exec_Notif($$$$$) {
             $out  = $devicedetails{$ekey};
         }
 
-        if ( $delaymode eq '1' ) {
-            MSwitch_Delete_Delay( $hash, $device );
-        }
+
+
+
+
+         if ( $delaymode eq '1' ) {
+             MSwitch_Delete_Delay( $hash, $device );
+         }
+
+
+
 
         my @devicesplit = split( /-AbsCmd/, $device );
         my $devicenamet = $devicesplit[0];
@@ -8730,10 +8810,28 @@ MSwitch_LOG( $name, 6,"Befehlswiederholungen gesetzt: $timecond  L:" . __LINE__ 
                       . $event . "#[tr]"
                       . $timecond . "#[tr]"
                       . $device;
+					  
+					  
+					  
+					#######################################################  
+					#$hash->{helper}{delaynames}{$event} = $msg;  
                     $hash->{helper}{delays}{$msg} = $timecond;
+					
+					
+					
+					
                     $testtoggle = 'undef';
 					MSwitch_LOG( $name, 6,"setze Verzögerung $timecond L:" . __LINE__ );
+					
+					
+					
+					
+					
                     InternalTimer( $timecond, "MSwitch_Restartcmd", $msg );
+					
+					
+					
+					
 
                     if ( $expertmode eq "1" && $device ) {
                         readingsSingleUpdate( $hash, "last_cmd",
@@ -8957,6 +9055,13 @@ sub MSwitch_Restartcmd($) {
     }
     RemoveInternalTimer($incomming);
     delete( $hash->{helper}{delays}{$incomming} );
+	
+	
+	
+	
+	
+	
+	
     return;
 }
 ####################
@@ -10622,8 +10727,13 @@ sub MSwitch_Debug($) {
 ###################################
 sub MSwitch_Delete_Delay($$) {
     my ( $hash, $device ) = @_;
+	
+	
     my $Name     = $hash->{NAME};
     my $timehash = $hash->{helper}{delays};
+	
+	#Log3("test",0,"device: $device");
+	
     if ( $device eq 'all' ) {
         foreach my $a ( keys %{$timehash} ) {
             my $inhalt = $hash->{helper}{delays}{$a};
@@ -10634,6 +10744,9 @@ sub MSwitch_Delete_Delay($$) {
     }
     else {
         foreach my $a ( keys %{$timehash} ) {
+			
+			#Log3("test",0,"a: $a");
+			
             my $pos = index( $a, "$device", 0 );
             if ( $pos != -1 ) {
                 RemoveInternalTimer($a);
@@ -10644,7 +10757,56 @@ sub MSwitch_Delete_Delay($$) {
             }
         }
     }
+	return;
 }
+
+
+###################################
+sub MSwitch_Delete_specific_Delay($$$) {
+	my ( $hash, $name, $indikator ) = @_;
+	
+	#Log3($name,0,"specific delete : $hash, $name, $indikator");
+
+	my $timehash = $hash->{helper}{delays};
+	foreach my $a ( sort keys %{$timehash} ) 
+	{
+		#Log3($name,0,"a: $a");
+		my @timers = split( /#\[tr\]/, $a );
+		
+		#Log3($name,0,"timers3: -$timers[3]-");
+		#Log3($name,0,"indikator: -$indikator-");
+		
+		
+		
+	#if ($timers[3] eq $indikator){
+		if (index( $timers[3],$indikator ) > -1){
+		
+		
+		
+		
+		#Log3($name,0,"treffer");
+		
+		#my $todelete =
+		
+		
+		 my $inhalt = $hash->{helper}{delays}{$a};
+            RemoveInternalTimer($a);
+            RemoveInternalTimer($inhalt);
+		delete( $hash->{helper}{delays}{$a} );
+		
+		
+	}
+		
+		
+		
+	}
+	
+	
+	return;
+}
+
+
+
 ###################################
 sub MSwitch_Clear_timer($) {
     my ( $hash, $device ) = @_;
@@ -12410,11 +12572,8 @@ sub MSwitch_gettemplate($$){
     my $Name = $hash->{NAME};
 	my $tZeilen="";
 	
-	
    my $adress = $templatefile.$template;
-
-	 $tZeilen = get($adress);
-	
+	$tZeilen = get($adress);
 	my %UMLAUTE = (
                         'Ä' => 'Ae',
                         'Ö' => 'Oe',
@@ -12424,21 +12583,6 @@ sub MSwitch_gettemplate($$){
                         'ü' => 'ue'
         );
 	my $UMLKEYS = join( "|", keys(%UMLAUTE) );
-
-
-
-#my $encoding_name = Encode::Detect::Detector::detect($tZeilen);
-
-
-#utf8::decode($tZeilen);
-
-#Log3("test",0,$tZeilen);
- 
-#
-#$tZeilen =~ s/\n/[TRENNER]/g;
-#$tZeilen =~ s/($UMLKEYS)/$UMLAUTE{$1}/g;
-#$tZeilen =~ s/\[TRENNER\]/\n/g;
-
 	return "$tZeilen";
 	
 }
@@ -12455,7 +12599,6 @@ sub MSwitch_loadpreconf($){
    # $preconf =~ s/'/\\\'/g;
 	#$preconf =~ s/</&lt;/g;
     #$preconf =~ s/>/&gt;/g;
-#Log3("test",0,$preconf);
 	return $preconf;
 	
 }
@@ -12466,21 +12609,15 @@ sub MSwitch_loadpreconf($){
 sub MSwitch_loadnotify($$){
 	my ( $hash , $notify) = @_;
     my $Name = $hash->{NAME};
- #Log3("test",0,"eingang notifyname: ".$notify);
     my $nothash   = $defs{$notify};
     my $notinsert = $nothash->{DEF};
 	
 	#$notinsert =~ s/\n/#[NEWL]/g;
     $notinsert =~ s/\r//g;
 	$notinsert =~ s/\t/    /g;
-	
-  # Log3("test",0,$nothash);
-  # Log3("test",0,$notinsert);
 	return $notinsert;
 	
 }
-
-
 
 ##########################################
 
@@ -12509,74 +12646,44 @@ return $string;
 
 ##########################################
 
-
-
 sub MSwitch_reloaddevices($$){
 	my ( $hash , $arg1 ) = @_;
     my $Name = $hash->{NAME};
   
  my $string ='';
  
- 
  my @devs;
  my @devscmd;
  
  my $aVal =$arg1;
- 
- 
- 
-        #delete $data{MSwitch}{$Name}{groups};
-		
-		
-		
+
         my @gset = split( /\n/, $aVal );
-
-
-Log3("test",0,"gset: -@gset-");
-
-
         foreach my $line (@gset) {
             my @lineset = split( /->/, $line );
-			
-			Log3("test",0,"gset: -$lineset[0]-");
-			
-			
 			$lineset[0] =~ s/ //g;
-			
-			Log3("test",0,"gset: -$lineset[0]-");
-
-			
 			next if $lineset[0] eq "";
-			
-			
 			push (@devs, $lineset[0]);
-			
-			
-			
-			
 			$data{MSwitch}{$Name}{groups}{ $lineset[0] } = $lineset[1];
 			$string = MSwitch_makegroupcmd($hash,$lineset[0] );
 			push (@devscmd, $string);
-			
-			
-            
-            #my @areadings = ( keys %{ $data{MSwitch}{$Name}{groups} } );
+
         }
       
-  
-	
-	
-	
-	#Log3("test",0,"devs @devs");
-	
-	#Log3("test",0,"devscmd @devscmd");
-
 $string = "@devs"."[TRENNER]"."@devscmd";
 
 
 return $string;
 }
 
+###############################################
+
+sub MSwitch_whitelist($$){
+	my ( $hash , $arg1 ) = @_;
+    my $Name = $hash->{NAME};
+	$hash->{NOTIFYDEV} = $arg1;
+	%ntfyHash = ();
+	return ;
+}
 
 1;
 
