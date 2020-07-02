@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.4';
+	var version = 'V2.5';
 	
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -155,7 +155,7 @@ document.getElementById('bank6').value=test;
 
 	var event = test.split(':');
 	var newevent =  event[1]+':'+event[2]
-	if ( event[0] != document.getElementById('bank1').value  )
+	if ( event[0] != document.getElementById('bank1').value && document.getElementById('bank1').value != "GLOBAL")
 		{
 			//document.getElementById('bank3').value=document.getElementById('3').value;
 			document.getElementById('bank4').value=document.getElementById('bank1').value;
@@ -1875,6 +1875,11 @@ return;
 function eventinput(text,toset,newtemplate,typ){
 monitorid ="eventcontrol1";
 logging="on";
+
+//alert ("target:"+target);
+//alert ("config:"+config);
+
+
 observer.observe(target, config);
 var out ="";
 out+=text;
@@ -2176,11 +2181,30 @@ if (typa == "A" ){
 	}
 	var satz = fields[1].split("~");
 	if (befehl == "Trigger_device"){
-	configuration[5] = "#S Trigger_device -> "+inhalt;
+		
+		if (inhalt =="GLOBAL")
+		{ 
+	configuration[5] = "#S Trigger_device -> all_events";
+	}else{
+		
+		configuration[5] = "#S Trigger_device -> "+inhalt;
+	}
+	
 	document.getElementById('bank1').value = inhalt;
 	}
 
 	if (befehl == "Trigger_Whitelist"){
+		
+		
+		
+	var newinhalt= 	changevar(inhalt)
+	
+		
+	FW_cmd(FW_root+'?cmd=set '+devicename+' whitelist '+newinhalt+' &XHR=1')
+	// FW_cmd(FW_root+'?cmd=set '+devicename+' whitelist '+newinhalt+' &XHR=1')
+		
+		
+		
 	configuration[conflenght] = "#S .Trigger_Whitelist -> "+inhalt;
 	}
 	
