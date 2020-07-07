@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.5';
+	var version = 'V2.6';
 	
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -166,6 +166,14 @@ document.getElementById('bank6').value=test;
 		{
 			return;
 		}
+		
+	if ( document.getElementById('bank1').value == "GLOBAL")
+		{	
+		
+		newevent =event[0]+':'+newevent;
+		
+		}
+		//alert(newevent);
 	lastevent=newevent;
 	o[test] = test;		
 		
@@ -545,6 +553,19 @@ function takeselected(id,name){
 	document.getElementById('input').value = values;
 	return;
 }
+
+
+/// #######################
+
+function takeselectedmultiple(id,name){
+	
+	var values = $('#'+id).val();
+	//alert(values);
+	var values1 = values.join("|");
+	document.getElementById('input').value = values1;
+	return;
+}
+
 
 //#####################
 
@@ -1395,16 +1416,12 @@ function execempty(){
 	Wert=Wert.join("[TRENNER]");
 	document.cookie = "Mswitch_template" + "=" + Wert + "; expires=" + Auszeit.toGMTString() + ";";
 	}
-	
-	
-	
 	data = document.getElementById('emptyarea').value;
 	for (elem in INQ) {
 		delete INQ[elem];
 }
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	document.getElementById('bank5').value='';
-	
 	
 /* 		for (elem in GROUPSCMD) {
 		delete GROUPSCMD[elem];
@@ -1416,10 +1433,6 @@ function execempty(){
 	for (elem in INQ) {
 		delete INQ[elem];
 		} */
-	
-	
-	
-	
 	starttemplate(data);
 	return;
 }
@@ -1429,25 +1442,18 @@ function execempty(){
 function starttemplate(template){
 	
 	closeall();
-	
-
-	
 /* 	while(GROUPS.length > 0) {
     GROUPS.pop();
 }
 	while(GROUPSCMD.length > 0) {
     GROUPSCMD.pop();
 } */	
-	
-	
-	
 	if (document.getElementById('rawconfig10').value ==""){
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	}
 	var tmplsatz = template.split("\n");
 	var len= tmplsatz.length;
 	var newtmp = "";
-	
 	
 	for (lines=0; lines<len; lines++){
 		if (tmplsatz[lines].match(/^#/)){
@@ -1459,14 +1465,12 @@ function starttemplate(template){
 	newtemplate = tmplsatz.join("\n");
     var check = testline(aktline,newtemplate);
 	if ( check == "stop" ){
-		break;
+	break;
 	}
 	
 	tmplsatz[lines]="# abgearbeitet";
 	execcmd(aktline); // durchreichung von set befehlen
 	}
-	
-	
 	
 	if (len == lines)
 	{
@@ -1488,7 +1492,6 @@ function starttemplate(template){
 	if (nosave =="1"){
 	// cookie setzen
 	var jetzt = new Date();
-	//var Verfall = 1000 * 60 * 60 * 24 * 365;
 	var Verfall = 1000 * 60 * 60 *12;
 	var Auszeit = new Date(jetzt.getTime() + Verfall);
 	var Wert = document.getElementById('emptyarea').value.split("\n");;
@@ -1511,35 +1514,24 @@ function starttemplate(template){
 function testline(line,newtemplate){
 var cmdsatz = line.split(">>");
 if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-if (cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VAR" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
-	
-	// SELECT - comand_cmd1 - FreeCmd
-	
+if (cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 
-
-	
 	if (INQ[cmdsatz[0]]== "1")
 	{
 	cmdsatz.shift(); 	
 	}
 	else{
-		//alert("returned");
 	return;
 	}
 }
 
 
-	//alert(cmdsatz[0]+' - '+cmdsatz[1]+' - '+document.getElementById('bank1').value);  
-	
-	
-if (cmdsatz[0] == "SELECT"){
-
-
+if (cmdsatz[0] == "SELECT")
+{
 	if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd1" ) && document.getElementById('bank1').value == "FreeCmd"){
 	cmdsatz[0] ="ASK";	 
 	} 
 }
-
 
 if (cmdsatz[0] == "INQ"){
 	 text = cmdsatz[4];
@@ -1548,13 +1540,26 @@ if (cmdsatz[0] == "INQ"){
 	 return "stop";
 }
 
+// VAREVENT>>VARNAME>>VARTEXT
 
-
-
-// VAR>>VARNAME>>VARTEXT
-if (cmdsatz[0] == "VAR"){
+if (cmdsatz[0] == "VAREVENT"){
 var testvar = cmdsatz[1].match(/^\$.*/);
-//alert (testvar);
+if (testvar!=null && testvar.length!=0)
+{
+		    var toset = cmdsatz[1];
+			var text = cmdsatz[2];
+			eventinputvar(text,toset,newtemplate,typ);
+			return "stop";
+}
+	else{
+alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+}
+
+
+// VARASK>>VARNAME>>VARTEXT
+if (cmdsatz[0] == "VARASK"){
+var testvar = cmdsatz[1].match(/^\$.*/);
 if (testvar!=null && testvar.length!=0)
 {
 	text = cmdsatz[2];
@@ -1567,6 +1572,17 @@ alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
 	}
 }
 
+// VARSET>>VARNAME>>VARINHALT
+if (cmdsatz[0] == "VARSET"){
+var testvar = cmdsatz[1].match(/^\$.*/);
+if (testvar!=null && testvar.length!=0)
+{
+	WIZARDVARS[cmdsatz[1]] = cmdsatz[2];
+}
+	else{
+alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+}
 
 // VARDEVICES>>VARNAME>>VARTEXT
 if (cmdsatz[0] == "VARDEVICES"){
@@ -1584,23 +1600,14 @@ alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
 	}
 } 
 
-
-
-
 //##############################
-
-
-
 
 if (cmdsatz[0] == "REPEAT"){
 	 text = cmdsatz[2];
 	 anzahl = cmdsatz[1];
-	 //alert("found REPEAT:"+cmdsatz[1]);
 	 setREPEAT(text,anzahl,newtemplate);
 	 return "stop";
 }
-
-
 
 // aufbau - ASK : TRIGGERTIME : Zu welcher Zeit soll dea MSwitch ausgelöst werden ? : <HELP>
 // 0 -setting
@@ -1664,97 +1671,28 @@ if (cmdsatz[0] == "ATTR"){
 return "go";
 }
 
-
-
-
-
 // #################
-function setVARDEVICES(text,varname,newtemplate){
-	
-	
-	
 
-	
-	
-	
+function setVARDEVICES(text,varname,newtemplate){
 var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
-
-		// if(toset == "Device_to_switch")
-		// {
-			// selectlist = devicelist('selectlist','name','no_script',3)
-		// }
-		
-		// else if(toset == "comand_cmd1" || toset == "comand_cmd2")
-		// {
-			// selectlist =cmdselect(text,toset,newtemplate,typ)
-			// out+=selectlist;
-			// out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: cmdselectok(\""+toset+"\",\""+typ+"\")'>";
-			// out+="<br>&nbsp;<br>&nbsp;<br>";
-			// out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
-			// document.getElementById('importTemplate1').innerHTML = out;
-			// return;
-		// }
-		// else
-		// {
-			selectlist = devicelistmultiple('selectlist','name')
-		//}
-	
-
-
+selectlist = devicelistmultiple('selectlist','name')
 out+=selectlist;
-
-
-
 out+="<br>&nbsp;<br><input id='input' type='text' value='' size='60'>";
-
 out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
-
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
 
 // #################
 function setVAR(text,varname,newtemplate){
-
 var out ="";
 out+=text;
-
 out=changevar(out);
-
 out+="<br>&nbsp;<br>";
 out+="<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
 out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
@@ -1767,18 +1705,12 @@ return;
 // ###########################################
 
 function setVARok(input){
-
 WIZARDVARS[varname] = document.getElementById('input').value
-
-//execcmd(befehl);
 starttemplate(newtemplate);
 return;
 }
 
-
-
-
-
+// ###########################################
 
 function setREPEAT(text,anzahl,newtemplate){
 var out ="";
@@ -1786,10 +1718,8 @@ out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<fieldset>";
-
 out+="<input type=\"radio\" id=\"REPEAT1\" name=\"radio\" value=\"0\">";
 out+="<label for=\"REPEAT1\"> ja</label><br> ";
-
 out+="<input type=\"radio\" id=\"REPEAT2\" name=\"radio\" value=\"1\">";
 out+="<label for=\"REPEAT2\"> nein</label><br> ";	
 out+="</fieldset>";		
@@ -1800,9 +1730,8 @@ document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
 
-
-
 // #################
+
 function setREPEATok(anzahl)
 {
 var radios = document.getElementsByName('radio');
@@ -1825,7 +1754,6 @@ return;
 }
 
 // #################
-
 
 function setINQ(text,inq,inq1,benenner,newtemplate){
 var names = benenner.split(",");
@@ -1855,8 +1783,7 @@ var value;
 for (var i = 0; i < radios.length; i++) {
     if (radios[i].type === 'radio' && radios[i].checked) {
         // get value, set checked flag or do whatever you need to
-        value = radios[i].value;   
-		
+        value = radios[i].value;   	
     }
 }
 var template = document.getElementById('newtemplate').value;
@@ -1875,24 +1802,56 @@ return;
 function eventinput(text,toset,newtemplate,typ){
 monitorid ="eventcontrol1";
 logging="on";
-
-//alert ("target:"+target);
-//alert ("config:"+config);
-
-
 observer.observe(target, config);
 var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
-out+="<select style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" ></select><br>&nbsp;<br>";
-//out+="<input id='input' type='text' value=''><br>&nbsp;<br>";
-out+=" <input type='button' value='weiter' onclick='javascript: eventinputok(\""+toset+"\",\""+typ+"\")'>";
-out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
+out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputok(\""+toset+"\",\""+typ+"\")'>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
+// #################
+
+
+function eventinputvar(text,toset,newtemplate,typ){
+monitorid ="eventcontrol1";
+logging="on";
+observer.observe(target, config);
+var out ="";
+out+=text;
+out=changevar(out);
+out+="<br>&nbsp;<br>";
+out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
+out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputvarok(\""+toset+"\",\""+typ+"\")'>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+// #################
+
+function eventinputvarok(toset,typ)
+{
+monitorid ="eventcontrol";
+logging="off";
+eventmonitorstop();
+var event = document.getElementById('input').value.split(":");
+if ( document.getElementById('bank1').value != "GLOBAL")
+		{	
+event.shift();
+		}
+var befehl = event.join(":");
+alert (toset+"-"+befehl);
+WIZARDVARS[toset] = befehl;
+starttemplate(newtemplate);
+return;
+}
+
 // #################
 
 function eventinputok(toset,typ)
@@ -1900,10 +1859,12 @@ function eventinputok(toset,typ)
 monitorid ="eventcontrol";
 logging="off";
 eventmonitorstop();
-var event = document.getElementById('eventcontrol1').value.split(":");
+var event = document.getElementById('input').value.split(":");
+if ( document.getElementById('bank1').value != "GLOBAL")
+		{	
 event.shift();
+		}
 var befehl = "SET>>"+toset+">>"+event.join(":");
-//alert (befehl);
 execcmd(befehl);
 starttemplate(newtemplate);
 return;
@@ -1912,13 +1873,9 @@ return;
 // #################
 
 function freeinput(text,toset,newtemplate,typ){
-	
-	
-	var ret = "<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
+var ret = "<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
 	if( document.getElementById('bank1').value == "FreeCmd" && (toset =="comand_cmd1" || toset =="comand_cmd1"))
 	{
-		//alert ("toset: "+toset);
-		
 		ret = '<textarea id ="input" cols="40" rows="4"></textarea><br>&nbsp;<br>';
 	}
 	
@@ -1946,7 +1903,9 @@ execcmd(befehl);
 starttemplate(newtemplate);
 return;
 }
+
 // #################
+
 function optioninput(text,toset,options,newtemplate,typ){
 var out ="";
 out+=text;
@@ -2000,34 +1959,19 @@ return;
 // #################
 
 function cmdselect(text,toset,newtemplate,typ){
-	
-	
-	
-	
-	
-	
 var devicetocmd = document.getElementById('bank1').value
 var number = devices.indexOf(devicetocmd);
-
-//alert(devicetocmd);
-//alert(number);
-
 if ( number >-1)
 {
 seloptions = makecmdhashtemp(cmds[number]);	
-
 }
 else {
-	//alert(number);
-	//alert("search in GROUPS");
 	number = GROUPS.indexOf(devicetocmd);
 	seloptions = makecmdhashtemp(GROUPSCMD[number]);
 }
-	
-
 return seloptions+"<span id=\"setcmd1temp\"></span>";
-
 }
+
 // #################
 
 function cmdselectok(toset,typ)
@@ -2050,6 +1994,7 @@ return;
 function selectinput(text,toset,newtemplate,typ){
 var out ="";
 out+=text;
+out=changevar(out);
 out+="<br>&nbsp;<br>";
 	if (typ =="S")
 	{
@@ -2083,9 +2028,11 @@ out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
+
 }
 
 // #################
+
 function selectinputok(toset,typ)
 {
 var befehl = "SET>>"+toset+">>"+document.getElementById('selectlist').value;
@@ -2111,23 +2058,6 @@ typa="S";
 	var befehl = cmdsatz[1];
 	var typ = cmdsatz[0];
 	var inhalt = cmdsatz[2];
-	// hole config
-	
-	//alert("eingehender befehl: "+befehl);
-	
-	
-	//
-	
-	
-	//alert(inhalt.type);
-	//if ( inhalt === undefined || inhalt != "undefined"){ 
-	//inhalt="";
-	//}
-	
-	//alert(inhalt);
-	
-	//inhalt = changevar(inhalt);
-	
 	if (befehl == "INFO"){
 	document.getElementById('help').innerHTML = inhalt;
 	return;
@@ -2137,41 +2067,25 @@ typa="S";
 	configuration = configuration.split("\n");
 	conflenght = configuration.length;
 	
-	
-	
-	
-	
 if (typa == "A" ){
 	
 	if (inhalt != "")
 	{
-	//alert(inhalt);
 	inhalt1 = changevar(inhalt);
-	//alert("inhalt1 "+inhalt1);
-	
 	newattr = "#A "+befehl+" -> "+inhalt1;
 	var newconfig =configuration.join("\n");
-	
 	ATTRS[befehl] = inhalt1;	
-		
 	newconfig=newconfig+"\n"+newattr;
 	}
 	
-	if (befehl == 'MSwitch_Device_Groups'){
-		
-		//alert(befehl);
-		
-		
+	if (befehl == 'MSwitch_Device_Groups')
+	{
 		FW_cmd(FW_root+'?cmd=set '+devicename+' reloaddevices '+inhalt1+' &XHR=1', function(data){renewdevices(data)})
-		
 	}
 		
-	
-	
 	document.getElementById('rawconfig10').value = newconfig;
 	return;
 	}
-	
 	
 	//timerfelder vorbereiten
 	var fields = configuration[13].split("->");
@@ -2194,17 +2108,8 @@ if (typa == "A" ){
 	}
 
 	if (befehl == "Trigger_Whitelist"){
-		
-		
-		
 	var newinhalt= 	changevar(inhalt)
-	
-		
 	FW_cmd(FW_root+'?cmd=set '+devicename+' whitelist '+newinhalt+' &XHR=1')
-	// FW_cmd(FW_root+'?cmd=set '+devicename+' whitelist '+newinhalt+' &XHR=1')
-		
-		
-		
 	configuration[conflenght] = "#S .Trigger_Whitelist -> "+inhalt;
 	}
 	
@@ -2280,9 +2185,7 @@ if (typa == "A" ){
 	if (document.getElementById('bank1').value == "FreeCmd"){	
 	first = first.replace(/\n/g,';;');	
 	second = second.replace(/\n/g,';;');
-
-
-
+	
 	first = first.replace(/\n/g,'#[nl]');
 	first = first.replace(/:/g,'#[dp]');
 	first = first.replace(/;/g,'#[se]');
@@ -2293,7 +2196,6 @@ if (typa == "A" ){
 	first = first.replace(/,/g,'#[ko]');
 	first = first.replace(/\|/g,'#[wa]');
 	first = first.replace(/\|/g,'#[wa]');
-
 
 	second = second.replace(/\n/g,'#[nl]');
 	second = second.replace(/:/g,'#[dp]');
@@ -2306,11 +2208,6 @@ if (typa == "A" ){
 	second = second.replace(/\|/g,'#[wa]');
 	second = second.replace(/\|/g,'#[wa]');
 
-
-
-
-
-	
 	device[field1]= "#[NF]"
 	device[field2]="#[NF]"+first+" "+second;
 	}
@@ -2322,7 +2219,6 @@ if (typa == "A" ){
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
 	}
-	
 	
 	// cmd_repeat
 	if (befehl == "cmd_repeat"){
@@ -2394,9 +2290,6 @@ if (typa == "A" ){
 	document.getElementById('bank1').value = inhalt;
 	configuration =  makedevice(configuration);
 	} 
-	
-	
-//alert(configuration);
 
 var newconfig =configuration.join("\n");
 document.getElementById('rawconfig10').value = newconfig;
@@ -2406,62 +2299,24 @@ return;
 // #################
 
 function makedevice(configuration){
-	//alert("makedevice");
-	//var configuration=document.getElementById('rawconfig10').value;
-	//configuration = configuration.split("\n");
 	var device=document.getElementById('bank6').value;
 	device = device.replace(/#\[NF\]/g,'');
 	device =device.split("\n");
 	document.getElementById('bank7').value=device.join("#[NF]");
-	
-	// fertige line in bank 7
-	
-	
 	var key  = document.getElementById('bank1').value+"-AbsCmd1"
 	
 	Devices[key] = document.getElementById('bank7').value;
-	// hier aufruf um das device in config einzufügen !!!
-	
-	//alert("KEY: "+key);
-	//alert(Devices[key]);
 	var newmasterline ="";
 	var affected= configuration[12].split("-> ");
 	var affecteddevices = affected[1].split(",");
 	
-	//alert(affecteddevices);
-	
 	for (var i = 0; i < affecteddevices.length; i++) {
-		
-		
 		var name = affecteddevices[i];
 		newmasterline += Devices[name]+"#[ND]";
     }
 	
 	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
-	
-	
-	//alert("newmaster: "+newmasterline);
-	
-	
-	
-	
-/* 	var inhalt1 = configuration[14].split("-> ");	
-	var inhalt2 = inhalt1[1].split("#\[ND\]");
-	
-	
-
-	var anzdevices=inhalt2.lenght;
-	
-	//alert ("anzahl devices: "+anzdevices);
-	
-	if (anzdevices === undefined){anzdevices=0;}
-	
-	inhalt2[anzdevices] = document.getElementById('bank7').value;
-	
-	var newstring = inhalt2.join("#[ND]"); */
-	
 	configuration[14] = "#S .Device_Affected_Details -> "+newmasterline;
-	
 	return configuration;
 }
 
@@ -2537,28 +2392,21 @@ function changevar(text){
         newtest=text.replace(re, WIZARDVARS[key]);
 		text= newtest;
 		}
-
 return text;
-
 }
-
 
 // ##################################
+
 function setATTRS()
 {
-	
 }
-
 
 // ##################################
 function renewdevices(data)
 {
-	//alert(data);
 	parts = data.split("\[TRENNER\]");
 	GROUPS.push(parts[0]); 
 	GROUPSCMD.push(parts[1]); 
-	
-	//alert(GROUPS);
 	return;
 }
 
