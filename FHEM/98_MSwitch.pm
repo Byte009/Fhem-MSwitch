@@ -78,7 +78,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.5';
+my $version      = '3.6';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -852,6 +852,10 @@ sub MSwitch_Define($$) {
         $defstring = $defstring . $_ . " ";
     }
 
+
+ # Log3( $name, 0, "defstring $defstring" );
+
+
     $modules{MSwitch}{defptr}{$devpointer} = $hash;
     $hash->{Version_Modul}                 = $version;
     $hash->{Version_Datenstruktur}         = $vupdate;
@@ -874,6 +878,17 @@ sub MSwitch_Define($$) {
     else {
         $hash->{INIT} = 'fhem.save';
     }
+	
+
+	 if ( $defstring =~ m/wizard.*/ ) 
+        
+	{
+		Log3( $name, 0, "starte wizard" );
+		
+	$hash->{helper}{mode}      = 'absorb';
+    $hash->{helper}{modesince} = time;
+	}
+	
 
     if ( $init_done && !defined( $hash->{OLDDEF} ) ) {
         my $timecond = gettimeofday() + 5;
