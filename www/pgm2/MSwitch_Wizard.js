@@ -1846,7 +1846,7 @@ if ( document.getElementById('bank1').value != "GLOBAL")
 event.shift();
 		}
 var befehl = event.join(":");
-alert (toset+"-"+befehl);
+//alert (toset+"-"+befehl);
 WIZARDVARS[toset] = befehl;
 starttemplate(newtemplate);
 return;
