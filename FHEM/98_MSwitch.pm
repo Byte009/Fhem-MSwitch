@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.7';
+my $version      = '3.71';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -1930,6 +1930,8 @@ sub MSwitch_Set($@) {
               . "  setList:textField-long "
               . "  readingList:textField-long "
 			  . "  MSwitch_Device_Groups:textField-long"
+			  . "  MSwitch_ExtraktfromHTTP:textField-long"
+		      . "  MSwitch_ExtraktHTTPMapping:textField-long"
               . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
               . "  textField-long "
               . $readingFnAttributes;
@@ -4419,7 +4421,7 @@ sub MSwitch_fhemwebconf($$$$) {
     my $devstring;
     my $cmds;
 	
-	$cmds      .= "' del_repeats reset_device active del_function_data inactive on off del_delays backup_MSwitch fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats reload_timer change_renamed reset_cmd_count ',";
+	$cmds      .= "' loadHTTP del_repeats reset_device active del_function_data inactive on off del_delays backup_MSwitch fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats reload_timer change_renamed reset_cmd_count ',";
     $devstring .= "'MSwitch_Self',";
 	
     @found_devices = devspec2array("TYPE=.*");
@@ -11548,6 +11550,12 @@ sub MSwitch_saveconf($$) {
     my ( $hash, $cont ) = @_;
     my $name     = $hash->{NAME};
     my $contcopy = $cont;
+	
+	
+	delete $data{MSwitch}{devicecmds1};
+    delete $data{MSwitch}{last_devicecmd_save};
+	
+	
     delete( $hash->{READINGS} );
     $cont =~ s/#c\[sp\]/ /g;
     $cont =~ s/#c\[se\]/;/g;
@@ -11609,7 +11617,9 @@ sub MSwitch_saveconf($$) {
         if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
         {
 # für usserattribute zweiten durchgang starten , dafür alle befehle in ein array und nochmals einlesen userattr
-            my $na = $1;
+           
+#Log3("test",0,"$_");
+		   my $na = $1;
             my $ih = $2;
             $ih =~ s/#\[nl\]/\n/g;
 
