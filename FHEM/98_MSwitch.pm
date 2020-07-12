@@ -57,6 +57,10 @@ use warnings;
 use POSIX; 
 use SetExtensions;
 use LWP::Simple;
+
+use HttpUtils;
+
+
 #use utf8;
 
 #use utf8;
@@ -78,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.6';
+my $version      = '3.7';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -179,6 +183,7 @@ sub MSwitch_makegroupcmdout($$);
 sub MSwitch_gettemplate($$);
 sub MSwitch_Delete_specific_Delay($$$);
 sub MSwitch_whitelist($$);
+sub MSwitch_PerformHttpRequest($$);
 
 ##############################
 my %sets = (
@@ -217,6 +222,7 @@ my %sets = (
              "reset_cmd_count"   => "",
              "delcmds"           => "",
              "deletesinglelog"   => "noArg",
+			 "loadHTTP"          => "",
              "change_renamed"    => ""
 );
 
@@ -292,6 +298,8 @@ sub MSwitch_Initialize($) {
       . "  MSwitch_Event_Id_Distributor:textField-long "
       . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
       . "  MSwitch_Device_Groups:textField-long"
+	  . "  MSwitch_ExtraktfromHTTP:textField-long"
+	  . "  MSwitch_ExtraktHTTPMapping:textField-long"
       . "  textField-long "
 
       . $readingFnAttributes;
@@ -726,6 +734,8 @@ sub MSwitch_LoadHelper($) {
           . "  readingList:textField-long "
           . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
           . "  MSwitch_Device_Groups:textField-long"
+		  . "  MSwitch_ExtraktfromHTTP:textField-long"
+		  . "  MSwitch_ExtraktHTTPMapping:textField-long"
           . "  textField-long "
           . $readingFnAttributes;
 
@@ -1147,6 +1157,41 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
         $hash->{helper}{conditionerror} = '';
         return "<span style=\"font-size: medium\">" . $ret . "<\/span>";
     }
+	
+	
+	    #################################################
+    if ( $opt eq 'HTTPresponse' ) {
+      
+	  
+	  
+	 
+	  
+	  
+	  
+        my $inhalt .= $data{MSwitch}{$name}{HTTPresponse};
+		
+		
+		 #$inhalt =~ s/</&lt;/g;
+         #$inhalt =~ s/>/&gt;/g;
+	     #$inhalt =~ s/&/&amp;/g;
+		 #$inhalt =~ s/"/&quot;/g;		
+		
+		 $ret .="<textarea cols='120' rows='30>$inhalt</textarea>";
+		
+		
+		if(length($inhalt) < 1)                                                                                                      # wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
+    {	
+		$ret = "<html>Keine Daten vorhanden</html>";
+	}
+		
+		 $ret = "<html>".$ret."</html>";
+			
+        return $ret;
+    }
+	
+	
+	
+	
     #################################################
     if ( $opt eq 'active_timer' && $args[0] eq 'delete' ) {
         MSwitch_Clear_timer($hash);
@@ -1301,7 +1346,7 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
 ### modulmode - no sets
     if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
         return
-"Unknown argument $opt, choose one of config:noArg support_info:noArg active_timer:show";
+"Unknown argument $opt, choose one of HTTPresponse:noArg config:noArg support_info:noArg active_timer:show";
 
     }
 #######
@@ -1309,21 +1354,21 @@ m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),
     if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) eq "Dummy" ) {
         if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" ) {
             return
-"Unknown argument $opt, choose one of Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:this_Device,all_Devices active_timer:show,delete";
+"Unknown argument $opt, choose one of HTTPresponse:noArg Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:this_Device,all_Devices active_timer:show,delete";
         }
         else {
             return
-"Unknown argument $opt, choose one of support_info:noArg restore_MSwitch_Data:this_Device,all_Devices";
+"Unknown argument $opt, choose one of HTTPresponse:noArg support_info:noArg restore_MSwitch_Data:this_Device,all_Devices";
         }
     }
 
     if ( ReadingsVal( $name, '.lock', 'undef' ) ne "undef" ) {
         return
-"Unknown argument $opt, choose one of support_info:noArg active_timer:show,delete config:noArg restore_MSwitch_Data:this_Device,all_Devices ";
+"Unknown argument $opt, choose one of HTTPresponse:noArg support_info:noArg active_timer:show,delete config:noArg restore_MSwitch_Data:this_Device,all_Devices ";
     }
     else {
         return
-"Unknown argument $opt, choose one of Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_Device,all_Devices $extension";
+"Unknown argument $opt, choose one of HTTPresponse:noArg Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_Device,all_Devices $extension";
     }
 }
 ####################
@@ -1344,6 +1389,10 @@ sub MSwitch_Set($@) {
         MSwitch_makegroupcmdout( $hash, $args[0] );
         return;
     }
+	
+	
+	 #################################
+	
 	
 	
 	    #################################
@@ -1671,7 +1720,7 @@ sub MSwitch_Set($@) {
 
         if ( $devicemode eq "Notify" ) {
             return
-"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList ";#$special
+"Unknown argument $cmd, choose one of $dynsetlist loadHTTP reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList ";#$special
         }
         elsif ( $devicemode eq "Toggle" ) {
             return
@@ -1686,18 +1735,18 @@ sub MSwitch_Set($@) {
                 if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
                 {
                     return
-"Unknown argument $cmd, choose one of $dynsetlist del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:all_devices $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist loadHTTP del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:all_devices $setList $special";
                 }
                 else {
                     return
-"Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg backup_MSwitch:all_devices $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist loadHTTP reset_device:noArg backup_MSwitch:all_devices $setList $special";
                 }
             }
         }
         else {
             #full
             return
-"Unknown argument $cmd, choose one of $dynsetlist del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special";
+"Unknown argument $cmd, choose one of $dynsetlist loadHTTP del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special";
         }
     }
 
@@ -1725,6 +1774,22 @@ sub MSwitch_Set($@) {
         $hash->{helper}{mode}      = 'absorb';
         $hash->{helper}{modesince} = time;
     }
+	
+	#############################
+    # loadHTTP
+    if ( $cmd eq 'loadHTTP' ) {
+        
+		
+		#Log3 $name, 0, "args[0] $args[0]"; 
+		
+		
+       MSwitch_PerformHttpRequest( $hash , $args[0]);
+       return;
+    
+    }
+	
+	
+	
 
 ##############################
     if ( $cmd eq 'reset_device' ) {
@@ -1809,6 +1874,7 @@ sub MSwitch_Set($@) {
                       "reset_cmd_count"   => "",
                       "delcmds"           => "",
                       "deletesinglelog"   => "noArg",
+					  "loadHTTP"          => "noArg",
                       "change_renamed"    => ""
             );
 
@@ -3060,6 +3126,8 @@ sub MSwitch_Attr(@) {
       . "  readingList:textField-long "
       . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
       . "  MSwitch_Device_Groups:textField-long"
+	  . "  MSwitch_ExtraktfromHTTP:textField-long"
+	  . "  MSwitch_ExtraktHTTPMapping:textField-long"
       . "  textField-long "
       . $readingFnAttributes;
 
@@ -3262,6 +3330,8 @@ sub MSwitch_Attr(@) {
           . "  setList:textField-long "
           . "  readingList:textField-long "
           . "  MSwitch_Device_Groups:textField-long"
+		  . "  MSwitch_ExtraktfromHTTP:textField-long"
+		  . "  MSwitch_ExtraktHTTPMapping:textField-long"
           . "  textField-long ";
 
         setDevAttrList( $name, $attrzerolist );
@@ -6952,10 +7022,10 @@ MS-HELPdelay
     }
 ####################
 
-    # trigger start
+    # trigger start 
 
     my $triggerhtml = "
-<!--start Auslösendes Gerät -->
+<!--start Ausloesendes Gerät -->
 <!-- folgende HTML-Kommentare dürfen nicht gelöscht werden -->
 <!-- 
 info: festlegung einer zelleknöhe
@@ -12588,17 +12658,42 @@ sub MSwitch_gettemplate($$){
 	my $tZeilen="";
 	
    my $adress = $templatefile.$template;
-	$tZeilen = get($adress);
-	my %UMLAUTE = (
-                        'Ä' => 'Ae',
-                        'Ö' => 'Oe',
-                        'Ü' => 'Ue',
-                        'ä' => 'ae',
-                        'ö' => 'oe',
-                        'ü' => 'ue'
-        );
-	my $UMLKEYS = join( "|", keys(%UMLAUTE) );
-	return "$tZeilen";
+   
+   
+   
+   my $param = {
+                    url        => "$adress",
+                    timeout    => 5,
+                    hash       => $hash,                                                                                 # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
+                    method     => "GET",                                                                                 # Lesen von Inhalten
+                    header     => "User-Agent: None\r\nAccept: application/json",                            # Den Header gemäß abzufragender Daten ändern
+                    callback   => \&X_ParseHttpResponse                                                                  # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
+                };
+
+   
+	my ($err, $data) = HttpUtils_BlockingGet($param);
+   
+   
+   
+   
+   
+   
+   
+	# $tZeilen = get($adress);
+	# my %UMLAUTE = (
+                        # 'Ä' => 'Ae',
+                        # 'Ö' => 'Oe',
+                        # 'Ü' => 'Ue',
+                        # 'ä' => 'ae',
+                        # 'ö' => 'oe',
+                        # 'ü' => 'ue'
+        # );
+	# my $UMLKEYS = join( "|", keys(%UMLAUTE) );
+	
+	
+	
+	return "$data";
+	#return "$tZeilen";
 	
 }
 
@@ -12699,6 +12794,153 @@ sub MSwitch_whitelist($$){
 	%ntfyHash = ();
 	return ;
 }
+
+
+
+
+
+
+
+
+
+##############################################
+sub MSwitch_PerformHttpRequest($$)
+{
+    my ($hash, $def) = @_;
+    my $name = $hash->{NAME};
+	my $data;
+	my $err="";
+	fhem("deletereading $name FullHTTPResponse");
+	 
+    my $param = {
+                    url        => "$def",
+                    timeout    => 5,
+                    hash       => $hash,                                                                                 # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
+                    method     => "GET",                                                                                 # Lesen von Inhalten
+                    header     => "User-Agent: None\r\nAccept: application/json",                            # Den Header gemäß abzufragender Daten ändern
+                    callback   => \&X_ParseHttpResponse                                                                  # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
+                };
+
+    #HttpUtils_NonblockingGet($param);  	# Starten der HTTP Abfrage. Es gibt keinen Return-Code. 
+	
+	($err, $data) = HttpUtils_BlockingGet($param);
+	my $data1 = $data;
+	$data1 =~ s/\'/\\'/g;
+	
+	#Log3 $name, 0, "data - $data"; 
+	
+	
+	
+	if(length($err) > 1)                                                                                                      # wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
+    {	
+	Log3 $name, 1, "$err"; 
+	
+	readingsSingleUpdate($hash, "FullHTTPResponse", $err, 1); 
+	return ;	
+
+	}
+	$data{MSwitch}{$name}{HTTPresponse}=$data;
+
+	my $mapss = AttrVal( $name, "MSwitch_ExtraktHTTPMapping", "no_mapping" );
+	my @maps;
+	@maps = split( /\n/, $mapss );
+	my $regex = AttrVal( $name, "MSwitch_ExtraktfromHTTP", "FullHTTPResponse->(.*)" );
+	my @gset = split( /\n/, $regex );
+    foreach my $line (@gset) 
+		{
+		my @lineset = split( /->/, $line ); 
+		my $reading = $lineset[0];
+		my $reg = $lineset[1];
+		my $regex = qr/$reg/;
+		my $regexblank = $reg;
+		if ($data =~ $regex ) 
+		{
+			
+				my $CODE= "
+						my \$data='".$data1."';
+						my  \$result='test';
+						if ( \$data =~ m/".$regexblank."/s ) 
+						 {
+							 \$result=\$1;
+							 
+						 }
+						return \$result;
+						";
+				my $arg= eval ($CODE);
+				# mapping 
+				if ($mapss ne "no_mapping")
+				{
+				foreach my $mapping (@maps) 
+					{
+					my @mapset = split( /->/, $mapping ); 
+					my $org = $mapset[0];
+					my $ers = $mapset[1];
+					$arg =~ s/$org/$ers/g;
+					}
+				}
+				
+				
+				
+				if ($reading eq "FullHTTPResponse"){
+					
+					
+					$arg =  "for more details \"get $name HTTPresponse\"    ..... ".substr($arg,0,150)." ....."; 
+					
+				}
+					
+				
+				
+				
+				
+				
+				
+				
+				readingsSingleUpdate($hash, $reading, $arg, 1); 	
+		}
+			else 
+		{
+				Log3 $name, 1, "no match found for regex $reg";
+				readingsSingleUpdate($hash, $reading, "no match found for regex $reg", 1); 
+		}
+		}
+	return;
+}
+###########################################################
+
+
+
+
+sub X_ParseHttpResponse($)
+{
+    my ($param, $err, $data) = @_;
+    my $hash = $param->{hash};
+    my $name = $hash->{NAME};
+
+    if($err ne "")                                                                                                      # wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
+    {
+        Log3 $name, 0, "error while requesting ".$param->{url}." - $err";                                               # Eintrag fürs Log
+        readingsSingleUpdate($hash, "fullResponse", "ERROR", 0);                                                        # Readings erzeugen
+    }
+
+    elsif($data ne "")                                                                                                  # wenn die Abfrage erfolgreich war ($data enthält die Ergebnisdaten des HTTP Aufrufes)
+    {
+        Log3 $name, 0, "url ".$param->{url}." returned: $data";                                                         # Eintrag fürs Log
+
+        # An dieser Stelle die Antwort parsen / verarbeiten mit $data
+
+        readingsSingleUpdate($hash, "fullResponse", $data, 0);                                                          # Readings erzeugen
+    }
+    
+    # Damit ist die Abfrage zuende.
+    # Evtl. einen InternalTimer neu schedulen
+}
+
+
+
+
+
+
+
 
 1;
 
