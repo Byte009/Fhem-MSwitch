@@ -1,5 +1,5 @@
-UPD 2020-07-12_05:00:00 421746 FHEM/98_MSwitch.pm
-UPD 2020-07-08_05:00:00 63849 www/pgm2/MSwitch_Wizard.js
+UPD 2020-07-12_18:00:00 421982 FHEM/98_MSwitch.pm
+UPD 2020-07-12_18:00:00 64169 www/pgm2/MSwitch_Wizard.js
 UPD 2020-07-07_05:30:00 45399 www/pgm2/MSwitch_Web.js
 UPD 2020-07-07_05:00:00 41959 www/MSwitch/MSwitch_Help.txt
 UPD 2020-07-07_05:00:00 34760 www/MSwitch/MSwitch_Help_eng.txt
