@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.6';
+	var version = 'V2.7';
 	
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1472,7 +1472,7 @@ function starttemplate(template){
 	execcmd(aktline); // durchreichung von set befehlen
 	}
 	
-	if (len == lines)
+	if (len <= lines)
 	{
 		if (nosave =="0"){
 		var out ="Configfile wurde erstellt !  .... wird gespeichert .....";
@@ -1523,6 +1523,14 @@ if (cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEV
 	else{
 	return;
 	}
+}
+
+
+
+
+if (cmdsatz[0] == "EXIT")
+{
+	lines = 10000; 
 }
 
 
@@ -1599,6 +1607,10 @@ if (testvar!=null && testvar.length!=0)
 alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
 	}
 } 
+
+
+
+
 
 //##############################
 
@@ -2166,6 +2178,19 @@ if (typa == "A" ){
  	if (befehl == "MSwitch_cmd2"){
 	configuration[4] = "#S .Trigger_cmd_off -> "+inhalt;
 	} 
+	
+	
+	
+	// comand_priority
+	if (befehl == "priority" ){
+		
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[13]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+		
+	}
+	
 	
 	// comand_cmd1 und 2
 	if (befehl == "comand_cmd1" || befehl == "comand_cmd2"){
