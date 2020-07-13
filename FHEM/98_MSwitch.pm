@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.71';
+my $version      = '3.72';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -12698,7 +12698,7 @@ sub MSwitch_gettemplate($$){
                         # 'ö' => 'oe',
                         # 'ü' => 'ue'
         # );
-	# my $UMLKEYS = join( "|", keys(%UMLAUTE) );
+	# my $UMLKEYS = ( "|", keys(%UMLAUTE) );
 	
 	
 	
@@ -12834,8 +12834,10 @@ sub MSwitch_PerformHttpRequest($$)
     #HttpUtils_NonblockingGet($param);  	# Starten der HTTP Abfrage. Es gibt keinen Return-Code. 
 	
 	($err, $data) = HttpUtils_BlockingGet($param);
-	my $data1 = $data;
-	$data1 =~ s/\'/\\'/g;
+	#my $data1 = $data;
+	#$data1 =~ s/\'/\\'/g;
+	
+	#$data1 =~ s/\n/[nl]/g;
 	
 	#Log3 $name, 0, "data - $data"; 
 	
@@ -12863,20 +12865,26 @@ sub MSwitch_PerformHttpRequest($$)
 		my $reg = $lineset[1];
 		my $regex = qr/$reg/;
 		my $regexblank = $reg;
-		if ($data =~ $regex ) 
+		if (my @matches = $data =~ /$regex/sg ) 
 		{
-			
-				my $CODE= "
-						my \$data='".$data1."';
-						my  \$result='test';
-						if ( \$data =~ m/".$regexblank."/s ) 
-						 {
-							 \$result=\$1;
+			#Log3 $name, 0, "matches @matches ".@matches ;
+				# my $CODE= "
+						# my \$data='".$data1."';
+						# my  \$result='test';
+					
+						# if (\$data =~ m/".$regexblank."/s ) 
+						 # {
+							 # \$result.=\$1;
 							 
-						 }
-						return \$result;
-						";
-				my $arg= eval ($CODE);
+						 # }
+						# return \$result;
+						# ";
+						
+				# my $arg= eval ($CODE);
+				
+				my $arg = join(",",@matches);
+				
+				
 				# mapping 
 				if ($mapss ne "no_mapping")
 				{
@@ -12889,22 +12897,15 @@ sub MSwitch_PerformHttpRequest($$)
 					}
 				}
 				
-				
+				#$arg =~ s/\[nl\]/\n/g;
+				#$arg =~ s/  +/ /g;
 				
 				if ($reading eq "FullHTTPResponse"){
-					
 					
 					$arg =  "for more details \"get $name HTTPresponse\"    ..... ".substr($arg,0,150)." ....."; 
 					
 				}
 					
-				
-				
-				
-				
-				
-				
-				
 				readingsSingleUpdate($hash, $reading, $arg, 1); 	
 		}
 			else 
