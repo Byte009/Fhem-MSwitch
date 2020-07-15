@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.7';
+	var version = 'V2.8';
 	
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -27,7 +27,7 @@
 	const GROUPS = [];
 	const GROUPSCMD = [];
 	
-	
+	var PREASSIGMENT ="";
 	var result= 0; // wird für waittimer in templates gebraucht
     var template;
 	var nosave =0;
@@ -1514,7 +1514,7 @@ function starttemplate(template){
 function testline(line,newtemplate){
 var cmdsatz = line.split(">>");
 if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-if (cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+if (cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 
 	if (INQ[cmdsatz[0]]== "1")
 	{
@@ -1530,7 +1530,10 @@ if (cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEV
 
 if (cmdsatz[0] == "EXIT")
 {
+	
+	//alert("exit");
 	lines = 10000; 
+	return;
 }
 
 
@@ -1583,13 +1586,24 @@ alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
 // VARSET>>VARNAME>>VARINHALT
 if (cmdsatz[0] == "VARSET"){
 var testvar = cmdsatz[1].match(/^\$.*/);
+
 if (testvar!=null && testvar.length!=0)
 {
-	WIZARDVARS[cmdsatz[1]] = cmdsatz[2];
+	
+	newvar=changevar(cmdsatz[2]);
+	
+	
+	WIZARDVARS[cmdsatz[1]] = newvar;
 }
 	else{
 alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
 	}
+}
+
+// PREASSIGMENT
+if (cmdsatz[0] == "PREASSIGMENT"){
+	PREASSIGMENT=changevar(cmdsatz[1]);
+//alert(PREASSIGMENT);
 }
 
 // VARDEVICES>>VARNAME>>VARTEXT
@@ -1706,7 +1720,7 @@ var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
-out+="<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
+out+="<input id='input' type='text' value='"+PREASSIGMENT+"' size='60'><br>&nbsp;<br>";
 out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
@@ -2067,9 +2081,16 @@ if (cmdsatz[0] == "ATTR"){
 else{
 typa="S";
 }
+
+
+
 	var befehl = cmdsatz[1];
 	var typ = cmdsatz[0];
 	var inhalt = cmdsatz[2];
+	var arg = cmdsatz[3];
+	
+	//alert(befehl);
+	
 	if (befehl == "INFO"){
 	document.getElementById('help').innerHTML = inhalt;
 	return;
@@ -2083,7 +2104,9 @@ if (typa == "A" ){
 	
 	if (inhalt != "")
 	{
+		//alert(inhalt);
 	inhalt1 = changevar(inhalt);
+	//alert(inhalt1);
 	newattr = "#A "+befehl+" -> "+inhalt1;
 	var newconfig =configuration.join("\n");
 	ATTRS[befehl] = inhalt1;	
@@ -2123,6 +2146,21 @@ if (typa == "A" ){
 	var newinhalt= 	changevar(inhalt)
 	FW_cmd(FW_root+'?cmd=set '+devicename+' whitelist '+newinhalt+' &XHR=1')
 	configuration[conflenght] = "#S .Trigger_Whitelist -> "+inhalt;
+	}
+	
+	
+	
+		// comand_READING
+	if (befehl == "READING" ){
+	//alert("reading");	
+	//inhalt1 = changevar(inhalt);
+	//alert(inhalt1);
+	newattr = "#S "+inhalt+" -> "+arg;
+	//alert(newattr);
+	
+	
+	configuration[conflenght] = newattr;
+	
 	}
 	
 	if (befehl == "Time_on"){
@@ -2182,14 +2220,16 @@ if (typa == "A" ){
 	
 	
 	// comand_priority
-	if (befehl == "priority" ){
-		
+	if (befehl == "PRIORITY" ){
+	//alert("PRIORITY");
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[13]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
 		
 	}
+	
+
 	
 	
 	// comand_cmd1 und 2
@@ -2206,6 +2246,13 @@ if (typa == "A" ){
 	inhalt = inhalt.split(" ");
 	var first =  inhalt.shift();
 	var second = inhalt.join(" ");
+	
+	
+	first = changevar(first);
+	second = changevar(second);
+	
+	alert(first);
+	alert(second);
 	var device =  document.getElementById('bank6').value.split("\n");	
 	if (document.getElementById('bank1').value == "FreeCmd"){	
 	first = first.replace(/\n/g,';;');	
@@ -2317,6 +2364,7 @@ if (typa == "A" ){
 	} 
 
 var newconfig =configuration.join("\n");
+//alert(newconfig);
 document.getElementById('rawconfig10').value = newconfig;
 return;
 }
@@ -2380,7 +2428,7 @@ function selectcmdoptionstemp(inhalt){
 	if (sets[inhalt] == 'noArg'){ return;}
 	// wenn noarg befehl übernehmen
 	if (sets[inhalt] === undefined){ 
-	retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"\">&nbsp;';
+	retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"'+PREASSIGMENT+'\">&nbsp;';
 	document.getElementById('setcmd1temp').innerHTML = retoption1;
 	return;
 	}
