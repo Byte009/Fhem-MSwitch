@@ -2251,8 +2251,8 @@ if (typa == "A" ){
 	first = changevar(first);
 	second = changevar(second);
 	
-	alert(first);
-	alert(second);
+	//alert(first);
+	//alert(second);
 	var device =  document.getElementById('bank6').value.split("\n");	
 	if (document.getElementById('bank1').value == "FreeCmd"){	
 	first = first.replace(/\n/g,';;');	
