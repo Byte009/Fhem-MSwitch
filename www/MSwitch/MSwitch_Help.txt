@@ -416,6 +416,28 @@ GRUPPENNAME1-&gt;devicename1,decicename2 ....
 mehrere Gruppen sind durch Zeilenumbruch zu trennen. 
 Statt der Devicenamen kann RegEx angewendet werden.
 
+
+<strong>MSwitch_ExtraktHTTPMapping</strong>
+Ermöglicht die Anpassung von Readings die durch 'loadHTTP' und dem Attribut 'MSwitch_ExtraktfromHTTP' erzeugt wurden
+und bietet die Möglichkeit, Ersetzungen vorzunehmen.
+
+Format: Readinginhalt-&gt;neuerInhalt
+z.B: °C-&gt; Grad Celsius
+
+ersetzt jedes Vorkommen von '°C' zu ' Grad Celsius' und wird z.B für eine Sprachausgebe durch Amazon Echo benötigt.
+
+Im zu ersetzenden Teil kann Regex genutzt werden. Mehrere Ersetzungen sind durch Zeilenumbruch zu trennen.
+
+<strong>MSwitch_ExtraktfromHTTP</strong>
+Mit diesem Attribut wird die Erzeugung von Readings aus einer geladenen HTML-Datei gesteuert.
+Jede angegebene Zeile erzeugt ein Reading aus der Datei ( falls vorhanden )
+
+Format: Readingname-&gt;RegEx 
+
+Wenn mit der angegebenen Regex mehrere Daten gefunden werden , so werden diese alle in diesem Reading ,
+durch Komma getrennt, ausgegeben. In diesem Fall werden zusätzlich weitere Readings angelegt, die jeweils einen der gefundenen Datensätze enthalten.
+Diese Readings werden automatisch durchnummeriert: Readingname_01,Readingname_01,Readingname_01 ...
+
 <strong>MSwitch_Language:EN,DE</strong>
 Umschaltung der Frontendsprache.
 
@@ -732,6 +754,11 @@ Zeigt alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen od
 Löscht alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen oder verzögerten Schaltbefehlen resultieren.
 Schaltbefehle basierend auf rein zeitabhängigen Angaben werden neu berechnet und gesetzt.
 
+
+<strong>get DEVICE HTTPresponse</strong>
+
+Zeigt den Inhalt einer zuvor mit 'loadHTTP' geladenen HTML-Datei.
+
 <strong>get DEVICE config</strong>
 
 Zeigt die Konfigurationsdatei des MSwitchdevices an; diese kann in dem Fenster editiert werden.
@@ -782,6 +809,17 @@ Schaltet das Device in den Wizardmode.
 In diesem Mode können at's, notifys undvorkonfigurierte Devices importiert werden.
 Weiterhinh können Devices mithilfe eines Wizards angelegt werden.
 Dieser Set steht nur bei neu angelegten und unveränderten Devices zur Verfügung. 
+
+
+<strong>set DEVICE loadHTTP</strong>
+Lädt den Inhalt einer HTML Seite. Dieser kann gebutzt werden , um daraus Readings zu extrahieren.
+Das weitere Verarbeitung kann mit den Attributen 'MSwitch_ExtraktfromHTTP' und 'MSwitch_ExtraktHTTPMapping' beeinflusst werden.
+Der gesamte Inhalt der eingelesenen Daten kann mit 'get HTTPresponse' angezeigt werden.
+Format:
+   loadHTTP http://www.myhost.com/directory/
+   loadHTTP https://www.myhost.com/
+   loadHTTP http://www.myhost.com:8080/
+   loadHTTP http://user:password@www.myhost.com/
 
 <strong>set DEVICE reset_device</strong>
 Löscht alle Daten eines MSwitch-devices und versetzt diesen in den Zustand, als wäre es neu angelegt.
