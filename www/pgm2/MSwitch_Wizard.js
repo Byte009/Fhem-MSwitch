@@ -17,8 +17,8 @@
   
   
   
-	var version = 'V2.8';
-	
+	var version = 'V2.9';
+	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
 	const ATTRS = [];
@@ -1272,7 +1272,7 @@ function loadtemplate(){
 	var html = '<table width="100%">';
 	html += '<tr>'
 	html += '<td width ="100%" id="importTemplate1" valign=top ></td>';
-	html += '<td id="importTemplate2">';
+	html += '<td id="importTemplate2" style=\'display: none;\'>';
 	html+='Configfile:<br><textarea disabled id=\"rawconfig10\" style=\"width: 400px; height: 400px\"></textarea>';
 	html += '</td>';
 	html += '</tr>';
@@ -1369,8 +1369,6 @@ document.getElementById('execbutton').value="Template neu starten";
 	starttemplate(data);
 }
 
-
-
 // mainloop aller lines
 // #################
 
@@ -1389,15 +1387,12 @@ function schreibespeicher(aktline)
 // #################
 
 function saveempty(){
-//alert("safeempty");
-//document.getElementById('importTemplate1').innerHTML = out;
 	conf = document.getElementById('rawconfig10').value;
 	conf = conf.replace(/\n/g,'#[EOL]');
 	conf = conf.replace(/#\[REGEXN\]/g,'\\n');
 	conf = conf.replace(/:/g,'#c[dp]');
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
-	
 	conf = changevar(conf);
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
@@ -1422,17 +1417,6 @@ function execempty(){
 }
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	document.getElementById('bank5').value='';
-	
-/* 		for (elem in GROUPSCMD) {
-		delete GROUPSCMD[elem];
-		}
-	for (elem in GROUPS) {
-		delete GROUPS[elem];
-		}
-
-	for (elem in INQ) {
-		delete INQ[elem];
-		} */
 	starttemplate(data);
 	return;
 }
@@ -1441,32 +1425,81 @@ function execempty(){
 
 function starttemplate(template){
 	
-	closeall();
-/* 	while(GROUPS.length > 0) {
-    GROUPS.pop();
-}
-	while(GROUPSCMD.length > 0) {
-    GROUPSCMD.pop();
-} */	
-	if (document.getElementById('rawconfig10').value ==""){
+	
+	
+	
+	closeall();	
+	if (jump == "nojump"){
+	//alert(template);
+	//alert(jump);
+	//alert(configtemplate.join("\n"));
+	}
+	
+	//alert(document.getElementById('rawconfig10'));
+	
+	if (document.getElementById('rawconfig10').value =="")
+	{
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	}
+	
+	
 	var tmplsatz = template.split("\n");
 	var len= tmplsatz.length;
 	var newtmp = "";
 	
+	
+	
+	
+
+	
+	
+	
+
+	
 	for (lines=0; lines<len; lines++){
-		if (tmplsatz[lines].match(/^#/)){
+		if (jump != "nojump")
+		{
+			
+			if (tmplsatz[lines] != jump)
+			{
+				tmplsatz[lines]="# abgearbeitet";
+	            newtemplate = tmplsatz.join("\n");
+				continue;
+			}
+			else{
+				jump = "nojump";
+			}
+		}
+	
+		if (tmplsatz[lines].match(/^#/))
+		{
 			continue;
 		}
+		
 	var aktline = tmplsatz[lines];
+
 	schreibespeicher(aktline);
 	tmplsatz[lines]="# abgearbeitet";
 	newtemplate = tmplsatz.join("\n");
+	
     var check = testline(aktline,newtemplate);
-	if ( check == "stop" ){
+	
+	if ( check == "jump" )
+	{
+	data = document.getElementById('emptyarea').value;
+	starttemplate(data);
 	break;
 	}
+	
+	if ( check == "stop" )
+	{
+	break;
+	}
+	
+	
+	
+	//alert(aktline);
+	
 	
 	tmplsatz[lines]="# abgearbeitet";
 	execcmd(aktline); // durchreichung von set befehlen
@@ -1501,6 +1534,7 @@ function starttemplate(template){
 	}
 
 	if (nosave =="0"){
+		conf = changevar(conf);
 		var nm = devicename;
 		var def = nm+' saveconfig '+encodeURIComponent(conf);
 		location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
@@ -1510,123 +1544,78 @@ function starttemplate(template){
 }
 
 // #################
-
+// #################
 function testline(line,newtemplate){
-var cmdsatz = line.split(">>");
-if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-if (cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+	var cmdsatz = line.split(">>");
+	if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
+	if (cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 
-	if (INQ[cmdsatz[0]]== "1")
-	{
-	cmdsatz.shift(); 	
-	}
-	else{
-	return;
-	}
+		if (INQ[cmdsatz[0]]== "1")
+		{
+		cmdsatz.shift(); 	
+		}
+		else{
+		return;
+		}
+}
+
+//text
+if (cmdsatz[0] == "TEXT"){
+	var out ="";
+	out+=changevar(cmdsatz[1]);
+	out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setTEXTok(\""+"\")'>";
+	document.getElementById('importTemplate1').innerHTML = out;
+return "stop";
 }
 
 
 
+// DEBUG
+if (cmdsatz[0] == "DEBUG")
+{
+	if (cmdsatz[1] =="on"){
+	document.getElementById('speicherbank').style.display='block';
+	document.getElementById('speicherbank1').style.display='block';
+	document.getElementById('importTemplate2').style.display='block';
+	}
+	if (cmdsatz[1] =="off"){
+	document.getElementById('speicherbank').style.display='none';
+	document.getElementById('speicherbank1').style.display='none';
+	document.getElementById('importTemplate2').style.display='none';
+	}
+	return;
+}
 
+// EXIT
 if (cmdsatz[0] == "EXIT")
 {
-	
-	//alert("exit");
 	lines = 10000; 
 	return;
 }
 
-
-if (cmdsatz[0] == "SELECT")
+// GOTO
+if (cmdsatz[0] == "GOTO")
 {
-	if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd1" ) && document.getElementById('bank1').value == "FreeCmd"){
-	cmdsatz[0] ="ASK";	 
-	} 
+	jump = cmdsatz[1];
+	return "jump";;
 }
 
+
+// map select aus set bei bedarf
+if (cmdsatz[0] == "SELECT")
+	{
+		if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd1" ) && document.getElementById('bank1').value == "FreeCmd"){
+		cmdsatz[0] ="ASK";	 
+		} 
+}
+
+// INQ
 if (cmdsatz[0] == "INQ"){
 	 text = cmdsatz[4];
 	 benenner = cmdsatz[3];
 	 setINQ(text,cmdsatz[1],cmdsatz[2],benenner,newtemplate);
 	 return "stop";
 }
-
-// VAREVENT>>VARNAME>>VARTEXT
-
-if (cmdsatz[0] == "VAREVENT"){
-var testvar = cmdsatz[1].match(/^\$.*/);
-if (testvar!=null && testvar.length!=0)
-{
-		    var toset = cmdsatz[1];
-			var text = cmdsatz[2];
-			eventinputvar(text,toset,newtemplate,typ);
-			return "stop";
-}
-	else{
-alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
-	}
-}
-
-
-// VARASK>>VARNAME>>VARTEXT
-if (cmdsatz[0] == "VARASK"){
-var testvar = cmdsatz[1].match(/^\$.*/);
-if (testvar!=null && testvar.length!=0)
-{
-	text = cmdsatz[2];
-	varname = cmdsatz[1];
-	setVAR(text,varname,newtemplate);
-	return "stop";
-}
-	else{
-alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
-	}
-}
-
-// VARSET>>VARNAME>>VARINHALT
-if (cmdsatz[0] == "VARSET"){
-var testvar = cmdsatz[1].match(/^\$.*/);
-
-if (testvar!=null && testvar.length!=0)
-{
-	
-	newvar=changevar(cmdsatz[2]);
-	
-	
-	WIZARDVARS[cmdsatz[1]] = newvar;
-}
-	else{
-alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
-	}
-}
-
-// PREASSIGMENT
-if (cmdsatz[0] == "PREASSIGMENT"){
-	PREASSIGMENT=changevar(cmdsatz[1]);
-//alert(PREASSIGMENT);
-}
-
-// VARDEVICES>>VARNAME>>VARTEXT
-if (cmdsatz[0] == "VARDEVICES"){
-var testvar = cmdsatz[1].match(/^\$.*/);
-//alert (testvar);
-if (testvar!=null && testvar.length!=0)
-{
-	text = cmdsatz[2];
-	varname = cmdsatz[1];
-	setVARDEVICES(text,varname,newtemplate);
-	return "stop";
-}
-	else{
-alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
-	}
-} 
-
-
-
-
-
-//##############################
 
 if (cmdsatz[0] == "REPEAT"){
 	 text = cmdsatz[2];
@@ -1635,14 +1624,70 @@ if (cmdsatz[0] == "REPEAT"){
 	 return "stop";
 }
 
-// aufbau - ASK : TRIGGERTIME : Zu welcher Zeit soll dea MSwitch ausgelöst werden ? : <HELP>
-// 0 -setting
-// 1 -befehl
-// 2 -text
-// aufbau - OPT : TRIGGERTIME :d3,d2,d3: Zu welcher Zeit soll dea MSwitch ausgelöst werden ? : <HELP>
-// 0 -setting
-// 1 -befehl
-// 2 -text
+// PREASSIGMENT
+if (cmdsatz[0] == "PREASSIGMENT"){
+	PREASSIGMENT=changevar(cmdsatz[1]);
+}
+
+// VAREVENT>>VARNAME>>VARTEXT
+if (cmdsatz[0] == "VAREVENT"){
+	var testvar = cmdsatz[1].match(/^\$.*/);
+	if (testvar!=null && testvar.length!=0)
+	{
+				var toset = cmdsatz[1];
+				var text = cmdsatz[2];
+				eventinputvar(text,toset,newtemplate,typ);
+				return "stop";
+	}
+		else{
+	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+}
+
+// VARASK>>VARNAME>>VARTEXT
+if (cmdsatz[0] == "VARASK"){
+	var testvar = cmdsatz[1].match(/^\$.*/);
+	if (testvar!=null && testvar.length!=0)
+	{
+		text = cmdsatz[2];
+		varname = cmdsatz[1];
+		setVAR(text,varname,newtemplate);
+		return "stop";
+	}
+		else{
+	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+}
+
+// VARSET>>VARNAME>>VARINHALT
+if (cmdsatz[0] == "VARSET"){
+	var testvar = cmdsatz[1].match(/^\$.*/);
+	if (testvar!=null && testvar.length!=0)
+	{
+		newvar=changevar(cmdsatz[2]);
+		WIZARDVARS[cmdsatz[1]] = newvar;
+	}
+		else{
+	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+}
+
+
+// VARDEVICES>>VARNAME>>VARTEXT
+if (cmdsatz[0] == "VARDEVICES"){
+	var testvar = cmdsatz[1].match(/^\$.*/);
+	if (testvar!=null && testvar.length!=0)
+	{
+		text = cmdsatz[2];
+		varname = cmdsatz[1];
+		setVARDEVICES(text,varname,newtemplate);
+		return "stop";
+	}
+		else{
+	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+} 
+
 
 var typ="";
 if (cmdsatz[0] == "ATTR"){
@@ -1653,8 +1698,6 @@ if (cmdsatz[0] == "ATTR"){
 	typ="S";
 	}
 		var befehl = cmdsatz[0];
-
-
 		if (befehl == "ASK"){
 			var toset = cmdsatz[1];
 			var text = cmdsatz[2];
@@ -1679,7 +1722,6 @@ if (cmdsatz[0] == "ATTR"){
 
 		if (befehl == "SELECT"){
 			var toset = cmdsatz[1];
-			//var options = cmdsatz[2];
 			var text = cmdsatz[2];
 			selectinput(text,toset,newtemplate,typ);
 			return "stop";
@@ -1738,6 +1780,13 @@ return;
 
 // ###########################################
 
+function setTEXTok(input){
+starttemplate(newtemplate);
+return;
+}
+
+// ###########################################
+
 function setREPEAT(text,anzahl,newtemplate){
 var out ="";
 out+=text;
@@ -1764,7 +1813,6 @@ var radios = document.getElementsByName('radio');
 var value;
 for (var i = 0; i < radios.length; i++) {
     if (radios[i].type === 'radio' && radios[i].checked) {
-        // get value, set checked flag or do whatever you need to
         value = radios[i].value;   
     }
 }
@@ -2082,15 +2130,11 @@ else{
 typa="S";
 }
 
-
-
 	var befehl = cmdsatz[1];
 	var typ = cmdsatz[0];
 	var inhalt = cmdsatz[2];
 	var arg = cmdsatz[3];
-	
-	//alert(befehl);
-	
+
 	if (befehl == "INFO"){
 	document.getElementById('help').innerHTML = inhalt;
 	return;
@@ -2104,9 +2148,7 @@ if (typa == "A" ){
 	
 	if (inhalt != "")
 	{
-		//alert(inhalt);
 	inhalt1 = changevar(inhalt);
-	//alert(inhalt1);
 	newattr = "#A "+befehl+" -> "+inhalt1;
 	var newconfig =configuration.join("\n");
 	ATTRS[befehl] = inhalt1;	
@@ -2124,7 +2166,6 @@ if (typa == "A" ){
 	
 	//timerfelder vorbereiten
 	var fields = configuration[13].split("->");
-	//alert(fields[0]+'-'+fields[1]+'-');
 	if (fields[1] ==" "){
 		fields[1]="on~off~ononly~offonly~onoffonly";
 	}
@@ -2145,30 +2186,24 @@ if (typa == "A" ){
 	if (befehl == "Trigger_Whitelist"){
 	var newinhalt= 	changevar(inhalt)
 	FW_cmd(FW_root+'?cmd=set '+devicename+' whitelist '+newinhalt+' &XHR=1')
-	configuration[conflenght] = "#S .Trigger_Whitelist -> "+inhalt;
+	configuration[conflenght] = "#S .Trigger_Whitelist -> "+newinhalt;
 	}
 	
 	
-	
-		// comand_READING
+// comand_READING
 	if (befehl == "READING" ){
-	//alert("reading");	
-	//inhalt1 = changevar(inhalt);
-	//alert(inhalt1);
 	newattr = "#S "+inhalt+" -> "+arg;
-	//alert(newattr);
-	
-	
 	configuration[conflenght] = newattr;
-	
 	}
 	
+	//time_on
 	if (befehl == "Time_on"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
 	satz[0]= satz[0]+inhalt;
 	var newsatz = satz.join("~");
 	configuration[13] = "#S .Trigger_time -> "+newsatz;
 	}
+	
 	//time_off
 	if (befehl == "Time_off"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
@@ -2176,6 +2211,7 @@ if (typa == "A" ){
 	var newsatz = satz.join("~");
 	configuration[13] = "#S .Trigger_time -> "+newsatz;
 	}
+	
 	// Time_cmd1
 	if (befehl == "Time_cmd1"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
@@ -2183,6 +2219,7 @@ if (typa == "A" ){
 	var newsatz = satz.join("~");
 	configuration[13] = "#S .Trigger_time -> "+newsatz;
 	}
+	
 	// Time_cmd2
 	if (befehl == "Time_cmd2"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
@@ -2196,43 +2233,50 @@ if (typa == "A" ){
 	configuration[9] = "#S .Trigger_condition -> "+inhalt;
 	} 
 	
-	// Trigger_on
+// Trigger_on
  	if (befehl == "MSwitch_on"){
+	inhalt= 	changevar(inhalt)
 	configuration[7] = "#S .Trigger_on -> "+inhalt;
 	} 
 	
-	// Trigger_on
+// Trigger_off
  	if (befehl == "MSwitch_off"){
+		inhalt= 	changevar(inhalt)
 	configuration[3] = "#S .Trigger_off -> "+inhalt;
 	} 
 	
-	// Trigger_cmd1
+// Trigger_cmd1
  	if (befehl == "MSwitch_cmd1"){
+	inhalt= 	changevar(inhalt)
 	configuration[8] = "#S .Trigger_cmd_on -> "+inhalt;
 	//alert(configuration);
 	} 
 	
-	// Trigger_cmd2
+// Trigger_cmd2
  	if (befehl == "MSwitch_cmd2"){
+	inhalt= 	changevar(inhalt)
 	configuration[4] = "#S .Trigger_cmd_off -> "+inhalt;
 	} 
 	
 	
-	
-	// comand_priority
+// comand_priority
 	if (befehl == "PRIORITY" ){
-	//alert("PRIORITY");
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[13]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
-		
+	}
+	
+// comand_ID
+	if (befehl == "ID" ){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[14]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
 	}
 	
 
-	
-	
-	// comand_cmd1 und 2
+// comand_cmd1 und 2
 	if (befehl == "comand_cmd1" || befehl == "comand_cmd2"){
 		if (befehl == "comand_cmd1"){
 			var field1 =1;
@@ -2247,12 +2291,9 @@ if (typa == "A" ){
 	var first =  inhalt.shift();
 	var second = inhalt.join(" ");
 	
-	
 	first = changevar(first);
 	second = changevar(second);
-	
-	//alert(first);
-	//alert(second);
+
 	var device =  document.getElementById('bank6').value.split("\n");	
 	if (document.getElementById('bank1').value == "FreeCmd"){	
 	first = first.replace(/\n/g,';;');	
@@ -2262,7 +2303,6 @@ if (typa == "A" ){
 	first = first.replace(/:/g,'#[dp]');
 	first = first.replace(/;/g,'#[se]');
 	first = first.replace(/ /g,'#[sp]');
-	//first = first.replace(/'/g,'#[st]');
 	first = first.replace(/\t/g,'#[tab]');
 	first = first.replace(/\\/g,'#[bs]');
 	first = first.replace(/,/g,'#[ko]');
@@ -2273,7 +2313,6 @@ if (typa == "A" ){
 	second = second.replace(/:/g,'#[dp]');
 	second = second.replace(/;/g,'#[se]');
 	second = second.replace(/ /g,'#[sp]');
-	//second = second.replace(/'/g,'#[st]');
 	second = second.replace(/\t/g,'#[tab]');
 	second = second.replace(/\\/g,'#[bs]');
 	second = second.replace(/,/g,'#[ko]');
@@ -2292,7 +2331,7 @@ if (typa == "A" ){
 	configuration =  makedevice(configuration);
 	}
 	
-	// cmd_repeat
+// cmd_repeat
 	if (befehl == "cmd_repeat"){
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[11]="#[NF]"+inhalt;
@@ -2339,7 +2378,6 @@ if (typa == "A" ){
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
 	}
-	
 	
 	// Device_to_switch
 	if (befehl == "Device_to_switch"){
@@ -2452,8 +2490,6 @@ function selectcmdoptionstemp(inhalt){
 
 // ######################
 function changevar(text){
-	//alert("text- "+text);
-	
 	if ( text === undefined || text == "undefined"){ 
 	return text;
 	}
