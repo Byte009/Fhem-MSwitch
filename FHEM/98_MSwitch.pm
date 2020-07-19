@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.72';
+my $version      = '3.73';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -12807,12 +12807,6 @@ sub MSwitch_whitelist($$){
 
 
 
-
-
-
-
-
-
 ##############################################
 sub MSwitch_PerformHttpRequest($$)
 {
@@ -12834,15 +12828,7 @@ sub MSwitch_PerformHttpRequest($$)
     #HttpUtils_NonblockingGet($param);  	# Starten der HTTP Abfrage. Es gibt keinen Return-Code. 
 	
 	($err, $data) = HttpUtils_BlockingGet($param);
-	#my $data1 = $data;
-	#$data1 =~ s/\'/\\'/g;
-	
-	#$data1 =~ s/\n/[nl]/g;
-	
-	#Log3 $name, 0, "data - $data"; 
-	
-	
-	
+
 	if(length($err) > 1)                                                                                                      # wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
     {	
 	Log3 $name, 1, "$err"; 
@@ -12865,26 +12851,13 @@ sub MSwitch_PerformHttpRequest($$)
 		my $reg = $lineset[1];
 		my $regex = qr/$reg/;
 		my $regexblank = $reg;
+		
+		fhem("deletereading $name $reading"."_.*");
+		
+		
 		if (my @matches = $data =~ /$regex/sg ) 
 		{
-			#Log3 $name, 0, "matches @matches ".@matches ;
-				# my $CODE= "
-						# my \$data='".$data1."';
-						# my  \$result='test';
-					
-						# if (\$data =~ m/".$regexblank."/s ) 
-						 # {
-							 # \$result.=\$1;
-							 
-						 # }
-						# return \$result;
-						# ";
-						
-				# my $arg= eval ($CODE);
-				
-				my $arg = join(",",@matches);
-				
-				
+				my $arg = join("#[trenner]",@matches);
 				# mapping 
 				if ($mapss ne "no_mapping")
 				{
@@ -12897,13 +12870,22 @@ sub MSwitch_PerformHttpRequest($$)
 					}
 				}
 				
-				#$arg =~ s/\[nl\]/\n/g;
-				#$arg =~ s/  +/ /g;
+				my @newmatch = split( /#\[trenner\]/, $arg );
+				$arg = join(",",@newmatch);
+				my $x=0;
+				if (@newmatch > 1 && $reading ne "FullHTTPResponse")
 				
+				{
+					foreach my $match (@newmatch)
+					{
+					readingsSingleUpdate($hash, $reading."_".$x, $match, 1);	
+					$x++;	
+						
+					}
+				}
+
 				if ($reading eq "FullHTTPResponse"){
-					
 					$arg =  "for more details \"get $name HTTPresponse\"    ..... ".substr($arg,0,150)." ....."; 
-					
 				}
 					
 				readingsSingleUpdate($hash, $reading, $arg, 1); 	
@@ -12911,7 +12893,7 @@ sub MSwitch_PerformHttpRequest($$)
 			else 
 		{
 				Log3 $name, 1, "no match found for regex $reg";
-				readingsSingleUpdate($hash, $reading, "no match found for regex $reg", 1); 
+                readingsSingleUpdate($hash, $reading, "no match", 1);				
 		}
 		}
 	return;
