@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.74';
+my $version      = '3.75';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -12207,6 +12207,9 @@ sub MSwitch_dec($$) {
         $todec =~ s/\$SELF/$name/g;
         $todec =~ s/\n//g;
         $todec =~ s/#\[wa\]/|/g;
+		$todec =~ s/#\[SR\]/|/g;
+		
+		
         $todec =~ s/\$NAME/$hash->{helper}{eventfrom}/g;
         $todec =~ s/MSwitch_Self/$name/g;
         my $ersetzung;
