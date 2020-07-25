@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     #off/on
-my $version      = '3.73';
+my $version      = '3.74';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -855,6 +855,8 @@ sub MSwitch_Define($$) {
     my $devpointer = $name;
     my $devhash    = '';
 
+
+    my $template ="no";
     my $defstring = '';
     foreach (@a) {
         next if $_ eq $a[0];
@@ -863,8 +865,15 @@ sub MSwitch_Define($$) {
     }
 
 
- # Log3( $name, 0, "defstring $defstring" );
+  Log3( $name, 5, "defstring $defstring" );
+	#Log3( $name, 0, "template: @a" );
 
+
+if ($a[3])
+{
+	Log3( $name, 5, "template: $a[3]" );
+	$template = $a[3];
+	}
 
     $modules{MSwitch}{defptr}{$devpointer} = $hash;
     $hash->{Version_Modul}                 = $version;
@@ -893,10 +902,11 @@ sub MSwitch_Define($$) {
 	 if ( $defstring =~ m/wizard.*/ ) 
         
 	{
-		Log3( $name, 0, "starte wizard" );
+		Log3( $name, 1, "starte wizard" );
 		
 	$hash->{helper}{mode}      = 'absorb';
     $hash->{helper}{modesince} = time;
+	$hash->{helper}{template} = $template;
 	}
 	
 
@@ -4693,7 +4703,7 @@ var notify = " . $notify . ";
 var at = " . $at . ";
 
 
-var at = " . $at . ";
+var templatesel ='".$hash->{helper}{template}."';
 
 
 	\$(document).ready(function() {
@@ -4701,10 +4711,34 @@ var at = " . $at . ";
 	name = '$Name';
 	// loadScript(\"pgm2/MSwitch_Preconf.js?v=" . $fileend . "\");
     loadScript(\"pgm2/MSwitch_Wizard.js?v=" . $fileend
-      . "\", function(){start1(name)});
-	return;
+      . "\", function(){start1(name)});";
+	  
+	  
+	  
+	 
+	  
+	  if ($hash->{helper}{template} ne "no"){
+	  
+	  # $j1 .= " 
+	 # var vergl ='".$hash->{helper}{template}."';
+	 # var targ = document.getElementById('templatefile');
+	 # alert(targ.options.length);
+	 
+    # for (i = 0; i < targ.options.length; i++)
+		# {
+	  
+  
+	  # alert(targ.options[i].value+'-'+vergl);
+    # //targ.options[i].selected = true;
+    # }
+  
+	  
 	
-	
+	  # ";
+	  $hash->{helper}{template}='no';
+	  }
+	  
+	$j1 .= "return;
 	}); 
 	});
 	</script>";
