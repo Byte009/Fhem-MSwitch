@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V2.9';
+	var version = 'V3.0';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -323,25 +323,30 @@ function start1(name){
 	document.getElementById('importpreconf').style.backgroundColor='';
 	document.getElementById('importTEMPLATE').style.backgroundColor='';
 	
-/* 	document.getElementById('speicherbank').style.display='none';
-	document.getElementById('speicherbank1').style.display='none';
-	
-	
-	document.getElementById('speicherbank').style.display='block';
-	document.getElementById('speicherbank1').style.display='block'; */
-	
 		
 setTimeout(function() {
 
-	/* document.getElementById('importat').value+=' N/A';
-	document.getElementById('importnotify').value+=' N/A';
 
-	document.getElementById('importat').disabled = true;
-	document.getElementById('importnotify').disabled = true;
-*/
 }, 50);
 
-		
+
+if (templatesel != 'no'){
+var targ = document.getElementById('templatefile');
+
+ for (i = 0; i < targ.options.length; i++)
+		{
+			 
+		if (targ.options[i].value == templatesel)
+		{
+			targ.options[i].selected = true
+			loadtemplate();
+			break;
+		}
+		}
+
+
+	}
+
 }
 
 function reset() {
@@ -1244,28 +1249,12 @@ function loadtemplate(){
 	document.getElementById('importPRECONF').style.display='none';
 	document.getElementById('importTemplate').style.display='block';
 	
-	//document.getElementById('wizard').style.backgroundColor='';
 	document.getElementById('config').style.backgroundColor='';
 	document.getElementById('importat').style.backgroundColor='';
 	document.getElementById('importnotify').style.backgroundColor='';
 	document.getElementById('importpreconf').style.backgroundColor='';
 	document.getElementById('importTEMPLATE').style.backgroundColor='#ffb900';
 	
-	
-	
-	
-	//document.getElementById('newtemplate').style.display='none';
-	
-
-
-
-/* 	for (elem in GROUPSCMD) {
-		delete GROUPSCMD[elem];
-		}
-	for (elem in GROUPS) {
-		delete GROUPS[elem];
-		} */
-
 	for (elem in INQ) {
 		delete INQ[elem];
 		}
