@@ -1,3 +1,3 @@
 Version
-3.75
-Change:  MSwitch:V3.75 Fehler in Zeichenersetzung behoben
+3.76
+Change:  MSwitch:V3.76 Wizard:V3.1 add save templates 
