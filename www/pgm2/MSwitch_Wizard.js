@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.0';
+	var version = 'V3.1';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1218,19 +1218,16 @@ function savepreconf(name){
 // #################
 
 function toggletemplate(){
-
 	if (document.getElementById('empty').style.display == "none"){
 	document.getElementById('empty').style.display='block';
-	//document.getElementById('showtemplate').style.display='block';
 	document.getElementById('showtemplate').value="verberge Template";
 	}
-	else{
+	else
+	{
 		document.getElementById('showtemplate').value="zeige Template";
 		document.getElementById('empty').style.display='none';
 	}
-	
 	return;
-	
 }
 
 
@@ -1238,6 +1235,58 @@ function toggletemplate(){
 // TEMPLATE BELOW
 //templatesteuerung
 // #################
+
+
+
+function savetemplate (){
+	
+	var tosave = document.getElementById('emptyarea').value;
+	var templatename = document.getElementById('templatename').value;
+
+	tosave = tosave.replace(/\n/g,'[EOL]'); // !!!
+	//conf = conf.replace(/:/g,'#c[dp]');
+	tosave = tosave.replace(/;/g,'[SE]');
+	tosave = tosave.replace(/ /g,'[SP]');
+	tosave = tosave.replace(/#/g,'[RA]');
+	tosave = tosave.replace(/\+/g,'[PL]');
+	tosave = tosave.replace(/"/g,'[AN]');
+	//alert(tosave);
+	
+	var newname = "local / "+templatename;
+	var newinhalt = "local/"+templatename;
+	
+	//alert("name "+newname);
+	//alert("inhalt "+newinhalt);
+	
+	var targ = document.getElementById('templatefile');
+	var found = "notfound";
+	
+  for (i = 0; i < targ.options.length; i++)
+		 {
+		 // alert (targ.options[i].value);
+		 if (targ.options[i].value == newinhalt )
+		 {
+			found = "found";
+			targ.options[i].selected = true;	
+		}
+	}
+	
+	//alert (found);
+	if (found == "notfound")
+	{
+	var number = targ.options.length;
+	var option = new Option(newname, newinhalt);
+    targ.options[number] = option;
+	targ.options[number].selected = true;
+	}
+	
+	FW_cmd(FW_root+'?cmd=set '+devicename+' savetemplate '+templatename+' '+tosave+'&XHR=1');
+	return ;
+}
+
+
+// #################
+
 
 function loadtemplate(){
 
@@ -1254,6 +1303,8 @@ function loadtemplate(){
 	document.getElementById('importnotify').style.backgroundColor='';
 	document.getElementById('importpreconf').style.backgroundColor='';
 	document.getElementById('importTEMPLATE').style.backgroundColor='#ffb900';
+	
+	document.getElementById('showtemplate').value="zeige Template";
 	
 	for (elem in INQ) {
 		delete INQ[elem];
@@ -1277,45 +1328,14 @@ function loadtemplate(){
 	if (file == "empty_template")
 	{
 		document.getElementById('empty').style.display='block';
-		
-		// cookie einlesen
-		
-		
-		
 		var cookie = getCookieValue("Mswitch_template");
-		
-	
 		if (cookie != "")
 		{
-			
-			//alert(cookie);
-		
-				  var Wert = cookie;
-			 // if (document.cookie) 
-			/* 
-				var Wertstart = cookie.indexOf("=") + 1;
-				var Wertende = cookie.indexOf(";");
-				if (Wertende == -1) 
-				{
-				  Wertende =cookie.length;
-				} */
-			  
-			  
-			  
-			  
-			  
-			  
-			  Wert=Wert.split("\[TRENNER\]");
-			  
-			  
-			  
-			  
-			  
-			  
-			  
-			  Wert=Wert.join("\n");
-			  document.getElementById('emptyarea').value=Wert;
-			  FW_okDialog("Templatedaten wurden aus letztem bearbeitetem Template wieder hergestellt");
+			var Wert = cookie;  
+			Wert=Wert.split("\[TRENNER\]");
+			Wert=Wert.join("\n");
+			document.getElementById('emptyarea').value=Wert;
+			FW_okDialog("Templatedaten wurden aus letztem bearbeitetem Template wieder hergestellt");
 		}
 
 		document.getElementById('showtemplate').style.display='none';
@@ -1328,15 +1348,7 @@ function loadtemplate(){
 	document.getElementById('empty').style.display='none';
 	document.getElementById('showtemplate').style.display='block';
 	file+=".txt";
-	
-	
-	//FW_cmd(FW_root+'?cmd=set '+devicename+' template '+file+'&XHR=1', function(data){starttemplate(data)})
-	//return;
-	
 	FW_cmd(FW_root+'?cmd=set '+devicename+' template '+file+'&XHR=1', function(data){filltemplate(data)})
-	
-	
-	
 	return;
 	
 }
