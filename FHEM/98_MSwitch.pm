@@ -81,8 +81,8 @@ my $helpfile    = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
-my $autoupdate   = 'on';     #off/on
-my $version      = '3.75';
+my $autoupdate   = 'on';     # off/on
+my $version      = '3.76';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -184,6 +184,7 @@ sub MSwitch_gettemplate($$);
 sub MSwitch_Delete_specific_Delay($$$);
 sub MSwitch_whitelist($$);
 sub MSwitch_PerformHttpRequest($$);
+sub MSwitch_savetemplate($$$);
 
 ##############################
 my %sets = (
@@ -1402,6 +1403,19 @@ sub MSwitch_Set($@) {
 	
 	
 	 #################################
+	
+	
+	
+	
+	    #################################
+    if ( $cmd eq 'savetemplate' ) {
+	#Log3("test",0,"args @args");
+	
+	my $ret=MSwitch_savetemplate( $hash, $args[0], $args[1] );
+	
+	
+        return ;
+    }
 	
 	
 	
@@ -4405,7 +4419,7 @@ sub clear_utf8_flag {
         }
     };
 
-    walk $wanted, $data;
+    #walk $wanted, $data;
 
     return $data;
 }
@@ -4517,7 +4531,7 @@ sub MSwitch_fhemwebconf($$$$) {
 	my $template ="";
 	my $adress = $templatefile."01_inhalt.txt";
 	
-	#Log3("test",0,$adress);
+	#
 	
     $templateinhalt = get($adress);
 	
@@ -4532,30 +4546,24 @@ foreach my $testdevices (@templates) {
         }
 		
 		
+
+	my @files = <./FHEM/MSwitch/*.txt>;
+
+	
+	foreach my $testdevices (@files) {
+            my  @string  = split( /\//, $testdevices);
+			
+			$string[3] =~ s/\.txt//g;
+			
+			
+			
+            $template .= "<option value=\"local/$string[3]\">local / $string[3]</option>";
+			
+			
+        }
 		
-   # $preconf =~ s/'/\\\'/g;
-	#$preconf =~ s/</&lt;/g;
-    #$preconf =~ s/>/&gt;/g;
-#Log3("test",0,$templateinhalt);
-
-
-
-
-	# my $Verzeichnis ="./FHEM/MSwitch";
-	# opendir(DIR, $Verzeichnis) or die $!;
-	# my @array = readdir(DIR);
-	# closedir(DIR) or die $!;
-	# my $template ="";
-	# foreach (@array)
-	# {
-		# next if $_ eq ".";
-		# next if $_ eq "..";
-		# my @name =split( /\./, $_ );
-		# $template .= "<option value=\"$name[0]\">$name[0]</option>";
-	# }
-	
-
-	
+		
+		
 	
 	
 	$return .= "<input name=\"template\" id=\"importTEMPLATE\" type=\"button\" value=\"import Template\" onclick=\"javascript: loadtemplate()\"\">";
@@ -4606,16 +4614,22 @@ foreach my $testdevices (@templates) {
 	$return.= "<br>&nbsp;<br>";
 	$return .= "<div id='empty' style=\"display:none\">";
 	$return .= "Template: ";
-	$return .= "<input type=\"text\" id = \"templatename\" value=\"\"  style=\"background-color:transparent\"><br>&nbsp;<br>";
+	$return .= "<input type=\"text\" id = \"templatename\" value=\"\"  style=\"background-color:transparent\">";
 	 
-	 $return .= "<textarea id='emptyarea' style='width: 100%; height: 300px'>### insert template ###</textarea><br>
+	 
+	 
+	 $return .= "&nbsp;<input type=\"button\" id = \"savetemplata\" value=\"Template lokal speichern\"  style=\"\" onclick=\"javascript: savetemplate()\"";
+	 
+	 $return .= "<br>&nbsp;<br>";
+	 
+	$return .= "<textarea id='emptyarea' style='width: 100%; height: 300px'>### insert template ###</textarea><br>
 	 <input type=\"button\" id = \"execbutton\" value=\"Template ausführen\" onclick=\"javascript: execempty()\">
 	 <br>&nbsp;<br>
 	 </div>";
 	
 	
 	
-$return .= "
+	$return .= "
 	<div id='importWIZARD' style=\"display:none\">
 	<table border = ''>
 
@@ -4640,9 +4654,6 @@ $return .= "
 	</div>";
 
 
-	
-	
-	
 	
 	$return .= "
 	<div id='importAT'>@found_devices</div>
@@ -4671,12 +4682,8 @@ my @owna = split( / /, $ownattr );
 	 foreach my $akt (@owna) 
 	 {
 		 next if $akt eq "";
-	#Log3("test",0,$akt);
-	 my @test = split( /:/, $akt );
-		
-	 $j1 .="ownattr['$test[0]']  = '$test[1]';\n";	
-	 
-	 #$j1 .="ownattr['test']  = 'test';\n";	
+		my @test = split( /:/, $akt );
+		$j1 .="ownattr['$test[0]']  = '$test[1]';\n";	
 	 }
 	
 	
@@ -4693,18 +4700,9 @@ my @owna = split( / /, $ownattr );
 	var devicename= '" . $Name . "';
 	var mVersion= '" . $version . "';
 	var MSDATAVERSION = '" . $vupdate . "';
-
-
-
-var notify = " . $notify . ";
-//var notifydef = " . $notifydef . ";
-
-
-var at = " . $at . ";
-
-
-var templatesel ='".$hash->{helper}{template}."';
-
+	var notify = " . $notify . ";
+	var at = " . $at . ";
+	var templatesel ='".$hash->{helper}{template}."';
 
 	\$(document).ready(function() {
     \$(window).load(function() {
@@ -4713,28 +4711,8 @@ var templatesel ='".$hash->{helper}{template}."';
     loadScript(\"pgm2/MSwitch_Wizard.js?v=" . $fileend
       . "\", function(){start1(name)});";
 	  
-	  
-	  
-	 
-	  
 	  if ($hash->{helper}{template} ne "no"){
-	  
-	  # $j1 .= " 
-	 # var vergl ='".$hash->{helper}{template}."';
-	 # var targ = document.getElementById('templatefile');
-	 # alert(targ.options.length);
 	 
-    # for (i = 0; i < targ.options.length; i++)
-		# {
-	  
-  
-	  # alert(targ.options[i].value+'-'+vergl);
-    # //targ.options[i].selected = true;
-    # }
-  
-	  
-	
-	  # ";
 	  $hash->{helper}{template}='no';
 	  }
 	  
@@ -12703,11 +12681,32 @@ sub MSwitch_gettemplate($$){
 	my ( $hash, $template ) = @_;
     my $Name = $hash->{NAME};
 	my $tZeilen="";
-	
-   my $adress = $templatefile.$template;
+	my ($err, $data) ;
+	my $adress = $templatefile.$template;
+    my $localadress="./FHEM/MSwitch/";
    
+   #Log3("test",0,"get template: ".$template);
    
-   
+   if ( $template =~ m/\.*\/(.*)/s ) 
+   {
+	  $adress = $localadress.$1;
+
+	  #Log3("test",0,"FOUND LOCAL FILE ".$adress); 
+
+    open( BACKUPDATEI, "<$adress" )
+      || Log3("test",0,"ERROR ".$adress); 
+    while (<BACKUPDATEI>) {
+        $data = $data . $_;
+    }
+    close(BACKUPDATEI);
+	   
+	   
+	#Log3("test",0,"FOUND CODE".$data); 
+
+	   
+   }
+   else
+   {
    my $param = {
                     url        => "$adress",
                     timeout    => 5,
@@ -12716,14 +12715,8 @@ sub MSwitch_gettemplate($$){
                     header     => "User-Agent: None\r\nAccept: application/json",                            # Den Header gemäß abzufragender Daten ändern
                     callback   => \&X_ParseHttpResponse                                                                  # Diese Funktion soll das Ergebnis dieser HTTP Anfrage bearbeiten
                 };
-
-   
-	my ($err, $data) = HttpUtils_BlockingGet($param);
-   
-   
-   
-   
-   
+	($err, $data) = HttpUtils_BlockingGet($param);
+   }
    
    
 	# $tZeilen = get($adress);
@@ -12736,8 +12729,6 @@ sub MSwitch_gettemplate($$){
                         # 'ü' => 'ue'
         # );
 	# my $UMLKEYS = ( "|", keys(%UMLAUTE) );
-	
-	
 	
 	return "$data";
 	#return "$tZeilen";
@@ -12842,6 +12833,58 @@ sub MSwitch_whitelist($$){
 	return ;
 }
 
+###############################################
+
+sub MSwitch_savetemplate($$$){
+	my ( $hash , $arg1 ,$arg2  ) = @_;
+    my $Name = $hash->{NAME};
+	$hash->{NOTIFYDEV} = $arg1;
+	
+	#Log3("test",0,"args $arg1 $arg2  ");
+	
+	
+	
+	
+	if(-d "FHEM/MSwitch") {  
+                 
+        }  
+        else {  
+            mkdir("FHEM/MSwitch",0777);      
+        } 
+	
+	
+	
+	
+	$arg2 =~ s/\[EOL\]/\n/g;
+	$arg2 =~ s/\[SP\]/ /g;
+	$arg2 =~ s/\[RA\]/#/g;
+	$arg2 =~ s/\[PL\]/+/g;
+	$arg2 =~ s/\[AN\]/"/g;
+	$arg2 =~ s/\[SE\]/;/g;
+	
+	open( BACKUPDATEI, ">FHEM/MSwitch/$arg1.txt" ); # Datei zum Schreiben öffnen
+    
+	
+	
+    #foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
+    #{
+        print BACKUPDATEI "$arg2\n";
+    #}
+    
+    close(BACKUPDATEI);
+	
+	
+	
+
+	    asyncOutput( $hash->{CL},
+"<html><center><br>Das Template wurde unter \"./FHEM/MSwitch/$arg1.txt gespeichert\"<br></html>" );
+	
+	
+	
+	
+	
+	return ;
+}
 
 
 ##############################################
