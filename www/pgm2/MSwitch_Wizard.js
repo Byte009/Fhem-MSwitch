@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.1';
+	var version = 'V3.2';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1549,7 +1549,7 @@ function starttemplate(template){
 function testline(line,newtemplate){
 	var cmdsatz = line.split(">>");
 	if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-	if (cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+	if (cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 
 		if (INQ[cmdsatz[0]]== "1")
 		{
@@ -1563,6 +1563,7 @@ function testline(line,newtemplate){
 //text
 if (cmdsatz[0] == "TEXT"){
 	var out ="";
+	//alert (cmdsatz[1]);
 	out+=changevar(cmdsatz[1]);
 	out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setTEXTok(\""+"\")'>";
 	document.getElementById('importTemplate1').innerHTML = out;
@@ -1628,6 +1629,25 @@ if (cmdsatz[0] == "REPEAT"){
 // PREASSIGMENT
 if (cmdsatz[0] == "PREASSIGMENT"){
 	PREASSIGMENT=changevar(cmdsatz[1]);
+}
+
+
+
+
+// VARINC
+
+if (cmdsatz[0] == "VARINC"){
+	oldvar=WIZARDVARS[cmdsatz[1]];
+	oldvar++;
+	WIZARDVARS[cmdsatz[1]]=oldvar;
+	return;
+}
+
+if (cmdsatz[0] == "VARDEC"){
+	oldvar=WIZARDVARS[cmdsatz[1]];
+	oldvar--;
+	WIZARDVARS[cmdsatz[1]]=oldvar;
+	return;
 }
 
 // VAREVENT>>VARNAME>>VARTEXT
