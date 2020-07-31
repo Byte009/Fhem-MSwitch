@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.2';
+	var version = 'V3.3';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -26,6 +26,9 @@
 	
 	const GROUPS = [];
 	const GROUPSCMD = [];
+	
+	var defineddevices= new Array;
+	
 	
 	var PREASSIGMENT ="";
 	var result= 0; // wird für waittimer in templates gebraucht
@@ -1250,7 +1253,10 @@ function savetemplate (){
 	tosave = tosave.replace(/#/g,'[RA]');
 	tosave = tosave.replace(/\+/g,'[PL]');
 	tosave = tosave.replace(/"/g,'[AN]');
-	//alert(tosave);
+	
+	templatename = templatename.replace(/local\//g,'');
+	
+	//alert(templatename);
 	
 	var newname = "local / "+templatename;
 	var newinhalt = "local/"+templatename;
@@ -1305,7 +1311,7 @@ function loadtemplate(){
 	document.getElementById('importTEMPLATE').style.backgroundColor='#ffb900';
 	
 	document.getElementById('showtemplate').value="zeige Template";
-	
+	defineddevices.length = 0;
 	for (elem in INQ) {
 		delete INQ[elem];
 		}
@@ -1416,6 +1422,7 @@ function execempty(){
 	for (elem in INQ) {
 		delete INQ[elem];
 }
+defineddevices.length = 0;
 	document.getElementById('rawconfig10').value = configtemplate.join("\n");
 	document.getElementById('bank5').value='';
 	starttemplate(data);
@@ -2099,6 +2106,8 @@ out+="<br>&nbsp;<br>";
 		}
 		else if(toset == "comand_cmd1" || toset == "comand_cmd2")
 		{
+			
+			//alert(toset);
 			selectlist =cmdselect(text,toset,newtemplate,typ)
 			out+=selectlist;
 			out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: cmdselectok(\""+toset+"\",\""+typ+"\")'>";
@@ -2370,6 +2379,7 @@ if (typa == "A" ){
 	
 	// delay_cmd1
 	if (befehl == "delay_cmd1"){
+		inhalt = changevar(inhalt);
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[7]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
@@ -2378,6 +2388,8 @@ if (typa == "A" ){
 	
 	// delay_cmd2
 	if (befehl == "delay_cmd2"){
+		
+		inhalt = changevar(inhalt);
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[8]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
@@ -2386,6 +2398,9 @@ if (typa == "A" ){
 	
 	// condition_cmd1
 	if (befehl == "condition_cmd1"){
+		
+	inhalt = changevar(inhalt);	
+		
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[9]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
@@ -2394,6 +2409,9 @@ if (typa == "A" ){
 	
 	// condition_cmd2
 	if (befehl == "condition_cmd2"){
+		
+		inhalt = changevar(inhalt);
+		
 	var device =  document.getElementById('bank6').value.split("\n");
 	device[10]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
@@ -2405,6 +2423,22 @@ if (typa == "A" ){
 		
 	//alert(inhalt);
 	if (inhalt == "free"){ inhalt = "FreeCmd";}
+	
+	
+	
+	
+	defineddevices.push(inhalt);
+	
+	
+	// var min = 1000;
+// var max = 9999;
+// var x = Math.round(Math.random() * (max - min)) + min;
+	
+	
+	// var codeinhalt=inhalt +'_MSwitch_ID_'+x;
+	
+	
+	
 	var inhalt1 = configuration[12].split("-> ");	
 	var inhalt2 = inhalt1[1].split("#\[ND\]");
 	var anzdevices=inhalt2.lenght;
@@ -2413,12 +2447,34 @@ if (typa == "A" ){
 	if (satz[0] == "no_device"){
 		satz.shift(); 
 	}
-	satz.push(inhalt+"-AbsCmd1"); 
+	
+	
+	
+	//alert(defineddevices);
+	//conflines =  configstart.length
+	document.getElementById('bank1').value = inhalt;
+	
+	var anzahl =0;
+	for (i = 0; i < defineddevices.length; i++) 
+		{
+			//alert("definedevices"+i+": "+defineddevices[i]+" - "+document.getElementById('bank1').value);
+			if (document.getElementById('bank1').value ==defineddevices[i])
+			{
+				//alert("found");
+				anzahl++;
+			}
+		}
+	
+	
+	//alert("anzahl: "+anzahl);
+	
+	satz.push(inhalt+"-AbsCmd"+anzahl); 
 	var newsatz = satz.join(",");
 	configuration[12] = "#S .Device_Affected -> "+newsatz;
-	emptydevice[0]=inhalt+"-AbsCmd1";
+	emptydevice[0]=inhalt+"-AbsCmd"+anzahl;
 	document.getElementById('bank6').value = emptydevice.join("\n");
-	document.getElementById('bank1').value = inhalt;
+	//document.getElementById('bank2').value = codeinhalt;
+	
 	configuration =  makedevice(configuration);
 	} 
 
@@ -2430,20 +2486,104 @@ return;
 
 // #################
 
-function makedevice(configuration){
+
+function makedevicenew(configuration){
+	
+	
+	//alert(configuration);
 	var device=document.getElementById('bank6').value;
 	device = device.replace(/#\[NF\]/g,'');
 	device =device.split("\n");
 	document.getElementById('bank7').value=device.join("#[NF]");
-	var key  = document.getElementById('bank1').value+"-AbsCmd1"
+	var key  = document.getElementById('bank2').value;
+	
+	Devices[key] = document.getElementById('bank7').value;
+	
+	
+	var newmasterline ="";
+	//var affected= configuration[12].split("-> ");
+	//var affecteddevices = affected[1].split(",");
+	
+	//alert(key);
+	//alert(Devices[key]);
+	
+	
+	for (var key in Devices) {
+    var value = Devices[key];
+   // alert("key: "+key);
+   // alert("value: "+value);
+   
+    newmasterline += value+"#[ND]";
+	
+	
+}
+	
+	
+	
+	
+	
+	// for (var i = 0; i < affecteddevices.length; i++) {
+		// var name = affecteddevices[i];
+		
+		// //alert(name);
+		// newmasterline += Devices[name]+"#[ND]";
+    // }
+	
+	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
+	configuration[14] = "#S .Device_Affected_Details -> "+newmasterline;
+	return configuration;
+}
+
+
+
+
+
+function makedevice(configuration){
+	
+	
+	//alert(configuration);
+	var device=document.getElementById('bank6').value;
+	device = device.replace(/#\[NF\]/g,'');
+	device =device.split("\n");
+	
+	//alert("devices :"+defineddevices);
+	//conflines =  configstart.length
+	
+	
+	var anzahl =0;
+	for (i = 0; i < defineddevices.length; i++) 
+		{
+			//alert("defineddevice"+i+":"+defineddevices[i]);
+			if (document.getElementById('bank1').value ==defineddevices[i])
+			{
+				
+				anzahl++;
+			}
+		}
+	
+	//alert("anzahl: "+anzahl);
+	
+	
+	document.getElementById('bank7').value=device.join("#[NF]");
+	var key  = document.getElementById('bank1').value+"-AbsCmd"+anzahl;
+	
+	
+	//alert(key);
+	
 	
 	Devices[key] = document.getElementById('bank7').value;
 	var newmasterline ="";
 	var affected= configuration[12].split("-> ");
 	var affecteddevices = affected[1].split(",");
 	
+	
+	//alert(affecteddevices);
+	
+	
 	for (var i = 0; i < affecteddevices.length; i++) {
 		var name = affecteddevices[i];
+		
+		//alert(name);
 		newmasterline += Devices[name]+"#[ND]";
     }
 	
@@ -2482,15 +2622,34 @@ function makecmdhashtemp(line){
 // #################
 
 function selectcmdoptionstemp(inhalt){
+	
+	
+	
+	
+	
+	
 	document.getElementById('setcmd1temp').innerHTML ='';
 	// wenn undefined textfeld erzeugen
 	if (sets[inhalt] == 'noArg'){ return;}
 	// wenn noarg befehl übernehmen
+	
+	//  alert(sets[inhalt]);
 	if (sets[inhalt] === undefined){ 
 	retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"'+PREASSIGMENT+'\">&nbsp;';
 	document.getElementById('setcmd1temp').innerHTML = retoption1;
 	return;
 	}
+	
+	
+	if (inhalt == "rgb"){
+	retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"'+PREASSIGMENT+'\">&nbsp;';
+	document.getElementById('setcmd1temp').innerHTML = retoption1;
+	return;
+	
+	}
+	
+	
+	
 	// wenn liste subcmd erzeugen
 	var retoption1;
 	retoption1 = '<select id =\"comand1\" name=\"\">';
