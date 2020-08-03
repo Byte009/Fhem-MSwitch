@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.3';
+	var version = 'V3.4';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -158,7 +158,7 @@ document.getElementById('bank6').value=test;
 
 	var event = test.split(':');
 	var newevent =  event[1]+':'+event[2]
-	if ( event[0] != document.getElementById('bank1').value && document.getElementById('bank1').value != "GLOBAL")
+	if ( event[0] != document.getElementById('bank1').value && document.getElementById('bank1').value != "all_events")
 		{
 			//document.getElementById('bank3').value=document.getElementById('3').value;
 			document.getElementById('bank4').value=document.getElementById('bank1').value;
@@ -170,7 +170,7 @@ document.getElementById('bank6').value=test;
 			return;
 		}
 		
-	if ( document.getElementById('bank1').value == "GLOBAL")
+	if ( document.getElementById('bank1').value == "all_events")
 		{	
 		
 		newevent =event[0]+':'+newevent;
@@ -1218,6 +1218,62 @@ function savepreconf(name){
 	return;
 }
 
+
+
+
+
+// #################
+
+function decode(){
+	
+	var second = document.getElementById('decode1').value;
+	second = second.replace(/\n/g,'#[nl]');
+	second = second.replace(/:/g,'#[dp]');
+	second = second.replace(/;/g,'#[se]');
+	second = second.replace(/ /g,'#[sp]');
+	second = second.replace(/\t/g,'#[tab]');
+	second = second.replace(/\\/g,'#[bs]');
+	second = second.replace(/,/g,'#[ko]');
+	second = second.replace(/\|/g,'#[wa]');
+	second = second.replace(/\|/g,'#[wa]');
+	document.getElementById('decode1').value = second;
+	return;
+}
+
+// #################
+
+function encode(){
+	
+	var second = document.getElementById('decode1').value;
+	second = second.replace(/#\[nl\]/g,'\n');
+	 second = second.replace(/#\[dp\]/g,':');
+	 second = second.replace(/#\[se\]/g,';');
+
+	
+	 second = second.replace(/#\[sp\]/g,' ');
+	 second = second.replace(/#\[tab\]/g,'\t');
+	 second = second.replace(/#\[bs\]/g,'\\');
+	 second = second.replace(/#\[ko\]/g,',');
+	 second = second.replace(/#\[wa\]/g,'|');
+
+	document.getElementById('decode1').value = second;
+	return;
+}
+
+
+// #################
+function showkode(){
+	if (document.getElementById('decode').style.display == "none"){
+	document.getElementById('decode').style.display='block';
+	
+	}
+	else
+	{
+		
+		document.getElementById('decode').style.display='none';
+	}
+	return;
+}
 // #################
 
 function toggletemplate(){
@@ -1910,7 +1966,16 @@ out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
+
+
+out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
+out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
+
+
 out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
+
+
+
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputok(\""+toset+"\",\""+typ+"\")'>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
@@ -1928,6 +1993,11 @@ out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
+
+out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
+out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
+
+
 out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputvarok(\""+toset+"\",\""+typ+"\")'>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
@@ -1943,7 +2013,9 @@ monitorid ="eventcontrol";
 logging="off";
 eventmonitorstop();
 var event = document.getElementById('input').value.split(":");
-if ( document.getElementById('bank1').value != "GLOBAL")
+
+//alert(event);
+if ( document.getElementById('bank1').value != "all_events")
 		{	
 event.shift();
 		}
@@ -1962,7 +2034,7 @@ monitorid ="eventcontrol";
 logging="off";
 eventmonitorstop();
 var event = document.getElementById('input').value.split(":");
-if ( document.getElementById('bank1').value != "GLOBAL")
+if ( document.getElementById('bank1').value != "all_events")
 		{	
 event.shift();
 		}
