@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '3.76';
+my $version      = '3.77';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -4614,13 +4614,39 @@ foreach my $testdevices (@templates) {
 	$return.= "<br>&nbsp;<br>";
 	$return .= "<div id='empty' style=\"display:none\">";
 	$return .= "Template: ";
+	
+	
+	
+	
 	$return .= "<input type=\"text\" id = \"templatename\" value=\"\"  style=\"background-color:transparent\">";
+	 $return .= "&nbsp;<input type=\"button\" id = \"savetemplata\" value=\"Template lokal speichern\"  style=\"\" onclick=\"javascript: savetemplate()\">";
+
+
+
+
+	
+
 	 
-	 
-	 
-	 $return .= "&nbsp;<input type=\"button\" id = \"savetemplata\" value=\"Template lokal speichern\"  style=\"\" onclick=\"javascript: savetemplate()\"";
-	 
-	 $return .= "<br>&nbsp;<br>";
+	
+
+	
+
+
+	
+	
+	$return .= "&nbsp;<input type=\"button\" id = \"\" value=\"FreeCmd kodieren\"  style=\"\" onclick=\"javascript: showkode()\">";
+    
+$return .= "<br>&nbsp;<br>";
+
+$return .= "<div id='decode' style=\"display:none\">";
+$return .= "<textarea id='decode1' style='width: 100%; height: 100px'>### insert code ###</textarea>";
+$return .= "<br><input type=\"button\" id = \"\" value=\"kodieren\"  style=\"\" onclick=\"javascript: decode()\">";
+
+
+$return .= "&nbsp;<input type=\"button\" id = \"\" value=\"dekodieren\"  style=\"\" onclick=\"javascript: encode()\">";
+
+
+$return .= "<br>&nbsp;</div>";
 	 
 	$return .= "<textarea id='emptyarea' style='width: 100%; height: 300px'>### insert template ###</textarea><br>
 	 <input type=\"button\" id = \"execbutton\" value=\"Template ausführen\" onclick=\"javascript: execempty()\">
