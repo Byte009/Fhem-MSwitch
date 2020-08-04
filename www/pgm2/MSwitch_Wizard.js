@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.4';
+	var version = 'V3.5';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -219,6 +219,23 @@ function eventmonitorstart(){
 	observer.observe(target, config);
 	return;
 }
+
+
+function clearmonitor(){
+	eventmonitorstop();
+	var selectobject = document.getElementById("eventcontrol1");
+for (var i=0; i<10000; i++) {
+        selectobject.remove(i);
+}
+
+
+document.getElementById('eventcontrol1').innerHTML=""; 
+
+eventmonitorstart();
+
+	return;
+}
+
  
 function closeall(){
 		logging ='off';
@@ -1970,6 +1987,9 @@ out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" o
 
 out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
 out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
+out+="&nbsp;<input type='button' value='clear' onclick='javascript: clearmonitor()'>";
+out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
+
 
 
 out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
@@ -1996,6 +2016,8 @@ out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" o
 
 out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
 out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
+out+="&nbsp;<input type='button' value='clear' onclick='javascript: clearmonitor()'>";
+out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
 
 
 out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
@@ -2273,16 +2295,22 @@ if (typa == "A" ){
 	}
 	var satz = fields[1].split("~");
 	if (befehl == "Trigger_device"){
-		
+	
+	//alert(befehl);
+	//alert(inhalt);
+	
 		if (inhalt =="GLOBAL")
 		{ 
 	configuration[5] = "#S Trigger_device -> all_events";
+	document.getElementById('bank1').value = 'all_events';
 	}else{
 		
 		configuration[5] = "#S Trigger_device -> "+inhalt;
+		
+		document.getElementById('bank1').value = inhalt;
 	}
 	
-	document.getElementById('bank1').value = inhalt;
+	
 	}
 
 	if (befehl == "Trigger_Whitelist"){
