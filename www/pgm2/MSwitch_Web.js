@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '1.0';
+	var version = '1.1';
 	var info = '';
 	var debug ='off';
 	
@@ -446,19 +446,19 @@ if (document.getElementById('trigcmdon'))
 	$( "#log1" ).text( "eingehende events:" );
 	$( "#log3" ).text( "" );
 	 
-	var field = $('<select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  ></select>');
+	var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onchange="javascript:transferevent()" ></select>');
 	
 	$(field).appendTo('#log2');
 	
-	var field = $('<input id ="editevent" type="button" value="'+editevent+'"/>');   // !!!!! #######
+	//var field = $('<input id ="editevent" type="button" value="'+editevent+'"/>');   // !!!!! #######
 	
-	$(field).appendTo('#log3');
+	//$(field).appendTo('#log3');
 	
 	
-	$("#editevent").click(function(){
-	transferevent();
-	return;
-	});
+	//$("#editevent").click(function(){
+	//transferevent();
+	//return;
+	//});
  
 	// umwandlung des objekts in standartarray
 	var a3 = Object.keys(o).map(function (k) { return o[k];})
@@ -1476,10 +1476,10 @@ if (debug == 'on'){ alert('checkcondition') }
 		$( "#log2" ).text( "" );
 		$( "#log1" ).text( "eingehende events:" );
 		$( "#log3" ).text( "" );
-		var field = $('<select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  ></select>');
+		var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  ></select>');
 		$(field).appendTo('#log2');
-		var field = $('<input id ="editevent" type="button" value="'+editevent+'"/>');
-		$(field).appendTo('#log3');
+		//var field = $('<input id ="editevent" type="button" value="'+editevent+'"/>');
+		//$(field).appendTo('#log3');
 		return;
 		}
 	});

@@ -144,12 +144,12 @@
 // eine Instanz des Observers erzeugen
 	observer = new MutationObserver(function(mutations) {
 		mutations.forEach(function(mutation) {
-
+ 
 	var test = $( "div[informId='"+devicename+"-EVENTCONF']" ).text();
 	test = test.replace(/ /gi,"");
 
 
-//alert(test);
+//alert(test);  
 
 document.getElementById('bank6').value=test;
 
