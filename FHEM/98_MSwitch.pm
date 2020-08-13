@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '3.78';
+my $version      = '3.77';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -7093,7 +7093,7 @@ modify Trigger Device->Trigger speichern
 switch MSwitch on and execute CMD1 at->MSwitch an und CMD1 ausführen
 switch MSwitch off and execute CMD2 at->MSwitch aus und CMD2 ausführen
 execute CMD1 only->Schaltkanal 1 ausführen
-execute CMD2 only->Schaltkanal 1 ausführen
+execute CMD2 only->Schaltkanal 2 ausführen
 execute CMD1 and CMD2 only->Schaltkanal 1 und 2 ausführen
 Trigger Device Global Whitelist->Beschränkung GLOBAL Auslöser
 Trigger condition->Auslösebedingung
