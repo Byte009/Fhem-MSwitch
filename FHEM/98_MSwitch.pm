@@ -354,7 +354,7 @@ sub MSwitch_Shutdown($) {
     delete $data{MSwitch}{devicecmds1};
     delete $data{MSwitch}{last_devicecmd_save};
 
-    return;
+    return "wait";
 }
 #####################################
 sub MSwitch_Copy ($) {
@@ -1109,15 +1109,23 @@ sub MSwitch_Get($$@) {
         my $reads     = '<br><br>' . $READINGSTATE . '<br><br>';
         $x = 0;    # exit
 
-        while ( $condsplit =~
-m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),.(')(.*)('),.(')(.*)(')\)(.*)/
-          )
+
+
+Log3 ("test",0,"COND: ".$condsplit);
+
+
+       # while ( $condsplit =~ 
+# m/(.*)(\()(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)\((')(.*)('),.(')(.*)('),.(')(.*)(')\)(.*)/
+          # )
+		  
+		   while ( $condsplit =~ 
+		 m/(.*)(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)(.*?\))(.*)/ 
+		   )
         {
 
-            my $readname      = $3 . ": [$5:$8] - ";
-            my $readincmd     = "$3( '$5', '$8', '$11' )";
-            my $readinginhalt = eval $readincmd;
-            $condsplit = $1 . $13;
+			my $readname      = $2 . $3;
+            my $readinginhalt = eval $readname;
+            $condsplit = $1 . $4;
             $x++;    # exit
             last if $x > 20;
             $reads .=
@@ -3761,7 +3769,7 @@ sub MSwitch_Notify($$) {
                 $json =~ s/:/[dp]/g;
                 $json =~ s/\"/[dst]/g;
                 $event = $p1 . $json . $p3;
-
+ 
                 #next EVENT;
             }
 
@@ -3769,7 +3777,7 @@ MSwitch_LOG( $ownName, 6,"eigegangenes Event $event L:" . __LINE__ );
 
 
 
-
+  
 
 
 
@@ -4088,6 +4096,8 @@ MSwitch_EventBulk( $own_hash, $eventcopy1, '0','MSwitch_Notify' );
 
        #my $chbridge = MSwitch_checkbridge( $own_hash, $ownName, $eventcopy1, );
        # next EVENT if $chbridge ne "no_bridge";
+	   
+	   MSwitch_LOG( $ownName, 6,"Befehl eingefuegt  L:" . __LINE__ );
                     push @cmdarray, $own_hash . ',off,check,' . $eventcopy1;
                     $check     = 1;
                     $foundcmd2 = 1;
@@ -4105,7 +4115,10 @@ MSwitch_EventBulk( $own_hash, $eventcopy1, '0','MSwitch_Notify' );
                                         $eventcopy,       @eventsplit
                   );
 
-                if ( $testvar ne 'undef' ) {
+            if ( $testvar ne 'undef' ) {
+				
+				
+				MSwitch_LOG( $ownName, 6,"Befehl eingefuegt  L:" . __LINE__ );
 
         #my $chbridge = MSwitch_checkbridge( $own_hash, $ownName,$eventcopy1, );
         #next EVENT if $chbridge ne "no_bridge";
@@ -4226,7 +4239,7 @@ MSwitch_EventBulk( $own_hash, $eventcopy1, '0','MSwitch_Notify' );
 		
 		
 		MSwitch_LOG( $ownName, 6,"$anzahl auszuführende Befehle gefunden L:" . __LINE__ );
-
+		MSwitch_LOG( $ownName, 6,"Befehlsarray: @cmdarray L:" . __LINE__ );
             #aberabeite aller befehlssätze in cmdarray
             MSwitch_Safemode($own_hash);
 
@@ -4238,7 +4251,7 @@ MSwitch_EventBulk( $own_hash, $eventcopy1, '0','MSwitch_Notify' );
                 if ( !defined $ar2 ) { $ar2 = ''; }
                 if ( $ar2 eq '' ) {
                     next LOOP31;
-                }
+                  }
                 my $returncmd = 'undef';
                 $returncmd =
                   MSwitch_Exec_Notif( $own_hash, $ar2, $ar3, $ar4, $execids );
@@ -7079,9 +7092,9 @@ trigger time->Auslösezeit
 modify Trigger Device->Trigger speichern
 switch MSwitch on and execute CMD1 at->MSwitch an und CMD1 ausführen
 switch MSwitch off and execute CMD2 at->MSwitch aus und CMD2 ausführen
-execute CMD1 only->nur CMD1 ausführen
-execute CMD2 only->nur CMD2 ausführen
-execute CMD1 and CMD2 only->nur CMD1 und CMD2 ausführen
+execute CMD1 only->Schaltkanal 1 ausführen
+execute CMD2 only->Schaltkanal 1 ausführen
+execute CMD1 and CMD2 only->Schaltkanal 1 und 2 ausführen
 Trigger Device Global Whitelist->Beschränkung GLOBAL Auslöser
 Trigger condition->Auslösebedingung
 time&events->für Events und Zeit
@@ -7473,9 +7486,13 @@ end:textersetzung:eng
 "<input name='info' type='button' value='?' onclick=\"hilfe('eventmonitor')\">&nbsp;";
     }
 
+
+
     $MSADDEVENT =
       "<input type='text' id='add_event' name='add_event' size='40'  value =''>
 		<input type=\"button\" id=\"aw_addevent\" value=\"add event\"$disable>";
+		
+		
     $MSMODLINE =
 "<input type=\"button\" id=\"aw_md1\" value=\"apply filter to saved events\" $disable>
 		<input type=\"button\" id=\"aw_md20\" value=\"clear saved events\" $disable>";
