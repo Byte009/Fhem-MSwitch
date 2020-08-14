@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '3.77';
+my $version      = '3.79';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -161,7 +161,7 @@ sub MSwitch_Createnumber1($);
 sub MSwitch_Savemode($);
 sub MSwitch_set_dev($);
 sub MSwitch_EventBulk($$$$);
-sub MSwitch_priority;
+sub MSwitch_priority(@);
 sub MSwitch_sort;
 sub MSwitch_dec($$);
 sub MSwitch_makefreecmd($$);
@@ -8788,12 +8788,17 @@ sub MSwitch_Exec_Notif($$$$$) {
                         $devicedetails{ $device . '_repeattime' } = $setmagic;
                     }
 
+
+if ( $devicedetails{ $device . '_repeatcount' } ne "undefined"  &&   $devicedetails{ $device . '_repeattime' } ne "undefined" )
+{
+
                     if ( $devicedetails{ $device . '_repeatcount' } eq "" ) {
                         $devicedetails{ $device . '_repeatcount' } = 0;
                     }
                     if ( $devicedetails{ $device . '_repeattime' } eq "" ) {
                         $devicedetails{ $device . '_repeattime' } = 0;
                     }
+					
 
                     if (    $expertmode eq '1'
                          && $devicedetails{ $device . '_repeatcount' } > 0
@@ -8825,6 +8830,9 @@ MSwitch_LOG( $name, 6,"Befehlswiederholungen gesetzt: $timecond  L:" . __LINE__ 
 
                         }
                     }
+					
+					
+}
 
                     # my $todec = $cs;
                     # $cs = MSwitch_dec( $hash, $todec );
