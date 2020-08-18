@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '3.79';
+my $version      = '3.80';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -1111,7 +1111,7 @@ sub MSwitch_Get($$@) {
 
 
 
-Log3 ("test",0,"COND: ".$condsplit);
+#Log3 ("test",0,"COND: ".$condsplit);
 
 
        # while ( $condsplit =~ 
@@ -4882,7 +4882,7 @@ $system="<script type=\"text/javascript\">var nameself ='".$Name."';</script>".$
     {
         $DUMMYMODE =
 "Device befindet sich im passiven Dummymode, für den aktiven Dummymode muss dass Attribut 'MSwitch_Selftrigger_always' auf '1' gesetzt werden. ";
-        $MSDISTRIBUTORTEXT  = "Zuordnung Event/ID (einstellung über Attribut)";
+        $MSDISTRIBUTORTEXT  = "Zuordnung Event/ID";
         $MSDISTRIBUTOREVENT = "eingehendes Event";
         $LOOPTEXT =
 "ACHTUNG: Der Safemodus hat eine Endlosschleife erkannt, welche zum Fhemabsturz führen könnte.<br>Dieses Device wurde automatisch deaktiviert ( ATTR 'disable') !<br>&nbsp;";
@@ -4917,7 +4917,7 @@ $system="<script type=\"text/javascript\">var nameself ='".$Name."';</script>".$
     else {
         $DUMMYMODE =
 "Device is in passive dummy mode, for the active dummy mode the attribute 'MSwitch_Selftrigger_always' must be set to '1'.";
-        $MSDISTRIBUTORTEXT = "Event to ID distributor (Settings via attribute)";
+        $MSDISTRIBUTORTEXT = "Event to ID distributor";
         $MSDISTRIBUTOREVENT = "incommming Event:";
         $LOOPTEXT =
 "ATTENTION: The safe mode has detected an endless loop, which could lead to a crash.<br> This device has been deactivated automatically ( ATTR 'disable') !<br>&nbsp;";
@@ -5612,7 +5612,7 @@ add action for->zusätzliche Aktion für
 delete this action for->lösche diese Aktion für
 priority:->Priorität:
 displaysequence:->Anzeigereihenfolge:
-display->Anzeige verbergen
+hide display->Anzeige verbergen
 test comand->Befehl testen
 end:textersetzung:ger
 -->
@@ -6153,7 +6153,7 @@ MS-HELPdelay
 "<option selected value='$savedetails{ $aktdevice . '_hidecmd' }'>";
                 $aktfolge =~ s/hidecmd/$newname/g;
                 $aktfolge =~ s/$tochange/$change/g;
-                $IDsatz .= "display: " . $aktfolge . "&nbsp;"
+                $IDsatz .= "hide display: " . $aktfolge . "&nbsp;"
                   if ( $hash->{INIT} ne 'define' );
 
                 # ende
@@ -6181,7 +6181,7 @@ MS-HELPdelay
 "<option selected value='$savedetails{ $aktdevice . '_hidecmd' }'>";
                 $aktfolge =~ s/hidecmd/$newname/g;
                 $aktfolge =~ s/$tochange/$change/g;
-                $IDsatz .= "display: " . $aktfolge . "&nbsp;"
+                $IDsatz .= "hide display: " . $aktfolge . "&nbsp;"
                   if ( $hash->{INIT} ne 'define' );
 
             }
@@ -9746,7 +9746,7 @@ MSwitch_LOG( $name, 6,"Bedingungsprüfung1: $condition L:" . __LINE__ );
                 }
                 else {
                     my $wert  = 0;
-                    my $wert2 = 0;
+                    my $wert2 = 1;  # illegel division
                     my $count = 0;
 
                     my @finalarray;
@@ -9761,6 +9761,10 @@ MSwitch_LOG( $name, 6,"Bedingungsprüfung1: $condition L:" . __LINE__ );
                     }
 
                     my $schnitt  = $wert2 / $vergloperand;
+					
+					
+					$wert2 = 1 if $wert2 <1;
+					
                     my $steigung = ( $wert - $schnitt ) / $wert2 * 100;
 
                     my $testdirection = $wert - $schnitt;
@@ -10130,7 +10134,7 @@ m/(.*?)(\[\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9
     $finalstring =
       "if (" . $condition . "){\$answer = 'true';} else {\$answer = 'false';} ";
 
-  MSwitch_LOG( $name, 6,"Bedingungsprüfung2 (final): $finalstring = L:" . __LINE__ );
+  MSwitch_LOG( $name, 5,"Bedingungsprüfung2 (final): $finalstring = L:" . __LINE__ );
 
 
 
