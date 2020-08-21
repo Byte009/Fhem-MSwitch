@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.5';
+	var version = 'V3.6';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1686,7 +1686,7 @@ if (cmdsatz[0] == "GOTO")
 // map select aus set bei bedarf
 if (cmdsatz[0] == "SELECT")
 	{
-		if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd1" ) && document.getElementById('bank1').value == "FreeCmd"){
+		if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd2" ) && document.getElementById('bank1').value == "FreeCmd"){
 		cmdsatz[0] ="ASK";	 
 		} 
 }
@@ -2069,8 +2069,8 @@ return;
 // #################
 
 function freeinput(text,toset,newtemplate,typ){
-var ret = "<input id='input' type='text' value='' size='60'><br>&nbsp;<br>";
-	if( document.getElementById('bank1').value == "FreeCmd" && (toset =="comand_cmd1" || toset =="comand_cmd1"))
+var ret = "<input id='input' type='text' value='"+PREASSIGMENT+"' size='60'><br>&nbsp;<br>";
+	if( document.getElementById('bank1').value == "FreeCmd" && (toset =="comand_cmd1" || toset =="comand_cmd2"))
 	{
 		ret = '<textarea id ="input" cols="40" rows="4"></textarea><br>&nbsp;<br>';
 	}
@@ -2082,7 +2082,7 @@ out+="<br>&nbsp;<br>";
 out+=ret;
 out+=" <input type='button' value='weiter' onclick='javascript: freeinputok(\""+toset+"\",\""+typ+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
-out+="Test<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
@@ -2405,6 +2405,14 @@ if (typa == "A" ){
 	configuration =  makedevice(configuration);
 	}
 	
+	// comand_HIDE
+	if (befehl == "HIDE" ){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[19]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
 
 // comand_cmd1 und 2
 	if (befehl == "comand_cmd1" || befehl == "comand_cmd2"){
@@ -2425,7 +2433,8 @@ if (typa == "A" ){
 	second = changevar(second);
 
 	var device =  document.getElementById('bank6').value.split("\n");	
-	if (document.getElementById('bank1').value == "FreeCmd"){	
+	if (document.getElementById('bank1').value == "FreeCmd")
+	{	
 	first = first.replace(/\n/g,';;');	
 	second = second.replace(/\n/g,';;');
 	
@@ -2449,7 +2458,7 @@ if (typa == "A" ){
 	second = second.replace(/\|/g,'#[wa]');
 	second = second.replace(/\|/g,'#[wa]');
 
-	device[field1]= "#[NF]"
+	device[field1]= "#[NF]cmd"
 	device[field2]="#[NF]"+first+" "+second;
 	}
 	else
