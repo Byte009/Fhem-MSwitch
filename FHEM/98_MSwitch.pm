@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '3.80';
+my $version      = '3.81';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -10365,6 +10365,7 @@ sub MSwitch_Createtimer($) {
     my $Name = $hash->{NAME};
     delete( $hash->{helper}{wrongtimespec} );
 
+
     # keine timer vorhenden
     my $condition = ReadingsVal( $Name, '.Trigger_time', '' );
     $condition =~ s/#\[dp\]/:/g;
@@ -10391,7 +10392,12 @@ sub MSwitch_Createtimer($) {
     $key = 'ly';
     $condition =~ s/$key//ig;
     $condition =~ s/\$name/$Name/g;
+	$condition =~ s/\$SELF/$Name/g;
     $x = 0;
+
+
+MSwitch_LOG( $Name, 0,"Timer: $condition" . __LINE__ );
+
 
     # achtung perl 5.30
     while ( $condition =~ m/(.*)\{(.*)\}(.*)/ ) {
@@ -11731,6 +11737,9 @@ sub MSwitch_saveconf($$) {
     MSwitch_Createtimer($hash);
 
     # eventtoid einlesen
+	
+	
+	#Log3("test",0,"lese  event to id ein");
     delete( $hash->{helper}{eventtoid} );
     my $bridge = ReadingsVal( $name, '.Distributor', 'undef' );
     if ( $bridge ne "undef" ) {
