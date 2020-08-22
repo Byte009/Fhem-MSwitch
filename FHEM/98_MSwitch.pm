@@ -10396,7 +10396,7 @@ sub MSwitch_Createtimer($) {
     $x = 0;
 
 
-MSwitch_LOG( $Name, 0,"Timer: $condition" . __LINE__ );
+MSwitch_LOG( $Name, 5,"Timer: $condition" . __LINE__ );
 
 
     # achtung perl 5.30
