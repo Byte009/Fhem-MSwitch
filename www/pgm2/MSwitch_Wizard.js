@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.6';
+	var version = 'V3.7';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -2507,7 +2507,7 @@ if (typa == "A" ){
 	
 	// condition_cmd1
 	if (befehl == "condition_cmd1"){
-		
+		 
 	inhalt = changevar(inhalt);	
 		
 	var device =  document.getElementById('bank6').value.split("\n");
@@ -2529,7 +2529,7 @@ if (typa == "A" ){
 	
 	// Device_to_switch
 	if (befehl == "Device_to_switch"){
-		
+		inhalt = changevar(inhalt);
 	//alert(inhalt);
 	if (inhalt == "free"){ inhalt = "FreeCmd";}
 	
