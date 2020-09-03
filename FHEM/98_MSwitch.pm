@@ -79,7 +79,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '4.01';
+my $version      = '4.02';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -8920,6 +8920,9 @@ delete( $hash->{helper}{aktevent} );
 	
 
     MSwitch_LOG( $name, 6, "Ausführung Befehlsstapel L:" . __LINE__ );
+	
+	
+
 
     if ( AttrVal( $name, 'MSwitch_Switching_once', 0 ) == 1
         && $fullstring eq $hash->{helper}{lastexecute} )
@@ -8930,11 +8933,17 @@ delete( $hash->{helper}{aktevent} );
         MSwitch_LOG( $name, 6,
             "(attr MSwitch_Switching_once gesetzt) L:" . __LINE__ );
     }
-    else {
+    else 
+	{
+		
+		
+	MSwitch_LOG( $name, 6,"anzahl befehle : ".@execute );	
+
+		
         foreach my $device (@execute) {
 			
 	
-			
+		 MSwitch_LOG( $name, 6,"-- Ausgeführter Befehl: -$device- L:". __LINE__ );	
             next if $device eq "";
             next if $device eq " ";
             next if $device eq "  ";
@@ -9034,8 +9043,14 @@ delete( $hash->{helper}{aktevent} );
         readingsSingleUpdate( $hash, "last_exec_cmd", $msg, $showevents ) if defined $msg ;
 	
 		
-		
+		if (@execute > 0){
         $hash->{helper}{lastexecute} = $fullstring;
+		MSwitch_LOG( $name, 6, "LOCK gelöscht" );
+		}
+		else
+		{
+			MSwitch_LOG( $name, 6, "LOCK nicht gelöscht" );
+		}
     }
 
     return $satz;
