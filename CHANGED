@@ -1,2 +1,7 @@
-Version: V3.81
-Fix Log
+Version V4.0
+geänderte Eventbehandlung conditions
+geänderte Eventbehandlung Befehlszweige
+attribut Switching_once
+set reset_Switching_once
+set writelog
+geänderte MSwitch_Extensions
