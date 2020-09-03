@@ -1,3 +1,3 @@
 Version
 4.01
-Change:  Bugfix Frontend 
+Change:  Eventverarbeitung / neue Funktionen / aenderungen Eingabemaske etc.
