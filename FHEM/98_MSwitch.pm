@@ -79,7 +79,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '4.02';
+my $version      = '4.03';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -4542,7 +4542,7 @@ sub MSwitch_checkbridge($$$) {
             "ID Bridge gefunden: zweig $bridge[0] , $bridge[2] "
           . @bridge . " L:"
           . __LINE__ );
-
+	$hash->{helper}{aktevent}=$event;
     MSwitch_Exec_Notif( $hash, $zweig, 'nocheck', '', $bridge[2] );
 
     return ( "bridge found", $zweig, $bridge[2] );
