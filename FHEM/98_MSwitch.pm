@@ -79,7 +79,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Whatsapp: https://chat.whatsapp.com/IOr3APAd6eh6tVYsHpbDqd Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '4.0';
+my $version      = '4.01';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -3120,19 +3120,8 @@ my $aktstate;
 #MSwitch_LOG( $Name, 6, "S2 $devicename L:" . __LINE__ );
 
 
-if ($reading eq "MSwitch_self")
-{
-	$aktstate = ReadingsVal( $Name, 'last_toggle_state', 'undef' );	
-} else {
-	$aktstate = ReadingsVal( $devicename, $reading, 'undef' );	
-}
-
 		
-	
-	
-	
-	
-	
+	$aktstate = ReadingsVal( $devicename, $reading, 'undef' );	
 	#MSwitch_LOG( $Name, 6, "NAME -$Name- Reading -$reading-!!! $aktstate L:" . __LINE__ );
 	
 
@@ -3155,10 +3144,6 @@ if ($reading eq "MSwitch_self")
 
     my $nextcmd = $cmds[$nextpos];
     $newcomand = $newcomand . $nextcmd;
-
-
-
- readingsSingleUpdate( $hash, "last_toggle_state", $nextcmd, 1 );
 
     MSwitch_LOG( $Name, 6, "Toggle Rückgabe:\n $newcomand \nL:" . __LINE__ );
     return $newcomand;
@@ -7308,22 +7293,22 @@ MS-HELPcond
 
     $MSonand1 =
       "<input type='text' id='timeon' name='timeon' size='35'  value ='"
-      . $timeon . "'>";
+      . $timeon . "' onClick=\"javascript:bigwindow(this.id);\">";
     $MSonand2 =
       "<input type='text' id='timeoff' name='timeoff' size='35'  value ='"
-      . $timeoff . "'>";
+      . $timeoff . "' onClick=\"javascript:bigwindow(this.id);\">";
     $MSexec1 =
       "<input type='text' id='timeononly' name='timeononly' size='35'  value ='"
-      . $timeononly . "'>";
+      . $timeononly . "' onClick=\"javascript:bigwindow(this.id);\">";
 
     if ( $hash->{INIT} ne 'define' ) {
         $MSexec2 =
 "<input type='text' id='timeoffonly' name='timeoffonly' size='35'  value ='"
-          . $timeoffonly . "'>";
+          . $timeoffonly . "'onClick=\"javascript:bigwindow(this.id);\">";
 
         $MSexec12 =
 "<input type='text' id='timeoffonly' name='timeoffonly' size='35'  value ='"
-          . $timeonoffonly . "'>";
+          . $timeonoffonly . "' onClick=\"javascript:bigwindow(this.id);\">";
     }
 
     $MSconditiontext = "Trigger condition (events only)";
