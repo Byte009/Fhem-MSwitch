@@ -583,7 +583,14 @@ Hiebei ist es nicht nur möglich zwischen 2 Zuständen zu 'Toggeln', sondern im 
 ge'Toggelt' werden.
 
 Die Syntax muss wie folgt lauten:
-[befehl1,befehl2,befehlx]:(optional)[suchmuster1,suchmuster2,suchmusterx]:(optional)[reading]
+(optional):[Trennzeichen][befehl1,befehl2,befehlx]:(optional)[suchmuster1,suchmuster2,suchmusterx]:(optional)[reading]
+
+
+[Trennzeichen] 
+- da die zu sendenden Befehle in der Liste in der Standarteinstellung per ',' getrennt werden und es passieren kann, 
+das auch die gesendeten Befehle ein Komma enthalten müssen kann über diese Option das Trennzeichen geändert werden. 
+Als Trennzeichen darf nur ein einzelnes Zeichen verwendet werden , z.B [|].
+Die nachfolgenden Befehls- und Readinglisten müssen dann ebenfalls durch dieses Zeichen getrennt werden ([befehl1|befehl2|befehlx]).
 
 [befehl1,befehl2,befehlx]
  - die Befehle die in der Reihenfolge bei jeder awktivierung 'durchgeschaltet' werden
@@ -593,6 +600,8 @@ Die Syntax muss wie folgt lauten:
 
 [reading]
  - Namedes Readings dessen Status betroffen ist.
+ - Sonderfall: Wenn das entsprechende Gerät kein Reading besitz , was den aktuell ( benötigten ) Status darstellt kann die Steuerung komplett
+ über das MSwitch erfolgen. Hierzu muss als reading 'MSwitch_self' angegeben werden. In diesem Fall wird auf ein MSwitcheigenes Reading 'last_toggle_state' zugegriffen.
 
 zum einfachen togglen zwischen on und off würde hier folgende Angabe reichen
 [on,off]
@@ -736,6 +745,19 @@ Version 2
  erzeugt in der Dropdownliste den Eintrag status mit allen ddummys als Auswahloption verfügbar.  
  hier muss zusätzlich das Attribut 'readinglist' mit 'status' belegt werden, andernfalls wird der state mit der Auswahl belegt.
 
+
+
+<strong>MSwitch_Switching_once</strong>
+Bei Aktivierung dieses Attributes (1) werden Befehlsketten NICHT ausgeführt, wennn sie der letzten ausgeführten Befehlskette entsprechen.
+Dieses kann (sollte) insbesondere bei Temperaturüberwachungen oder ähnlichem eingesetzt werden.
+Diese Sperre von Befehlsketten wird durch das ausführen einer ABWEICHENDEN Befehlskette gelöscht und dieser neuen Befehlskette entsprechend gesetzt.
+
+Alternnativ kann diese Sperre mit dem Befeht "set DEVICE reset_Switching_once" gelöscht werden.
+
+Hiermit wird das wiederholte Schalten eines Devices vermieden , wenn die Auslöser zyklisch sendende Sensoren oder ähnliches sind.
+
+Die Grundeinstellung bei nicht gesetztem Attribut ist 0 .
+
 <strong></strong>
 <hr>
 ->
@@ -820,6 +842,13 @@ Format:
    loadHTTP https://www.myhost.com/
    loadHTTP http://www.myhost.com:8080/
    loadHTTP http://user:password@www.myhost.com/
+   
+<strong>set DEVICE writelog [verbose][text]</strong>
+Syntax: set device writelog 0 das ist der test
+
+Schreibt einen Eintrag in das Logfile.
+Verboselevel ist in diesem Fall '0'
+
 
 <strong>set DEVICE reset_device</strong>
 Löscht alle Daten eines MSwitch-devices und versetzt diesen in den Zustand, als wäre es neu angelegt.
@@ -856,7 +885,7 @@ kann das MSwitch mit diesem Befehl angepasst werden, ohne alle Einstellungen man
 <strong>set DEVICE exec_cmd_1 ID [ID]</strong>
 Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges 1.
 Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt. 
-
+  
 <strong>set DEVICE exec_cmd_2 ID [ID]</strong>
 Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges 2.
 Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt. 
@@ -878,6 +907,9 @@ Löscht ale Befehlswiederholungen , die aus Befehlszweigen resultieren und dort 
 
 <strong>set DEVICE wait ss</strong>
 Veranlasst das Mswitch für den angegebenen Zeitraum in Sekunden (ss) auf keine Events zu regieren
+
+<strong>set DEVICE reset_Switching_once</strong>
+löscht eine durch das Attribut "MSwitch_Switching_once = 1" gesetzte Sperre für Befehlsketten.
 
 <strong></strong>
 <hr>
