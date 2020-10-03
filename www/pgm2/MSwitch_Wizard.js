@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.7';
+	var version = 'V3.8';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -510,13 +510,19 @@ function devicelist(id,name,script,flag){
 			}
 		}
 			
-		var test = GROUPS.length ;
- 		//alert(test);
 		
-		test1 = GROUPS.join("\n-");
-		//alert(test1); 
+		
+		//test1 = GROUPS.join("-");
+		//alert('GROUPS: '+test1);
+		
+		
+		
+		
+		
+		var test = GROUPS.length ;
+ 		//alert('GROUPSlänge: '+test);
 		 
-		for (i=count; i<=test; i++)
+		for (i=count; i<test; i++)
 		{
 			//alert("GUPPEN-"+GROUPS[i]);
 		//if (flag == '1'){
@@ -1326,9 +1332,14 @@ function savetemplate (){
 	tosave = tosave.replace(/#/g,'[RA]');
 	tosave = tosave.replace(/\+/g,'[PL]');
 	tosave = tosave.replace(/"/g,'[AN]');
+	tosave = tosave.replace(/&/g,'[AND]');
+	
+	
 	
 	templatename = templatename.replace(/local\//g,'');
 	
+	
+	//alert(tosave);
 	//alert(templatename);
 	
 	var newname = "local / "+templatename;
@@ -1629,7 +1640,7 @@ function starttemplate(template){
 function testline(line,newtemplate){
 	var cmdsatz = line.split(">>");
 	if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-	if (cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+	if (cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
 
 		if (INQ[cmdsatz[0]]== "1")
 		{
@@ -1639,6 +1650,11 @@ function testline(line,newtemplate){
 		return;
 		}
 }
+
+
+//alert(cmdsatz[0]);
+
+
 
 //text
 if (cmdsatz[0] == "TEXT"){
@@ -1683,10 +1699,10 @@ if (cmdsatz[0] == "GOTO")
 }
 
 
-// map select aus set bei bedarf
+// map select aus set bei bedarf  MSwitch_Device_Groups
 if (cmdsatz[0] == "SELECT")
 	{
-		if ((cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd2" ) && document.getElementById('bank1').value == "FreeCmd"){
+		if (( cmdsatz[1] == "comand_cmd1" || cmdsatz[1] == "comand_cmd2" ) && document.getElementById('bank1').value == "FreeCmd"){
 		cmdsatz[0] ="ASK";	 
 		} 
 }
@@ -1710,6 +1726,74 @@ if (cmdsatz[0] == "REPEAT"){
 if (cmdsatz[0] == "PREASSIGMENT"){
 	PREASSIGMENT=changevar(cmdsatz[1]);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (cmdsatz[0] == 'MSwitch_Device_Groups')
+	{
+		//var data="";
+		//alert("found");
+		inhalt1 = changevar(cmdsatz[1]);
+		//alert(inhalt1);
+		
+		
+		var newcmd  = "ATTR>>SET>>MSwitch_Device_Groups>>"+inhalt1;
+		
+		//FW_cmd(FW_root+'?cmd=set '+devicename+' groupreload '+inhalt1+'&XHR=1', function(data){FW_okDialog(data)});
+		inhalt1 = inhalt1.replace(/#\[nl\]/g,'[nl]');
+		
+		
+		
+		
+		
+		
+		FW_cmd(FW_root+'?cmd=set '+devicename+' groupreload '+inhalt1+' &XHR=1', function(data){renewdevices(data,newtemplate,newcmd)})
+/* 		
+ 		var d = new Date();
+		var n = d.getTime();
+		var ziel = n+1000;
+		
+		while (n < ziel) {
+		d = new Date();
+		 n = d.getTime();
+} 
+		 */
+		
+	//newattr = "#S MSwitch_Device_Groups -> "+inhalt1;
+	//configuration[conflenght] = newattr;
+		
+		
+		
+	return "stop";
+	
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1850,7 +1934,7 @@ out+="<br>&nbsp;<br>";
 selectlist = devicelistmultiple('selectlist','name')
 out+=selectlist;
 out+="<br>&nbsp;<br><input id='input' type='text' value='' size='60'>";
-out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
@@ -1864,7 +1948,7 @@ out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<input id='input' type='text' value='"+PREASSIGMENT+"' size='60'><br>&nbsp;<br>";
-out+="<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
@@ -1899,7 +1983,7 @@ out+="<label for=\"REPEAT1\"> ja</label><br> ";
 out+="<input type=\"radio\" id=\"REPEAT2\" name=\"radio\" value=\"1\">";
 out+="<label for=\"REPEAT2\"> nein</label><br> ";	
 out+="</fieldset>";		
-out+="<br><input type='button' value='weiter' onclick='javascript: setREPEATok(\""+anzahl+"\")'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setREPEATok(\""+anzahl+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
@@ -1942,7 +2026,7 @@ out+="<label for=\"INQ1\"> "+names[0]+"</label><br> ";
 out+="<input type=\"radio\" id=\"INQ2\" name=\"radio\" value=\"1\">";
 out+="<label for=\"INQ2\"> "+names[1]+"</label><br> ";	
 out+="</fieldset>";		
-out+="<br><input type='button' value='weiter' onclick='javascript: setINQok(\""+inq+"\",\""+inq1+"\")'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setINQok(\""+inq+"\",\""+inq1+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
@@ -2245,6 +2329,10 @@ return;
 // #################
 function execcmd(befehl)
 {
+	
+	
+	
+	
 var cmdsatz = befehl.split(">>");
 if (cmdsatz[0] == "ATTR"){
 	typa="A";
@@ -2268,6 +2356,11 @@ typa="S";
 	configuration = configuration.split("\n");
 	conflenght = configuration.length;
 	
+	
+	//alert(befehl);
+	
+	
+	
 if (typa == "A" ){
 	
 	if (inhalt != "")
@@ -2277,16 +2370,29 @@ if (typa == "A" ){
 	var newconfig =configuration.join("\n");
 	ATTRS[befehl] = inhalt1;	
 	newconfig=newconfig+"\n"+newattr;
+	
+	
+	
+	
+	
+	
 	}
 	
-	if (befehl == 'MSwitch_Device_Groups')
-	{
-		FW_cmd(FW_root+'?cmd=set '+devicename+' reloaddevices '+inhalt1+' &XHR=1', function(data){renewdevices(data)})
-	}
-		
+	
 	document.getElementById('rawconfig10').value = newconfig;
 	return;
 	}
+	
+	
+	
+	
+	
+
+	
+	//###############################
+	
+	
+	
 	
 	//timerfelder vorbereiten
 	var fields = configuration[13].split("->");
@@ -2396,6 +2502,15 @@ if (typa == "A" ){
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
 	}
+	
+	if (befehl == "HIDEDISPLAY" ){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[18]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	
 	
 // comand_ID
 	if (befehl == "ID" ){
@@ -2800,11 +2915,55 @@ function setATTRS()
 }
 
 // ##################################
-function renewdevices(data)
+function renewdevices(data,newtemplate,newcmd)
 {
+	
+	
+	//alert(data);
+	//alert(newtemplate);
+	
+	
+	
 	parts = data.split("\[TRENNER\]");
-	GROUPS.push(parts[0]); 
-	GROUPSCMD.push(parts[1]); 
+	//alert(parts[0]);
+	//alert(parts[1]);
+	
+	
+	
+	newdevices = parts[0].split("\[|\]");
+	newcmds = parts[1].split("\[|\]");
+	
+	
+	//var test = newdevices.length;
+	//alert('anzahl: '+test);
+	
+	
+	
+	for (i = 0; i < newdevices.length; i++) 
+	{
+		
+	GROUPS.push(newdevices[i]); 
+	GROUPSCMD.push(newcmds[i]); 
+		
+	}
+	
+	
+	//alert('push groups');
+	
+	//GROUPS.push(parts[0]); 
+	//GROUPSCMD.push(parts[1]); 
+	var test1 = GROUPS.length;
+	//alert('nach push: '+test1);
+	
+	
+	
+
+	
+	
+	newtemplate=newcmd+"\n"+newtemplate;
+	
+	
+	starttemplate(newtemplate);
 	return;
 }
 
