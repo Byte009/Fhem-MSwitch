@@ -2501,16 +2501,16 @@ if (typa == "A" ){
 	device[13]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
-	}
+	} 
 	
 	if (befehl == "HIDEDISPLAY" ){
 	var device =  document.getElementById('bank6').value.split("\n");
-	device[18]="#[NF]"+inhalt;
+	device[19]="#[NF]"+inhalt;
 	document.getElementById('bank6').value=device.join("\n");
 	configuration =  makedevice(configuration);
 	}
 	
-	
+
 	
 // comand_ID
 	if (befehl == "ID" ){
