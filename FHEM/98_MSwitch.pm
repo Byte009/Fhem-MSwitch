@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '4.1';
+my $version      = '4.11';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -303,6 +303,7 @@ sub MSwitch_Initialize($) {
 	  . "  MSwitch_Snippet:textField-long "
       . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
       . "  MSwitch_Wait"
+	  . "  MSwitch_Event_Wait:textField-long"
       . "  MSwitch_Sequenz:textField-long "
       . "  MSwitch_Sequenz_time"
       . "  MSwitch_setList:textField-long "
@@ -598,11 +599,15 @@ sub MSwitch_check_init($) {
 	
 	
 	
-	#Log3( $Name, 0, "AUFRUF INIT" );
+	
 	
 	
 	
     my $oldtrigger = ReadingsVal( $Name, 'Trigger_device', 'undef' );
+	
+	Log3( $Name, 5, "AUFRUF INIT $oldtrigger" );
+	
+	
     if ( $oldtrigger ne 'undef' ) {
         $hash->{NOTIFYDEV} = $oldtrigger;
         readingsSingleUpdate( $hash, "Trigger_device", $oldtrigger, 0 );
@@ -709,10 +714,11 @@ sub MSwitch_LoadHelper($) {
         readingsBulkUpdate( $hash, ".Trigger_cmd_off", 'no_trigger' );
         readingsBulkUpdate( $hash, "Trigger_log",      'off' );
         readingsBulkUpdate( $hash, ".Device_Affected", 'no_device' );
+		readingsBulkUpdate( $hash, "Trigger_device", 'no_device' );
         readingsBulkUpdate( $hash, ".First_init",      'done' );
         readingsBulkUpdate( $hash, ".V_Check",         $vupdate );
         readingsEndUpdate( $hash, 0 );
-
+$hash->{NOTIFYDEV} = 'no_trigger';
         # setze ignoreliste
         $attr{$Name}{MSwitch_Ignore_Types} = join( " ", @doignore );
 
@@ -766,6 +772,7 @@ sub MSwitch_LoadHelper($) {
 		  . "  MSwitch_Snippet:textField-long "
           . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
           . "  MSwitch_Wait"
+		  . "  MSwitch_Event_Wait:textField-long"
           . "  MSwitch_Sequenz:textField-long "
           . "  MSwitch_Sequenz_time"
           . "  MSwitch_setList:textField-long "
@@ -1957,6 +1964,7 @@ sub MSwitch_Set($@) {
 			  . "  MSwitch_Snippet:textField-long "			  
               . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
               . "  MSwitch_Wait"
+			  . "  MSwitch_Event_Wait:textField-long"
               . "  MSwitch_Event_Id_Distributor:textField-long "
               . "  MSwitch_Sequenz:textField-long "
               . "  MSwitch_Sequenz_time"
@@ -3252,6 +3260,7 @@ sub MSwitch_Attr(@) {
 	  . "  MSwitch_Snippet:textField-long "
       . "  MSwitch_Startdelay:0,10,20,30,60,90,120"
       . "  MSwitch_Wait"
+	  . "  MSwitch_Event_Wait:textField-long"
       . "  MSwitch_Sequenz:textField-long "
       . "  MSwitch_Sequenz_time"
       . "  MSwitch_setList:textField-long "
@@ -3328,7 +3337,7 @@ sub MSwitch_Attr(@) {
         foreach my $line (@gset) {
             my @lineset = split( /->/, $line );
             $data{MSwitch}{$name}{groups}{ $lineset[0] } = $lineset[1];
-            my @areadings = ( keys %{ $data{MSwitch}{$name}{groups} } );
+            #my @areadings = ( keys %{ $data{MSwitch}{$name}{groups} } );
         }
         return;
     }
@@ -3337,6 +3346,32 @@ sub MSwitch_Attr(@) {
         delete $data{MSwitch}{$name}{groups};
         return;
     }
+
+
+##################################
+
+    if ( $cmd eq 'set' && $aName eq 'MSwitch_Event_Wait' ) {
+
+        delete $data{MSwitch}{$name}{eventwait};
+        my @gset = split( /\n/, $aVal );
+
+        foreach my $line (@gset) {
+            my @lineset = split( /->/, $line );
+            $data{MSwitch}{$name}{eventwait}{ $lineset[0] } = $lineset[1];
+            #my @areadings = ( keys %{ $data{MSwitch}{$name}{eventwait} } );
+        }
+        return;
+    }
+
+    if ( $cmd eq 'del' && $aName eq 'MSwitch_Event_Wait' ) {
+        delete $data{MSwitch}{$name}{eventwait};
+        return;
+    }
+
+###################################
+
+
+
 
 ###################################
     if ( $cmd eq 'set' && $aName eq 'MSwitch_DeleteCMDs' ) {
@@ -3605,8 +3640,7 @@ sub MSwitch_Notify($$) {
             delete( $own_hash->{READINGS} );
             readingsBeginUpdate($own_hash);
             readingsBulkUpdate( $own_hash, ".Device_Events", "no_trigger", 1 );
-            readingsBulkUpdate( $own_hash, ".Trigger_cmd_off", "no_trigger",
-                1 );
+            readingsBulkUpdate( $own_hash, ".Trigger_cmd_off", "no_trigger", 1 );
             readingsBulkUpdate( $own_hash, ".Trigger_cmd_on", "no_trigger", 1 );
             readingsBulkUpdate( $own_hash, ".Trigger_off",    "no_trigger", 1 );
             readingsBulkUpdate( $own_hash, ".Trigger_on",     "no_trigger", 1 );
@@ -3746,6 +3780,10 @@ sub MSwitch_Notify($$) {
         return;
     }
 
+
+
+
+################# ggf umsetzen - nach akzeptierten events
     if ( $attrrandomnumber ne '' ) {
 
         # create randomnumber wenn attr an
@@ -4036,10 +4074,56 @@ MSwitch_LOG( $ownName, 6, "--- eigegangenes Event --- $event ---L:" . __LINE__ )
 
 ######################################
 
+#### checke eventwait:
+# nur wenn attribut gesetzt
+
+ my $eventsollwait =$data{MSwitch}{$ownName}{eventwait}{ $eventcopy1};
+
+
+ #Log3($ownName,2,"eventsollwait - $eventcopy1 - $eventsollwait leereintrag") if $eventsollwait eq "" ;
+ 
+ if ($eventsollwait ne "")
+ { 
+ #Log3($ownName,2,"eventsollwait - $eventcopy1 - $eventsollwait") ;
+ my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$eventcopy1};
+ if ($lastincomming eq ""){
+ $lastincomming = 0 ;
+ #Log3($ownName,2,"Keine Zeit gespeichert, setze zeit auf 0  ") ;
+ 
+  }
+  
+  #Log3($ownName,2,"letzter aufruf  : $lastincomming    ") ;
+  
+  
+  my $newdiff =  $lastincomming+$eventsollwait-time;
+  #Log3($ownName,2,"warte bis aufruf: $newdiff") ;
+  
+ if ($newdiff > 0)
+	{
+	my $lasttime= time+$eventsollwait - $lastincomming ;
+	#Log3($ownName,2,"EVENT GEBLOCKT   ") ;
+	#Log3($ownName,2,"Blocking soll erfolgen noch $newdiff sekunden   ") ;
+	
+	
+	 MSwitch_LOG($ownName,6,"Event $eventcopy1 wird noch $newdiff sekunden  geblockt");
+	next EVENT;
+	}
+	else
+	{
+	#Log3($ownName,2,"kein Blocking , zeit wird gesetzt   ") ;
+	$data{MSwitch}{$ownName}{inputeventwait}{$eventcopy1} = time;
+	}
+ }
 
 
 
 
+#Log3($ownName,2,$eventcopy1."-".$data{MSwitch}{$ownName}{inputeventwait}{$eventcopy1});
+##
+
+ 
+
+###################
 
             # sequenz
             my $x    = 0;
@@ -4685,6 +4769,13 @@ sub MSwitch_fhemwebconf($$$$) {
     my $hash = $defs{$d};
     my $Name = $hash->{NAME};
     my @found_devices;
+	
+	
+	#Log3($Name,0,"Starte Fhemweb config ");
+	
+	
+	
+	
     delete( $hash->{NOTIFYDEV} );
     readingsSingleUpdate( $hash, "EVENTCONF", "start", 1 );
 
@@ -4699,10 +4790,29 @@ sub MSwitch_fhemwebconf($$$$) {
     $devstring .= "'MSwitch_Self',";
 
     @found_devices = devspec2array("TYPE=.*");
+	
+	
+	#Log3($Name,0,"found_devices:");
+	#Log3($Name,0,"@found_devices");
+	
+	
     for (@found_devices) {
         my $test = getAllSets($_);
+		
+		
+		if ( $test =~m/.*'.*/ )
+    {
+		Log3($Name,1,"der Fhembefehl 'getAllSets' verursacht eine ungültige Rückgabe des Devices $_ , bitte den Modulautor informieren . Hierfür bitte den Devicetypen des Devices $_ angeben. ");
+		
+		$test=~ s/'//g;
+	}	
+		
+		#Log3($Name,0,$_." : ".$test);
         $cmds      .= "'" . $test . "',";
         $devstring .= "'" . $_ . "',";
+		
+		
+		
     }
 
     chop $devstring;
@@ -4713,6 +4823,10 @@ sub MSwitch_fhemwebconf($$$$) {
 
     $devstring = "[" . $devstring . "]";
     $cmds      = "[" . $cmds . "]";
+
+
+
+
 
     my $fileend = "x" . rand(1000);
     my $devicehash;
@@ -4921,6 +5035,7 @@ sub MSwitch_fhemwebconf($$$$) {
         $j1 .= "ownattr['$test[0]']  = '$test[1]';\n";
     }
 
+
     $j1 .= "// firstconfig
 	
 	var logging ='off';
@@ -4944,7 +5059,16 @@ sub MSwitch_fhemwebconf($$$$) {
     loadScript(\"pgm2/MSwitch_Wizard.js?v=" . $fileend
       . "\", function(){start1(name)});";
 
-    if ( $hash->{helper}{template} ne "no" ) {
+
+#Log3($Name,0,"################devices übergabe:");
+#Log3($Name,0,"$devstring");
+
+#Log3($Name,0,"################cmdsatz übergabe:");
+#Log3($Name,0,"$cmds");
+
+
+
+    if ( defined $hash->{helper}{template} ne "no" && $hash->{helper}{template} ne "no" ) {
 
         $hash->{helper}{template} = 'no';
     }
