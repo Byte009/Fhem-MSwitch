@@ -610,6 +610,21 @@ Es empfiehlt sich aber, bei neuen bzw. komplizierten Devices, dieses zumindest a
 Bei gesetztem Attribut nimmt das MSwitch Device für den eingestellten Zeitraum nach Ausführung eines Befehlszweigeskeine
 keine Befehle mehr entgegen und ignoriert weitere Event eingehende Events. 
 
+
+<strong>MSwitch_Event_Wait</strong>
+
+Es können für verschiedene eingehende Triggerevents Sperrzeiten nach einem eingegangenen Event gesetzt werden.
+Diese Zeiten werden für jedes eingehende Event behandelt.
+
+Geht ein definiertes Event ein , wird dieses ( nur dieses ) Event für angegebenen Zeitraum in Sekunden gesperrt und löst keinen Schaltvorgang mehr aus.
+
+Format:
+Event1->sekunden
+Event2->sekunden2
+
+mehrere Angaben sind durch Newline zu trennen.
+
+
 <strong>MSwitch_Condition_Time:0,1</strong>
 In der Grundeinstellung '0' werden für das <u>zeitgesteuerte</u> Schalten keine definierten Conditionen im Feld 'Trigger condition' überprüft,
 sondern die Prüfung findet nur bei eingehenden Events statt.
