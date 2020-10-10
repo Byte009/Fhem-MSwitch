@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '4.11';
+my $version      = '4.12';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -4082,7 +4082,7 @@ MSwitch_LOG( $ownName, 6, "--- eigegangenes Event --- $event ---L:" . __LINE__ )
 
  #Log3($ownName,2,"eventsollwait - $eventcopy1 - $eventsollwait leereintrag") if $eventsollwait eq "" ;
  
- if ($eventsollwait ne "")
+ if (defined $eventsollwait && $eventsollwait ne "")
  { 
  #Log3($ownName,2,"eventsollwait - $eventcopy1 - $eventsollwait") ;
  my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$eventcopy1};
@@ -4415,7 +4415,7 @@ MSwitch_LOG( $ownName, 6, "--- eigegangenes Event --- $event ---L:" . __LINE__ )
                 my $evwert    = ( split( /:/  ))[1];
                 my $evreading = ( split( /:/ ))[0];
                 my @eventfunction;
-				@eventfunction = split( / /, $own_hash->{helper}{eventhistory}{$evreading} ) if defined $evreading;
+				@eventfunction = split( / /, $own_hash->{helper}{eventhistory}{$evreading} ) if exists $own_hash->{helper}{eventhistory}{$evreading};
                 unshift( @eventfunction, $evwert );
                 while ( @eventfunction > $evhistory ) {
                     pop(@eventfunction);
@@ -4684,7 +4684,7 @@ sub MSwitch_checkbridge($$$) {
 	##########################	
 	#	ausführen des gefundenen keys
 	#	
-		@bridge = split( / /, $hash->{helper}{eventtoid}{$foundkey} );
+		@bridge = split( / /, $hash->{helper}{eventtoid}{$foundkey} ) if exists $hash->{helper}{eventtoid}{$foundkey};
 		#$zweig;
 		
 		next if @bridge < 1;
@@ -10942,14 +10942,6 @@ MSwitch_LOG( $Name, 6, "TESTE AUF SNIPPETS ENDE  $condition " . __LINE__ );
 
 
 
-
-
-
-
-
-
-
-
 	my $key ;
     $x = 0;
     MSwitch_LOG( $Name, 6, "Timer: $condition" . __LINE__ );
@@ -10973,13 +10965,13 @@ MSwitch_LOG( $Name, 6, "TESTE AUF SNIPPETS ENDE  $condition " . __LINE__ );
 			
 			
 			
-			MSwitch_LOG( $Name, 6, "s2: $2" . __LINE__ );
-			MSwitch_LOG( $Name, 6, "exec $exec" . __LINE__ );
+			#MSwitch_LOG( $Name, 6, "s2: $2" . __LINE__ );
+			#MSwitch_LOG( $Name, 6, "exec $exec" . __LINE__ );
            
 		   $part2 = eval $exec;
 		   #if (!$part2){$part2 = "";}
 		   
-			MSwitch_LOG( $Name, 6, "ret $part2" . __LINE__ );	
+			#MSwitch_LOG( $Name, 6, "ret $part2" . __LINE__ );	
             $condition = $part1 . $part2 . $part3;
         }
     }
