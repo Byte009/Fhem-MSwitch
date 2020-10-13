@@ -47,7 +47,8 @@
 # Q dummy2#zu schaltendes geraet2#device
 #
 ##---------------------------------------------------------------
-#
+#  TOODO
+# einspielen eier Raw legt keine ID Bridge an
 #################################################################
 
 
@@ -60,12 +61,11 @@ use warnings;
 use POSIX;
 use SetExtensions;
 use LWP::Simple;
-
+use JSON;
 use HttpUtils;
 
 #use utf8;
 
-#use utf8;
 
 my $updateinfo  = "";    # wird mit info zu neuen versionen besetzt
 my $generalinfo = "";    # wird mit aktuellen informationen besetzt
@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     # off/on
-my $version      = '4.12';
+my $version      = '4.13';
 my $wizard       = 'on';     # on/off
 my $importnotify = 'on';     # on/off
 my $importat     = 'on';     # on/off
@@ -91,7 +91,7 @@ my $vupdate      = 'V2.01'
 my $savecount = 50
   ; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $savemodetime       = 10000000;    # Zeit für Zugriffe im Safemode
-my $rename             = "off";        # on/off rename in der FW_summary möglich
+my $rename             = "on";        # on/off rename in der FW_summary möglich
 my $standartstartdelay = 30
   ; # zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
 
@@ -6212,7 +6212,7 @@ MS-HELPdelay
                 $cmdsatz{$devicenamet} = '';
             }
 
-            @befehlssatz = split( / /, $cmdsatz{$devicenamet} );
+            @befehlssatz = split( / /, $cmdsatz{$devicenamet} ) if exists $cmdsatz{$devicenamet};
             my $aktdevice = $_;
             ## optionen erzeugen
             my $option1html  = '';
@@ -10251,8 +10251,15 @@ sub MSwitch_checkcondition($$$) {
 
 
 #prüfung reading,internal etc.
+
+
+#MSwitch_LOG( $name, 4, "Prüfe auf ReadinsVa 1.  $condition  L:" . __LINE__ );
+
+
+
+
     while ( $condition =~
-m/(.*?)\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.+):(.+):(.+)\](.+)/
+m/(.*?)\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.*?):(.*?):(.*?)\](.*)/
       )
     {
 
@@ -10263,6 +10270,14 @@ m/(.*?)\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.+):(.+):(.+
         my $readingstandart = $5;
         my $lastpart        = $6;
         $readingdevice =~ s/\$SELF/$name/;
+
+
+#MSwitch_LOG( $name, 0, " firstpart-  $firstpart  L:" . __LINE__ );
+#MSwitch_LOG( $name, 0, " readingtyp-  $readingtyp  L:" . __LINE__ );
+#MSwitch_LOG( $name, 0, " readingdevice-  $readingdevice  L:" . __LINE__ );
+#MSwitch_LOG( $name, 0, " readingname-  $readingname  L:" . __LINE__ );
+#MSwitch_LOG( $name, 0, " readingstandart-  $readingstandart  L:" . __LINE__ );
+#MSwitch_LOG( $name, 0, " lastpart-  $lastpart  L:" . __LINE__ );
 
         my $code = "("
           . $readingtyp . "('"
@@ -10275,6 +10290,12 @@ m/(.*?)\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.+):(.+):(.+
         $x++;
         last if $x > 10;    #notausstieg
     }
+
+
+#MSwitch_LOG( $name, 4, "Prüfe auf ReadinsVa 2. $condition" . __LINE__ );
+
+
+
 
     $x = 0;
 
