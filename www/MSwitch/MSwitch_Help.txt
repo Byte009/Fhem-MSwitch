@@ -583,7 +583,14 @@ Hiebei ist es nicht nur möglich zwischen 2 Zuständen zu 'Toggeln', sondern im 
 ge'Toggelt' werden.
 
 Die Syntax muss wie folgt lauten:
-[befehl1,befehl2,befehlx]:(optional)[suchmuster1,suchmuster2,suchmusterx]:(optional)[reading]
+(optional):[Trennzeichen][befehl1,befehl2,befehlx]:(optional)[suchmuster1,suchmuster2,suchmusterx]:(optional)[reading]
+
+
+[Trennzeichen] 
+- da die zu sendenden Befehle in der Liste in der Standarteinstellung per ',' getrennt werden und es passieren kann, 
+das auch die gesendeten Befehle ein Komma enthalten müssen kann über diese Option das Trennzeichen geändert werden. 
+Als Trennzeichen darf nur ein einzelnes Zeichen verwendet werden , z.B [|].
+Die nachfolgenden Befehls- und Readinglisten müssen dann ebenfalls durch dieses Zeichen getrennt werden ([befehl1|befehl2|befehlx]).
 
 [befehl1,befehl2,befehlx]
  - die Befehle die in der Reihenfolge bei jeder awktivierung 'durchgeschaltet' werden
@@ -593,6 +600,8 @@ Die Syntax muss wie folgt lauten:
 
 [reading]
  - Namedes Readings dessen Status betroffen ist.
+ - Sonderfall: Wenn das entsprechende Gerät kein Reading besitz , was den aktuell ( benötigten ) Status darstellt kann die Steuerung komplett
+ über das MSwitch erfolgen. Hierzu muss als reading 'MSwitch_self' angegeben werden. In diesem Fall wird auf ein MSwitcheigenes Reading 'last_toggle_state' zugegriffen.
 
 zum einfachen togglen zwischen on und off würde hier folgende Angabe reichen
 [on,off]
