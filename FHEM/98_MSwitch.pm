@@ -81,25 +81,22 @@ my $helpfile    = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
-my $autoupdate   = 'on';     # off/on
-my $version      = '4.13';   # version
-my $wizard       = 'on';     # on/off
-my $importnotify = 'on';     # on/off
-my $importat     = 'on';     # on/off
-my $vupdate      = 'V2.01'
-  ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
-my $savecount = 50
-  ; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
-my $savemodetime       = 10000000;    # Zeit für Zugriffe im Safemode
-my $rename             = "on";        # on/off rename in der FW_summary möglich
-my $standartstartdelay = 30
-  ; # zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
+my $autoupdate   = 'on';     	# off/on
+my $version      = '4.14';  	# version
+my $wizard       = 'on';     	# on/off
+my $importnotify = 'on';     	# on/off
+my $importat     = 'on';     	# on/off
+my $vupdate      = 'V2.01';		# versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VUpdate aus .
+my $savecount = 50;				# anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
+
+my $undotime = 60;				# Standarzeit in der ein Undo angeboten wird
+my $savemodetime       = 10000000;    	# Zeit für Zugriffe im Safemode
+my $rename             = "on";        	# on/off rename in der FW_summary möglich
+my $standartstartdelay = 30;			# zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
 
 #my $eventset = '0';
-my $deletesavedcmds = 1800
-  ; # zeitraum nachdem gespeicherte devicecmds gelöscht werden ( beschleunugung des webinterfaces )
-my $deletesavedcmdsstandart = "automatic"
-  ; # standartverhalten des attributes "MSwitch_DeleteCMDs" <manually,nosave,automatic>
+my $deletesavedcmds = 1800; 			# zeitraum nachdem gespeicherte devicecmds gelöscht werden ( beschleunugung des webinterfaces )
+my $deletesavedcmdsstandart = "automatic" ; # standartverhalten des attributes "MSwitch_DeleteCMDs" <manually,nosave,automatic>
 
 # standartlist ignorierter Devices . kann durch attribut überschrieben werden .
 my @doignore =
@@ -150,7 +147,7 @@ sub MSwitch_backup_done($);
 sub MSwitch_checktrigger(@);
 sub MSwitch_Cmd(@);
 sub MSwitch_toggle($$);
-sub MSwitch_Getconfig($);
+sub MSwitch_Getconfig($$);
 sub MSwitch_saveconf($$);
 sub MSwitch_replace_delay($$);
 sub MSwitch_repeat($);
@@ -956,7 +953,22 @@ sub MSwitch_Define($$) {
 }
 
 ####################
-
+sub MSwitch_Make_Undo($) {
+	my ( $hash ) = @_;
+	my $lastversion = MSwitch_Getconfig($hash,'undo') ;
+	
+	#Log3("test",0,$lastversion);
+	$data{MSwitch}{$hash}{undo}=$lastversion;
+	$data{MSwitch}{$hash}{undotime}=time;
+	
+	return;
+	
+	
+	
+	
+	
+}
+#######################
 sub MSwitch_Get($$@) {
     my ( $hash, $name, $opt, @args ) = @_;
     my $ret;
@@ -1060,7 +1072,7 @@ sub MSwitch_Get($$@) {
     }
 ####################
     if ( $opt eq 'config' ) {
-        $ret = MSwitch_Getconfig($hash);
+        $ret = MSwitch_Getconfig($hash,'get');
         return $ret;
     }
 ####################
@@ -1455,7 +1467,40 @@ sub MSwitch_Set($@) {
         return;
     }
 
-
+	#################################
+	
+    if ( $cmd eq 'undo' ) {
+      
+	  
+	my %keys;
+    foreach my $attrdevice ( keys %{ $attr{$name} } )    #geht
+    {
+        delete $attr{$name}{$attrdevice};
+    }
+    my $testreading = $hash->{READINGS};
+    my @areadings   = ( keys %{$testreading} );
+    #
+    foreach my $key (@areadings) {
+        fhem("deletereading $name $key ");
+    }
+	  
+	  
+	  
+	my $Zeilen = $data{MSwitch}{$hash}{undo};  
+	$Zeilen =~ s/\\n/#[EOL]/g;
+	
+	
+#Log3("test",0,$Zeilen);	
+    MSwitch_exec_undo( $hash, $Zeilen );
+	 
+	 
+	
+	delete $data{MSwitch}{$hash}{undotime};
+	delete $data{MSwitch}{$hash}{undo};
+	  
+        return;
+    }
+	
     #################################
 
     if ( $cmd eq 'reset_Switching_once' ) {
@@ -2213,6 +2258,11 @@ sub MSwitch_Set($@) {
 ##############################
     if ( $cmd eq "addevent" ) {
 
+
+
+MSwitch_Make_Undo($hash);
+
+
         delete( $hash->{helper}{config} );
 
         # event manuell zufügen
@@ -2244,6 +2294,10 @@ sub MSwitch_Set($@) {
     }
 ##############################
     if ( $cmd eq "add_device" ) {
+		
+		MSwitch_Make_Undo($hash);
+		
+		
         delete( $hash->{helper}{config} );
 
         #add device
@@ -2253,12 +2307,20 @@ sub MSwitch_Set($@) {
 ##############################
     if ( $cmd eq "del_device" ) {
 
+
+MSwitch_Make_Undo($hash);
+
+
         #del device
         MSwitch_Del_Device( $hash, $args[0] );
         return;
     }
 ##############################
     if ( $cmd eq "del_trigger" ) {
+
+
+MSwitch_Make_Undo($hash);
+
 
         #lösche trigger
         MSwitch_Delete_Triggermemory($hash);
@@ -2267,12 +2329,19 @@ sub MSwitch_Set($@) {
 ##############################
     if ( $cmd eq "filter_trigger" ) {
 
+MSwitch_Make_Undo($hash);
+
+
         #filter to trigger
         MSwitch_Filter_Trigger($hash);
         return;
     }
 ##############################
     if ( $cmd eq "set_trigger" ) {
+		
+		MSwitch_Make_Undo($hash);
+		
+		
         delete( $hash->{helper}{config} );
         delete( $hash->{helper}{wrongtimespeccond} );
         chop( $args[1], $args[2], $args[3], $args[4], $args[5], $args[6] );
@@ -2348,6 +2417,10 @@ sub MSwitch_Set($@) {
     }
 ##############################
     if ( $cmd eq "trigger" ) {
+		
+		MSwitch_Make_Undo($hash);
+		
+		
         delete( $hash->{helper}{config} );
 
         # setze trigger events
@@ -2391,6 +2464,10 @@ sub MSwitch_Set($@) {
 
 ##############################
     if ( $cmd eq "devices" ) {
+		
+		MSwitch_Make_Undo($hash);
+		
+		
         delete( $hash->{helper}{config} );
 
         # setze devices
@@ -2437,6 +2514,10 @@ sub MSwitch_Set($@) {
     }
 ##############################
     if ( $cmd eq "details" ) {
+		
+		MSwitch_Make_Undo($hash);
+		
+		
         delete( $hash->{helper}{config} );
 
         # setze devices details
@@ -8520,7 +8601,48 @@ end:textersetzung:eng
     if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
         return "$info$system$hidecode";
     }
-    return "$ret<br>$detailhtml$helpfile<br>$j1$hidecode";
+	
+	
+	
+	
+	my $undo="";
+	
+		#Log3("test",0,$data{MSwitch}{$hash}{undo});
+
+	if (exists $data{MSwitch}{$hash}{undo})
+		{
+			
+			if ($data{MSwitch}{$hash}{undotime} > (time-$undotime)){
+			
+			if ( $language eq "EN" ) 
+			{
+			$undo="<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
+				<tr>
+				<td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
+				<center><input id=\"undo\" style='BACKGROUND-COLOR: red;' name='undo last change' type='button' value='undo last change'>
+				</td>
+				</tr>
+			</table><br>";
+			}
+			else
+			{
+			$undo="<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
+				<tr>
+				<td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
+				<center><input id=\"undo\" style='BACKGROUND-COLOR: red;' name='undo last change' type='button' value='letzte Änderung rückgängig machen'>
+				</td>
+				</tr>
+			</table><br>";
+				
+			}
+			}	
+		}
+
+	
+	
+	
+	
+    return "$undo$ret<br>$detailhtml$helpfile<br>$j1$hidecode";
 }
 
 ####################
@@ -12012,8 +12134,8 @@ sub MSwitch_Getsupport($) {
     return;
 }
 ##################
-sub MSwitch_Getconfig($) {
-    my ($hash)      = @_;
+sub MSwitch_Getconfig($$) {
+    my ($hash,$aktion)      = @_;
     my $Name        = $hash->{NAME};
     my $testreading = $hash->{READINGS};
     my @areadings   = ( keys %{$testreading} );
@@ -12088,6 +12210,21 @@ sub MSwitch_Getconfig($) {
     }
     $count++;
     $count++;
+	
+	
+	
+	
+	
+	if ($aktion eq 'undo')
+	{
+		return $out;
+	}
+	
+	
+	
+	
+	
+	
     my $client_hash = $hash->{CL};
     my $ret         = asyncOutput( $hash->{CL},
 "<html>Änderungen sollten hier nur von erfahrenen Usern durchgeführt werden.<br><textarea name=\"edit1\" id=\"edit1\" rows=\""
@@ -12340,6 +12477,165 @@ sub MSwitch_saveconf($$) {
     return;
 }
 ################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sub MSwitch_exec_undo($$) {
+    my ( $hash, $cont ) = @_;
+    my $name     = $hash->{NAME};
+    my $contcopy = $cont;
+
+    delete $data{MSwitch}{devicecmds1};
+    delete $data{MSwitch}{last_devicecmd_save};
+
+    delete( $hash->{READINGS} );
+    $cont =~ s/#c\[sp\]/ /g;
+    $cont =~ s/#c\[se\]/;/g;
+    $cont =~ s/#c\[dp\]/:/g;
+    my @changes;
+    my $info = "";
+    my @found = split( /#\[EOL\]/, $cont );
+
+    foreach (@found) {
+
+        if ( $_ =~ m/#Q (.*)/ )    # setattr
+        {
+            push( @changes, $1 );
+        }
+        if ( $_ =~ m/#I (.*)/ )    # setattr
+        {
+            $info = $1;
+        }
+        if ( $_ =~ m/#VS (.*)/ )    # setattr
+        {
+            if ( $1 ne $vupdate ) {
+                readingsSingleUpdate( $hash, ".wrong_version", $1, 0 );
+                return;
+            }
+        }
+        if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
+        {
+            if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
+
+                delete( $hash->{READINGS}{$1} );
+            }
+            else {
+                my $newstring = $2;
+                if ( $1 eq ".Device_Affected_Details" ) {
+                    $newstring =~ s/;/#[se]/g;
+                    $newstring =~ s/:/#[dp]/g;
+                    $newstring =~ s/\t/    /g;
+                    $newstring =~ s/ /#[sp]/g;
+                    $newstring =~ s/\\/#[bs]/g;
+                    $newstring =~ s/,/#[ko]/g;
+                    $newstring =~ s/^#\[/#[eo]/g;
+                    $newstring =~ s/^#\]/#[ec]/g;
+                    $newstring =~ s/\|/#[wa]/g;
+                    $newstring =~ s/#\[se\]#\[se\]#\[se\]/#[se]#[nl]/g;
+                    $newstring =~ s/#\[se\]#\[se\]/#[nl]/g;
+                }
+                if ( $1 eq ".sysconf" ) { }
+
+                if ( $1 eq ".Device_Events" ) {
+                    $newstring =~ s/ /#[tr]/g;
+                }
+
+                if ( $1 eq ".Distributor" ) {
+                    $newstring =~ s/#\[nl\]/\n/g;
+                }
+                readingsSingleUpdate( $hash, "$1", $newstring, 0 );
+            }
+        }
+        if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
+        {
+        # nothing
+        }
+    }
+    # my $testreading = $hash->{helper}{safeconf};
+    # my @areadings   = ( keys %{$testreading} );
+    # foreach my $key (@areadings) {
+        # if ( $key eq "devStateIcon" ) {
+            # $attr{$name}{$key} = $hash->{helper}{safeconf}{$key};
+        # }
+        # else {
+            # fhem( "attr $name $key " . $hash->{helper}{safeconf}{$key} );
+        # }
+    # }
+    ################# helperkeys abarbeiten #######
+
+    readingsSingleUpdate( $hash, ".V_Check", $vupdate, 0 );
+
+    delete( $hash->{helper}{safeconf} );
+    delete( $hash->{helper}{mode} );
+    ##############################################
+    MSwitch_set_dev($hash);
+    if ( @changes > 0 ) {
+        my $save = join( '|', @changes );
+        readingsSingleUpdate( $hash, ".change", $save, 0 );
+    }
+    if ( $info ne "" ) {
+        readingsSingleUpdate( $hash, ".change_info", $info, 0 );
+    }
+    delete( $hash->{helper}{config} );
+    fhem("deletereading $name EVENTCONF");
+
+    # timrer berechnen
+    MSwitch_Createtimer($hash);
+
+    # eventtoid einlesen
+    delete( $hash->{helper}{eventtoid} );
+    my $bridge = ReadingsVal( $name, '.Distributor', 'undef' );
+    if ( $bridge ne "undef" ) {
+        my @test = split( /\n/, $bridge );
+        foreach my $testdevices (@test) {
+            my ( $key, $val ) = split( /=>/, $testdevices );
+            $hash->{helper}{eventtoid}{$key} = $val;
+        }
+
+    }
+
+    return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 sub MSwitch_backup_done($) {
     my ($string) = @_;
     return unless ( defined($string) );
