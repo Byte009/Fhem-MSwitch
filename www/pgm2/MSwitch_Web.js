@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '1.1';
+	var version = '1.2';
 	var info = '';
 	var debug ='off';
 	
@@ -1684,6 +1684,23 @@ if (debug == 'on'){ alert('checkcondition') }
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	});
 	
+
+
+$("#undo").click(function(){
+
+//alert("undo");
+//alert(devicename);
+
+var nm = $(t).attr("nm");
+
+//alert(nm);
+
+	var  def = nm+" undo ";
+	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
+
+
+
+});
 
 
 function checklines(name)
