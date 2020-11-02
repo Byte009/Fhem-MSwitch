@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     	# off/on
-my $version      = '4.14';  	# version
+my $version      = '4.15';  	# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
 my $importat     = 'on';     	# on/off
@@ -4165,19 +4165,19 @@ MSwitch_LOG( $ownName, 6, "--- eigegangenes Event --- $event ---L:" . __LINE__ )
  
  if (defined $eventsollwait && $eventsollwait ne "")
  { 
- #Log3($ownName,2,"eventsollwait - $eventcopy1 - $eventsollwait") ;
+ #og3($ownName,2,"eventsollwait - $eventcopy1 - $eventsollwait") ;
  my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$eventcopy1};
- if ($lastincomming eq ""){
- $lastincomming = 0 ;
- #Log3($ownName,2,"Keine Zeit gespeichert, setze zeit auf 0  ") ;
- 
-  }
+ if ($lastincomming eq "")
+		 {
+		 $lastincomming = 0 ;
+		 #Log3($ownName,2,"Keine Zeit gespeichert, setze zeit auf 0  ") ;
+		 }
   
   #Log3($ownName,2,"letzter aufruf  : $lastincomming    ") ;
   
   
   my $newdiff =  $lastincomming+$eventsollwait-time;
-  #Log3($ownName,2,"warte bis aufruf: $newdiff") ;
+ # Log3($ownName,2,"warte bis aufruf: $newdiff") ;
   
  if ($newdiff > 0)
 	{
@@ -4185,8 +4185,7 @@ MSwitch_LOG( $ownName, 6, "--- eigegangenes Event --- $event ---L:" . __LINE__ )
 	#Log3($ownName,2,"EVENT GEBLOCKT   ") ;
 	#Log3($ownName,2,"Blocking soll erfolgen noch $newdiff sekunden   ") ;
 	
-	
-	 MSwitch_LOG($ownName,6,"Event $eventcopy1 wird noch $newdiff sekunden  geblockt");
+	MSwitch_LOG($ownName,6,"Event $eventcopy1 wird noch $newdiff sekunden  geblockt");
 	next EVENT;
 	}
 	else
@@ -4350,11 +4349,15 @@ MSwitch_LOG( $ownName, 6, "--- eigegangenes Event --- $event ---L:" . __LINE__ )
 
 ##########################################
                 ### pruefe Bridge
-                #Log3("test",6,"aufruf checkbridge");
+                #Log3("test",0,"aufruf checkbridge");
 
                 my ( $chbridge, $zweig, $bridge ) =
                   MSwitch_checkbridge( $own_hash, $ownName, $eventcopy1, );
 
+
+
+
+              #   Log3("test",0,"$chbridge, $zweig, $bridge") if $chbridge eq "found bridge";;
                 next EVENT if $chbridge eq "found bridge";
 
                 ########################## prüfe Bridge
@@ -4734,47 +4737,45 @@ MSwitch_LOG( $ownName, 6, "aufruf execnotif: $ar2, $ar3, $ar4, $execids L:" . __
 #########################
 sub MSwitch_checkbridge($$$) {
     my ( $hash, $name, $event ) = @_;
-    MSwitch_LOG( $name, 6, "SUB BRIDGE: $event L:" . __LINE__ );
+    MSwitch_LOG( $name, 6, "SUB BRIDGE EVENT: $event L:" . __LINE__ );
     my $bridgemode = ReadingsVal( $name, '.Distributor', '0' );
     my $expertmode = AttrVal( $name, 'MSwitch_Expert', '0' );
 
-
-
 	my @bridge;
 	my $zweig;
-		
-		
 		
     #MSwitch_LOG( $name, 6, "SUB BRIDGE bridgemode: $bridgemode L:" . __LINE__ );
     return "no_bridge" if $expertmode eq "0";
     return "no_bridge" if $bridgemode eq "0";
 
-    my $foundkey = "undef";
     my $etikeys  = $hash->{helper}{eventtoid};
-	
+	my $foundkey = "undef";
 	
     foreach my $a ( sort keys %{$etikeys} ) 
 	{
-
+		
+		@bridge=();
+		$foundkey = "undef";
         MSwitch_LOG( $name, 6, "SUB BRIDGE KEY: $a L:" . __LINE__ );
 
         my $re = qr/$a/;
+	
         $foundkey = $a if ( $event =~ /$re/ );
+		
 		MSwitch_LOG( $name, 6, "SUB BRIDGE foundkey: $foundkey L:" . __LINE__ );
+		MSwitch_LOG( $name, 6, "SUB BRIDGE EVENT: $event L:" . __LINE__ );
+		MSwitch_LOG( $name, 6, "SUB BRIDGE EVENT vergleich mit a: $a L:" . __LINE__ );
+		
 		
 	##########################	
 	#	ausführen des gefundenen keys
 	#	
 		@bridge = split( / /, $hash->{helper}{eventtoid}{$foundkey} ) if exists $hash->{helper}{eventtoid}{$foundkey};
 		#$zweig;
-		
+		MSwitch_LOG( $name, 6, "SUB BRIDGE : @bridge L:" . __LINE__ );
 		next if @bridge < 1;
-		
-		
 		$zweig = "on"  if $bridge[0] eq "cmd1";
 		$zweig = "off" if $bridge[0] eq "cmd2";
-		
-		
 		MSwitch_LOG( $name, 6,"ID Bridge gefunden: zweig: $bridge[0] , ID:$bridge[2]  L:" . __LINE__ );
 		MSwitch_Exec_Notif( $hash, $zweig, 'nocheck', $event, $bridge[2] );
 	
@@ -4786,9 +4787,7 @@ sub MSwitch_checkbridge($$$) {
         return "NO BRIDGE FOUND !";
     }
 	
-	
-	
-	
+
     #my @bridge = split( / /, $hash->{helper}{eventtoid}{$foundkey} );
    # my $zweig;
 
@@ -9146,8 +9145,13 @@ delete( $hash->{helper}{aktevent} );
 					delete( $hash->{helper}{aktevent} );
 
 
-
-
+   if ( $cs =~ m/(.*)({.*})/ ) {
+my $exec = $2;
+$exec = eval $exec;
+#my $test=$1;
+#Log3("test",0,$1.$exec);
+$cs = $1.$exec;
+   }
                     ############################
                     if ( $cs =~ m/{.*}/ ) {
 
@@ -12194,6 +12198,10 @@ sub MSwitch_Getconfig($$) {
     }
 
     #  my %keys;
+	
+	
+	if ($aktion ne 'undo')
+	{
     foreach my $attrdevice ( keys %{ $attr{$testdevice} } )    #geht
     {
         my $tmp = AttrVal( $testdevice, $attrdevice, '' );
@@ -12208,20 +12216,22 @@ sub MSwitch_Getconfig($$) {
         $out .= "#A $attrdevice -> " . $tmp . "\\n";
         $count++;
     }
-    $count++;
-    $count++;
+	
+	
+   
 	
 	
 	
 	
+	}else{
 	
-	if ($aktion eq 'undo')
-	{
 		return $out;
 	}
 	
 	
-	
+	 
+$count++;
+    $count++;
 	
 	
 	
@@ -13157,6 +13167,7 @@ sub MSwitch_dec($$) {
         # ersetzung für perlcode
         $todec =~ s/\n//g;
         $todec =~ s/\[\$SELF:/[$name:/g;
+		$todec =~ s/MSwitch_Self/$name/g;
 
     }
     else {
