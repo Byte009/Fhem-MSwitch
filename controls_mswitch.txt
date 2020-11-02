@@ -1,4 +1,4 @@
-UPD 2020-10-21_!&:00:00 448330 FHEM/98_MSwitch.pm
+UPD 2020-11-02_07:00:00 448846 FHEM/98_MSwitch.pm
 UPD 2020-10-08_05:00:00 73539 www/pgm2/MSwitch_Wizard.js
 UPD 2020-10-21_!&:10:00 45683 www/pgm2/MSwitch_Web.js
 UPD 2020-10-16_05:00:00 45846 www/MSwitch/MSwitch_Help.txt
