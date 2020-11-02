@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     	# off/on
-my $version      = '4.15';  	# version
+my $version      = '4.16';  	# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
 my $importat     = 'on';     	# on/off
@@ -9145,13 +9145,19 @@ delete( $hash->{helper}{aktevent} );
 					delete( $hash->{helper}{aktevent} );
 
 
-   if ( $cs =~ m/(.*)({.*})/ ) {
-my $exec = $2;
-$exec = eval $exec;
-#my $test=$1;
-#Log3("test",0,$1.$exec);
-$cs = $1.$exec;
-   }
+   if ( $cs =~ m/(^set.*)({.*})/ ) {
+	  
+	  
+	   # Log3("test",0,"s1: ".$1);
+	   # Log3("test",0,"s2: ".$2);
+	  
+	  # Log3("test",0,$cs);
+  my $exec = $2;
+  $exec = eval $exec;
+  #my $test=$1;
+  #Log3("test",0,$1.$exec);
+  $cs = $1.$exec;
+     }
                     ############################
                     if ( $cs =~ m/{.*}/ ) {
 
