@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     	# off/on
-my $version      = '4.16';  	# version
+my $version      = '4.17';  	# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
 my $importat     = 'on';     	# on/off
@@ -2000,6 +2000,7 @@ sub MSwitch_Set($@) {
               . "  MSwitch_Extensions:0,1"
               . "  MSwitch_Inforoom"
               . "  MSwitch_DeleteCMDs:manually,automatic,nosave"
+			  . "  MSwitch_Modul_Mode:0,1"
               . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
               . "  MSwitch_Condition_Time:0,1"
               . "  MSwitch_Selftrigger_always:0,1"
