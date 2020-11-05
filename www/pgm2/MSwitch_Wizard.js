@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.8';
+	var version = 'V3.9';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -548,7 +548,7 @@ function devicelistmultiple(id,name){
 	ret="";
 	
 	//if (script == "no_script"){
-		ret = '<select style="width: 50em;" size="5" multiple id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: takeselected(id,name)\">';
+		ret = '<select style="width: 50em;" size="10" multiple id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: takeselected(id,name)\">';
 /* 	}
 	else{
 		ret = '<select style="width: 30em;" size="5" multiple id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: '+script+'(this.value,id,name)\">';
@@ -1640,7 +1640,12 @@ function starttemplate(template){
 function testline(line,newtemplate){
 	var cmdsatz = line.split(">>");
 	if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-	if (cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ" ){
+	
+	
+	
+	
+	
+	if (cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
 
 		if (INQ[cmdsatz[0]]== "1")
 		{
@@ -1651,7 +1656,7 @@ function testline(line,newtemplate){
 		}
 }
 
-
+//alert(cmdsatz[0]);
 //alert(cmdsatz[0]);
 
 
@@ -1707,6 +1712,11 @@ if (cmdsatz[0] == "SELECT")
 		} 
 }
 
+
+
+
+
+
 // INQ
 if (cmdsatz[0] == "INQ"){
 	 text = cmdsatz[4];
@@ -1714,6 +1724,25 @@ if (cmdsatz[0] == "INQ"){
 	 setINQ(text,cmdsatz[1],cmdsatz[2],benenner,newtemplate);
 	 return "stop";
 }
+
+
+if (cmdsatz[0] == "INCSELECT"){
+	 text = cmdsatz[3];
+	
+	 
+	// alert (cmdsatz[3]);
+	// alert (cmdsatz[2]);
+	// return "stop";
+	 
+	 setINQSELECT(text,cmdsatz[1],cmdsatz[2],newtemplate);
+	 return "stop";
+}
+
+
+
+
+
+
 
 if (cmdsatz[0] == "REPEAT"){
 	 text = cmdsatz[2];
@@ -1933,7 +1962,7 @@ out=changevar(out);
 out+="<br>&nbsp;<br>";
 selectlist = devicelistmultiple('selectlist','name')
 out+=selectlist;
-out+="<br>&nbsp;<br><input id='input' type='text' value='' size='60'>";
+out+="<br>&nbsp;<br><input id='input' type='text' value='"+PREASSIGMENT+"' size='100'>";
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
@@ -1947,7 +1976,7 @@ var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
-out+="<input id='input' type='text' value='"+PREASSIGMENT+"' size='60'><br>&nbsp;<br>";
+out+="<input id='input' type='text' value='"+PREASSIGMENT+"' size='100'><br>&nbsp;<br>";
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
 out+="<br>&nbsp;<br>&nbsp;<br>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
@@ -2012,6 +2041,119 @@ starttemplate(newtemplate);
 return;
 }
 
+
+
+
+
+
+
+// #################
+
+function setINQSELECT(text,inq,inq1,newtemplate){
+//
+//var out ="";
+/* out+=text;
+out=changevar(out);
+out+="<br>&nbsp;<br>";
+out+="<fieldset>";
+out+="<input type=\"radio\" id=\"INQ1\" name=\"radio\" value=\"0\">";
+out+="<label for=\"INQ1\"> "+names[0]+"</label><br> ";
+out+="<input type=\"radio\" id=\"INQ2\" name=\"radio\" value=\"1\">";
+out+="<label for=\"INQ2\"> "+names[1]+"</label><br> ";	
+out+="</fieldset>";		
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setINQok(\""+inq+"\",\""+inq1+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+docum ent.getElementById('importTemplate1').innerHTML = out;
+*/
+
+//alert(text);
+// style="width: 50em;" size="10"
+var ret ="";
+ret+=text;
+//ret=changevar(ret);
+ret+="<br>&nbsp;<br>";
+
+ ret+= '<select id=\"INQCSELECT\" name=\"'+name+'\" >';
+
+	var count =0;
+
+	
+	var names = inq.split(",");
+	var options = inq1.split(",");
+	
+	
+	var len =  names.length;
+for (i=count; i<len; i++)
+	
+		{
+			ret +='<option value='+names[i]+'>'+options[i]+'</option>';
+		}
+	ret +='</select>';
+	
+	
+	
+	
+	ret+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setINCSELECTok()'>";
+ret+="<br>&nbsp;<br>&nbsp;<br>";
+ret+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+	
+	
+	
+	
+	document.getElementById('importTemplate1').innerHTML = ret;
+	
+	return ;
+
+
+}
+
+// #################
+
+
+
+
+
+
+
+function setINCSELECTok()
+{
+	
+	
+	
+var inhalt = document.getElementById('INQCSELECT').value;
+var value;
+
+//alert(inhalt);
+
+
+var template = document.getElementById('newtemplate').value;
+
+
+
+
+INQ[inhalt]  = "1";
+
+
+starttemplate(newtemplate);
+return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // #################
 
 function setINQ(text,inq,inq1,benenner,newtemplate){
@@ -2066,7 +2208,7 @@ var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
-out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
+out+="<select multiple style=\"width: 40em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
 
 
 out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
@@ -2076,7 +2218,7 @@ out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
 
 
 
-out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
+out+="<br>&nbsp;<br><input id='input' type='text' value='"+PREASSIGMENT+"' size='100'>";
 
 
 
@@ -2096,7 +2238,7 @@ var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
-out+="<select multiple style=\"width: 30em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
+out+="<select multiple style=\"width: 40em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
 
 out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
 out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
@@ -2104,7 +2246,7 @@ out+="&nbsp;<input type='button' value='clear' onclick='javascript: clearmonitor
 out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
 
 
-out+="<br>&nbsp;<br><input id='input' type='text' value='' size='50'>";
+out+="<br>&nbsp;<br><input id='input' type='text' value='"+PREASSIGMENT+"'size='100'>";
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputvarok(\""+toset+"\",\""+typ+"\")'>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
@@ -2153,7 +2295,7 @@ return;
 // #################
 
 function freeinput(text,toset,newtemplate,typ){
-var ret = "<input id='input' type='text' value='"+PREASSIGMENT+"' size='60'><br>&nbsp;<br>";
+var ret = "<input id='input' type='text' value='"+PREASSIGMENT+"' size='100'><br>&nbsp;<br>";
 	if( document.getElementById('bank1').value == "FreeCmd" && (toset =="comand_cmd1" || toset =="comand_cmd2"))
 	{
 		ret = '<textarea id ="input" cols="40" rows="4"></textarea><br>&nbsp;<br>';
@@ -2402,18 +2544,20 @@ if (typa == "A" ){
 	var satz = fields[1].split("~");
 	if (befehl == "Trigger_device"){
 	
+	var newinhalt= 	changevar(inhalt)
+	
 	//alert(befehl);
 	//alert(inhalt);
 	
-		if (inhalt =="GLOBAL")
+		if (newinhalt =="GLOBAL")
 		{ 
 	configuration[5] = "#S Trigger_device -> all_events";
 	document.getElementById('bank1').value = 'all_events';
 	}else{
 		
-		configuration[5] = "#S Trigger_device -> "+inhalt;
+		configuration[5] = "#S Trigger_device -> "+newinhalt;
 		
-		document.getElementById('bank1').value = inhalt;
+		document.getElementById('bank1').value = newinhalt;
 	}
 	
 	
