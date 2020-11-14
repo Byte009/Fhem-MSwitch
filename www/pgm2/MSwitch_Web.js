@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '1.2';
+	var version = '4.20';
 	var info = '';
 	var debug ='off';
 	
@@ -558,6 +558,39 @@ if (document.getElementById('trigcmdon'))
 				}
 		}	 
 	}
+	
+	
+	
+	
+	// teste auch showids
+    var cookie = getCookieValue("Mswitch_ids_"+devicename);
+	
+	
+	
+	
+	if (cookie == ""){
+		//alert("leeres cookie" );
+		
+	}
+	else{
+	//alert(cookie);
+	
+	document.getElementById('aw_showid1').value=cookie;
+	
+	$("[name=noshow]").css("display","none");
+	allids = cookie.split(",");
+	//alert(allids);
+	
+	
+	
+	for (i = 0; i < allids.length; i++) {
+	test ="[idnumber="+allids[i]+"]";
+	//alert(test);
+	$(test).css("display","block");
+	}
+	}
+	
+	
 	
 	
 return;
@@ -1404,6 +1437,13 @@ if (debug == 'on'){ alert('savesys') };
 	}
 
 // unbekannt
+
+function getCookieValue(a) {
+   const b = document.cookie.match('(^|;)\\s*' + a + '\\s*=\\s*([^;]+)');
+   return b ? b.pop() : '';
+}
+
+
 function showtextfield(newValue,copytofield,target)
 	{
 	if (debug == 'on'){ alert('showtextfield') };
@@ -1615,12 +1655,76 @@ if (debug == 'on'){ alert('checkcondition') }
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	}); 
 	
-//unbekannt
+//zeige versteckte geräte
 	$("#aw_show").click(function(){
 	if (debug == 'on'){ alert('#aw_show') };
 	$("[name=noshow]").css("display","block");
-	$("[name=noshowtask]").css("display","none");
+	
+	
+	var jetzt = new Date();
+	
+	var Auszeit = new Date(jetzt.getTime());
+	
+
+	document.cookie = "Mswitch_ids_"+devicename + "=" + "" + "; expires=" + Auszeit.toGMTString() + ";";
+	
+	document.getElementById('aw_showid1').value="";
+
+	$("#anzid").html('0');
+	
+	
+	//$("[idnumber=2]").css("display","block");
+	
+	// $("[name=noshowtask]").css("display","none");
 	});
+	
+	
+// zeige geräte mit ID
+	$("#aw_showid").click(function(){
+	if (debug == 'on'){ alert('#aw_show') };
+	//alert("ok");
+	showids = document.getElementById('aw_showid1').value;
+	
+	
+	
+	// cookie setzen
+	var jetzt = new Date();
+	var Verfall = 1000 * 60 * 60 *12;
+	var Auszeit = new Date(jetzt.getTime() + Verfall);
+	
+
+	document.cookie = "Mswitch_ids_"+devicename + "=" + showids + "; expires=" + Auszeit.toGMTString() + ";";
+	
+	if (showids == ""){return;}
+	
+	
+	
+	
+	
+	$("[name=noshow]").css("display","none");
+	allids = showids.split(",");
+	//alert(allids);
+	
+	
+	
+	for (i = 0; i < allids.length; i++) {
+	test ="[idnumber="+allids[i]+"]";
+	//alert(test);
+	$(test).css("display","block");
+	}
+	
+	
+	
+	allcmds=$("[name=noshow]:hidden").length;
+	//alert(allcmds);
+	
+	$("#anzid").html(allcmds);
+	
+	
+	});
+	
+	
+
 
 //unbekannt	
 	$("#aw_addevent").click(function(){

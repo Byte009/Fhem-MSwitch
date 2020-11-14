@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V3.9';
+	var version = 'V4.20';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
