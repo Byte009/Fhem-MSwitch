@@ -63,7 +63,7 @@ use SetExtensions;
 use LWP::Simple;
 use JSON;
 use HttpUtils;
-
+use Color;
 #use utf8;
 
 
@@ -82,7 +82,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support =
 "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     	# off/on
-my $version      = '4.17';  	# version
+my $version      = '4.20';  	# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
 my $importat     = 'on';     	# on/off
@@ -368,9 +368,19 @@ sub MSwitch_Shutdown($) {
 sub MSwitch_Copy ($) {
     my ( $old_name, $new_name ) = @_;
     my $hash = $defs{$new_name};
-    my @areadings =
-      qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check last_exec_cmd Trigger_device Trigger_log last_event state .sysconf Sys_Extension)
-      ;    #alle readings
+	
+	
+	my $oldhash = $defs{$old_name};
+    my $testreading = $oldhash->{READINGS};
+    my @areadings   = ( keys %{$testreading} );
+	
+	
+	
+	
+	
+	
+	
+    #my @areadings = qw(.Device_Affected .Device_Affected_Details .Device_Events .First_init .Trigger_Whitelist .Trigger_cmd_off .Trigger_cmd_on .Trigger_condition .Trigger_off .Trigger_on .Trigger_time .V_Check last_exec_cmd Trigger_device Trigger_log last_event state .sysconf Sys_Extension);    #alle readings
     my $cs = "attr $new_name disable 1";
     my $errors = AnalyzeCommandChain( undef, $cs );
     if ( defined($errors) ) {
@@ -5943,6 +5953,7 @@ Set->Schaltbefehl
 Hidden command branches are available->Ausgeblendete Befehlszweige vorhanden
 condition:->Schaltbedingung
 show hidden cmds->ausgeblendete Befehlszweige anzeigen
+show IDs->zeige Befehlszweige mit der ID
 execute and exit if applies->Abbruch nach Ausführung
 Repeats:->Befehlswiederholungen:
 Repeatdelay in sec:->Wiederholungsverzögerung in Sekunden:
@@ -6997,10 +7008,17 @@ MS-HELPdelay
             }
 
             my $aktpriority = $savedetails{ $aktdevice . '_showreihe' };
+			my $aktid = $savedetails{ $aktdevice . '_id' };
+			
+			
+			
+			
+			
+			
             if ( grep { $_ eq $aktpriority } @hidecmds ) {
                 $noshow++;
                 $detailhtml .=
-"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
+"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' idnumber='$aktid' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
                   . $controlhtmldevice
                   . "</div>";
             }
@@ -7009,13 +7027,13 @@ MS-HELPdelay
                 if ( $savedetails{ $aktdevice . '_hidecmd' } eq "1" ) {
                     $noshow++;
                     $detailhtml .=
-"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
+"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' idnumber='$aktid' name ='noshow' cellpadding='0' style='display: none;border-spacing:0px;'>"
                       . $controlhtmldevice
                       . "</div>";
                 }
                 else {
                     $detailhtml .=
-"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
+"<div t='1' id='MSwitchWebTR' nm='$hash->{NAME}' name ='noshow' idnumber='$aktid' cellpadding='0' style='display: block;border-spacing:0px;'>"
                       . $controlhtmldevice
                       . "</div>";
                 }
@@ -7073,25 +7091,44 @@ MS-HELPdelay
 			";
         }
 
+
+
+
+		# showid
+
+
+
+
+
+
+
+
+
         # textersetzung modify
 
-        if ( $noshow > 0 ) {
-            $modify =
-"<table width = '100%' border='0' class='block wide' name ='noshowtask' id='MSwitchDetails' cellpadding='4' style='border-spacing:0px;' nm='MSwitch'>
-			<tr class='even'><td><br>
-			Hidden command branches are available ($noshow)
 
+        #if ( $noshow > 0 ) {
+            $modify =
+			"<table width = '100%' border='0' class='block wide' name ='noshowtask' id='MSwitchDetails' cellpadding='4' style='border-spacing:0px;' nm='MSwitch'>
+			<tr class='even' ><td><br>
+			Hidden command branches are available (<span id='anzid'>$noshow</span>)
 			<input type='button' id='aw_show' value='show hidden cmds' >
+			
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type='button' id='aw_showid' value='show IDs' >
+			<input type='text' id='aw_showid1' size=\"20\" value='' >
+			
 			
 			<br>&nbsp;
 			</td></tr></table><br>
 			" . $modify;
-        }
+       # }
 
         foreach (@translate) {
             my ( $wert1, $wert2 ) = split( /->/, $_ );
             $modify =~ s/$wert1/$wert2/g;
         }
+
 
         $detailhtml .= $modify;
     }
