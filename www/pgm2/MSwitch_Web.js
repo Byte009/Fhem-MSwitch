@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '4.20';
+	var version = '4.30';
 	var info = '';
 	var debug ='off';
 	
@@ -1037,6 +1037,24 @@ function activate(state,target,options,copytofield){
 function testcmd(field,devicename,opt){
 if (debug == 'on'){ alert('testcmd') };
 	comand = $("[name="+field+"]").val();
+	
+	
+	
+	comand=comand.trim();
+	
+	
+	
+			// var myRegEx = new RegExp('^{');  
+	// treffer = comand.match(myRegEx);
+					
+			// alert (treffer);	
+			
+			
+			
+	//alert(comand);
+	
+	
+	
  	if (comand == 'no_action')
 		{
 		return;
@@ -1051,12 +1069,25 @@ if (debug == 'on'){ alert('testcmd') };
 	if (devicename != 'FreeCmd')
 		{
 		cmd ='set '+devicename+' '+comand;
+		
+		
+		
+		
+		
 		FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
 		FW_okDialog(EXECCMD+' '+cmd); // !!!
 		FW_errmsg(cmd, 5);
 		} 
 	 else
 		{
+			
+			
+			
+			
+			
+			
+			
+			
 			comand = comand.replace(/;;/g,'[DS]');
 			comand = comand.replace(/;/g,';;');
 			comand = comand.replace(/\\[DS\\]/g,';;');
@@ -1070,17 +1101,60 @@ if (debug == 'on'){ alert('testcmd') };
 				return;
 				}
 			
+			
+			
+	
+			showcomand = comand;
+			
+			
 			if (t0 == '{' && t1 == '}') 
 				{
+					
+					comand  = comand.substr(1, comand.length-1);
+					erweiterung  = "{my $SELF=\""+mswitchname+"\";;";
+					erweiterung += "my $NAME=\""+"\";;";
+					erweiterung += "my $EVTPART1=\""+"\";;";
+					erweiterung += "my $EVTPART2=\""+"\";;";
+					erweiterung += "my $EVTPART3=\""+"\";;";
+					erweiterung += "my $EVTFULL=\""+"\";;";
+					comand=erweiterung+comand;
+					//alert(erweiterung);
+					//alert(comand);
+					//alert(encodeURIComponent(comand));
+					
+					//showcomand = comand;
+		
 				}
 			else
 				{
-				comand = '{fhem("'+comand+'")}';
+					// alert(comand);
+			
+					erweiterung  = "{my $SELF=\""+mswitchname+"\";;";
+					erweiterung += "my $NAME=\""+"\";;";
+					erweiterung += "my $EVTPART1=\""+"\";;";
+					erweiterung += "my $EVTPART2=\""+"\";;";
+					erweiterung += "my $EVTPART3=\""+"\";;";
+					erweiterung += "my $EVTFULL=\""+"\";;";	
+					
+					
+				comand = erweiterung+'fhem("'+comand+'")}';
+				
+				
+				// alert(comand);
+				
+				
+				//showcomand = comand;
 				}
 			
 			cmd = comand;
+			
+			//alert(cmd);
+			
 			FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
-			FW_okDialog(EXECCMD+' '+cmd);
+			
+			showcomand = showcomand.replace(/;;/g,';');
+			
+			FW_okDialog(EXECCMD+' '+showcomand);
 		} 
 	}
 
