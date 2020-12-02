@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '4.30';
+	var version = '4.40';
 	var info = '';
 	var debug ='off';
 	
@@ -646,18 +646,17 @@ function savedistributor(){
 	if (debug == 'on'){ alert('savedistributor') };
 	
 	//alert('savedistributor')
-	
 	//alert(DISTRIBUTLINES);
 	var newidfile='';
 	for (i=0; i<DISTRIBUTLINES; i++)
 		{
 			aktline =  $("#ideventNR"+i).val();
-			
-			
+
 			//alert(aktline);
-			
-			
-			
+		
+		aktline = aktline.replace(/ /g,'[SP]');
+		
+		
 			if (aktline === undefined) { continue; }
 			if (aktline == 'undefined') { continue; }
 			aktcmd=  $("#ideventCMD"+i).val();
@@ -665,40 +664,17 @@ function savedistributor(){
 			newidfile +=aktline+"=>cmd"+aktcmd+"[SP]ID[SP]"+aktid+"[NL]";		
 		}
 		
-		
-		//alert(newidfile);
-		
-	//if 	(newidfile =="")
-	//{
-		
-		// alert('?cmd=deletereading '+devicename+' .Distributor&XHR=1');
-		
-		
-		// FW_cmd(FW_root+'?cmd=deletereading '+devicename+' .Distributor&XHR=1');
-	
-		//[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
-		//randomdev.forEach (unlock);
-		
-	//}else{
-		
 
-	 // FW_cmd(FW_root+'?cmd=setreading '+devicename+' .Distributor '+newidfile+'&XHR=1');
-	
-	
-	// } 
-	
-	//alert(newidfile);
-	//return;
-	 
+//alert(newidfile);
+
+
 	FW_cmd(FW_root+'?cmd=set '+devicename+' setbridge '+newidfile+'&XHR=1');
+	
+	
+	
 	[ "aw_md","aw_trig","aw_md1","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
 	randomdev.forEach (unlock);
 	 
-	 
-	
-	//var nm = $(t).attr("nm");
-	//var  def = nm+" setbridge "+newidfile;
-	//location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	
 	return;
 }
