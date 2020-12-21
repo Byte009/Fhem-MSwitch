@@ -66,7 +66,7 @@ my $helpfile    = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     	# off/on
-my $version      = '4.5';  		# version
+my $version      = '4.6';  		# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
 my $importat     = 'on';     	# on/off
@@ -2615,6 +2615,10 @@ MSwitch_Make_Undo($hash);
 
 		my $oldtrigger = ReadingsVal( $name, 'Trigger_device', '' );
 		readingsSingleUpdate( $hash, "Trigger_device",     $args[0], '1' );
+		
+		
+		if ( $args[6] eq 'NoCondition' ){$args[6]="";}
+		
 		readingsSingleUpdate( $hash, ".Trigger_condition", $args[6], 0 );
 
 ######################## new
