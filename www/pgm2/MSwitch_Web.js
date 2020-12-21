@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '4.50';
+	var version = '4.60';
 	var info = '';
 	var debug ='off';
 	
@@ -1824,6 +1824,11 @@ if (debug == 'on'){ alert('checkcondition') }
 	
 	
 	trigdevcond = $("[name=triggercondition]").val();
+	if(typeof(trigdevcond)=="undefined"){trigdevcond="NoCondition"};
+	if(trigdevcond==""){trigdevcond="NoCondition"};
+	
+	
+	
 	trigdevcond = trigdevcond.replace(/\\./g,'#[pt]');
 	trigdevcond = trigdevcond.replace(/:/g,'#[dp]');
 	trigdevcond= trigdevcond.replace(/~/g,'#[ti]');
