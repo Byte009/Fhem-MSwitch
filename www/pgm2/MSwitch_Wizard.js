@@ -17,7 +17,7 @@
   
   
   
-	var version = 'V4.40';
+	var version = 'V4.50';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -55,7 +55,7 @@
 	
 	var configstart = [
 	'#V Version',
-	'#VS V2.01',
+	'#VS V4.00',
 	'#S .First_init -> done',
 	'#S .Trigger_off -> no_trigger',
 	'#S .Trigger_cmd_off -> no_trigger',
@@ -64,10 +64,14 @@
 	'#S .Trigger_on -> no_trigger',
 	'#S .Trigger_cmd_on -> no_trigger',
 	'#S .Trigger_condition -> ',
-	'#S .V_Check -> V2.01',
+	'#S .V_Check -> V4.0',
 	'#S .Device_Events -> no_trigger',
 	'#S .Device_Affected -> no_device',
-	'#S .Trigger_time -> ',
+	'#S .Trigger_time_1 -> ',
+	'#S .Trigger_time_2 -> ',
+	'#S .Trigger_time_3 -> ',
+	'#S .Trigger_time_4 -> ',
+	'#S .Trigger_time_5 -> ',
 	'#A MSwitch_Debug -> 0',
 	'#A MSwitch_Delete_Delays -> 0',
 	'#A MSwitch_Eventhistory -> 0',
@@ -88,7 +92,7 @@
 
 	var configtemplate = [
 	'#V Version',
-	'#VS V2.01',
+	'#VS V4.0',
 	'#S .First_init -> done',
 	'#S .Trigger_off -> no_trigger',
 	'#S .Trigger_cmd_off -> no_trigger',
@@ -97,10 +101,14 @@
 	'#S .Trigger_on -> no_trigger',
 	'#S .Trigger_cmd_on -> no_trigger',
 	'#S .Trigger_condition -> ',
-	'#S .V_Check -> V2.01',
+	'#S .V_Check -> V4.0',
 	'#S .Device_Events -> no_trigger',
 	'#S .Device_Affected -> no_device',
-	'#S .Trigger_time -> ',
+	'#S .Trigger_time_1 -> ',
+	'#S .Trigger_time_2 -> ',
+	'#S .Trigger_time_3 -> ',
+	'#S .Trigger_time_4 -> ',
+	'#S .Trigger_time_5 -> ',
 	'#S .Device_Affected_Details -> '];
 
 
@@ -811,9 +819,9 @@ function saveat(){
 	{
 		string = document.getElementById('deftspec').value;
 		// ersetze dp durch #[dp]
-		string ="["+string+"]";
+		//string ="["+string+"]";
 		string = string.replace(/:/gi,"#[dp]");
-		configstart[13] ='#S .Trigger_time -> on~off~ononly'+ string +'~offonly~onoffonly';
+		configstart[15] ='#S .Trigger_time_3 -> TIME='+ string;
 	}
 	
 
@@ -821,9 +829,9 @@ function saveat(){
 	{
 		string = document.getElementById('deftspec').value;
 		// ersetze dp durch #[dp]
-		string = '['+string+'*00:01-23:59]';
+		string = 'REPEAT='+string+'*00:01-23:59';
 		string = string.replace(/:/gi,"#[dp]");
-		configstart[13] ='#S .Trigger_time -> on~off~ononly'+ string +'~offonly~onoffonly';
+		configstart[15] ='#S .Trigger_time_3 ->'+ string;
 	}
 	
 	fillconfig('rawconfig1');
@@ -1209,7 +1217,7 @@ function setpreconf(name){
 		
 		if (treffer[1] != MSDATAVERSION)
 		{
-			var wrongversion =' <strong><u>Versionskonflikt:</u><br>Diese Version ist nciht für die aktuelle Datenstruktur vorgesehen \
+			var wrongversion =' <strong><u>Versionskonflikt:</u><br>Diese Version ist nicht für die aktuelle Datenstruktur vorgesehen \
 			und kann nicht importiert werden.\
 			<br>Bitte den Support kontaktieren.\
 			<br>geforderte/benoetigte Version: '+MSDATAVERSION+'\
@@ -1645,7 +1653,7 @@ function testline(line,newtemplate){
 	
 	
 	
-	if (cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
+	if (cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "MINIMAL" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
 
 		if (INQ[cmdsatz[0]]== "1")
 		{
@@ -1669,6 +1677,35 @@ if (cmdsatz[0] == "TEXT"){
 	out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setTEXTok(\""+"\")'>";
 	document.getElementById('importTemplate1').innerHTML = out;
 return "stop";
+}
+
+
+
+
+// DEBUG
+if (cmdsatz[0] == "MINIMAL")
+{
+	
+	//alert("minimaltest "+cmdsatz[1]+" "+MSDATAVERSIONDIGIT);
+	
+	if (cmdsatz[1] > MSDATAVERSIONDIGIT )
+	{
+	//alert("geht nicht ");	
+	
+	out="<br>Aufgrund eines Versionskonfliktes kann dieses Template nicht ausgeführt werden.<br>Bitte MSwitch aktualisieren.";
+	
+	
+	out+="<br>gedorderte Strukturversion: V" + cmdsatz[1];
+	out+="<br>vorhandene Strukturversion: V" + MSDATAVERSIONDIGIT;
+	
+	document.getElementById('importTemplate1').innerHTML = out;
+	
+	
+	
+	return "stop";
+	} 
+	
+	return;
 }
 
 
@@ -2499,7 +2536,7 @@ typa="S";
 	conflenght = configuration.length;
 	
 	
-	//alert(befehl);
+	//alert(configuration[15]);
 	
 	
 	
@@ -2537,11 +2574,11 @@ if (typa == "A" ){
 	
 	
 	//timerfelder vorbereiten
-	var fields = configuration[13].split("->");
+/* 	var fields = configuration[13].split("->");
 	if (fields[1] ==" "){
 		fields[1]="on~off~ononly~offonly~onoffonly";
 	}
-	var satz = fields[1].split("~");
+	var satz = fields[1].split("~"); */
 	if (befehl == "Trigger_device"){
 	
 	var newinhalt= 	changevar(inhalt)
@@ -2576,36 +2613,43 @@ if (typa == "A" ){
 	configuration[conflenght] = newattr;
 	}
 	
-	//time_on
+	//time_on1
 	if (befehl == "Time_on"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
-	satz[0]= satz[0]+inhalt;
-	var newsatz = satz.join("~");
-	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	//satz[0]= satz[0]+inhalt;
+	//var newsatz = satz.join("~");
+	
+	configuration[13] = "#S .Trigger_time_1 -> "+inhalt;
+	
 	}
 	
-	//time_off
+	//time_off 2
 	if (befehl == "Time_off"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
-	satz[1]= satz[1]+inhalt;
-	var newsatz = satz.join("~");
-	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	//satz[1]= satz[1]+inhalt;
+	//var newsatz = satz.join("~");
+	configuration[14] = "#S .Trigger_time_2 -> "+inhalt;
+	
 	}
 	
-	// Time_cmd1
+	// Time_cmd1 3
 	if (befehl == "Time_cmd1"){
+		
+	//alert ("OK");	
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
-	satz[2]= satz[2]+inhalt;
-	var newsatz = satz.join("~");
-	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	//satz[2]= satz[2]+inhalt;
+	//var newsatz = satz.join("~");
+	configuration[15] = "#S .Trigger_time_3 -> "+inhalt;
+	//alert("15 ".configuration[15]);
 	}
 	
-	// Time_cmd2
+	// Time_cmd2 4
 	if (befehl == "Time_cmd2"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
-	satz[3]= satz[3]+inhalt;
-	var newsatz = satz.join("~");
-	configuration[13] = "#S .Trigger_time -> "+newsatz;
+	//satz[3]= satz[3]+inhalt;
+	//var newsatz = satz.join("~");
+	configuration[16] = "#S .Trigger_time_4 -> "+inhalt;
+	//alert("16 ".configuration[16]);
 	}
 	
 	// Trigger_condition
@@ -2898,7 +2942,7 @@ function makedevicenew(configuration){
     // }
 	
 	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
-	configuration[14] = "#S .Device_Affected_Details -> "+newmasterline;
+	configuration[18] = "#S .Device_Affected_Details -> "+newmasterline;
 	return configuration;
 }
 
@@ -2956,7 +3000,7 @@ function makedevice(configuration){
     }
 	
 	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
-	configuration[14] = "#S .Device_Affected_Details -> "+newmasterline;
+	configuration[18] = "#S .Device_Affected_Details -> "+newmasterline;
 	return configuration;
 }
 

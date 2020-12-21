@@ -2,7 +2,7 @@
 // Autor:Byte09
 // #########################
 
-	var version = '4.40';
+	var version = '4.50';
 	var info = '';
 	var debug ='off';
 	
@@ -817,12 +817,8 @@ function noaction(target,copytofield){
 	if (debug == 'on'){ alert('slider') };
 	var selected =document.getElementById(copytofield).value;
 	//var selectfield = "<input type='text' id='" + target +"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;" + first +"<input type='range' min='" + first +"' max='" + last + "' value='" + selected +"' step='" + step + "' onchange=\"javascript: showValue(this.value,'" + copytofield + "','" + target + "')\">" + last  ;
-	
 	var selectfield = "<div class='col3'><div class='fhemWidget' cmd='pct' reading='state' dev='webtestdummy' arg='slider,1,10,100' current='farbe test1'></div></div>";
-	
-	
 	document.getElementById(target).innerHTML = selectfield + '<br>';
-	
 	FW_replaceWidgets();
 	//var opt = target + '_opt';
 	//document.getElementById(opt).value=selected;
@@ -830,23 +826,12 @@ function noaction(target,copytofield){
 	}  
 	
 	
-	
-	
-	
-	
-	
 
  function colorpicker(aktuell,target,copytofield){
 	if (debug == 'on'){ alert('slider') };
 	var selected =document.getElementById(copytofield).value;
-	
-	
 	//var selectfield = "<input type='text' id='" + target +"_opt' size='3' value='' readonly>&nbsp;&nbsp;&nbsp;" + first +"<input type='range' min='" + first +"' max='" + last + "' value='" + selected +"' step='" + step + "' onchange=\"javascript: showValue(this.value,'" + copytofield + "','" + target + "')\">" + last  ;
-	
-	
-	
 	var selectfield = "<input type='color' id='favcolor' name='favcolor' value='#ff0000'>";
-	
 	document.getElementById(target).innerHTML = selectfield + '<br>';
 	//var opt = target + '_opt';
 	//document.getElementById(opt).value=selected;
@@ -977,7 +962,12 @@ function activate(state,target,options,copytofield){
 	
 	
 	
-	//alert(devicecmd[0]);
+	// alert(devicecmd[0]);
+	 
+	 
+	 
+	 
+	 
 	if (devicecmd[0] == 'noArg')
 		{
 		noarg(target,copytofield);
@@ -1264,7 +1254,6 @@ if(typeof fromsc == 'undefined'){
 	fromsc = "noweb";
 }
 
-
 	targetval =document.getElementById(targetid).value;
 	
 	targetval = targetval.replace(/\u2424/g,'\n');
@@ -1279,8 +1268,10 @@ if(typeof fromsc == 'undefined'){
 
 
 function bigwindowformat(targetid,fromsc){
-	//return;
-	// alert(fromsc);
+	
+
+	
+	if (debug == 'on'){ alert('bigwindowformat') };
 	var value = document.getElementById('valtrans').value
 	
 	if (fromsc == "web"){
@@ -1799,27 +1790,51 @@ if (debug == 'on'){ alert('checkcondition') }
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	});
 
-//unbekannt
+
+
+//Timer und Trigger speichern
 	$("#aw_trig").click(function(){
 	if (debug == 'on'){ alert('#aw_trig') };	
 	var nm = $(t).attr("nm");
 	trigdev = $("[name=trigdev]").val();
+	
+	
 	timeon =  $("[name=timeon]").val();
+	if(typeof(timeon)=="undefined"){timeon="NoTimer"};
+	if(timeon==""){timeon="NoTimer"};
+	
+	
 	timeoff =  $("[name=timeoff]").val();
+	if(typeof(timeoff)=="undefined"){timeoff="NoTimer"};
+	if(timeoff==""){timeoff="NoTimer"};
+	
 	timeononly =  $("[name=timeononly]").val();
+	if(typeof(timeononly)=="undefined"){timeononly="NoTimer"};
+	if(timeononly==""){timeononly="NoTimer"};
+	
+	
 	timeoffonly =  $("[name=timeoffonly]").val();
-	if(typeof(timeoffonly)=="undefined"){timeoffonly=""}
+	if(typeof(timeoffonly)=="undefined"){timeoffonly="NoTimer"};
+	if(timeoffonly==""){timeoffonly="NoTimer"};
+	
 	timeonoffonly =  $("[name=timeonoffonly]").val();
-	if(typeof(timeonoffonly)=="undefined"){timeonoffonly=""}
+	if(typeof(timeonoffonly)=="undefined"){timeonoffonly="NoTimer"};
+	if(timeonoffonly==""){timeonoffonly="NoTimer"};
+	
+	
+	
 	trigdevcond = $("[name=triggercondition]").val();
 	trigdevcond = trigdevcond.replace(/\\./g,'#[pt]');
 	trigdevcond = trigdevcond.replace(/:/g,'#[dp]');
 	trigdevcond= trigdevcond.replace(/~/g,'#[ti]');
 	trigdevcond = trigdevcond.replace(/ /g,'#[sp]');
-	trigdevcond = trigdevcond+':';
-	timeon = timeon.replace(/ /g, '');
+	//trigdevcond = trigdevcond+':';
+	
+	
+	
+/*	timeon = timeon.replace(/ /g, '');
 	timeoff = timeoff.replace(/ /g, '');
-	timeononly = timeononly.replace(/ /g, '');
+ 	timeononly = timeononly.replace(/ /g, '');
 	timeoffonly = timeoffonly.replace(/ /g, '');
 	timeonoffonly = timeonoffonly.replace(/ /g, '');
 	timeon = timeon.replace(/:/g, '#[dp]');
@@ -1831,10 +1846,23 @@ if (debug == 'on'){ alert('checkcondition') }
 	timeoff = timeoff+':';
 	timeononly = timeononly+':';
 	timeoffonly = timeoffonly+':';
-	timeonoffonly = timeonoffonly+':';
+	timeonoffonly = timeonoffonly+':'; */
+	
+	
+	
+	
 	trigwhite = $("[name=triggerwhitelist]").val();
 	var  def = nm+" set_trigger  "+trigdev+" "+timeon+" "+timeoff+" "+timeononly+" "+timeoffonly+" "+timeonoffonly+" "+trigdevcond+" "+trigwhite+" " ;
+	//alert(def);
+	def = def.replace(/\n/g, '[NEXTTIMER]');
+	def = def.replace(/\u2424/g,'[NEXTTIMER]');
+
+	
 	def =  encodeURIComponent(def);
+	
+	
+	
+	
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	});
 	
