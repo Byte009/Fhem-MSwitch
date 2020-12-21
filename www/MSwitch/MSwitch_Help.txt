@@ -101,6 +101,10 @@ In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.
 
 Es können mehrere Evebts gleichzeitig angelegt werden, diese sind durch Komma zu trennen.
 
+Optional kann eine Bedingung übergeben werden . Dafür ist dem Event die Bedingung in [] mit zu geben:
+z.B PCT:.*[* >50] - Schaltet nur , wenn pct > 50 ist . Hierbei wird die Wildcardangabe (.*) in der Bedingung durch entsprechenden eingehenden Wert ersetzt .
+eine Angabe von Perlcode ist durch anwenden von {} möglich . z.B [{perlcode} =>< x].
+
 Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.
 <hr>
 ->
@@ -306,11 +310,11 @@ folgende weitere Variablen sind nutzbar:
 - isday / !isday | der Ausdruck kann alleinstehend in des Bedingungfeld eingegeben werden , Formatierung erfolgt automatisch
 - $we / !$we | der Ausdruck kann alleinstehend in des Bedingungfeld eingegeben werden , Formatierung erfolgt automatisch
 
-- year | muss im Kontext verwendet werden z.B $year == 2020 , weitere fprmatierung erfolgt automatisch
-- $month | muss im Kontext verwendet werden z.B $day == 1 , weitere fprmatierung erfolgt automatisch
-- $day | muss im Kontext verwendet werden z.B $month == 1 , weitere fprmatierung erfolgt automatisch
-- $min | muss im Kontext verwendet werden z.B $min == 1 , weitere fprmatierung erfolgt automatisch
-- $hour | muss im Kontext verwendet werden z.B $hour == 1 , weitere fprmatierung erfolgt automatisch
+- year | muss im Kontext verwendet werden z.B $year == 2020 , weitere formatierung erfolgt automatisch
+- $month | muss im Kontext verwendet werden z.B $day == 1 , weitere formatierung erfolgt automatisch
+- $day | muss im Kontext verwendet werden z.B $month == 1 , weitere formatierung erfolgt automatisch
+- $min | muss im Kontext verwendet werden z.B $min == 1 , weitere formatierung erfolgt automatisch
+- $hour | muss im Kontext verwendet werden z.B $hour == 1 , weitere formatierung erfolgt automatisch
 
 Analog kann hier [YEAR] [MONTH] [DAY] [MIN] [HOUR] verwendet werden.
 
@@ -368,30 +372,70 @@ Hierfür stehen folgende Optionen zur Verfügung:
  - es der "cmd2" Zweig ausgeführt
 
 Die Syntax für Zeitangaben muss wie folgt lauten:
-[STUNDEN:MINUTEN|TAGE|IDx,y]
+Für jede Zeit muss eine neue Zeile verwendet werden.
 
-Tage werden von 1-7 gezählt, wobei 1 für Montag steht, 7 für Sonntag.
+1. Schaltzeiten:
+<strong>
+REPEAT=00:02*04:10-06:30
+RANDOM=20:00-21:00
+TIME=17:00
+</strong>
+REPEAT: 
+Wiederholt einen Schaltvorgang alle x Stunden/Minuten im eingestellten Zeitfenster
 
-Die Angabe der ID ist optional.
-Wenn eine ID angegeben ist , werden nur 'cmds' ausgeführt, denen eine ID zugewiesen ist (nur im Expertmode verfügbar).
-Ist keine ID angegeben , werden nur alle 'cmds' ausgeführt, denen keine ID zugewiesen ist .
-Diese Option ist nur in den Feldern "execute cmd1 only at :" und "execute cmd2 only at :"  möglich.
+RANDOM:
+Schaltet zu einem zufälligen Zeitpounkt innerhalb des eingestellten Zeitfensters
 
-Die Variable $we ist anstatt der Tagesangabe verwendbar.
-[STUNDEN:MINUTEN|$we] - Schaltvorgang nur an Wochenenden.
-[STUNDEN:MINUTEN|!$we] - Schaltvorgang nur an Werktagen.
+TIME:
+Schaltet zu angegebenem Zeitpunkt
 
-Mehrere Zeitvorgaben können aneinandergereiht werden.
-[17:00|1][18:30|23] würde den Trigger Montags um 17 Uhr auslösen und Dienstags,Mittwochs um 18 Uhr 30.
+Pro Zeile kann nur eine dieser Angaben genutzt werden , bei mehreren Angaben wird nur die erste ausgew4rtet.
+Zusätzlich kann jede Zeile durch Bedingungen ergänzt werden, mehrere Bedingungen sind durch | zu trennen.:
 
-Sunset - Zeitangaben können mit folgender Sytax eingebunden werden: z.B:
-[{sunset()}] , [{sunrise(+1800)}].
+TIME=17:00|Bedingung=X|Bedingung2=X
 
-Es ist eine gleichzeitige Nutzung für Trigger durch Zeitangaben und Trigger durch Deviceevents möglich.
+Zu beachten ist , das jede angegebene Bedingung zutreffen muss, um den Timer auszuführen.
 
-Sonderformate:
-[?20:00-21:00|5] - Zufälliger Schaltvorgang zwischen 20 Uhr und 21 Uhr am Freitag
-[00:02*04:10-06:30] - Schaltvorgang alle 2 Minuten zwischen 4.10 Uhr und 6.30 Uhr
+Folgende Bedingungen stehen zur Verfügung:
+
+ID=x,y
+Es werden nur Befehlszweige mit der entsprechenden ID ausgeführt
+
+WDAY=1,2,3,4,5,6,7
+Befehle werden nur an angegebenen Wochentagen ausgeführt, wobei die 1 für Montag steht.
+
+WEEKEND=0,1
+Befehle werden nur an Wochenenden/Wochentagen (0/1) ausgeführt. Hierbay werden Holidaydaten berücksichtigt
+
+WEEK=10,11
+Befehle werden nur in den angegebenen Kalenderwochen ausgeführt
+
+CMONTH=1,2,3,4,5,6,7,8,9,10,11,12
+Befehle werden nur in angegebenen Kalendermonaten ausgeführt
+
+CDAY=1,2,3  (1-31)
+Befehle werden nur an angegebenen Kalendertagen ausgeführt
+
+DATE=10.10.2020
+Befehle werden nur zu angegebenem Datum ausgeführt 
+Hierbei können Teile der Angabe Wildcarts enthalten :
+z.B DATE=01.01.* ( schaltet in jedem Jahr am ersten Dezember )
+
+Alle Zeitangaben können durch einsatz von {} durch Perlcode ersetzt werden , hierbei muss es sich bei der Rückgabe um ein gültiges Zeitformat handeln
+(HH:MM oder HH:MM:SS )
+z.B TIME =[sunset()}
+
+
+Bei allen Timereinstellungen ist zu beachten , das die Bedingungen grundsätzlich nur zu 2 Zeitpunkten ausgewertet werden:
+1. zum Zeitpunkt der Änderung der Einstellungen
+2. jeden Tag 0m 00:00:01
+
+Das heisst, das die Bedingungen auch zu diesen Zeitpunkten zutreffen müssen, damit entsprechende Timer gesetzt werden.
+
+Aktive Timer lassen sich mit get DEVICE attive_timer show anzeigen.
+Ein Reload (Neiberechnung) der Timer kann mit 2 Möglichkeiten ausgeführt werden:
+1. über Fhemweb  -> get DEVICE attive_timer show
+
 
 <hr>
 ->
