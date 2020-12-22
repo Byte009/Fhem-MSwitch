@@ -1,3 +1,3 @@
 Version
 4.61
-Fix: Frontend,Update IDS - Strukturaenderung-4.0 . Vor Update wird dringend ein Backup empfohlen ! Change: Timer,SMwitch_Widgets,Fix:Repeats etc 
+Fix: Frontend,Update IDS - Strukturaenderung-4.0 . Vor Update wird dringend ein Backup empfohlen ! Change: Timer,SMwitch_Widgets,Fix:Repeats etc.
