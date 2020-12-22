@@ -66,7 +66,7 @@ my $helpfile    = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     	# off/on
-my $version      = '4.6';  		# version
+my $version      = '4.61';  		# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
 my $importat     = 'on';     	# on/off
@@ -12769,6 +12769,7 @@ if ( $oldtimer ne "undef" )
 		my $newfirst="";
 		my $newdays="";
 		my $weekend="";
+		my $newid="";
 		
 		foreach my $part (@einzelparts)  #starte einzeltimer
 			{
@@ -12810,6 +12811,23 @@ if ( $oldtimer ne "undef" )
 				}  
 					
 				
+				
+				
+					if ( $part =~m/ID.*$/ )
+					{
+						# found ID
+						my @id=split //,$part;
+						#Log3("test",0,"ID (timer $count): @id");
+						shift (@id);
+						shift (@id);
+						#Log3("test",0,"ID (timer $count): @id");
+						$newid = join ",",@id;
+						$newid = "ID=".$newid;
+						#Log3("test",0,"ID (timer $count): $newid");
+					}
+					
+				
+		
 					
 				if ( $part =~m/^[1-7]{1,7}$/ )
 					{
@@ -12851,9 +12869,10 @@ if ( $oldtimer ne "undef" )
 		#Log3("test",0,"firstpart (timer $count): $newfirst");	
 		#Log3("test",0,"weekend (timer $count): $weekend");	
 		#Log3("test",0,"newdays (timer $count): $newdays");
-		$final.= join("|",$newfirst,$newdays,$weekend);
+		$final.= join("|",$newfirst,$newdays,$weekend,$newid);
 		$final =~ s/\|$//ig; 
 		$final =~ s/\|$//ig; 
+		$final =~ s/\|\|/|/ig; 
 		$final.="[NEXTTIMER]";
 		
 	 
