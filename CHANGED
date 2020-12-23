@@ -1,15 +1,6 @@
-Version V4.61
-Change: Fix Frontend MSwitch_Web.js, Fix Update IDs
-
-Version V4.6
-Change: Fix Frontend MSwitch_Web.js
-
-Version V4.5
-Change: Strukturaenderung,MSwitchWidgets,Timer,Repeats ...
-
 
 Version V4.42
-Change: Frontend / Bedingungspruefung in den Triggern eingeführt
+Change: last version before 4.5
 
 Version V4.30
 Change: Repeats mit Bedingungspruefung / Fehler bei Befehlstest behoben
