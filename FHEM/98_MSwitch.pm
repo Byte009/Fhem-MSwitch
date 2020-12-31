@@ -122,14 +122,10 @@ my $readwidget = 1;
 		my $widgetname;
 		my $verteiler = "";
 		my $pfad = "";
-        open( HELP, "<./$widgetfile" ) || $readwidget=0;
+         
         
-		
-		
-		if ($readwidget == 1){
-        while (<HELP>) 
-		{
-			 
+		if (open( HELP, "<./$widgetfile" )) 
+		{ 
 			next if $_ eq "\n"; 
 			 
 			 
@@ -206,13 +202,13 @@ my $readwidget = 1;
 				 $data{MSwitch}{Widget}{$widgetname}{code} .= $_; 
 			 } 
 
-         }
+         
          close(HELP);
 
 		}
 		else
 		{
-			Log3( "MSwitch",1,"MSwitch -> no widgetfile found");
+			Log3( "MSwitch",1,"MSwitch -> no widgetfile found - Widgets off");
 		}
   # my $inhalt = $data{MSwitch}{Widget};
             # foreach my $a ( sort keys %{$inhalt} ) {
