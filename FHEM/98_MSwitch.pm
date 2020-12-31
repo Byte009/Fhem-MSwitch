@@ -122,7 +122,7 @@ delete $data{MSwitch}{Widget};
 		my $widgetname;
 		my $verteiler = "";
 		my $pfad = "";
-        open( HELP, "<./$widgetfile" ) || return "no widgetfile found";
+        open( HELP, "<./$widgetfile" ) || Log3( "MSwitch",1,"MSwitch -> no widgetfile found");
         
         while (<HELP>) 
 		{
@@ -5842,7 +5842,7 @@ sub MSwitch_fhemwebFn($$$$) {
 				if ( $system =~ m/\[MSwitch_Widget:$a\]/s ) 
 					{
 						# [MSwitch_Widget:weekday] 
-						# Log3("test",0,"FOUND CODE FOR WIDGET: $a")	;
+						#Log3("test",0,"FOUND CODE FOR WIDGET: $a")	;
 						$system =~ s/\[MSwitch_Widget:$a\]/$data{MSwitch}{Widget}{$a}{script}/g;
 						$system.=$data{MSwitch}{Widget}{$a}{html};
 					}
