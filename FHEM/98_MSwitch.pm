@@ -117,13 +117,16 @@ $data{MSwitch}{Generalinformation} = $uinfos[3];
 ## lade widgets
 delete $data{MSwitch}{Widget};
 #$data{MSwitch}{Widget}
-
+my $readwidget = 1;
        # my $widget;
 		my $widgetname;
 		my $verteiler = "";
 		my $pfad = "";
-        open( HELP, "<./$widgetfile" ) || Log3( "MSwitch",1,"MSwitch -> no widgetfile found");
+        open( HELP, "<./$widgetfile" ) || $readwidget=0;
         
+		
+		
+		if ($readwidget == 1){
         while (<HELP>) 
 		{
 			 
@@ -206,6 +209,11 @@ delete $data{MSwitch}{Widget};
          }
          close(HELP);
 
+		}
+		else
+		{
+			Log3( "MSwitch",1,"MSwitch -> no widgetfile found");
+		}
   # my $inhalt = $data{MSwitch}{Widget};
             # foreach my $a ( sort keys %{$inhalt} ) {
 			# Log3("test",0,"NAME: ".$a);	
