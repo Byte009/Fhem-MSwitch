@@ -1,0 +1,201 @@
+
+
+
+
+[MSwitchwidgetName]
+weekday
+
+[MSwitchidgetReading]
+weekday
+
+[MSwitchidgetCode]
+[MSwitch:weekday]
+
+[MSwitchwidgetHtml]
+<div id="$Nameweekdayreading" style="display: none;"></div>
+
+
+[MSwitchidgetScript]
+<span id='$Nameinnersystem'>
+<script type="text/javascript">
+var $Namecallfrom ="$Callfrom";  // aufruf aus raumansicht oder detailansicht ( room/detail)
+var $Namesetreading = '<div class="dval" informid="$Name-weekday">[ReadingVal:$Name:weekday]</div>';
+var $Namefirstchange = ""; 
+var $Namesecondchange = ""; 
+var $Nameweekday='<br><select id ="devicests" multiple="multiple" name="$Nameaffected_devicests" size="7" onchange="$Namesetdays()">';
+$Nameweekday=$Nameweekday+'<option value="1">Montag</option>';
+$Nameweekday=$Nameweekday+'<option value="2">Dienstag</option>';
+$Nameweekday=$Nameweekday+'<option value="3">Mitwoch</option>';
+$Nameweekday=$Nameweekday+'<option value="4">Donnerstag</option>';
+$Nameweekday=$Nameweekday+'<option value="5">Freitag</option>';
+$Nameweekday=$Nameweekday+'<option value="6">Samstag</option>';
+$Nameweekday=$Nameweekday+'<option value="7">Sonntag</option>';      
+$Nameweekday=$Nameweekday+'</select><br><br> ';
+var $Nameweekdaymaster=$Nameweekday;
+</script>
+<script type="text/javascript">
+function $Namesetdays()
+{ 
+$Namedevicests = $("[name=$Nameaffected_devicests]").val();
+var $Namestring ="";
+for (i = 0; i < $Namedevicests.length; i++) 
+    {
+    $Namestring =$Namestring+$Namedevicests[i];
+    }
+cmd ='set $Name weekday '+$Namestring;
+FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
+}
+// erstelle neue selectliste
+function $Namerenew(){
+$Nameweekday=$Nameweekdaymaster;
+$Nametestweekday = $( "div[informId='$Name-weekday']" ).text();
+$Nametestweekdayarray = $Nametestweekday.split("");
+for (i = 0; i < $Nametestweekdayarray.length; i++) {
+$Nameaktday = $Nametestweekdayarray[i];
+if ($Nameaktday == 1){$Nameweekday = $Nameweekday.replace(/<option value="1">/g,'<option selected value="1">');}
+if ($Nameaktday == 2){$Nameweekday = $Nameweekday.replace(/<option value="2">/g,'<option selected value="2">');}
+if ($Nameaktday == 3){$Nameweekday = $Nameweekday.replace(/<option value="3">/g,'<option selected value="3">');}
+if ($Nameaktday == 4){$Nameweekday = $Nameweekday.replace(/<option value="4">/g,'<option selected value="4">');}
+if ($Nameaktday == 5){$Nameweekday = $Nameweekday.replace(/<option value="5">/g,'<option selected value="5">');}
+if ($Nameaktday == 6){$Nameweekday = $Nameweekday.replace(/<option value="6">/g,'<option selected value="6">');}
+if ($Nameaktday == 7){$Nameweekday = $Nameweekday.replace(/<option value="7">/g,'<option selected value="7">');}
+}
+return $Nameweekday;
+}
+$(document).ready(function()
+{
+// setze reading informid wenn aufruf aus room
+if ($Namecallfrom =="room")
+ {
+ document.getElementById('$Nameweekdayreading').innerHTML=$Namesetreading;
+ }
+// setze selectfeld
+$Nameweekday = $Namerenew();
+document.getElementById('$Nameinnersystem').innerHTML=$Nameweekday;
+// starte überwachung der informid
+$("body").on('DOMSubtreeModified', "[informId='$Name-weekday']", function() {
+var $Nametestweekday = $( "div[informId='$Name-weekday']" ).text();
+$Namesecondchange = $Namefirstchange;
+$Namefirstchange = $Nametestweekday;
+if ($Namefirstchange == $Namesecondchange)
+{
+return;
+}
+$Nameweekday = $Namerenew();
+document.getElementById('$Nameinnersystem').innerHTML=$Nameweekday;
+return;
+}) 
+});
+</script>
+</span>
+[MSwitchwidgetEND]
+
+########################################################################
+
+[MSwitchwidgetName]
+month
+
+[MSwitchidgetReading]
+month
+
+[MSwitchidgetCode]
+[MSwitch:month]
+
+[MSwitchwidgetHtml]
+<div id="$Namemonthreading" style="display: none;"></div>
+
+
+[MSwitchidgetScript]
+<span id='$Nameinnersystemmonth'>
+<script type="text/javascript">
+var $Namecallfrom ="$Callfrom";  // aufruf aus raumansicht oder detailansicht ( room/detail)
+var $Namesetreadingmonth = '<div class="dval" informid="$Name-month">[ReadingVal:$Name:month]</div>';
+var $Namefirstchangemonth = ""; 
+var $Namesecondchangemonth = ""; 
+var $Namemonth='<br><select id ="devicestsmonth" multiple="multiple" name="$Nameaffected_devicestsmonth" size="12" onchange="$Namesetmonth()">';
+$Namemonth=$Namemonth+'<option value="1">Januar</option>';
+$Namemonth=$Namemonth+'<option value="2">Februar</option>';
+$Namemonth=$Namemonth+'<option value="3">Maerz</option>';
+$Namemonth=$Namemonth+'<option value="4">April</option>';
+$Namemonth=$Namemonth+'<option value="5">Mai</option>';
+$Namemonth=$Namemonth+'<option value="6">Juni</option>';
+$Namemonth=$Namemonth+'<option value="7">Juli</option>';  
+$Namemonth=$Namemonth+'<option value="8">August</option>'; 
+$Namemonth=$Namemonth+'<option value="9">Septemper</option>'; 
+$Namemonth=$Namemonth+'<option value="10">Oktober</option>'; 
+$Namemonth=$Namemonth+'<option value="11">November</option>'; 
+$Namemonth=$Namemonth+'<option value="12">Dezember</option>';     
+$Namemonth=$Namemonth+'</select><br><br> ';
+var $Namemonthmaster=$Namemonth;
+</script>
+<script type="text/javascript">
+function $Namesetmonth()
+{ 
+$Namedevicestsmonth = $("[name=$Nameaffected_devicestsmonth]").val();
+var $Namestringmonth ="";
+for (i = 0; i < $Namedevicestsmonth.length; i++) 
+    {
+    $Namestringmonth =$Namestringmonth+$Namedevicestsmonth[i]+",";
+    }
+	
+	$Namestringmonth = $Namestringmonth.substring(0, $Namestringmonth.length - 1);
+	
+cmd ='set $Name month '+$Namestringmonth;
+FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
+}
+// erstelle neue selectliste
+
+function $Namerenewmonth(){
+$Namemonth=$Namemonthmaster;
+$Nametestmonth = $( "div[informId='$Name-month']" ).text();
+$Nametestmontharray = $Nametestmonth.split(",");
+for (i = 0; i < $Nametestmontharray.length; i++) {
+$Nameaktmonth = $Nametestmontharray[i];
+
+if ($Nameaktmonth == 1){$Namemonth = $Namemonth.replace(/<option value="1">/g,'<option selected value="1">');}
+if ($Nameaktmonth == 2){$Namemonth = $Namemonth.replace(/<option value="2">/g,'<option selected value="2">');}
+if ($Nameaktmonth == 3){$Namemonth = $Namemonth.replace(/<option value="3">/g,'<option selected value="3">');}
+if ($Nameaktmonth == 4){$Namemonth = $Namemonth.replace(/<option value="4">/g,'<option selected value="4">');}
+if ($Nameaktmonth == 5){$Namemonth = $Namemonth.replace(/<option value="5">/g,'<option selected value="5">');}
+if ($Nameaktmonth == 6){$Namemonth = $Namemonth.replace(/<option value="6">/g,'<option selected value="6">');}
+if ($Nameaktmonth == 7){$Namemonth = $Namemonth.replace(/<option value="7">/g,'<option selected value="7">');}
+if ($Nameaktmonth == 8){$Namemonth = $Namemonth.replace(/<option value="8">/g,'<option selected value="8">');}
+if ($Nameaktmonth == 9){$Namemonth = $Namemonth.replace(/<option value="9">/g,'<option selected value="9">');}
+if ($Nameaktmonth == 10){$Namemonth = $Namemonth.replace(/<option value="10">/g,'<option selected value="10">');}
+if ($Nameaktmonth == 11){$Namemonth = $Namemonth.replace(/<option value="11">/g,'<option selected value="11">');}
+if ($Nameaktmonth == 12){$Namemonth = $Namemonth.replace(/<option value="12">/g,'<option selected value="12">');}
+}
+return $Namemonth;
+}
+$(document).ready(function()
+{
+// setze reading informid wenn aufruf aus room
+if ($Namecallfrom =="room")
+ {
+ document.getElementById('$Namemonthreading').innerHTML=$Namesetreadingmonth;
+ }
+// setze selectfeld
+$Namemonth = $Namerenewmonth();
+document.getElementById('$Nameinnersystemmonth').innerHTML=$Namemonth;
+
+
+// starte überwachung der informid
+$("body").on('DOMSubtreeModified', "[informId='$Name-month']", function() {
+var $Nametestmonth = $( "div[informId='$Name-month']" ).text();
+
+//alert($Nametestmonth);
+
+$Namesecondchangemonth = $Namefirstchangemonth;
+$Namefirstchangemonth = $Nametestmonth;
+if ($Namefirstchangemonth == $Namesecondchangemonth)
+{
+return;
+}
+$Namemonth = $Namerenewmonth();
+document.getElementById('$Nameinnersystemmonth').innerHTML=$Namemonth;
+return;
+}) 
+});
+</script>
+</span>
+[MSwitchwidgetEND]
