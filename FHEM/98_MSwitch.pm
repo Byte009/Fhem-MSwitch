@@ -68,7 +68,7 @@ my $widgetfile    = "www/MSwitch/MSwitch_widgets.txt";
 my $helpfile    = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $support = "Support Mail: Byte009\@web.de";
-my $autoupdate   = 'on';     	# off/on
+my $autoupdate   = 'off';     	# off/on
 my $version      = '4.42';  	# version
 my $wizard       = 'on';     	# on/off
 my $importnotify = 'on';     	# on/off
@@ -4301,13 +4301,15 @@ sub MSwitch_Notify($$) {
     # safemode testen
 
     # versionscheck
-    if ( ReadingsVal( $ownName, '.V_Check', $vupdate ) ne $vupdate ) {
+	
+	
+     if ( ReadingsVal( $ownName, '.V_Check', $vupdate ) ne $vupdate ) 
+	{
         my $ver = ReadingsVal( $ownName, '.V_Check', '' );
-        MSwitch_LOG( $ownName, 1,
-            "Event blockiert - Versionskonflikt L:" . __LINE__ );
-        return;
+        MSwitch_LOG( $ownName, 1,"$ownName-> Event blockiert, NOTIFYDEV deaktiviert - Versionskonflikt L:" . __LINE__ );
+		$own_hash->{NOTIFYDEV} = 'no_trigger';
+       #delete $own_hash->{NOTIFYDEV};
     }
-
 
 
 
@@ -12950,10 +12952,17 @@ sub MSwitch_VUpdate($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
 	my $orgbackup=$backupfile ;
-    $backupfile 	= "backup/MSwitch/Versionsupdate/";
+    $backupfile	= "backup/MSwitch/Versionsupdate/";
+	Log3($Name ,0,"$Name -> Sarte Restore V2.01");
 	MSwitch_restore_this($hash);
 	
 	$backupfile=$orgbackup;
+	
+	readingsSingleUpdate( $hash, ".V_Check", $vupdate, 0 );
+	
+	$hash->{Version_Modul}                 = $version;
+    $hash->{Version_Datenstruktur}         = $vupdate;
+	MSwitch_Createtimer($hash);
 	
     return;
 }
@@ -13091,6 +13100,10 @@ sub MSwitch_restore_this($) {
         $Zeilen = $Zeilen . $_;
     }
     close(BACKUPDATEI);
+	
+	Log3($Name,0,"Datensatz -> $Zeilen");
+	
+	#return; 
     $Zeilen =~ s/\n/[NL]/g;
 	
     my @found = split( /\[NL\]/, $Zeilen );
