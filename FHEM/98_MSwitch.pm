@@ -12949,10 +12949,11 @@ sub MSwitch_checktrigger(@) {
 sub MSwitch_VUpdate($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-    
+	my $orgbackup=$backupfile ;
+    $backupfile 	= "backup/MSwitch/Versionsupdate/";
 	MSwitch_restore_this($hash);
 	
-	
+	$backupfile=$orgbackup;
 	
     return;
 }
