@@ -93,6 +93,11 @@ my $wizardreset = 3600;        #Timeout für Wizzard
 
 my $MSwitch_generate_Events ="0";
 
+
+my $backupfile 	= "backup/MSwitch/";
+
+
+
 # degug
 #my $ip = qx(hostname -I);
 #chop($ip);
@@ -1320,14 +1325,21 @@ sub MSwitch_Get($$@) {
         return $ret;
     }
 ################
-    if ( $opt eq 'restore_MSwitch_Data' && $args[0] eq "all_Devices" ) {
-        open( BACKUPDATEI, "<MSwitch_backup_$vupdate.cfg" )
-          || return "no Backupfile found\n";
-        close(BACKUPDATEI);
-        $hash->{helper}{RESTORE_ANSWER} = $hash->{CL};
-        my $ret = MSwitch_backup_all($hash);
+####################
+    if ( $opt eq 'restore_MSwitch_Data' && $args[0] eq "this_device" ) {
+        $ret = MSwitch_restore_this($hash);
+        return $ret;
+    }	
+################
+    if ( $opt eq 'restore_MSwitch_Data' && $args[0] eq "all_devices" ) {
+        # open( BACKUPDATEI, "<MSwitch_backup_$vupdate.cfg" )
+          # || return "no Backupfile found\n";
+        # close(BACKUPDATEI);
+        #$hash->{helper}{RESTORE_ANSWER} = $hash->{CL};
+        my $ret = MSwitch_restore_all($hash);
         return $ret;
     }
+####################
 ####################
     if ( $opt eq 'checkevent' ) {
         $ret = MSwitch_Check_Event( $hash, $args[0] );
@@ -1660,34 +1672,30 @@ m/(.*)(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)(.*?\))(.*)/
     }
 
 ### modulmode - no sets
-    if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
-        return
-"Unknown argument $opt, choose one of reset_Switching_once:noArg  HTTPresponse:noArg config:noArg support_info:noArg active_timer:show";
-
+    if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) 
+	{
+        return "Unknown argument $opt, choose one of reset_Switching_once:noArg  HTTPresponse:noArg config:noArg support_info:noArg active_timer:show";
     }
 #######
 
-
-
-
-    if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) eq "Dummy" ) {
-        if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" ) {
-            return
-"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:this_Device,all_Devices active_timer:show,delete";
+    if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) eq "Dummy" ) 
+	{
+        if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" ) 
+		{
+            return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:this_device,all_devices active_timer:show,delete";
         }
-        else {
-            return
-"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg support_info:noArg restore_MSwitch_Data:this_Device,all_Devices";
+        else 
+		{
+            return "Unknown argument $opt, choose one of support_info:noArg restore_MSwitch_Data:this_device,all_devices";
         }
     }
 
     if ( ReadingsVal( $name, '.lock', 'undef' ) ne "undef" ) {
-        return
-"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg support_info:noArg active_timer:show,delete config:noArg restore_MSwitch_Data:this_Device,all_Devices ";
+        return"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg support_info:noArg active_timer:show,delete config:noArg restore_MSwitch_Data:this_device,all_devices ";
     }
-    else {
-        return
-"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_Device,all_Devices $extension";
+    else 
+	{
+        return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_device,all_devices $extension";
     }
 }
 ####################
@@ -1699,22 +1707,6 @@ sub MSwitch_AsyncOutput ($) {
 sub MSwitch_Set($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     my $dynlist = "";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2585,13 +2577,16 @@ my $setwidget ="";
     }
 
 ##############################
-    if ( $cmd eq 'backup_MSwitch' ) {
 
-        # backup erstellen
-        MSwitch_backup($hash);
-        MSwitch_LOG( $name, 6, "Backup erstellt L:" . __LINE__ );
-        return;
-    }
+
+if ( $cmd eq 'backup_MSwitch' ) 
+	{
+		if ($args[0] eq "this_device"){MSwitch_backup_this($hash);}
+		if ($args[0] eq "all_devices"){MSwitch_backup_all($hash);}
+		return;
+	}
+
+
 ##############################
     if ( $cmd eq 'saveconfig' ) {
 
@@ -12954,96 +12949,159 @@ sub MSwitch_checktrigger(@) {
 sub MSwitch_VUpdate($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-    readingsSingleUpdate( $hash, ".V_Check", $vupdate, 0 );
-
-    if ( AttrVal( $Name, 'MSwitch_Event_Id_Distributor', 'undef' ) ne "undef" )
-    {
-        my $test = AttrVal( $Name, 'MSwitch_Event_Id_Distributor', 'undef' );
-
-        readingsSingleUpdate( $hash, ".Distributor", $test, 0 );
-        fhem("deletereading $Name Exec_cmd");
-        fhem("deleteattr $Name MSwitch_Event_Id_Distributor");
-        fhem("einlesen der Bridge in ein Hash");
-        delete( $hash->{helper}{eventtoid} );
-        my $bridge = ReadingsVal( $Name, '.Distributor', 'undef' );
-
-        if ( $bridge ne "undef" ) {
-            my @test = split( /\n/, $bridge );
-            foreach my $testdevices (@test) {
-                my ( $key, $val ) = split( /=>/, $testdevices );
-                $hash->{helper}{eventtoid}{$key} = $val;
-            }
-
-        }
-
-    }
+    
+	MSwitch_restore_this($hash);
+	
+	
+	
     return;
 }
 ################################
-sub MSwitch_backup($) {
+################################
+sub MSwitch_backup_this($) {
+    my ($hash)      = @_;
+    my $Name        = $hash->{NAME};
+    my $testreading = $hash->{READINGS};
+    my @areadings   = ( keys %{$testreading} );
+	mkdir($backupfile,0777);
+	open( BACKUPDATEI, ">".$backupfile.$Name.".".$vupdate.".conf" ); 
+        print BACKUPDATEI "#N -> $Name\n";
+        foreach my $key (@areadings) {
+            next if $key eq "last_exec_cmd";
+
+            my $tmp = ReadingsVal( $Name, $key, 'undef' );
+            print BACKUPDATEI "#S $key -> $tmp\n";
+        }
+        #my %keys;
+        foreach my $attrdevice ( keys %{ $attr{$Name} } ) 
+        {
+            my $inhalt = "#A $attrdevice -> " . AttrVal( $Name, $attrdevice, '' );
+            $inhalt =~ s/\n/#[nla]/g;
+            print BACKUPDATEI $inhalt . "\n";
+        }
+		close(BACKUPDATEI);
+		$hash->{Backup_avaible}            = "./".$backupfile.$Name.".".$vupdate.".conf";
+}
+
+################################
+sub MSwitch_backup_all($) {
     my ($hash)      = @_;
     my $Name        = $hash->{NAME};
     my $testreading = $hash->{READINGS};
     my @areadings   = ( keys %{$testreading} );
     my %keys;
-    open( BACKUPDATEI, ">MSwitch_backup_$vupdate.cfg" )
-      ;                                         # Datei zum Schreiben öffnen
-    print BACKUPDATEI "# Mswitch Devices\n";    #
+	mkdir($backupfile,0777);
     foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
     {
-        print BACKUPDATEI "$testdevice\n";
-    }
-    print BACKUPDATEI "# Mswitch Devices END\n";                      #
-
-    print BACKUPDATEI "\n";    # HTML-Datei schreiben
-    foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
-    {
-        print BACKUPDATEI "#N -> $testdevice\n";                      #
+		my $devhash = $defs{$testdevice};
+	open( BACKUPDATEI, ">".$backupfile.$testdevice.".".$vupdate.".conf" ); 
+        print BACKUPDATEI "#N -> $testdevice\n";
         foreach my $key (@areadings) {
             next if $key eq "last_exec_cmd";
 
             my $tmp = ReadingsVal( $testdevice, $key, 'undef' );
             print BACKUPDATEI "#S $key -> $tmp\n";
         }
-        my %keys;
-        foreach my $attrdevice ( keys %{ $attr{$testdevice} } )       #geht
+        #my %keys;
+        foreach my $attrdevice ( keys %{ $attr{$testdevice} } ) 
         {
-            my $inhalt =
-              "#A $attrdevice -> " . AttrVal( $testdevice, $attrdevice, '' );
+            my $inhalt = "#A $attrdevice -> " . AttrVal( $testdevice, $attrdevice, '' );
             $inhalt =~ s/\n/#[nla]/g;
             print BACKUPDATEI $inhalt . "\n";
-
-            #CHANGE einspielen ungeprüft
         }
-        print BACKUPDATEI "#E -> $testdevice\n";
-        print BACKUPDATEI "\n";
+		$devhash->{Backup_avaible}            = "./".$backupfile.$testdevice.".".$vupdate.".conf";
+		close(BACKUPDATEI);
     }
-    close(BACKUPDATEI);
 }
 ################################
-sub MSwitch_backup_this($) {
+
+################################
+sub MSwitch_restore_all($) {
+    my ($hash) = @_;
+    my $Name   = $hash->{NAME};
+    my $answer = '';
+	Log3("TEST2",0,"starte restore");
+	my @restore_devices = devspec2array("TYPE=MSwitch");	
+	for my $restore (@restore_devices) 
+	{
+		my $Zeilen = ("");
+		my $devhash = $defs{$restore};
+		
+		
+		
+		if (open( BACKUPDATEI, "<./".$backupfile.$restore.".".$vupdate.".conf" ))
+		{
+			while (<BACKUPDATEI>) 
+			{
+				$Zeilen = $Zeilen . $_;
+			}
+		}
+		else
+		{
+			$answer = $answer . "!  -> no backup found for $restore\n";
+			next;
+		}
+		
+		
+		close(BACKUPDATEI);
+		$Zeilen =~ s/\n/[NL]/g;
+		my @found = split( /\[NL\]/, $Zeilen );
+		foreach (@found) 
+		{
+			if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
+			{
+				next if $1 eq "last_exec_cmd";
+				if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' )
+				{
+				}
+				else 
+				{
+					$Zeilen = $2;
+					readingsSingleUpdate( $devhash, "$1", $Zeilen, 0 );
+				}
+			}
+			if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
+			{
+				my $inhalt  = $2;
+				my $aktattr = $1;
+				$inhalt =~ s/#\[nla\]/\n/g;
+				$inhalt =~ s/;/;;/g;
+				my $cs = "attr $restore $aktattr $inhalt";
+				my $errors = AnalyzeCommandChain( undef, $cs );
+				if ( defined($errors) )
+				{
+					MSwitch_LOG( $Name, 1, "ERROR $cs" );
+				}
+			}
+		}
+		$answer = $answer . "   -> MSwitch $restore restored.\n";
+	}
+    return $answer;
+}
+################################
+sub MSwitch_restore_this($) {
     my ($hash)  = @_;
     my $Name    = $hash->{NAME};
     my $Zeilen  = ("");
     my $Zeilen1 = "";
-    open( BACKUPDATEI, "<MSwitch_backup_$vupdate.cfg" )
-      || return "no Backupfile found!\n";
-    while (<BACKUPDATEI>) {
+    open( BACKUPDATEI, "<./".$backupfile.$Name.".".$vupdate.".conf" ) || return "no Backupfile found!\n";
+    while (<BACKUPDATEI>) 
+	{
         $Zeilen = $Zeilen . $_;
     }
     close(BACKUPDATEI);
     $Zeilen =~ s/\n/[NL]/g;
-    if ( $Zeilen !~ m/#N -> $Name\[NL\](.*)#E -> $Name\[NL\]/ ) {
-        return "no Backupfile found\n";
-    }
-    my @found = split( /\[NL\]/, $1 );
+	
+    my @found = split( /\[NL\]/, $Zeilen );
     foreach (@found) {
         if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
         {
             next if $1 eq "last_exec_cmd";
-            if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
+            if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' )
+			{
             }
-            else {
+            else 
+			{
                 $Zeilen1 = $2;
                 readingsSingleUpdate( $hash, "$1", $Zeilen1, 0 );
             }
@@ -13056,16 +13114,17 @@ sub MSwitch_backup_this($) {
             $inhalt =~ s/;/;;/g;
             my $cs = "attr $Name $aktattr $inhalt";
             my $errors = AnalyzeCommandChain( undef, $cs );
-            if ( defined($errors) ) {
+            if ( defined($errors) )
+			{
                 MSwitch_LOG( $Name, 1, "ERROR $cs" );
-
             }
         }
     }
     MSwitch_LoadHelper($hash);
     return "MSwitch $Name restored.\nPlease refresh device.";
 }
-#################################
+
+#
 sub MSwitch_Getsupport($) {
     my ($hash) = @_;
     my $Name   = $hash->{NAME};
@@ -13303,62 +13362,7 @@ sub MSwitch_Sysextension($) {
     );
     return;
 }
-################################
-sub MSwitch_backup_all($) {
-    my ($hash) = @_;
-    my $Name   = $hash->{NAME};
-    my $answer = '';
-    my $Zeilen = ("");
-    open( BACKUPDATEI, "<MSwitch_backup_$vupdate.cfg" )
-      || return "$Name|no Backupfile MSwitch_backup_$vupdate.cfg found\n";
-    while (<BACKUPDATEI>) {
-        $Zeilen = $Zeilen . $_;
-    }
-    close(BACKUPDATEI);
-    foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
-    {
-        my $devhash = $defs{$testdevice};
-        $Zeilen =~ s/\n/[NL]/g;
-        if ( $Zeilen !~ m/#N -> $testdevice\[NL\](.*)#E -> $testdevice\[NL\]/ )
-        {
-            $answer = $answer . "no Backupfile found for $testdevice\n";
-        }
-        my @found = split( /\[NL\]/, $1 );
-        foreach (@found) {
-            if ( $_ =~ m/#S (.*) -> (.*)/ )    # setreading
-            {
-                if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
-                }
-                else {
-                    readingsSingleUpdate( $devhash, "$1", $2, 0 );
-                }
-            }
-            if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
-            {
-                my $inhalt  = $2;
-                my $aktattr = $1;
 
-                $inhalt =~ s/#\[nla\]/\n/g;
-                $inhalt =~ s/;/;;/g;
-                my $cs = "attr $Name $aktattr $inhalt";
-                my $errors = AnalyzeCommandChain( undef, $cs );
-                if ( defined($errors) ) {
-                    MSwitch_LOG( $testdevice, 1, "ERROR $cs" );
-
-                }
-            }
-        }
-        my $cs = "attr  $testdevice verbose 0";
-        my $errors = AnalyzeCommandChain( undef, $cs );
-        if ( defined($errors) ) {
-            MSwitch_LOG( $testdevice, 1, "ERROR $cs" );
-
-        }
-        MSwitch_LoadHelper($devhash);
-        $answer = $answer . "MSwitch $testdevice restored.\n";
-    }
-    return $answer;
-}
 ################################################
 sub MSwitch_savesys($$) {
     my ( $hash, $cont ) = @_;
