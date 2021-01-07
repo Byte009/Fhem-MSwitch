@@ -31,7 +31,19 @@ keine Berücksichtigung.
 Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
 Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
 
-Bei entsprechender Auslösung wird der State des Devices aufon oder off gesetzt.
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird der State des Mwitch-Devices auf on oder off gesetzt.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+
 <hr>
 ->
 #################################################################################################
@@ -40,7 +52,59 @@ Bei entsprechender Auslösung wird der State des Devices aufon oder off gesetzt.
 Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
 Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
 
-Der State des Devices wird nicht verändert.
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird nur der Kommandozweig ausgeführt, der Zustand des Mswitches wird nicht geändert.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+<hr>
+->
+#################################################################################################
+<- cmd2off-
+<hr>
+Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
+Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
+
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird der State des Mwitch-Devices auf on oder off gesetzt.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+
+<hr>
+->
+#################################################################################################
+<- cmd2offonly-
+<hr>
+Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
+Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
+
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird nur der Kommandozweig ausgeführt, der Zustand des Mswitches wird nicht geändert.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
 <hr>
 ->
 #################################################################################################
@@ -100,6 +164,10 @@ Der Wert kann mehrere Auswahlmöglichkeiten haben , durch folgende Syntax: "devi
 In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.
 
 Es können mehrere Evebts gleichzeitig angelegt werden, diese sind durch Komma zu trennen.
+
+Optional kann eine Bedingung übergeben werden . Dafür ist dem Event die Bedingung in [] mit zu geben:
+z.B PCT:.*[* >50] - Schaltet nur , wenn pct > 50 ist . Hierbei wird die Wildcardangabe (.*) in der Bedingung durch entsprechenden eingehenden Wert ersetzt .
+eine Angabe von Perlcode ist durch anwenden von {} möglich . z.B [{perlcode} =>< x].
 
 Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.
 <hr>
@@ -206,8 +274,15 @@ Verfügbare Variablen und Ausdrücke:
 - $EVTFULL
 - $EVTPART1
 - $EVTPART2
+- $EVTPART3
 - $SELF
 - $hms
+
+Je nach Attributeinstellunge kann auf historische Events zugegriffen werden:
+
+- [EVENT:h(x)]
+- [EVTPART:h(x)]
+
 
 die Variable $hms enthält die aktuelle Systemzeit im Format HH:MM:SS . Hier ist zu beachten , das es 
 sich um einen String handelt , der entsprechend zu behandeln ist ( eq ) .
@@ -306,11 +381,11 @@ folgende weitere Variablen sind nutzbar:
 - isday / !isday | der Ausdruck kann alleinstehend in des Bedingungfeld eingegeben werden , Formatierung erfolgt automatisch
 - $we / !$we | der Ausdruck kann alleinstehend in des Bedingungfeld eingegeben werden , Formatierung erfolgt automatisch
 
-- year | muss im Kontext verwendet werden z.B $year == 2020 , weitere fprmatierung erfolgt automatisch
-- $month | muss im Kontext verwendet werden z.B $day == 1 , weitere fprmatierung erfolgt automatisch
-- $day | muss im Kontext verwendet werden z.B $month == 1 , weitere fprmatierung erfolgt automatisch
-- $min | muss im Kontext verwendet werden z.B $min == 1 , weitere fprmatierung erfolgt automatisch
-- $hour | muss im Kontext verwendet werden z.B $hour == 1 , weitere fprmatierung erfolgt automatisch
+- year | muss im Kontext verwendet werden z.B $year == 2020 , weitere formatierung erfolgt automatisch
+- $month | muss im Kontext verwendet werden z.B $day == 1 , weitere formatierung erfolgt automatisch
+- $day | muss im Kontext verwendet werden z.B $month == 1 , weitere formatierung erfolgt automatisch
+- $min | muss im Kontext verwendet werden z.B $min == 1 , weitere formatierung erfolgt automatisch
+- $hour | muss im Kontext verwendet werden z.B $hour == 1 , weitere formatierung erfolgt automatisch
 
 Analog kann hier [YEAR] [MONTH] [DAY] [MIN] [HOUR] verwendet werden.
 
@@ -368,30 +443,70 @@ Hierfür stehen folgende Optionen zur Verfügung:
  - es der "cmd2" Zweig ausgeführt
 
 Die Syntax für Zeitangaben muss wie folgt lauten:
-[STUNDEN:MINUTEN|TAGE|IDx,y]
+Für jede Zeit muss eine neue Zeile verwendet werden.
 
-Tage werden von 1-7 gezählt, wobei 1 für Montag steht, 7 für Sonntag.
+1. Schaltzeiten:
+<strong>
+REPEAT=00:02*04:10-06:30
+RANDOM=20:00-21:00
+TIME=17:00
+</strong>
+REPEAT: 
+Wiederholt einen Schaltvorgang alle x Stunden/Minuten im eingestellten Zeitfenster
 
-Die Angabe der ID ist optional.
-Wenn eine ID angegeben ist , werden nur 'cmds' ausgeführt, denen eine ID zugewiesen ist (nur im Expertmode verfügbar).
-Ist keine ID angegeben , werden nur alle 'cmds' ausgeführt, denen keine ID zugewiesen ist .
-Diese Option ist nur in den Feldern "execute cmd1 only at :" und "execute cmd2 only at :"  möglich.
+RANDOM:
+Schaltet zu einem zufälligen Zeitpounkt innerhalb des eingestellten Zeitfensters
 
-Die Variable $we ist anstatt der Tagesangabe verwendbar.
-[STUNDEN:MINUTEN|$we] - Schaltvorgang nur an Wochenenden.
-[STUNDEN:MINUTEN|!$we] - Schaltvorgang nur an Werktagen.
+TIME:
+Schaltet zu angegebenem Zeitpunkt
 
-Mehrere Zeitvorgaben können aneinandergereiht werden.
-[17:00|1][18:30|23] würde den Trigger Montags um 17 Uhr auslösen und Dienstags,Mittwochs um 18 Uhr 30.
+Pro Zeile kann nur eine dieser Angaben genutzt werden , bei mehreren Angaben wird nur die erste ausgew4rtet.
+Zusätzlich kann jede Zeile durch Bedingungen ergänzt werden, mehrere Bedingungen sind durch | zu trennen.:
 
-Sunset - Zeitangaben können mit folgender Sytax eingebunden werden: z.B:
-[{sunset()}] , [{sunrise(+1800)}].
+TIME=17:00|Bedingung=X|Bedingung2=X
 
-Es ist eine gleichzeitige Nutzung für Trigger durch Zeitangaben und Trigger durch Deviceevents möglich.
+Zu beachten ist , das jede angegebene Bedingung zutreffen muss, um den Timer auszuführen.
 
-Sonderformate:
-[?20:00-21:00|5] - Zufälliger Schaltvorgang zwischen 20 Uhr und 21 Uhr am Freitag
-[00:02*04:10-06:30] - Schaltvorgang alle 2 Minuten zwischen 4.10 Uhr und 6.30 Uhr
+Folgende Bedingungen stehen zur Verfügung:
+
+ID=x,y
+Es werden nur Befehlszweige mit der entsprechenden ID ausgeführt
+
+WDAY=1,2,3,4,5,6,7
+Befehle werden nur an angegebenen Wochentagen ausgeführt, wobei die 1 für Montag steht.
+
+WEEKEND=0,1
+Befehle werden nur an Wochenenden/Wochentagen (0/1) ausgeführt. Hierbay werden Holidaydaten berücksichtigt
+
+WEEK=10,11
+Befehle werden nur in den angegebenen Kalenderwochen ausgeführt
+
+CMONTH=1,2,3,4,5,6,7,8,9,10,11,12
+Befehle werden nur in angegebenen Kalendermonaten ausgeführt
+
+CDAY=1,2,3  (1-31)
+Befehle werden nur an angegebenen Kalendertagen ausgeführt
+
+DATE=10.10.2020
+Befehle werden nur zu angegebenem Datum ausgeführt 
+Hierbei können Teile der Angabe Wildcarts enthalten :
+z.B DATE=01.01.* ( schaltet in jedem Jahr am ersten Dezember )
+
+Alle Zeitangaben können durch einsatz von {} durch Perlcode ersetzt werden , hierbei muss es sich bei der Rückgabe um ein gültiges Zeitformat handeln
+(HH:MM oder HH:MM:SS )
+z.B TIME =[sunset()}
+
+
+Bei allen Timereinstellungen ist zu beachten , das die Bedingungen grundsätzlich nur zu 2 Zeitpunkten ausgewertet werden:
+1. zum Zeitpunkt der Änderung der Einstellungen
+2. jeden Tag 0m 00:00:01
+
+Das heisst, das die Bedingungen auch zu diesen Zeitpunkten zutreffen müssen, damit entsprechende Timer gesetzt werden.
+
+Aktive Timer lassen sich mit get DEVICE attive_timer show anzeigen.
+Ein Reload (Neiberechnung) der Timer kann mit 2 Möglichkeiten ausgeführt werden:
+1. über Fhemweb  -> get DEVICE attive_timer show
+
 
 <hr>
 ->
@@ -483,14 +598,11 @@ Das Auswahlfeld 'priority' erscheint bei jedem 'affectes device'.
 So kann die Reihenfolge der Befehlsabarbeitung beeinflusst werden.
 
 <strong>MSwitch_Delete_Delays:0,1,2</strong>
-Option '1' bewirkt das Löschen aller anstehende Delays (Verzögerungen) bei dem Auftreten eines erneuten passenden Events.
-Es werden nur die Delays geloescht, die in dem cmd-zweig erzeugt wurden, der erneut ausgefüehrt wird.
+Option '1' bewirkt das Löschen aller anstehende Delays (Verögerungen) bei dem Auftreten eines erneuten passenden Events.
+Es werden nur die Delays geloescht, die in dem cmd-zweig erzeugt wurden , der erneut ausgefüehrt wird.
 
-Option '2' bewirkt das Löschen aller Delays, die Aufgrund des eingehenden Events angelegt wurden.
-Dazu werden alle Events mit dem auslösenden Trigger markiert.
-Bei erneutem Auftreten dieses Triggers werden alle zugehörigen Delays gelöscht.
-
-Option '3' bewirkt das löschen aller vorhandener Delays, wenn ein Trigger ausgelöst wird.
+Option '2' bewirkt das löschen aller Delays, due Aufgrund dees eingehenden Events angelegt wurden. DAzu werden alle Events mit dem 
+auslösenden Trigger markiert . Bei erneutem Auftreten dieses Triggers werden alle zugehörigen Delays gelöscht.
 
 Bei der Option '0' bleiben bereits gesetzte Delays aus einem vorher getriggerten Event erhalten und werden ausgeführt.
 
@@ -619,8 +731,8 @@ In der Grundkonfiguration ist dieses Attribut nicht gesetzt.
 Es empfiehlt sich aber, bei neuen bzw. komplizierten Devices, dieses zumindest anfänglich zu aktivieren. 
 
 <strong>MSwitch_Wait</strong>
-Bei gesetztem Attribut nimmt das MSwitch Device für den eingestellten Zeitraum nach Ausführung eines Befehlszweigeskeine
-keine Befehle mehr entgegen und ignoriert weitere Event eingehende Events. 
+Bei gesetztem Attribut nimmt das MSwitch Device für den eingestellten Zeitraum nach Ausführung eines Befehlszweiges keine
+ Befehle mehr entgegen und ignoriert weitere eingehende Events. 
 
 
 <strong>MSwitch_Event_Wait</strong>
@@ -776,11 +888,22 @@ Hiermit wird das wiederholte Schalten eines Devices vermieden , wenn die Auslös
 
 Die Grundeinstellung bei nicht gesetztem Attribut ist 0 .
 
-<strong>MSwitch_Snippe</strong>
-Text in Arbeit
 
+<strong>MSwitch_Reset_EVT_CMD1_COUNT</strong>
+Bei gesetzten Attribut wird das Reading EVT_CMD1_COUNT angelegt.
+Bei jedem Eintreffen des Triggers für den Schaltkanal1 (Cmd1) wird dieses Reading um 1 hochgezählt.
+Bei erreichen des Attributwertes witrd dieses automatisch auf 0 gesetzt.
 
+Auf dieses Reading kann in Conditions ec. zugegriffen werden.
 
+<strong>MSwitch_Reset_EVT_CMD2_COUNT</strong>
+Bei gesetzten Attribut wird das Reading EVT_CMD2_COUNT angelegt.
+Bei jedem Eintreffen des Triggers für den Schaltkanal2 (Cmd2) wird dieses Reading um 1 hochgezählt.
+Bei erreichen des Attributwertes witrd dieses automatisch auf 0 gesetzt.
+
+Auf dieses Reading kann in Conditions ec. zugegriffen werden.
+
+<strong></strong>
 <hr>
 ->
 #################################################################################################
@@ -926,7 +1049,112 @@ Veranlasst das Mswitch für den angegebenen Zeitraum in Sekunden (ss) auf keine 
 <strong>set DEVICE reset_Switching_once</strong>
 löscht eine durch das Attribut "MSwitch_Switching_once = 1" gesetzte Sperre für Befehlsketten.
 
+<strong>MSwitch_Func_AVG</strong>
+Aktivierung der intergrierten Durchschnittsberechnung.
+In dieser Funktion können Readings angelegt werden , die den Durchschnittswert eingehender Readings beinhalten.
+Hierfür müssen die betreffenden Readings bereits als Trigger in einem der Kommandozweige definiert sein.
+
+Wenn ein Kommandozweig z.B auf das Reading DEVICE:pct:.* reagiert kann für deas Reading pct diese Funktion aktiviert werden.
+
+Die Syntax muss wie folgt lauten:
+pct->2->AVG_pct
+&lt;reading&gt; -> &lt;anzahl der werte&gt; -> &lt;name des anzulegenden readings&gt;
+
+pct-> reading für welches der Durchschnitt berechnet werden soll
+2 -> anzahl der eingegangenen Readings, die zur Berechnung herangezogen werden sollen
+AVG_pct -> ist der Name des neu anzulegenden Readings 
+
+mehrere Berechnungen sind durch "," zu trennen.
+
+Auf dieses angelegte Reading kann in Bedingungen etc. unmittelbar reagiert werden -> [$SELF:AVG_pct]
+Ein Fhemneustart bewirkt das Löschen aller 'historischen' Daten . Solange weniger Daten vorhanden sind als gefordert sind wir der 
+Mittelwert nur aus den vorhandenen Dataen gebildet.
+
+
+<strong>MSwitch_Func_DIFF</strong>
+Aktivierung der intergrierten Durchschnittsberechnung.
+In dieser Funktion können Readings angelegt werden , die den Differenzwert eingehender Readings beinhalten.
+Hierfür müssen die betreffenden Readings bereits als Trigger in einem der Kommandozweige definiert sein.
+
+Wenn ein Kommandozweig z.B auf das Reading DEVICE:pct:.* reagiert kann für deas Reading pct diese Funktion aktiviert werden.
+
+Die Syntax muss wie folgt lauten:
+pct->1->DIFF_pct
+&lt;reading&gt; -> &lt;Position des Vergleichswertes&gt; -> &lt;name des anzulegenden readings&gt;
+
+pct-> reading für welches der Durchschnitt berechnet werden soll
+1 -> Nummer des Vergleichsreadings (1=das letzte, 2=Vorletztes 3= .... )
+DIFF_pct -> ist der Name des neu anzulegenden Readings 
+
+Auf dieses angelegte Reading kann in Bedingungen etc. unmittelbar reagiert werden -> [$SELF:DIFF_pct]
+Ein Fhemneustart bewirkt das Löschen aller 'historischen' Daten. Daher wird das Reading nur dann aktualisiert, wenn der entsprechende
+geforderte Vergleichswert bereits vorhanden ist.
+
+<strong>MSwitch_Func_TEND</strong>
+Aktivierung der intergrierten Durchschnittsberechnung.
+
+In dieser Funktion können Readings angelegt werden , die den Tendenzwert eingehender Readings darstellen.
+Hierfür müssen die betreffenden Readings bereits als Trigger in einem der Kommandozweige definiert sein.
+
+
+Funktionsbeschreibung:
+
+Hiermit kann die Tendenz eines Readings ermittelt werden.
+Es wirden 2 Wertepaare gebildet. Diese werden durch die erste numerische Angabe im Atttribut definiert:
+
+eine 1 bedeutet, dass der aktuelle und der vorherige Wert verglichen werden
+eine 2 bedeutet, dass der Schnitt der letzten 2 Werten mit dem Schnitt der vorherigen 2 Werten verglichen werden 
+etc.
+
+ergiebt sich aus diesem Vergleich eine Differenz , und diese Differenz ist gösser als die zweite numerische Angabe im Attribut
+dann nimmt Reading "(NAME)_pct_change" den Wert "changed" an, anderfalls "not_changed".
+In diesem Fall werden alleweiteren Readings aktualisiert (u.A Richtung der neuen Tendenz).
+
+Mit der dritten numerischen (0/1) Angabe im Attribut kann angegeben werden, ob alle eingegangenen Werte zusätzlich verglichen werden sollen.
+Das bedeutet , das alle errechneten Werte (maximal und minimalwerte) gespeichert werden . Zusätlich zu oben erklärtem Vergleich (wenn dieser noch keinen Schaltvorgang ausgelöst hat) wird geprüft,
+ob der Vergleich zwischen dem aktuellen Reading und einem gespeicherten Maximal- oder Minimalwert die Schaltschwelle überschreitet. 
+Ist dieses der Fall wird ebenfalls die Tendenzumkehr angezeigt.
+
+Auf alle Readings kann direkt in den Conidions etc. [$SELF:reading] zugegriffen werden.
+
+Die Syntax muss wie folgt lauten:
+pct->1->2->TEND_pct->1
+&lt;reading&gt; -> &lt;Anzahl der Werte zur Paarbildung&gt; -> &lt;Schaltschwelle zur Tendenzumkehr&gt;  -> &lt;(optinal 0,1) Einbeziehung des Gesamtverlaufes&gt;
+
+Mit aktivierung dieser Funktion werden diverse Readings angelegt:
+
+- (NAME)_pct_change<small>
+Nimmt die Werte "changed" oder "no_change" . Der Wert "changed" wird nur dann angenommen , wenn das aktuell eingehende Reading
+eine Umkehr der Tendez auslöst (Richtungsumkehr UND Schaltschwelle ueberschritten).
+</small>
+- (NAME)_pct_direction_real<small>
+Nimmt den Wert "up" oder "down" an. Dieser entspricht dem realen Wert der Tendenz des aktuellen Readings an.
+</small>
+- (NAME)_pct_direction_tendenz<small>
+Nimmt den Wert "up" oder "down" an. Dieser muss nicht dem realen Wert entsprechen, sondern ist abhängig von der Paarbildung und dem Schwellwert.
+</small>
+- (NAME)_pct_direction_value<small>
+Nimmt den errechneten Differenzwert an, der zwischen dem aktuellen und dem vorherigen Wert (oder Wertepaare) des überwachten Reading 
+</small>
+
+<strong>MSwitch_Readings</strong>
+MSwitch_Readings sind in sowohl in der Funktion, als auch im Format analog den Fhem Userreadings.
+Der gravierende Unterschied ist, das diese Readings im Gegensatz zu den Userreadings direkt bei Eingang eines Events und/oder Schaltvorganges - vor der Ausführung der Schaltbefehle - gesetzt werden.
+Somit besteht direkt im ausführenden Befehlsteil die Möglichkeit , diese MSwitch_Reading dort an jeder Stelle einzubauen und zu verwenden (Befehle, Bedingungen, etc.).
+
+In den MSwitch_Readings besteht in bekanntem Umfang Zugriff auf Systemvariablen ($NAME,$EVENT, etc.)
+
+<strong>MSwitch_EventMap</strong>
+MSwitch_EventMap ist in sowohl in der Funktion, als auch im Format analog zu dem FhemAttribut Eventmap.
+Der gravierende Unterschied ist, das dieses Eventmap nur für eingehende Events greift. Alle ausgehenden Events und/oder Statusmeldungen
+bleiben hiervon unberührt.
+
+Es wird ein weiteres Reading (EVENT_ORG) angelegt. Dieses enthält immer das original eingehende Event.
+Ein Event wird durch dieses Reading nicht ausgelöst, es steht aber im aktuellen Durchlauf zur Verfügung.
+
+Wenn diese Funktion aktiviert ist müssen sich alle internen Aktionen (Bedingungen,Befehle etc.) nach diesem gemappten Event richten.
+
+
 <strong></strong>
 <hr>
 ->
-
