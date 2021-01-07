@@ -3437,20 +3437,33 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 	if ( $cmd eq 'del' ) 
 	{
 	my $testarg = $aName;
-			if ( $testarg eq 'MSwitch_Readings' )
+	
+	
+		if ( $testarg eq 'MSwitch_Readings' )
+		{
+			my $keyhash = $data{MSwitch}{$name}{Readings};
+			foreach my $reading ( keys %{$keyhash} )
 			{
-				my $keyhash = $data{MSwitch}{$name}{Readings};
-				foreach my $reading ( keys %{$keyhash} )
-				{
-					delete( $hash->{READINGS}{$reading} );
-				}
-				delete $data{MSwitch}{$name}{Readings};
-			return;
+				delete( $hash->{READINGS}{$reading} );
 			}
+			delete $data{MSwitch}{$name}{Readings};
+		return;
+		}
 			
 			
-		
-        if ( $testarg eq 'MSwitch_Inforoom' )
+	if ( $testarg eq 'MSwitch_EventMap' )
+		{
+			
+			
+			delete( $hash->{READINGS}{EVENT_ORG} );
+			delete $data{MSwitch}{$name}{Eventmap};
+		return;
+		}
+			
+
+
+	
+    if ( $testarg eq 'MSwitch_Inforoom' )
 		{
           LOOP21:foreach my $testdevices ( keys %{ $modules{MSwitch}{defptr} } )
 			{
