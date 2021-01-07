@@ -65,7 +65,7 @@ my $helpfileeng = "www/MSwitch/MSwitch_Help_eng.txt";
 my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
-my $autoupdate   = 'off';     				# off/on
+my $autoupdate   = 'on';     				# off/onf
 my $version      = '5.0';  					# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
