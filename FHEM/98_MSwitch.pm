@@ -4665,7 +4665,7 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
 
 sub	MSwitch_Eventmap(@){	
 	my ( $hash, $name ,$eventcopy) = @_;
-	return if !exists $data{MSwitch}{$name}{Eventmap};
+	return $eventcopy if !exists $data{MSwitch}{$name}{Eventmap};
 	readingsSingleUpdate( $hash, 'EVENT_ORG',$eventcopy,0 );
 	my $maphash = $data{MSwitch}{$name}{Eventmap};
     foreach my $key ( keys %{$maphash} )
