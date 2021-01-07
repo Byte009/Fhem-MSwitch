@@ -1,3 +1,3 @@
 Version
-4.42
-last Version before 4.5
+5.0
+Strukturaaenderung auf 5.0
