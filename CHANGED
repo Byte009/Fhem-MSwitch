@@ -1,55 +1,5 @@
+Version 5.01
+Change: Safemode,Startverhalten,Eventverarbeitung ... etc.
+
 Version 5.0
 Change: System V5.0
-
-Version V4.42
-Change: last version before 4.5
-
-Version V4.30
-Change: Repeats mit Bedingungspruefung / Fehler bei Befehlstest behoben
-
-Version V4.20
-neue Funktion Web
-neue Funktion Wizard
-neue Funktion MSwitch
-Fehler in der Copy Funktion behoben
-
-Version V4.17
-neue Funktion Wizard -> INCSELECT
-Version V4.16
-Fehler in der EVENT to ID Brücke behoben
-
-Version V4.15
-Fehler in der EVENT to ID Brücke behoben
-
-Version V4.14
-add undo function
-
-Version V4.13
-Fehler behoben ( Conditions )
-
-Version V4.12
-einige Perlwarnungen behoben
-
-Version V4.11
-Attr MSwitch_Event_wait eingefügt
-
-Version V4.0
-geänderte Eventbehandlung conditions
-geänderte Eventbehandlung Befehlszweige
-attribut Switching_once
-set reset_Switching_once
-set writelog
-geänderte MSwitch_Extensions
-
-Version V4.01
-änderungen Eingabemaske
-
-Version V4.02
-Fehler Behoben ( MSwitch_Switch_once )
-
-Version V4.03
-Fehler Behoben ( ID-Event Verteiler )
-
-Version V4.1
-Update Wizard auf V3.8
-diverse interne Aenderungen
