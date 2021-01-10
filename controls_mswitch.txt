@@ -1,4 +1,4 @@
-UPD 2021-10-01_17:00:00 422372 FHEM/98_MSwitch.pm
+UPD 2021-10-01_17:00:00 422367 FHEM/98_MSwitch.pm
 UPD 2021-10-01_17:00:00 69584 www/pgm2/MSwitch_Wizard.js
 UPD 2021-10-01_17:00:00 42649 www/pgm2/MSwitch_Web.js
 UPD 2021-10-01_17:00:00 56761 www/MSwitch/MSwitch_Help.txt
