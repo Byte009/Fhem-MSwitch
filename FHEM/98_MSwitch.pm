@@ -3799,9 +3799,9 @@ sub MSwitch_Notify($$) {
 
 if ( grep( m/^EVENT: EV.*/, @{$events} ) )
     {
-	Log3( $ownName, 0,"Harter abbruch...");
-	Log3( $ownName, 0,"$ownName - $devName ");
-	Log3("test",0," - @{$events}");
+	Log3( $ownName, 5,"hard exit ...");
+	Log3( $ownName,5,"$ownName - $devName ");
+	Log3("test",5," - @{$events}");
 	return;
 	}
 
