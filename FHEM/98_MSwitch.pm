@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.02';  				# version
+my $version      = '5.03';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -1177,25 +1177,24 @@ sub MSwitch_Get($$@) {
   if ( $opt eq 'extcmd' ) 
 	{
 
-	  my $typ= $args[0];
-	  my $cs = $args[1];
-	  my $incommingevent=$args[2];
+	my $typ= $args[0];
+	my $cs = $args[1];
+	my $incommingevent=$args[2];
 	  
-	  delete( $hash->{helper}{aktevent} );
-	  if ($incommingevent ne "no_trigger")
-	  {
-	  $hash->{helper}{aktevent}=$incommingevent;
-	  }
+	delete( $hash->{helper}{aktevent} );
+	if ($incommingevent ne "no_trigger")
+	{
+	$hash->{helper}{aktevent}=$incommingevent;
+	}
 
-	 if ($typ ne "FreeCmd")
-	 {
-		  my $cs = $args[1] ;
-		  $cs =~ s/#\[sp\]/ /g;
-		  $cs = MSwitch_dec( $hash, $cs );
-		  my $exec = "set ".$args[0]." ".$cs;
-		  #
-		  my $errorout="<small>$WARNINGS:<br>";
-		  my $errors = AnalyzeCommandChain( undef, $exec );
+	if ($typ ne "FreeCmd")
+	{
+		my $cs = $args[1] ;
+		$cs =~ s/#\[sp\]/ /g;
+		$cs = MSwitch_dec( $hash, $cs );
+		my $exec = "set ".$args[0]." ".$cs;
+		my $errorout="<small>$WARNINGS:<br>";
+		my $errors = AnalyzeCommandChain( undef, $exec );
 		  if ( defined($errors) and $errors ne "OK" )
 				{
 					$errorout.=$errors;
@@ -1204,39 +1203,58 @@ sub MSwitch_Get($$@) {
 				{
 					$errorout.="$WARNINGSOUT";
 				}
-		  delete( $hash->{helper}{aktevent} );
-		  return "<small>$EXECUTEDCMD:</small><br><br>$exec<br><br>$errorout";
+		delete( $hash->{helper}{aktevent} );
+		return "<small>$EXECUTEDCMD:</small><br><br>$exec<br><br>$errorout";
 	  }
 	  else
 	  {
 		my $cs = $args[1] ;
-		$cs =~ s/#\[sp\]/ /g;
-		$cs =~ s/#\[se\]/;/g;
-		$cs =~ s/#\[nl\]//g;
-		$cs = MSwitch_dec( $hash, $cs );
-		$cs = MSwitch_makefreecmd( $hash, $cs );
-		   
-        my $errorout="<small>$WARNINGS:<br>";
-		
-		
-		my $errors = eval($cs);
-	
-		
-		if ( defined($errors) and $errors ne "OK" )
+		if ( $cs =~ m/(\{)(.*)(\})/s )
 			{
-				$errorout.=$errors;
+			#perlmod
+			$cs =~ s/#\[sp\]/ /g;
+			$cs =~ s/#\[se\]/;/g;
+			$cs =~ s/#\[nl\]//g;
+			$cs = MSwitch_dec( $hash, $cs );
+			$cs = MSwitch_makefreecmd( $hash, $cs );
+			my $errorout="<small>$WARNINGS:<br>";
+			# Log3("test",0,"cs: $cs");
+			my $errors = eval($cs);
+			if ( defined($errors) and $errors ne "OK" )
+				{
+					$errorout.=$errors;
+				}
+			else
+				{
+						$errorout.="$WARNINGSOUT";
+				}
+			delete( $hash->{helper}{aktevent} );
+			$cs =~ s/;/;<br>/g;
+			$cs =~ s/^{/{<br>/g;
+			$cs =~ s/}$/}<br>/g;
+			return "<small>$EXECUTEDCMD:</small><br><br>$cs<br><br>$errorout";
+			return "ok";
 			}
 		else
 			{
+			#fhemmode
+			$cs =~ s/#\[sp\]/ /g;
+			$cs = MSwitch_dec( $hash, $cs );
+			my $exec = $cs;
+			my $errorout="<small>$WARNINGS:<br>";
+			
+			my $errors = AnalyzeCommandChain( undef, $exec );
+			if ( defined($errors) and $errors ne "OK" )
+				{
+					$errorout.=$errors;
+				}
+			else
+				{
 					$errorout.="$WARNINGSOUT";
+				}
+			delete( $hash->{helper}{aktevent} );
+			return "<small>$EXECUTEDCMD:</small><br><br>$exec<br><br>$errorout";	
 			}
-		delete( $hash->{helper}{aktevent} );
-		
-		$cs =~ s/;/;<br>/g;
-		$cs =~ s/^{/{<br>/g;
-		$cs =~ s/}$/}<br>/g;
-		return "<small>$EXECUTEDCMD:</small><br><br>$cs<br><br>$errorout";
-		return "ok";
 		}
 	return;
     }
