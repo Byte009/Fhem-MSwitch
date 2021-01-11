@@ -49,7 +49,7 @@ use LWP::Simple;
 use JSON;
 use HttpUtils;
 use Color;
-
+   
 
 my $updateinfo  = "";    # wird mit info zu neuen versionen besetzt
 my $generalinfo = "";    # wird mit aktuellen informationen besetzt
@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.01';  				# version
+my $version      = '5.02';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -831,7 +831,8 @@ sub MSwitch_LoadHelper($) {
 		{
             $ctrigg = '';
         }
-        if ( defined $devhash ) {
+        if ( defined $devhash ) 
+		{
             $hash->{NOTIFYDEV} = $cdev; # stand auf global ... änderung auf ...
             if ( defined $cdev && $cdev ne '' ) 
 			{
@@ -844,6 +845,11 @@ sub MSwitch_LoadHelper($) {
             readingsSingleUpdate( $hash, ".Trigger_device", 'no_trigger', 0 );
         }
     }
+
+
+
+
+
 
     if (   !defined $hash->{NOTIFYDEV}|| $hash->{NOTIFYDEV} eq 'undef'|| $hash->{NOTIFYDEV} eq '' )
     {
@@ -1003,6 +1009,25 @@ sub MSwitch_LoadHelper($) {
             $hash->{helper}{eventtoid}{$key} = $val;
         }
     }
+	
+	
+	
+	my $testnot = $hash->{NOTIFYDEV};
+	
+	#Log3("test",0,"N: $Name - Not: $testnot L:".length $testnot);
+	
+	
+	if (length $testnot < 1)
+	{
+		$hash->{NOTIFYDEV} = 'no_trigger';
+		#delete( $hash->{NOTIFYDEV} );
+		#delete( $hash->{NTFY_ORDER} );
+	}
+	
+	
+	
+	
+	
     return;
 }
 
@@ -3315,6 +3340,10 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
 				$hash->{NOTIFYDEV} = 'no_trigger';
 			}
 		}
+		else
+			{
+				$hash->{NOTIFYDEV} = 'global';
+			}
     }
 
 ############ DUMMY ohne  Selftrigger
@@ -3361,6 +3390,7 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
 		delete( $hash->{READINGS}{MSwitch_generate_Events} );
 		setDevAttrList( $name, $attrdummy );
 		}
+	return;
 	}
 
 ############ DUMMY ohne  Selftrigger
@@ -3371,6 +3401,9 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
         MSwitch_Clear_timer($hash);
         $hash->{MODEL}     	= 'Dummy' . " " . $version;
 		$hash->{DEF}     	= $name;
+		$hash->{NOTIFYDEV} = 'no_trigger';
+		my $delete =".Trigger_device";
+			delete( $hash->{READINGS}{$delete} );
 		if ($init_done) 
 		{
 			fhem( "deleteattr $name MSwitch_Include_Webcmds");
@@ -3388,10 +3421,9 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
 			fhem( "deleteattr $name MSwitch_Help");
 
 			delete( $hash->{eventsave} );
-			delete( $hash->{NOTIFYDEV} );
+			#delete( $hash->{NOTIFYDEV} );
 			delete( $hash->{NTFY_ORDER} );
-			my $delete =".Trigger_device";
-			delete( $hash->{READINGS}{$delete} );
+			
 			delete( $hash->{IncommingHandle} );
 			delete( $hash->{READINGS}{EVENT} );
 			delete( $hash->{READINGS}{EVTFULL} );
@@ -3435,6 +3467,10 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 				{
 					$hash->{NOTIFYDEV} = 'no_trigger';
 				}
+			}
+			else
+			{
+				$hash->{NOTIFYDEV} = 'global';
 			}
 		}
 		
@@ -3797,11 +3833,11 @@ sub MSwitch_Notify($$) {
     my $events = deviceEvents( $dev_hash, 1 );
 	
 
-if ( grep( m/^EVENT: EV.*/, @{$events} )  || grep( m/^EVTFULL: EV.*/, @{$events} )    )
+if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
     {
 	Log3( $ownName, 5,"hard exit ...");
 	Log3( $ownName,5,"$ownName - $devName ");
-	Log3("test",5," - @{$events}");
+	Log3($ownName,5," - @{$events}");
 	return;
 	}
 
@@ -3839,13 +3875,13 @@ if ( grep( m/^EVENT: EV.*/, @{$events} )  || grep( m/^EVTFULL: EV.*/, @{$events}
 # ende wenn wizard aktiv
 ###############################
 
-
 # prüfe debugmodes 	meldungen absetzen
 	if (!exists $data{MSwitch}{warning}{debug})
 	{
 	MSwitch_Initcheck();
 	}
 ###############################
+
 
 
 # jede aktion für eigenes debug abbrechen
@@ -5109,7 +5145,10 @@ sub MSwitch_fhemwebFn($$$$) {
     my $border     = 0;
     my $ver        = ReadingsVal( $Name, '.V_Check', '' );
     my $expertmode = AttrVal( $Name, 'MSwitch_Expert', '0' );
-	my $debugmode    	= AttrVal( $Name, 'MSwitch_Debug',0 );
+	my $debugmode  = AttrVal( $Name, 'MSwitch_Debug',0 );
+	my $selftrigger=AttrVal( $Name, "MSwitch_Selftrigger_always", 0 );
+	my $devicemode =AttrVal( $Name, 'MSwitch_Mode', $startmode );
+	my $triggerdevice =AttrVal( $Name, '.Trigger_device', 'no_trigger' );
     my $noshow     = 0;
     my @hidecmds = split( /,/, AttrVal( $Name, 'MSwitch_Hidecmds', 'undef' ) );
 	my $debughtml="";
@@ -6126,8 +6165,7 @@ MS-HELPdelay
     }
 
 ######################################class='block wide'
-    if (   AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Dummy"
-        && AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "0" )
+    if (  $devicemode eq "Dummy"  && $selftrigger eq "0" )
     {
         $affecteddevices[0] = 'no_device';
     }
@@ -7070,8 +7108,7 @@ Repeats: <input type='text' id='repeatcount' name='repeatcount"
 		 ";
     }
     # debugmode
-    if (   AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '2'
-        || AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '3' )
+    if (   $debugmode eq '2'|| $debugmode eq '3' )
     {
         my $Zeilen = ("");
         open( BACKUPDATEI, "./log/MSwitch_debug_$Name.log" );
@@ -7353,7 +7390,7 @@ MS-HELPwhitelist
 MS-HELPexecdmd
 MS-HELPcond
 --> 
-<table MS-HIDEDUMMY border='0' cellpadding='4' class='block wide' style='border-spacing:0px;'>
+<table MS-HIDEDUMMY border='0' cellpadding='4' informid='hidedummy' class='block wide' style='border-spacing:0px;'>
 	<tr class='even'>
 		<td colspan='4'>trigger device/time</td>
 	</tr>
@@ -7467,18 +7504,18 @@ MS-HELPcond
     my $help        = "";
     my $visible     = 'visible';
 
-    if ( AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Notify" ) {
+    if ( $devicemode eq "Notify" ) {
         $MShidefull = "style='display:none;'";
         $displaynot = "style='display:none;'";
 
     }
 
-    if ( AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Toggle" ) {
+    if ( $devicemode eq "Toggle" ) {
         $displayntog = "style='display:none;'";
         $inhalt5     = "toggle $Name and execute cmd1/cmd2";
     }
 
-    if ( AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) ne "Dummy" ) {
+    if ( $devicemode ne "Dummy" ) {
         $MSHidedummy = "";
     }
     else {
@@ -7528,8 +7565,7 @@ MS-HELPcond
         $MSconditiontext = "Trigger condition (time&events)";
     }
 
-    if (   AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '1'
-        || AttrVal( $Name, 'MSwitch_Debug', "0" ) eq '3' )
+    if (   $debugmode eq '1'|| $debugmode eq '3' )
     {
         $MScheckcondition =
 " <input name='info' type='button' value='check condition' onclick=\"javascript: checkcondition('triggercondition','$Name:trigger:conditiontest')\">";
@@ -7743,13 +7779,8 @@ end:textersetzung:eng
         $eventhtml =~ s/$wert1/$wert2/g;
     }
 
-    if (   ReadingsVal( $Name, '.Trigger_device', 'no_trigger' ) ne 'no_trigger'
-        || AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
-    {
-        $ret .=
-"<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>"
-          . $eventhtml
-          . "</div>";
+    if ( $triggerdevice  ne 'no_trigger' || $selftrigger eq "1" || ( $selftrigger eq "1" && $devicemode eq "Dummy")){
+        $ret .="<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>" . $eventhtml. "</div>";
     }
 ###########################################################
 ###########################################################
@@ -7761,10 +7792,7 @@ end:textersetzung:eng
     my $dist = '';
 
     if (
-        $expertmode eq "1"
-        && (
-            ReadingsVal( $Name, '.Trigger_device', 'no_trigger' ) ne 'no_trigger'
-            || AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
+        $expertmode eq "1" && ( $triggerdevice  ne 'no_trigger' || $selftrigger eq "1" || ( $selftrigger eq "1" && $devicemode eq "Dummy"))
       )
     {
 
@@ -8012,7 +8040,7 @@ end:textersetzung:eng
     $triggerdetailhtml = $1;
     $triggerdetailhtml =~ s/#/\n/g;
 
-    my $selftrigger       = "";
+    #my $selftrigger       = "";
     my $showtriggerdevice = $Triggerdevice;
     if (   AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1"
         && ReadingsVal( $Name, '.Trigger_device', 'no_trigger' ) ne
@@ -12175,16 +12203,17 @@ sub MSwitch_EventBulk($$$$) {
 	my $evtparts1=$hash->{helper}{evtparts}{evtpart1};
 	my $evtparts2=$hash->{helper}{evtparts}{evtpart2};
 	my $evtparts3=$hash->{helper}{evtparts}{evtpart3};
-
+    my $Eventupdate = 1;
 	 my $diff = int(time) - $fhem_started;
-		if ( $diff <  60 )
+		if ( $diff <  60 || $init_done != 1)
 		{
 			$update=0;
+			$Eventupdate=0;
 		}
 #$update =0;
     MSwitch_LOG( $name, 6, "ausführung 1 aktualisiere Eventreadings: $event  L:" . __LINE__ );
 	readingsSingleUpdate( $hash, "EVENT", $event, $update);
-	readingsSingleUpdate( $hash, "EVTFULL", $evtfull, 1 );
+	readingsSingleUpdate( $hash, "EVTFULL", $evtfull, $Eventupdate );
 	readingsSingleUpdate( $hash, "EVTPART1",$evtparts1, $update );
 	readingsSingleUpdate( $hash, "EVTPART2", $evtparts2, $update );
 	readingsSingleUpdate( $hash, "EVTPART3", $evtparts3, $update );
