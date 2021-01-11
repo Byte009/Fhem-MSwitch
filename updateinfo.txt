@@ -1,3 +1,3 @@
 Version
-5.02
-Startverhalten optimiert und Modul-Grundlast minimiert
+5.03
+Fix "test cmd" buttons
