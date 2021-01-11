@@ -3797,7 +3797,7 @@ sub MSwitch_Notify($$) {
     my $events = deviceEvents( $dev_hash, 1 );
 	
 
-if ( grep( m/^EVENT: EV.*/, @{$events} ) )
+if ( grep( m/^EVENT: EV.*/, @{$events} )  || grep( m/^EVTFULL: EV.*/, @{$events} )    )
     {
 	Log3( $ownName, 5,"hard exit ...");
 	Log3( $ownName,5,"$ownName - $devName ");
@@ -12181,10 +12181,10 @@ sub MSwitch_EventBulk($$$$) {
 		{
 			$update=0;
 		}
-
+#$update =0;
     MSwitch_LOG( $name, 6, "ausführung 1 aktualisiere Eventreadings: $event  L:" . __LINE__ );
-	readingsSingleUpdate( $hash, "EVENT", $event, 1);
-	readingsSingleUpdate( $hash, "EVTFULL", $evtfull, $update );
+	readingsSingleUpdate( $hash, "EVENT", $event, $update);
+	readingsSingleUpdate( $hash, "EVTFULL", $evtfull, 1 );
 	readingsSingleUpdate( $hash, "EVTPART1",$evtparts1, $update );
 	readingsSingleUpdate( $hash, "EVTPART2", $evtparts2, $update );
 	readingsSingleUpdate( $hash, "EVTPART3", $evtparts3, $update );
