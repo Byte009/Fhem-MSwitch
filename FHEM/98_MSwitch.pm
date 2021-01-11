@@ -4151,12 +4151,22 @@ if (exists $own_hash->{helper}{testevent_device})
 # ersetze bei global eingang ggf fehlende eeventteile
 	if ($devName eq "global")
 	{
+		
+		
 		my @eventcopytmp =split( / /, $eventcopy,2 );
 		if (@eventcopytmp == 1)
 		{
-			push @eventcopytmp ,'undef';
+			#push @eventcopytmp ,'undef';
+			unshift @eventcopytmp ,'global';
+			
+			
 		}
 	$eventcopy = join(":",@eventcopytmp);
+	
+	
+	
+	
+	
 	}
 	$eventcopy = "$devName:$eventcopy";
 
@@ -5148,7 +5158,7 @@ sub MSwitch_fhemwebFn($$$$) {
 	my $debugmode  = AttrVal( $Name, 'MSwitch_Debug',0 );
 	my $selftrigger=AttrVal( $Name, "MSwitch_Selftrigger_always", 0 );
 	my $devicemode =AttrVal( $Name, 'MSwitch_Mode', $startmode );
-	my $triggerdevice =AttrVal( $Name, '.Trigger_device', 'no_trigger' );
+	my $triggerdevice =ReadingsVal( $Name, '.Trigger_device', 'no_trigger' );
     my $noshow     = 0;
     my @hidecmds = split( /,/, AttrVal( $Name, 'MSwitch_Hidecmds', 'undef' ) );
 	my $debughtml="";
@@ -7779,9 +7789,20 @@ end:textersetzung:eng
         $eventhtml =~ s/$wert1/$wert2/g;
     }
 
+
+
+ #Log3("test",0,"vor ok eingefuegt");
+ 
+ # Log3("test",0,"triggerdevice $triggerdevice");
+  # Log3("test",0,"selftrigger $selftrigger");
+   #  Log3("test",0,"devicemode $devicemode");
+ 
     if ( $triggerdevice  ne 'no_trigger' || $selftrigger eq "1" || ( $selftrigger eq "1" && $devicemode eq "Dummy")){
         $ret .="<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>" . $eventhtml. "</div>";
-    }
+  # Log3("test",0,"ok eingefuegt");
+
+
+   }
 ###########################################################
 ###########################################################
     # id event bridge neu
@@ -10032,7 +10053,7 @@ sub MSwitch_Createtimer($)
 	foreach my $fullpart (@timerfile)
 	{
 		my ($part1,$part2)= split (/=/,$fullpart);
-		$timertable{$part1}=$part2;
+		$timertable{$part1}=$part2  if defined $part1;
 	}
 
 	## prüfe auf nur ein vorkommen einer zeitangabe TIME/RANDOM/REPEAT
