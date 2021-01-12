@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.03';  				# version
+my $version      = '5.04';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -86,7 +86,7 @@ my @doignore = qw(notify allowed at watchdog doif fhem2fhem telnet FileLog readi
 my $startmode   = "Notify";    				# Startmodus des Devices nach Define
 my $wizardreset = 3600;       				#Timeout für Wizzard
 my $MSwitch_generate_Events ="0";
-
+my $statistic;
 my $debugging = "0";
 
 $data{MSwitch}{updateinfolink} = $updateinfolink;
@@ -295,6 +295,7 @@ my $attrdummy ="  disable:0,1"
 . "  MSwitch_Readings:textField-long"
 . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
 . "  MSwitch_Selftrigger_always:0,1"
+. "  MSwitch_Statistic:0,1"
 . "  useSetExtensions:0,1"
 . "  setList:textField-long "
 . "  readingList:textField-long "
@@ -317,6 +318,7 @@ my $attractivedummy = "  disable:0,1"
 . "  MSwitch_Extensions:0,1"
 . "  MSwitch_Inforoom"
 . "  MSwitch_Safemode:0,1,2"
+. "  MSwitch_Statistic:0,1"
 . "  MSwitch_DeleteCMDs:manually,automatic,nosave"
 . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
 . "  MSwitch_Selftrigger_always:0,1"
@@ -338,6 +340,7 @@ my $attrresetlist =
 . "  stateFormat:textField-long"
 . "  MSwitch_Comments:0,1"
 . "  MSwitch_Read_Log:0,1"
+. "  MSwitch_Statistic:0,1"
 . "  MSwitch_Hidecmds"
 . "  MSwitch_Help:0,1"
 . "  MSwitch_Readings:textField-long"
@@ -1017,7 +1020,7 @@ sub MSwitch_LoadHelper($) {
 	#Log3("test",0,"N: $Name - Not: $testnot L:".length $testnot);
 	
 	
-	if (length $testnot < 1)
+	if (defined $testnot && length $testnot < 1)
 	{
 		$hash->{NOTIFYDEV} = 'no_trigger';
 		#delete( $hash->{NOTIFYDEV} );
@@ -1025,6 +1028,13 @@ sub MSwitch_LoadHelper($) {
 	}
 	
 	
+
+	
+	if ( ReadingsVal( $Name, '.Trigger_devic', 'undef' ) eq "all_events" )
+		{
+		delete( $hash->{NOTIFYDEV} );
+		#delete( $hash->{NTFY_ORDER} );
+		}
 	
 	
 	
@@ -1616,6 +1626,16 @@ sub MSwitch_Get($$@) {
     return "<span style=\"font-size: medium\">Keine aktiven Delays/Ats gefunden <\/span>";
     }
 
+
+####
+my $statistic = "";
+
+if ( AttrVal( $name, 'MSwitch_Statistic', "0" ) == 1 ) 
+			{
+				$statistic = "statistics:noArg";
+			}
+
+
 #######
     my $extension = '';
 	if ( AttrVal( $name, 'MSwitch_SysExtension', "0" ) =~ m/(1|2)/s  )
@@ -1626,7 +1646,7 @@ sub MSwitch_Get($$@) {
 ### modulmode - no sets
     if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) 
 	{
-        return "Unknown argument $opt, choose one of reset_Switching_once:noArg  HTTPresponse:noArg config:noArg support_info:noArg active_timer:show";
+        return "Unknown argument $opt, choose one of reset_Switching_once:noArg  HTTPresponse:noArg config:noArg support_info:noArg active_timer:show $statistic";
     }
 #######
 
@@ -1634,20 +1654,20 @@ sub MSwitch_Get($$@) {
 	{
         if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" ) 
 		{
-            return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:this_device,all_devices active_timer:show,delete";
+            return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:this_device,all_devices active_timer:show,delete $statistic";
         }
         else 
 		{
-            return "Unknown argument $opt, choose one of support_info:noArg restore_MSwitch_Data:this_device,all_devices";
+            return "Unknown argument $opt, choose one of support_info:noArg restore_MSwitch_Data:this_device,all_devices $statistic";
         }
     }
 
     if ( ReadingsVal( $name, '.lock', 'undef' ) ne "undef" ) {
-        return"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg support_info:noArg active_timer:show,delete config:noArg restore_MSwitch_Data:this_device,all_devices ";
+        return"Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg support_info:noArg active_timer:show,delete config:noArg restore_MSwitch_Data:this_device,all_devices $statistic ";
     }
     else 
 	{
-        return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_device,all_devices $extension";
+        return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_device,all_devices $extension $statistic";
     }
 }
 ####################
@@ -2398,6 +2418,12 @@ sub MSwitch_Set($@) {
 	my $setwidget ="";
 	return "" if ( IsDisabled($name) && ( $cmd eq 'on' || $cmd eq 'off' ) );    # Return without any further action if the module is disabled
 
+
+
+
+
+
+
 #################################
 if ( $cmd ne "?" && $cmd ne "clearlog" && $cmd ne "writelog") 
 	{
@@ -2754,6 +2780,19 @@ if (!exists( $sets{$cmd} ))
 			delete( $hash->{IncommingHandle} );
 			}
 
+
+
+my $statistic = "";
+
+#if ( AttrVal( $name, 'MSwitch_Statistic', "0" ) == 1 ) 
+#			{
+#				$statistic = "show_statistics";
+#			}
+			
+			
+
+
+
 		#############################################
 		if ( exists $hash->{helper}{config}&& $hash->{helper}{config} eq "no_config" )
 		{
@@ -2764,18 +2803,18 @@ if (!exists( $sets{$cmd} ))
 		if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' )
 		{
 		# rückgabe modulmode - no sets
-			return "Unknown argument $cmd, choose one of $dynsetlist $setList $setwidget";
+			return "Unknown argument $cmd, choose one of $dynsetlist $setList $setwidget $statistic";
 		}
 
 		if ( $devicemode eq "Notify" ) 
 			{
 			# rückgabe für Notifymode	
-				return"Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList $setwidget ";
+				return"Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList $setwidget $statistic ";
 			}
 			elsif ( $devicemode eq "Toggle" )
 			{
 			# rückgabe für Togglemodemode	
-				return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:this_device,all_devices fakeevent wait reload_timer:noArg del_repeats:noArg change_renamed $setList $setwidget ";
+				return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:this_device,all_devices fakeevent wait reload_timer:noArg del_repeats:noArg change_renamed $setList $setwidget $statistic ";
 			}
 		elsif ( $devicemode eq "Dummy" )
 			{
@@ -2788,18 +2827,18 @@ if (!exists( $sets{$cmd} ))
 				{
 					if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
 					{
-						return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:this_device,all_devices $setList $special $setwidget";
+						return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:this_device,all_devices $setList $special $setwidget $statistic";
 					}
 						else 
 					{
-						return "Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg backup_MSwitch:this_device,all_devices $setList $special $setwidget";
+						return "Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg backup_MSwitch:this_device,all_devices $setList $special $setwidget $statistic";
 					}
 				}
 			}
 			else 
 			{
 			# rückgabe für Fullmode
-					return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special $setwidget";
+					return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special $setwidget $statistic";
 			}
 			
 		return;
@@ -3105,6 +3144,46 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
     }
 }
 
+
+## statistik
+    if ( $aName eq 'MSwitch_Statistic' && $aVal eq '1' ) {
+		# $hash->{helper}{statistics}{notifyloop_incomming}=0;
+		# $hash->{helper}{statistics}{notifyloop_firsttest_passed}=0;
+		# $hash->{helper}{statistics}{notifyloop_wait_blocked}=0;
+		# $hash->{helper}{statistics}{notifyloop_startdelay_blocked}=0;
+		# $hash->{helper}{statistics}{eventloop_jason_blocked}=0;
+		
+		# $hash->{helper}{statistics}{eventloop_incomming}=0;
+		
+		
+		$hash->{helper}{statistics}{starttime}=time;
+	}
+	
+	if ( $aName eq 'MSwitch_Statistic' && $aVal eq '0' ) {
+		  delete( $hash->{helper}{statistics} );
+	}
+		
+# random
+
+    if ( $aName eq 'MSwitch_RandomTime' && $aVal ne '' ) {
+        if ( $aVal !~
+            m/([0-9]{2}:[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}:[0-9]{2})/ )
+        {
+            return 'wrong syntax !<br>the syntax must be: HH:MM:SS-HH:MM:SS';
+        }
+        else {
+            $aVal =~ s/\://g;
+            my @test = split( /-/, $aVal );
+            if ( $test[0] >= $test[1] ) {
+                return
+                    'fist '
+                  . $test[0]
+                  . ' parameter must be lower than second parameter '
+                  . $test[1];
+            }
+        }
+        return;
+    }
 ## RandomTime
     if ( $aName eq 'MSwitch_RandomTime' && $aVal ne '' ) {
         if ( $aVal !~
@@ -3498,6 +3577,15 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 	{
 	my $testarg = $aName;
 	
+	
+	
+	
+	if ( $testarg eq 'MSwitch_Statistic' ) {
+		  delete( $hash->{helper}{statistics} );
+		  delete( $hash->{helper}{statistics}{notifyloop_incomming_names} );
+	}
+	
+	
 		if ( $testarg eq 'MSwitch_Readings' )
 		{
 			my $keyhash = $data{MSwitch}{$name}{Readings};
@@ -3851,6 +3939,9 @@ sub MSwitch_Notify($$) {
     my $events = deviceEvents( $dev_hash, 1 );
 	
 
+if ( AttrVal( $ownName, 'MSwitch_Statistic', "0" ) == 1 ) {$statistic =1}
+
+
 if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
     {
 	Log3( $ownName, 5,"hard exit ...");
@@ -3992,10 +4083,17 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
     if ($init_done != 1)
 	{
 		
-	Log3("test",0,"NOINIT $ownName");	
+	Log3("test",5,"NOINIT $ownName");	
 		
 	return 	;
 	}
+
+
+
+$own_hash->{helper}{statistics}{notifyloop_incomming}++ if $statistic ==1; #statistik
+$own_hash->{helper}{statistics}{notifyloop_incomming_names}{$devName}++ if $statistic ==1;
+
+
 
 # abbruch wenn selbsttrigger nicht aktiv 
     if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) ne "1" ) 
@@ -4014,6 +4112,8 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
     my $diff = int(time) - $fhem_started;
     if ( $diff < $startdelay && $startdelay > 0 )
 	{
+		$own_hash->{helper}{statistics}{notifyloop_startdelay_blocked}++ if $statistic ==1; #statistik
+
         MSwitch_LOG( $ownName, 6,"Event blockiert - Startverzögerung $diff " );
         return;
     }
@@ -4024,6 +4124,7 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
 	{
         MSwitch_LOG( $ownName, 6, "Event blockiert - Wait gesetzt " . ReadingsVal( $ownName, "waiting", '0' ) . " " );
         # teste auf attr waiting verlesse wenn gesetzt
+		$own_hash->{helper}{statistics}{notifyloop_wait_blocked}++ if $statistic ==1; #statistik
         return "";
     }
     else 
@@ -4132,12 +4233,21 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
 ## EVENTMAINLOOP	
 ##########################
 
+
+$own_hash->{helper}{statistics}{notifyloop_firsttest_passed}++ if $statistic ==1; #statistik
+
       EVENT: foreach my $event (@eventscopy)
 		{
+			
+			
+			
+		$own_hash->{helper}{statistics}{eventloop_incomming}++ if $statistic ==1; #statistik	
+			
 		MSwitch_LOG( $ownName, 6, "bearbeitetes Event -> $event  " );
 # ausstieg bei jason
         if ( $event =~ m/^.*:.\{.*\}?/ )
 		{
+			$own_hash->{helper}{statistics}{eventloop_jason_blocked}++ if $statistic ==1; #statistik
                 MSwitch_LOG( $ownName, 2, "$ownName:    found jason -> $event  " );
                 next EVENT;
         }
@@ -4261,9 +4371,12 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
 			my $ret = MSwitch_checkcondition( $triggercondition, $ownName,$eventcopy );
             if ( $ret eq 'false' )
 				{
+					$own_hash->{helper}{statistics}{eventloop_firstcondition_blocked}++ if $statistic ==1; #statistik
                     next EVENT;
                 }
             }
+			
+		$own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic ==1; #statistik	
 ### ab hier ist das event durch condition akzeptiert	
 
 delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben auf nach abarbeitung conditions
@@ -8852,8 +8965,18 @@ sub MSwitch_Exec_Notif($$$$$) {
 	
     my %devicedetails = MSwitch_makeCmdHash($name);
 
+
+
+return if ReadingsVal( $name, '.Device_Affected', 'no_device' ) eq 'no_device';
+
+
     # betroffene geräte suchen
     my @devices =split( /,/, ReadingsVal( $name, '.Device_Affected', 'no_device' ) );
+	
+	
+	
+	
+	
     my $update     = '';
     my $testtoggle = '';
 	 
@@ -10810,16 +10933,20 @@ sub MSwitch_checktrigger_new(@) {
 		my $eventbedingung = $2;
 		my $eventparts = $own_hash->{helper}{evtparts}{parts};
 		$triggerfield =$eventpart;
+		
+		my @triggerarray= split( /:/, $triggerfield);
+		
+		
 		MSwitch_LOG( $ownName, 6,"eventpart $eventpart  L:" . __LINE__ );
 		MSwitch_LOG( $ownName, 6,"eventbedingung $eventbedingung  L:" . __LINE__ );
-		MSwitch_LOG( $ownName, 6,"eventparts $eventparts  L:" . __LINE__ );
+		MSwitch_LOG( $ownName, 6,"eventparts 3 L:" . __LINE__ );
 		#my @eventteile= split( /:/, $eventpart ,$eventparts )	;
-		MSwitch_LOG( $ownName, 6,"eventparts $eventparts  L:" . __LINE__ );
+
 		my $position ;	
-		for ( my $i = 0 ; $i < $eventparts ; $i++ ) 
+		for ( my $i = 0 ; $i < 3 ; $i++ ) 
 		{	
-			MSwitch_LOG( $ownName, 6,"eventparts($i) $eventsplit[$i]  L:" . __LINE__ );
-			if ($eventsplit[$i] eq ".*")
+			MSwitch_LOG( $ownName, 6,"pruefe triggereventpart $i: $triggerarray[$i]  L:" . __LINE__ );
+			if ($triggerarray[$i] eq ".*")
 			{
 				$position = $i;
 			}
