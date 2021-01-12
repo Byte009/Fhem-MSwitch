@@ -3280,7 +3280,7 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
 		my @mappaare = split(/$trenner/,$evantmaps);
 		for my $paar (@mappaare) 
 		{
-			my ($key,$inhalt)=split(/:/,$paar);
+			my ($key,$inhalt)=split(/:/,$paar,2);
 			$data{MSwitch}{$name}{Eventmap}{$key}=$inhalt;
 		}
 		return;
@@ -3936,6 +3936,7 @@ sub MSwitch_Notify($$) {
     my $ownName = $own_hash->{NAME};    # own name / hash
     my $devName;
     $devName = $dev_hash->{NAME};
+	my $devType = $dev_hash->{TYPE};
     my $events = deviceEvents( $dev_hash, 1 );
 	
 
@@ -4077,6 +4078,18 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
 # nur abfragen für eigenes Notify ENDE
 #########################################
 
+ if ($statistic ==1){
+	 
+$own_hash->{helper}{statistics}{notifyloop_incomming}++; 
+$own_hash->{helper}{statistics}{notifyloop_incomming_names}{$devName}++;
+$own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
+
+
+
+
+ }
+
+
 # Return without any further action if the module is disabled
 	 return "" if ( IsDisabled($ownName) );
 	
@@ -4090,8 +4103,7 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
 
 
 
-$own_hash->{helper}{statistics}{notifyloop_incomming}++ if $statistic ==1; #statistik
-$own_hash->{helper}{statistics}{notifyloop_incomming_names}{$devName}++ if $statistic ==1;
+
 
 
 
@@ -4376,7 +4388,9 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
                 }
             }
 			
-		$own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic ==1; #statistik	
+$own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic ==1; #statistik	
+
+
 ### ab hier ist das event durch condition akzeptiert	
 
 delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben auf nach abarbeitung conditions
@@ -4840,11 +4854,54 @@ sub	MSwitch_Eventmap(@){
 	my ( $hash, $name ,$eventcopy) = @_;
 	return $eventcopy if !exists $data{MSwitch}{$name}{Eventmap};
 	readingsSingleUpdate( $hash, 'EVENT_ORG',$eventcopy,0 );
+	
+	my @ecopy=split(/:/,$eventcopy,3);
 	my $maphash = $data{MSwitch}{$name}{Eventmap};
     foreach my $key ( keys %{$maphash} )
 	{
 	my $inhalt = $data{MSwitch}{$name}{Eventmap}{$key};
-	$eventcopy =~ s/$key/$inhalt/g;
+	
+	my @ihalt=split(/:/,$inhalt,2);
+	my $change = $ihalt[0];
+	my $part = $ihalt[1];
+	
+	my $muster = qr{$key};
+	if (!defined $part || $part eq "EVENT")
+	{
+		
+		
+		
+	$ecopy[0] =~ s/$muster/$change/g;
+	$ecopy[1] =~ s/$muster/$change/g;
+	$ecopy[2] =~ s/$muster/$change/g;
+
+	}
+	
+	if ($part eq "EVTPART1")
+	{
+	$ecopy[0] =~ s/$muster/$change/g;
+	#$eventcopy=join ":",@ecopy;
+	}
+	
+	if ($part eq "EVTPART2")
+	{
+	$ecopy[1] =~ s/$muster/$change/g;
+	#$eventcopy=join ":",@ecopy;
+	}
+	
+	if ($part eq "EVTPART3")
+	{
+	$ecopy[2] =~ s/$muster/$change/g;
+	
+	}
+	
+	
+	if (!defined $ecopy[0] or $ecopy[0] eq ""){ $ecopy[0]="undef";}
+	if (!defined $ecopy[1] or $ecopy[1] eq "" ){$ecopy[1]="undef";}
+	if (!defined $ecopy[2] or $ecopy[2] eq ""){ $ecopy[2]="undef";}
+	$eventcopy=join ":",@ecopy;
+	
+	
 	}
 return $eventcopy;
 }
