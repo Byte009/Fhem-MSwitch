@@ -1,0 +1,1172 @@
+
+Help Frontend 
+
+#################################################################################################
+<- eventdistributor-
+<hr>
+Bietet die Möglichkeit eingehende Events unabhängig von den einzelnen
+Befehlszweigen auf einen durch eine ID gekennzeichneten Befehlszweig umzuleiten.
+Diese Option ist dafür gedacht, durch bestimmten Events (zusätzlich) speziell definierte Befehle auszuführen.
+Es handelt sich um eine "Experten"-Funktion , die für den 'normalen' Betrieb eher unüblich ist.
+
+Die Syntax ist vorgegeben:
+ - eingehendes Event: 
+ist das eingehende Event, welches die Auslösung eines Kommandos triggert
+
+ - execute CMD1|2
+gibt den auszuführenden Kommandozweig an (cmd1/cmd2)
+
+ - ID x
+gibt die ID des auszuführenden Befehles an. Diese kann in den einzelnen Befehlszweigen vergeben werden.
+
+Events, die durch diese Option umgeleitet werden, werden danach nicht weiter behandelt , d.H sie finden bei den weitern 'Triggedetails'
+keine Berücksichtigung.
+
+
+<hr>
+->
+#################################################################################################
+<- cmd2on-
+<hr>
+Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
+Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
+
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird der State des Mwitch-Devices auf on oder off gesetzt.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+
+<hr>
+->
+#################################################################################################
+<- cmd2ononly-
+<hr>
+Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
+Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
+
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird nur der Kommandozweig ausgeführt, der Zustand des Mswitches wird nicht geändert.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+<hr>
+->
+#################################################################################################
+<- cmd2off-
+<hr>
+Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
+Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
+
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird der State des Mwitch-Devices auf on oder off gesetzt.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+
+<hr>
+->
+#################################################################################################
+<- cmd2offonly-
+<hr>
+Hier wird das Event ausgewählt, welches den entsprechenden Kommandozweig auslöst.
+Das Event muss im Vorfeld manuell eingefügt werden , oder kann über den integrierten Eventmonitor gespeichert werden.
+
+Das Event setzt sich aus 3 Teilen zusammen: Gerät:Reading:Zustand
+
+Bei entsprechender Auslösung wird nur der Kommandozweig ausgeführt, der Zustand des Mswitches wird nicht geändert.
+
+Optinal kann eine Bedingung mitgegeben werden. In diesem Fall wird der Zweig nur dann ausgeführt , wenn die Bedungung zutrifft.
+
+Syntax NAME:READING:ZUSTAND[BEDINGUNG]
+
+In den Bedingungen kann Wildcard genutzt werden :
+
+Beispiel: NAME:pct:.*[*>30] 
+Hie würde der Zweig nur dann ausgeführt, wenn der Zustand des Readings pct > 30 ist
+<hr>
+->
+#################################################################################################
+<- eventmonitor-
+<hr>
+Zeigt eingehende Events <u>nach</u> der Anwendung des Filters "Auslösebedingung" .
+Angezeigte und markierte Events können mit "Event manuell eintragen" in das Feld "Event manuell eintragen" übernommen, bearbeitet und von deort mit
+"Event einfügen" zur spateren Verwendung gespeichert werden.
+<hr> 
+-> 
+#################################################################################################
+<- repeats-
+<hr>
+Eingabe von Befehlswiederholungen.
+Bei Belegung der Felder wird ein Befehl um die Angabe "Repeats" mit der jeweiligen Verzögerung "Repeatdelay in sec" wiederholt.
+Beide Felder können mit einem Reading auf einen Wert verweisen
+ - [Device:Reading]
+<hr>
+->
+#################################################################################################
+<- execcmd-
+<hr>
+Abbruch nach Ausführung
+
+Wenn dieses Feld aktiviert ist , wird die Befehlskette nach ausführung des Befehls abgebrochen und es werden 
+keine weiteren Befehle ausgeführt ( Bei angegebener Bedingung nur dann, wenn diese erfüllt ist.
+
+Relevant ist diese Funktion, wenn mehrere Befehle ausgeführt werden, aber unter bestimmten Bedingungen keine weiteren Befehleausgeführt werden sollen.
+Anwendung sollte ggf. mit der Funktion "priority" verbunden werden, um die richtige Reihenfolge der Ausführung zu gewährleisten.
+<hr>
+->
+#################################################################################################
+<- saveevent-
+<hr>
+Bei Anwahl dieser Option werden alle eingehenden Events des ausgewählten Triggerdevices permanent gespeichert
+und sind in den Auswahlfeldern "execute cmd1" und "execute cmd2" sowie in allen Testfeldern verfügbar.
+Diese Auswahl sollte zur Resourcenschonung nach der Einrichtung des MSwitchdevices abgewählt werden,
+da hier je nach Trigger erhebliche Datenmengen anfallen können und diese gespeichert werden.
+
+<hr>
+->
+#################################################################################################
+<- addevent-
+<hr>
+Hier können manuell Events zugefügt werden , die in den Auswahllisten verfügbar sein sollen und auf die das Modul reagiert.
+Grundsätzlich ist zu unterscheiden ob das Device im Normal-, oder Globalmode betrieben wird
+
+Im Normalmode bestehen die Events aus 2 Teilen , dem Reading und dem Wert , z.B. "state:on"
+
+Wenn sich das Device im GLOBAL Mode befindet müssen die Events aus 3 Teilen bestehen , dem Devicename, dem Reading und dem Wert z.B. "device:state:on".
+
+Wird hier nur ein "*" angegeben , reagiert der entsprechende Zweig auf alle eingehenden Events.
+Weitherhin sind folgende Syntaxmöglichkeiten vorgesehen :
+device:state:*, device:*:*, *:state:* , etc.
+
+Der Wert kann mehrere Auswahlmöglichkeiten haben , durch folgende Syntax: "device:state:(on/off)".
+In diesem Fal reagiert der Zweig sowohl auf den Wert on, als auch auf off.
+
+Es können mehrere Evebts gleichzeitig angelegt werden, diese sind durch Komma zu trennen.
+
+Optional kann eine Bedingung übergeben werden . Dafür ist dem Event die Bedingung in [] mit zu geben:
+z.B PCT:.*[* >50] - Schaltet nur , wenn pct > 50 ist . Hierbei wird die Wildcardangabe (.*) in der Bedingung durch entsprechenden eingehenden Wert ersetzt .
+eine Angabe von Perlcode ist durch anwenden von {} möglich . z.B [{perlcode} =>< x].
+
+Seit V1.7 kann hier die gängige RegEx-Formulierung erfolgen.
+<hr>
+->
+#################################################################################################
+<- priority-
+<hr>
+priority - Auswahl der Reihenfolge der Befehlsabarbeitung.
+
+Ein Befehl mit der Nr. 1 wird als erstes ausgeführt , die höchste Nummer zuletzt.
+Sollte mehrere Befehle die gleiche Nummer haben , so werden diese Befehle in <u>dargestellter</u> Reihenfolge ausgeführt.
+<hr>
+ID - Devices denen eine ID zugewiesen ist.
+
+Diese werden in der normalen Abarbeitung der Befehle nicht mehr berücksichtigt und somit nicht ausgeführt.
+Wenn eine ID-Zuweisung erfolgt ist, kann dieser Befehlszweig nur noch über das cmd set DEVICE ID NR on/off , oder 
+über eine "Event to ID" (Einstellung über Attribut) Zuweisung erfolgen
+
+Diese Option wird nur in Ausnahmefällen benötigt, wenn die Pipes (cmd1/cmd2) nicht ausrechend sind um verschiedene Aktionen unter verschiedenen Bedingungen auszuführen. 
+<hr>
+Anzeigereihenfolge- Auswahl der Reihenfolge der Befehlsanzeige
+
+Diese Einstellung beinflusst nur die Darstellung im Frontend. Die Reihenfolge der Abarbeitung der Befehle wird nicht beeinflusst.
+<hr>
+Anzeige verbergen
+
+Entdürechender Befehl wird im Frontend ausgeblendet. Augeblendete Befehle können per Button wieder angezeigt werden.
+Diese Option hat nur den Zweck, die Ansicht anzupassen.
+<hr>
+->
+#################################################################################################
+<- timer-
+Befehle verzögert oder zu späterem Zeitpunkt ausführen.
+
+Die Zeitangabe kann in 2 Formaten angegeben werden:
+ - HH:MM:SS oder S
+
+die Angabe kann auch durch ein Verweis auf ein Reading erfolgen, welches eine Zeitngabe in gefordertem Format enthält.
+ - [NAME:reading]
+ 
+Weitere Möglichkeiten:
+ - [random] - siehe Fhemwiki
+ - {perl} - perlcode - der Rückgabewert muss eine Zahl (sekunden) oder ein eine Zeitangabe hh:mm:ss enthalten
+ 
+Verzögerung mit Bedingungsprüfung sofort und vor Ausführung:
+ - die ggf. angegebene Bedingung wird sofort und erneut vor ausführung des Befehls geprüft
+ 
+Verzögerung mit Bedingungsprüfung sofort:
+ - die ggf. angegebene Bedingung wird nur sofort geprüft
+ 
+Verzögerung mit Bedingungsprüfung vor Ausführung:
+ - die ggf. angegebene Bedingung wird nur vor Ausführung geprüft
+ 
+<hr>
+->
+#################################################################################################
+<- condition-
+<hr>
+Hier kann die Angabe von Bedingungen erfolgen, die erfüllt sein müssen um den Schaltbefehl auszuführen.
+Diese Bedingunge stützen sich im wesentlichen auf "if" Abfragen.
+
+Zeitabhängiges Bedingungen:
+Schaltbefehl erfolgt nur in angegebenem Zeitraum
+ - [19.10-23:00]
+ 
+Readingabhängiges schalten:
+Schaltbefehl erfolgt nur bei erfüllter Bedingung.
+ - [Devicename:Reading] =/>/< X oder [Devicename:Reading] eq "x"
+ 
+Um nur den numerischen Wert eine Readings zu erhalten muss folgende Formatierung genutzt werden:
+ - [ReadingsNum:Devicename:Reading:0]
+hierbei ist 0 der Ruckgabewert falls kein Wert definiert ist.
+
+Je nach Attributeinstellung kann hier auch auf historische Events zugegriffen werden
+ - [Devicename:Reading:h<x>]
+x bestimmt hierbei die Position des historischen Readings , wobei 1 für da letzte eingegangene Reading steht.
+
+Bei der Abfrage von Readings nach Strings ( on,off,etc. ) ist statt "=" "eq" zu nutzen und der String muss in "" gesetzt werden!
+
+Die Kombination mehrerer Bedingungen und Zeiten ist durch AND oder OR möglich:
+ - [19.10-23:00] AND [Devicename:Reading] = 10
+beide Bedingungen müssen erfüllt sein
+
+[19.10-23:00] OR [Devicename:Reading] = 10
+ - eine der Bedingungen muss erfüllt sein.
+
+sunset - Bedingungen werden mit zusätzlichen {} eingefügt:
+ - { sunset() }-23:00].
+
+Soll nur an bestimmten Wochentagen geschaltet werden, muss eine Zeitangsbe gemacht werden und durch z.B. |135 ergänzt werden.
+ - [10:00-11:00|13]
+würde den Schaltvorgang z.B nur Montag und Mitwoch zwischen 10 uhr und 11 uhr auslösen. Hierbei zählen die Wochentage von 1-7 für Montag-Sonntag.
+
+Überschreitet die Zeitangabe die Tagesgrenze (24.00 Uhr ), so gelten die angegebenen Tage noch bis zum ende der angegebenen Schaltzeit , d.H. es würde auch am Mitwoch noch der schaltvorgang erfolgen, obwohl als Tagesvorgabe Dienstag gesetzt wurde.
+
+Verfügbare Variablen und Ausdrücke:
+
+- isday (!isday)
+- $we / !$we
+- $min
+- $hour
+- $month
+- $year
+- $month
+- $EVENT
+- $EVTFULL
+- $EVTPART1
+- $EVTPART2
+- $EVTPART3
+- $SELF
+- $hms
+
+Je nach Attributeinstellunge kann auf historische Events zugegriffen werden:
+
+- [EVENT:h(x)]
+- [EVTPART:h(x)]
+
+
+die Variable $hms enthält die aktuelle Systemzeit im Format HH:MM:SS . Hier ist zu beachten , das es 
+sich um einen String handelt , der entsprechend zu behandeln ist ( eq ) .
+
+$EVENT Variable:
+Die Variable EVENT enthält den auslösenden Trigger, d.H. es kann eine Reaktion in direkter Abhängigkeit zum auslösenden Trigger erfolgen.
+ - [$EVENT] eq "state:on"
+würde den Kommandozweig nur dann ausführen, wenn der auslösende Trigger "state:on" war.
+
+Wichtig ist dieses, wenn bei den Triggerdetails nicht schon auf ein bestimmtes Event getriggert wird,
+sondern hier durch die Nutzung eines wildcards (*) auf alle Events getriggert wird, oder auf alle Events eines Readings z.B. (state:*)
+
+Bei eingestellter Delayfunktion werden die Bedingungen je nach Einstellung sofort,
+verzögert oder sowohl-als-auch überprüft, d.H hiermit sind verzögerte Ein-, und Ausschaltbefehle möglich die z.B Nachlauffunktionen oder verzögerte Einschaltfunktionen ermöglichen, die sich selbst überprüfen.
+z.B. [wenn Licht im Bad an -> schalte Lüfter 2 Min später an -> nur wenn Licht im Bad noch an ist]
+
+Anstatt einer Verzögerung kann hier auch eine festgelegte Schaltzeit erfolgen.
+
+Sonderfunktionen:
+Tendenz: Beschreibung im Wiki
+Differenz: Beschreibung im Wiki
+Average Beschreibung im Wiki
+Increase Beschreibung im Wiki
+<hr>
+->
+#################################################################################################
+<- onoff-
+<hr>
+Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.
+
+Bei angebotenen Zusatzfeldern kann ein Wert übergeben werden, dieses kann auch ein Verweis auf ein Reading eines anderen Devices gesetzt.
+z.B. [Device:Reading].
+
+Hier sind zwei Möglichkeiten gegeben:
+[Device:Reading:i] - ersetzt wird mit dem Inhalt zum Zeitpunkt des abarbeitens des Befehls (:i = imidiality)
+[Device:Reading] - ersetzt wird mit dem Inhalt zum Zeitpunkt der Ausführung des Befehls
+Dieses kann - insbesondere - bei verzögerten Befehlen einen Unterschied machen.
+
+$NAME wird ersetzt durch den Namen des triggernden Devices.
+
+Bei Nutzung von FreeCmd kann hier entweder reiner FhemCode, oder reiner Perlcode verwendet werden.
+Perlcode muss mit geschweiften Klammern beginnen und enden (  {PELCODE}  )
+
+Bei Auswahl der Option [FRRECMD] kann ein kompletter Befehl selber eingegeben werden .
+Hierbei kann auf bekannte Systemveriablen zugegeriffen werden :
+z.B set DEVICE [FREECMD] pct [$SELF:EVENTPART3]
+
+<u>Das Mischen beider Codes ist nicht zulässig.</u>
+<hr>
+->
+#################################################################################################
+<- affected-
+<hr>
+Einstellung der Geräte, die auf ein Event oder zu einer bestimmten Zeit reagieren sollen.
+
+Die Auswahl von FreeCmd ermöglicht eine deviceungebundene Befehlseingabe oder die Eingabe von reinem Perl- oder FhemCode.
+Eine Mehrfachauswahl ist mit "strg.maustaste" möglich.
+
+Um ein versehentliches Löschen von Geraeten zu vermeiden ist dieses Feld in der Grundeinstellung gesperrt und Änderungen können nur
+über "Liste editieren" vorgenommen werden. Durch das Löschen des Hakens bei "Auswahlfeld gesperrt" kann diese Liste entsperrt werden.
+Über das Attribut "MSwitch_Lock_Quickedit = 0" kann eine permanente freigabe des Feldes erfolgen.
+<hr>
+->
+#################################################################################################
+<- triggercondition-
+<hr>
+Hier kann die Angabe von Bedingungen erfolgen, die zusätzlich zu dem triggernden Device erfuellt sein müssen.
+Eine Angabe in diesem Feld bezieht sich in den Standarteinstellungen nur auf eine Auslösung durch Events anderer Geräte.
+Wenn dieses auch für eine Auslösung durch Zeitangaben gelten soll, muss dieses über entprechendes Attribut
+(MSwitch_Condition_Time =1) aktiviert werden.
+
+
+Grundsätzlich wird die Angabe '$SELF' durch den Namen des eigenen Devices ersetzt !
+
+Einschränkung auf eine bestimmte Zeit (Trigger des Devices erfolgt nur in angegebenem Zeitraum)
+ - [19:10-23:00]
+
+Einschränkung in Abhängigkeit des Inhaltes eines Readings (Trigger des Devicec erfolgt nur bei erfüllter Bedingung)
+Achtung ! Bei der Abfrage von Readings nach Strings ( on,off,etc. ) ist statt "=" "eq" zu nutzen und der String muss in "" gesetzt werden!
+ - [Devicename:Reading] =/>/< X oder [Devicename:Reading] eq "x"
+
+Einschränkung in Abhängigkeit des Inhaltes eines Readings ( Vorkommen eines best. Textes z.B) (Trigger des Devicec erfolgt nur bei erfüllter Bedingung)
+- $EVENT =~ m/(state:closed|state:open|state:tilted)/
+mit diesem Ausdruck kann z.B eine Vorfilterung von eingehenden Events vorgenommen werden. D.H es werden nur Events weiterverarbeitet , die diesem Ausdruck
+entsprechen. Hilfreich ist dieses für weitergehende Funktionen wie z.B mit historischen Events. Im "Normalgebrauch" muss dieses Feld nicht besetzt werden.
+
+Die Kombination mehrerer Bedingungen und Zeiten ist durch AND oder OR möglich.
+ - [19.10-23:00] AND [Devicename:Reading] = 10 - beide Bedingungen müssen erfüllt sein
+ - [19.10-23:00] OR [Devicename:Reading] = 10 - eine der Bedingungen muss erfüllt sein.
+
+sunset
+ - Bedingungen werden mit zusätzlichen {} eingefügt z.B. : [{ sunset() }-23:00].
+
+folgende weitere Variablen sind nutzbar:
+
+- isday / !isday | der Ausdruck kann alleinstehend in des Bedingungfeld eingegeben werden , Formatierung erfolgt automatisch
+- $we / !$we | der Ausdruck kann alleinstehend in des Bedingungfeld eingegeben werden , Formatierung erfolgt automatisch
+
+- year | muss im Kontext verwendet werden z.B $year == 2020 , weitere formatierung erfolgt automatisch
+- $month | muss im Kontext verwendet werden z.B $day == 1 , weitere formatierung erfolgt automatisch
+- $day | muss im Kontext verwendet werden z.B $month == 1 , weitere formatierung erfolgt automatisch
+- $min | muss im Kontext verwendet werden z.B $min == 1 , weitere formatierung erfolgt automatisch
+- $hour | muss im Kontext verwendet werden z.B $hour == 1 , weitere formatierung erfolgt automatisch
+
+Analog kann hier [YEAR] [MONTH] [DAY] [MIN] [HOUR] verwendet werden.
+
+Zugriff auf weiter Fhemdaten:
+
+[AttrVal:DEVICENAME:ATTRIBUTNAME:UNDEF]
+[InternalVal:DEVICENAME:INTERNAL:UNDEF]
+[ReadingsAge:DEVICENAME:READINGNAME:UNDEF]
+[ReadingsNum:DEVICENAME:DEVICEREADING:UNDEF]
+[ReadingsVal:DEVICENAME:DEVICEREADING:UNDEF]
+
+Diese Ausdrücke müssen im Kontext erfogen , z.B. [AttrVal:DEVICENAME:ATTRIBUTNAME:UNDEF] = 1,[AttrVal:DEVICENAME:ATTRIBUTNAME:UNDEF] eq "test" etc.
+
+weiterhin kann auf diverse Devicedate zugegriffen werden:
+
+[EVT_CMD1_COUNT]
+[EVT_CMD2_COUNT]
+[DIFFDIRECTION]
+[DIFFERENCE]
+[TENDENCY]
+[INCREASE]
+[AVERAGE]
+[SEQUENCE_Number]
+[SEQUENCE]
+
+<hr>
+->
+#################################################################################################
+<- trigger-
+<hr>
+Trigger ist das auslösende Gerät, auf dessen Events reagiert wird.
+Sobald hier ein Gerät ausgwählt wird, werden weitere Optionen angeboten.
+
+Soll auf mehrer eGerät gleichzeitig getriggert werden, so ist dieses ebenfalls möglich.
+
+Hierzu muss das Attribut "MSwitch_Expert" auf 1 gesetzt sein und als Auswahl "GLOBAL" erfolgen.
+( Dieses sollte nur sehr gezielt eingesetzt werden,da dann erstmal auf JEDES Event reagiert wird )
+
+<hr>
+
+Zusätzlich kann das Mswitch auch anhand von Zeitangaben ausgelöst werden .
+ 
+Hierfür stehen folgende Optionen zur Verfügung:
+
+1. switch MSwitch on + execute 'cmd1' at
+ - das komplette Device wird auf "on" geschaltet. Der Zweig "cmd1" wird ausgeführt.
+
+2. switch MSwitch off + execute 'cmd2' at
+ - das komplette Device wird auf "off" geschaltet. Der Zweig "cmd2" wird wird ausgeführt.
+
+3. execute 'cmd1' only at
+ - es der "cmd1" Zweig ausgeführt
+
+4. execute 'cmd2' only at
+ - es der "cmd2" Zweig ausgeführt
+
+Die Syntax für Zeitangaben muss wie folgt lauten:
+Für jede Zeit muss eine neue Zeile verwendet werden.
+
+1. Schaltzeiten:
+<strong>
+REPEAT=00:02*04:10-06:30
+RANDOM=20:00-21:00
+TIME=17:00
+</strong>
+REPEAT: 
+Wiederholt einen Schaltvorgang alle x Stunden/Minuten im eingestellten Zeitfenster
+
+RANDOM:
+Schaltet zu einem zufälligen Zeitpounkt innerhalb des eingestellten Zeitfensters
+
+TIME:
+Schaltet zu angegebenem Zeitpunkt
+
+Pro Zeile kann nur eine dieser Angaben genutzt werden , bei mehreren Angaben wird nur die erste ausgew4rtet.
+Zusätzlich kann jede Zeile durch Bedingungen ergänzt werden, mehrere Bedingungen sind durch | zu trennen.:
+
+TIME=17:00|Bedingung=X|Bedingung2=X
+
+Zu beachten ist , das jede angegebene Bedingung zutreffen muss, um den Timer auszuführen.
+
+Folgende Bedingungen stehen zur Verfügung:
+
+ID=x,y
+Es werden nur Befehlszweige mit der entsprechenden ID ausgeführt
+
+WDAY=1,2,3,4,5,6,7
+Befehle werden nur an angegebenen Wochentagen ausgeführt, wobei die 1 für Montag steht.
+
+WEEKEND=0,1
+Befehle werden nur an Wochenenden/Wochentagen (0/1) ausgeführt. Hierbay werden Holidaydaten berücksichtigt
+
+WEEK=10,11
+Befehle werden nur in den angegebenen Kalenderwochen ausgeführt
+
+CMONTH=1,2,3,4,5,6,7,8,9,10,11,12
+Befehle werden nur in angegebenen Kalendermonaten ausgeführt
+
+CDAY=1,2,3  (1-31)
+Befehle werden nur an angegebenen Kalendertagen ausgeführt
+
+DATE=10.10.2020
+Befehle werden nur zu angegebenem Datum ausgeführt 
+Hierbei können Teile der Angabe Wildcarts enthalten :
+z.B DATE=01.01.* ( schaltet in jedem Jahr am ersten Dezember )
+
+Alle Zeitangaben können durch einsatz von {} durch Perlcode ersetzt werden , hierbei muss es sich bei der Rückgabe um ein gültiges Zeitformat handeln
+(HH:MM oder HH:MM:SS )
+z.B TIME =[sunset()}
+
+
+Bei allen Timereinstellungen ist zu beachten , das die Bedingungen grundsätzlich nur zu 2 Zeitpunkten ausgewertet werden:
+1. zum Zeitpunkt der Änderung der Einstellungen
+2. jeden Tag 0m 00:00:01
+
+Das heisst, das die Bedingungen auch zu diesen Zeitpunkten zutreffen müssen, damit entsprechende Timer gesetzt werden.
+
+Aktive Timer lassen sich mit get DEVICE attive_timer show anzeigen.
+Ein Reload (Neiberechnung) der Timer kann mit 2 Möglichkeiten ausgeführt werden:
+1. über Fhemweb  -> get DEVICE attive_timer show
+
+
+<hr>
+->
+#################################################################################################
+
+Help Attribute
+#################################################################################################
+<- attr-
+
+<hr>
+<strong>MSwitch_Device_Groups</strong>
+Erlaubt die Anlage von Devicegruppen.
+Diese Gruppen sind dan bei den Affected Devices zur Auswahl verfügbar, 
+wobei dort nur Befehleangeboten werden , die ALLE Geräte in der Gruppe gemeinsam haben.
+Sollte der benötigte Befehl nicht aufgeführt sein kann alternativ [FREECMD] genutzt werden.
+
+
+Das Format lautet:
+GRUPPENNAME-&gt;devicename,decicename ....
+GRUPPENNAME1-&gt;devicename1,decicename2 ....
+
+mehrere Gruppen sind durch Zeilenumbruch zu trennen. 
+Statt der Devicenamen kann RegEx angewendet werden.
+
+
+<strong>MSwitch_ExtraktHTTPMapping</strong>
+Ermöglicht die Anpassung von Readings die durch 'loadHTTP' und dem Attribut 'MSwitch_ExtraktfromHTTP' erzeugt wurden
+und bietet die Möglichkeit, Ersetzungen vorzunehmen.
+
+Format: Readinginhalt-&gt;neuerInhalt
+z.B: °C-&gt; Grad Celsius
+
+ersetzt jedes Vorkommen von '°C' zu ' Grad Celsius' und wird z.B für eine Sprachausgebe durch Amazon Echo benötigt.
+
+Im zu ersetzenden Teil kann Regex genutzt werden. Mehrere Ersetzungen sind durch Zeilenumbruch zu trennen.
+
+<strong>MSwitch_ExtraktfromHTTP</strong>
+Mit diesem Attribut wird die Erzeugung von Readings aus einer geladenen HTML-Datei gesteuert.
+Jede angegebene Zeile erzeugt ein Reading aus der Datei ( falls vorhanden )
+
+Format: Readingname-&gt;RegEx 
+
+Wenn mit der angegebenen Regex mehrere Daten gefunden werden , so werden diese alle in diesem Reading ,
+durch Komma getrennt, ausgegeben. In diesem Fall werden zusätzlich weitere Readings angelegt, die jeweils einen der gefundenen Datensätze enthalten.
+Diese Readings werden automatisch durchnummeriert: Readingname_01,Readingname_01,Readingname_01 ...
+
+<strong>MSwitch_Language:EN,DE</strong>
+Umschaltung der Frontendsprache.
+
+<strong>MSwitch_Comments:0,1</strong>
+Schaltet vor jedem Befehlsfeld ein Kommentarfeld frei.
+
+<strong>MSwitch_Read_Log:0,1</strong>
+Ermöglicht den Zugriff auf das Logfile als Trigger.
+
+Bei aktiviertem Attribut enthält die Auswahl des Triggerdevices die Option 'LOGFILE'.
+
+Bei dieser Auswahl werde alle Logeinträge erkannt und in ein internes Event umgewandelt, auf das regiert werden kann.
+
+Bei aktiviertem Attribut <u>und</u> der Auswahl 'GLOBAL' im 'Trigger_Device' wird auf alle Events und alle Logeinträge reagiert.
+
+Bei aktiviertem Attribut <u>und</u> der Auswahl eines bestimmten Devices im 'Trigger_Device' wird auf alle Events
+und auf alle Logeinträge des gewählten Devices reagiert.
+
+Der im Logeintrag vorhandene Devicename ist Bedingung für die Funktion.
+
+<strong>MSwitch_Hidecmds</strong>
+Befehlszweige mit eine bestimmten ID können im Frontend ausgeblendet werden
+
+<strong>MSwitch_Help:0,1</strong>
+Schaltet die Hilfebuttons-/Funktionen im Frontend an oder aus
+
+<strong>MSwitch_Debug:0,1,2,3,4</strong>
+Erweiterte Optionen zur Fehlersuche
+0 - Abgeschaltet
+1 - Schaltet Felder zum testen der Conditionstrings an
+2 - Alle ausgehenden Befehle werden nur simuliert und nicht ausgeführt. Der Inhalt der Protokolldatei wird direkt im Device angezeigt
+3 - Es erfolgt eine Protokollierung in einer separaten Datei. Diese wird direkt im Device angezeigt.
+4 - erweitertes Debug für Entwickler mit wechselnden Funktionen
+
+<strong>MSwitch_Expert:0,1</strong>
+erweiterter Modus
+In der Liste der möglichen Trigger erscheint das Selectfeld 'GLOBAL'.
+Dieses ermöglicht das Setzen eines Triggers auf alle Events und damit nicht nur auf einzelne Devices.
+In einem weiteren Feld kann eine weitere Selektion der triggernden Events erfolgen.
+Die Felder 'Repeats' und 'Repeatdelay in s' stehen zur Verfügung.
+Dies bewirkt eine n-fache Wiederholung des gesetzten Befehls mit x Sekunden Verzögerung.
+Das Auswahlfeld 'priority' erscheint bei jedem 'affectes device'.
+So kann die Reihenfolge der Befehlsabarbeitung beeinflusst werden.
+
+<strong>MSwitch_Delete_Delays:0,1,2</strong>
+Option '1' bewirkt das Löschen aller anstehende Delays (Verögerungen) bei dem Auftreten eines erneuten passenden Events.
+Es werden nur die Delays geloescht, die in dem cmd-zweig erzeugt wurden , der erneut ausgefüehrt wird.
+
+Option '2' bewirkt das löschen aller Delays, due Aufgrund dees eingehenden Events angelegt wurden. DAzu werden alle Events mit dem 
+auslösenden Trigger markiert . Bei erneutem Auftreten dieses Triggers werden alle zugehörigen Delays gelöscht.
+
+Bei der Option '0' bleiben bereits gesetzte Delays aus einem vorher getriggerten Event erhalten und werden ausgeführt.
+
+Empfohlene Einstellung: 1 
+
+<strong>MSwitch_Include_Devicecmds:0,1</strong>
+Bewirkt die Aufnahme aller Devices die bei Abfrage mit 'set DEVICE ?' einen eigenen Befehlssatz liefern in die Auswahlliste 'Affected Devices'.
+Bei Option '0' werden diese Devices in der Liste nicht mehr angeboten.
+Empfohlene Einstellung: 1 
+
+<strong>MSwitch_Include_Webcmds:0,1</strong>
+Bewirkt die Aufnahme aller Devices in die Auswahlliste 'Affected Devices', die einen eigenen Befehlssatz in dem Attribut Webcmd hinterlegt haben.
+Die in Webcmd hinterlegten 'Befehle' werden in den Auswahlfeldern angeboten.
+Bei gesetzter Option '0' werden diese Devices nicht mehr angeboten, es sei denn, sie liefern mit 'set DEVICE ?' einen eigenen Befehlssatz.
+Empfohlene Einstellung: 0
+Einsatz nach Bedarf
+
+<strong>MSwitch_generate_Events:0,1</strong>
+Reduziert bei Einstellung '1' die vom MSwitch-Devices erzeugten Events auf ein benötigtes Minimum.
+Insbesondere bei Verwendung von 'MSwitch_Read_Log' zu empfehlen.
+
+<strong>MSwitch_Include_MSwitchcmds:0,1</strong>
+Bewirkt die Aufnahme aller Devices in die Auswahlliste 'Affected Devices', die einen eigenen Befehlssatz in dem Attribut MSwitchcmds hinterlegt haben.
+Die in MSwitchcmds hinterlegten 'Befehle' werden in den Auswahlfeldern angeboten.
+Bei gesetzter Option '0' werden diese Devices nicht mehr angeboten, wenn sie nicht zusätzlich einen eigenen Befehlssatz mit 'set DEVICE ?' liefern.
+Empfohlene Einstellung: 0
+Einsatz nach Bedarf. 
+
+<strong>MSwitch_Activate_MSwitchcmds:0,1</strong>
+Fügt jedem vorhandenen Device das Attribut 'MSwitchcmd' hinzu. 
+
+<strong>MSwitch_Lock_Quickedit:0,1</strong>
+Voreinstellung für die Auswahlliste 'Affected Devices'.
+Bei der Option '1' ist diese voreingestellt gesperrt und kann nur über einen zusätzlichen Button geändert werden, um versehentliche Änderungen zu vermeiden.
+Die Auswahl einer Option ohne betätigte <Strg>-Taste bewirkt das Löschen aller bereits gesetzten Optionen.
+Empfohlene Einstellung: 1 
+
+<strong>MSwitch_Ignore_Types</strong>
+Beinhaltet eine durch Leerzeichen getrennte Liste von Device-Typen welche nicht geschaltet werden oder nicht geschaltet werden können.
+Sie werden dann in den Auswahllisten nicht dargestellt, um die Auswahllisten übersichtlich zu halten.
+
+Voreinstellung: notify allowed at watchdog doif fhem2fhem telnet FileLog readingsGroup FHEMWEB autocreate eventtypes readingsproxy svg cul.
+
+Hier ist auch eine Angabe im Devspec-Format möglich.
+Wenn statt des Devicetyps ein devspec z.B. "TYPE=watchdog" angegeben wird, ist zu beachten,
+dass alle Geräte in die Ignoreliste einbezogen werden, die <u>NICHT</u> der devspec entsprechen.
+Weiterhin muss die devspec in Anführungszeichen gesetzt werden!
+
+<strong>MSwitch_DeleteCMDs:manually,automatic,nosave</strong>
+für das Frontend werden alle Befehlsoptionen aller Devices vorgeladen um diese anbieten zu können.
+Dieser Vorgang kann, insbesondere bei grossen Installationen , dazu führen, das der Ladevorgang des Frontends verzögert wird.
+Um dieses Effekt zu vermeiden können hier verschiedene Optionen gewähtl werden.
+
+ - manually
+Bei Aufruf des Frontends werden einmalig alle Informationen geladen und gespeichert. Bei erneutem Aufruf werden diese angeboten 
+Bei Änderung von Devices muss diese Liste manuell aktualisiert werden , entsprechender Button wird angeboten.
+
+ - automatic
+Bei Aufruf des Frontends werden alle Informationen geladen und für 10 Minuten gespeichert. Bei erneutem Aufruf werden diese angeboten. 
+Nach 10 Minuten werden diese Daten gelöscht und bei Bedarf neu generiert - erneut für 10 Minuten 
+Ein Button zu manuellen Erneuerung der Daten wird angeboten.
+
+ - nosave
+Die erforderlichen Daten werden bei jedem Aufruf des Frontends neu generiert. 
+Bei spürbarer,störender Verzögerung des Seitenaufbaus ist eine andere Option sinnvoll.
+
+<strong>MSwitch_Mode:Full,Notify,Toggle,Dummy</strong>
+Schaltet das Modul zwischen angepassten Weboberflächen-Modi um.
+
+ - Notify
+Das Device kann nicht manuell umgeschaltet werden.
+Es gibt nur die zwei ausführbaren Zweige "execute 'cmd1' commands" und "execute 'cmd2' commands".
+Der Status des Devices wird nicht als 'on' oder 'off' angezeigt, sondern lediglich als 'active'
+Dieser Mode ist ähnlich zu einem FHEM-Notify.
+
+ - Full
+Es stehen alle Funktionen zur Verfügung.
+
+ - Toggle
+Sehr vereinfachter Mode. Es stehen keine verschiedenen Zweige zur Verfügung.
+Hier ist das Device manuell schaltbar und wird bei jedem definierten Event 'umgeschaltet', entsprechend definierte Befehle für 'cmd1' oder 'cmd2' werden ausgeführt.
+
+ - Dummy
+Der Mode 'Dummy' ist ein eingeschränkter Modus.
+Dieser bietet die Funktionalität eines Dummys kombiniert mit der Funktionalität eines Notifys und kann somit die gerne genutzte Kombination Dummy-Notify gegen ein Device ersetzen.
+Der Dummy-Mode kann nur in einem neu angelegten leeren MSwitch aktiviert und auch nicht wieder verlassen werden!
+Sobald ein angelegtes MSwitch einmal verändert wurde (modify trigger etc.) sind Umschalt-Optionen nicht mehr verfügbar. 
+
+<strong>MSwitch_Extensions:0,1</strong>
+Es wird eine zusätzliche Schaltoption 'MSwitchToggle' in den Geräten angeboten.
+Diese kann genutzt werden, wenn zuschaltende Geräte eine Togglefunktion nicht von Haus aus anbieten.
+Hiebei ist es nicht nur möglich zwischen 2 Zuständen zu 'Toggeln', sondern im Grunde kann hier zwischen x Zuständen
+ge'Toggelt' werden.
+
+Die Syntax muss wie folgt lauten:
+(optional):[Trennzeichen][befehl1,befehl2,befehlx]:(optional)[suchmuster1,suchmuster2,suchmusterx]:(optional)[reading]
+
+
+[Trennzeichen] 
+- da die zu sendenden Befehle in der Liste in der Standarteinstellung per ',' getrennt werden und es passieren kann, 
+das auch die gesendeten Befehle ein Komma enthalten müssen kann über diese Option das Trennzeichen geändert werden. 
+Als Trennzeichen darf nur ein einzelnes Zeichen verwendet werden , z.B [|].
+Die nachfolgenden Befehls- und Readinglisten müssen dann ebenfalls durch dieses Zeichen getrennt werden ([befehl1|befehl2|befehlx]).
+
+[befehl1,befehl2,befehlx]
+ - die Befehle die in der Reihenfolge bei jeder awktivierung 'durchgeschaltet' werden
+
+[suchmuster1,suchmuster2,suchmusterx]
+ - bildet den zugehörigen status eines readings ab , falls unterschiedlich zum gesetzten Befehl und das schalten nicht den state eines devices betrifft ( setlist)
+
+[reading]
+ - Namedes Readings dessen Status betroffen ist.
+ - Sonderfall: Wenn das entsprechende Gerät kein Reading besitz , was den aktuell ( benötigten ) Status darstellt kann die Steuerung komplett
+ über das MSwitch erfolgen. Hierzu muss als reading 'MSwitch_self' angegeben werden. In diesem Fall wird auf ein MSwitcheigenes Reading 'last_toggle_state' zugegriffen.
+
+zum einfachen togglen zwischen on und off würde hier folgende Angabe reichen
+[on,off]
+
+<strong>MSwitch_Safemode:0,1</strong>
+Bietet einen gewissen Schutz vor falschen Konfigurationen und dadurch entstehenden Endlosschleifen.
+Bei aktiviertem Attribut '1' beendet das Modul Endlosschleifen eines Devices.
+In diesem Fall erfolgt ein Logeintrag und das Device wird per Attribut auf 'Disabled' gesetzt.
+Es wird ein letztes Event generiert, auf das reagiert werden kann 2018-05-31 09:39:21 MSwitch <NAME> Safemode: on
+Im Webinterface erfolgt bei betroffenem Device ein entsprechender Hinweis.
+In der Grundkonfiguration ist dieses Attribut nicht gesetzt.
+Es empfiehlt sich aber, bei neuen bzw. komplizierten Devices, dieses zumindest anfänglich zu aktivieren. 
+
+<strong>MSwitch_Wait</strong>
+Bei gesetztem Attribut nimmt das MSwitch Device für den eingestellten Zeitraum nach Ausführung eines Befehlszweiges keine
+ Befehle mehr entgegen und ignoriert weitere eingehende Events. 
+
+
+<strong>MSwitch_Event_Wait</strong>
+
+Es können für verschiedene eingehende Triggerevents Sperrzeiten nach einem eingegangenen Event gesetzt werden.
+Diese Zeiten werden für jedes eingehende Event behandelt.
+
+Geht ein definiertes Event ein , wird dieses ( nur dieses ) Event für angegebenen Zeitraum in Sekunden gesperrt und löst keinen Schaltvorgang mehr aus.
+
+Format:
+Event1->sekunden
+Event2->sekunden2
+
+mehrere Angaben sind durch Newline zu trennen.
+
+
+<strong>MSwitch_Condition_Time:0,1</strong>
+In der Grundeinstellung '0' werden für das <u>zeitgesteuerte</u> Schalten keine definierten Conditionen im Feld 'Trigger condition' überprüft,
+sondern die Prüfung findet nur bei eingehenden Events statt.
+Mit der Einstellung '1' wird diese Überprüfung auch bei zeitgesteuertem Schakten angewendet.
+
+<strong>MSwitch_Inforoom</strong>
+Mit diesem Attribut wird die Raumansicht eines mit dem Attribut definierten Raumes verändert.
+
+Dadurch sollen die wichtigsten Informationen aller MSwitch-Devices auf eine Seite dargestellt werden.
+Zur Nutzung sollten alle MSwitch-Devices (zusätzlich) in einen Raum sortiert werden und dieser Raum im Attribut eingestellt werden. 
+
+Es werden folgende Informationen bereitgestellt:
+
+  - Infobutton zeigt den im Device gespeicherten Textes des Attributes 'comment'
+  - Device und Events, die das Device triggern
+  - Zeiten, zu denen verschiedene Zweige des Devices ausgeführt werden
+  - Devices, die durch das MSwitch Device geschaltet werden
+  - State des Devices
+	
+Wichtig: Eine Änderung dieses Attributes bewirkt immer eine Änderung dieses Attributes in allen MSwitch devices:
+Es muss nur in einem Device gesetzt oder gelöscht werden um alle Devices zu erfassen
+
+<strong>MSwitch_Startdelay:0,10,20,30,60,90,120</strong>
+Bestimmt die Verzögerungszeit des MSwitches nach FHEM-Start in Sekunden.
+In diesem Zeitraum reagiert das Device nicht auf Events.
+Die Vorgabe ist hier zehn Sekunden.
+Bei undefiniertem Attribut wird hier ein Wert von 10 Sekunden angenommen.
+
+<strong>MSwitch_Selftrigger_always:0,1</strong>
+Die Aktivierung dieses Attributes '1' bewirkt, dass alle SET Aktionen des Devices einen internen Event ohne Auswirkungen auf das FHEM-System auslösen,
+auf die das Device selber reagiert.
+Diese Option kann zusätzlich zu einem vorhandenen Trigger aktiviert werden.
+Auftretende auswertbare interne Events haben immer folgendes Format:
+ - MSwitch_Self:aktion:wert
+ - MSwitch_Self:pct:100
+Es werden nur interne Events für set-Aktionen ausgelöst, die im Attribut setlist hinterlegt sind.
+Der 'wait' Befehl/Attribut hat keine wirkung auf diese internen Events. 
+
+<strong>MSwitch_Event_Id_Distributor</strong>
+Bietet die Möglichkeit eingehende Events unabhängig von den einzelnen
+Befehlszweigen auf einen durch eine ID gekennzeichneten Befehlszweig umzuleiten.
+
+Die Syntax muss wie folgt lauten:
+state:on=>cmd1 ID 1
+state:off=>cmd2 ID 2,3
+
+state:on würde zur Ausführung des Befehlszweiges mit der ID 1 führen, in diesem Zweig würde cmd1 ausgeführt werden
+state:off würde zur Ausführung der Befehlszweige mit der ID 2 und 3 führen, in diesen Zweigen würde cmd2 ausgeführt werden
+
+Mehrere Angaben sind jeweils in eine seperate Zeile zu schreiben , die letzte Angabe ist mit einem Zeilenumbruch zu beenden.
+
+<strong>MSwitch_Sequenz:</strong>
+Eine Schaltsequenz kann durch ein oder mehrere durch '/' getrennte Suchmuster von eingehenden Events angegeben werden die Erkannt werden sollen.
+Die Angabe muss folgende Syntax haben:
+
+ - Device1:reading1:event1 Device1:reading1:event1-2 Device1:reading1:event1-3/..../....
+
+Beispiel: Dummy:state:on Dummy:state:off Dummy:state:on
+
+Erkennt das Device dieses Suchmuster in den Schaltvorgängen des Devices (Dummy), wird das Reading "SEQUENCE" auf "match" gesetzt,
+das Reading "SEQUENCE_NUMBER" auf die Nummer der gefundenen Sequenz, wenn es mehrere Suchmuster gibt.
+Beide Readings können in den "Conditions" eines Schaltbefehles abgefragt werden.
+
+<strong>MSwitch_Sequenz_time:</strong>
+Maximalzeit in Sekunden, um eine Sequenz vollständig auszuführen.
+Steht in direktem zusammenhank mit MSwitch_Sequenz.
+
+Gibt die Zeit an , in der alle Events einer Sequenz ankommen müssen , um diese Sequenz als erkannt zu setzen.
+werden hier 5 Sekunden angenommen , so müssen alle gesuchten Events zur Sequenzwerkennung in diesem Zeitraum eintreffen
+um die Sequenz als erkannt zu setzen.
+
+<strong>MSwitch_RandomTime</strong>
+Format: HH:MM:SS-HH:MM:SS
+Bei Aktivierung wird vor jedem Ausführen eines verzögerten Befehls (Delay) eine Zufallszeit generiert,
+die im Rahmen der hier angegebenen Zeitspanne liegt. Auf diese Zufallszahl kann in den Delays zugegriffen werden,
+durch die Angabe '[random]' statt einer direkten Zeitangabe.
+Bei nicht gesetztem Attribut ergibt die Angabe von '[random]' immer '00:00:00' 
+
+<strong>MSwitch_RandomNumber</strong>
+Format: X
+Bei Aktivierung dieses Attributes mit einer beliebigen ganzen Zahl, werden vom Device die zwei Readings 'RandomNr' und 'RandomNr1' und mit Werten zwischen null und n angelegt.
+RandomNr wird vor jedem Ausführen eines Befehls, auch für unterschiedliche Geräte in einem Durchgang, neu generiert.
+RandomNr1 bleibt nach der Initialisierung konstant.
+Wenn auf dieses Readings in einer Condition mit z.B. '[$NAME:ReadingNr1] = 1' zugegriffen wird, wird der Befehl nur ausgeführt, wenn ReadingNr1 = 1 ist.
+Der Befehl wird somit nur mit einer Wahrscheinlichkeit von eins zu n ausgeführt.
+
+<strong>MSwitch_Reset_EVT_CMD1(CMD2)_COUNT</strong>
+Bei Aktivierung dieses Attributes steht in den Readings das Reading 'EVT_CMD1_COUNT' bzw. 'EVT_CMD2_COUNT' zur Verfügung.
+Dieses kann in den Conditions genutzt werden, um z.B. nur bei jedem x-ten Eintreffen eines auslösenden Events einen Befehl auszuführen.
+Bei jedem Eintreffen eines gültigen Events werden die Zähler um 1 erhöht (für den jeweiligen Zweig).
+Ist hier der Wert '0' eingetragen, wird der Zähler fortlaufend (endlos) erhöht.
+Wird ein Wert größer 0 eingetragen, wird der Zähler mit Erreichen dieses Wertes automatisch wieder auf Null gesetzt.
+Mit Löschen dieses Attributes werden die entsprechenden Readings ebenfalls gelöscht. 
+
+<strong>MSwitch_Trigger_Filter</strong>
+Beinhaltet eine kommagetrennte Liste von Events, die im Falle ihres Eingangs unberücksichtigt und ungespeichert bleiben.
+Wildcards wie '*' können angegeben werden.
+Empfohlene Einstellung: keine
+
+<strong>MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200</strong>
+Bei aktiviertem Attribut werden die letzten X eingehenden Events gespeichert. Das zuletzt eingegangene Event hat immer die Nummer 0.
+In den Bedingungsfelder kann auf diese "alten" Events zugegriffen werden.
+Format für den Zugriff in Bedingungsfeldern:
+ - [EVENT:hx] - x ist hier die Nummer des Events
+ - [EVTPART1:hx] - x ist hier die Nummer des Events
+ - [EVTPART2:hx] - x ist hier die Nummer des Events
+ - [EVTPART3:hx] - x ist hier die Nummer des Events
+  
+<strong>MSwitch_setList</strong>
+dieses kann zusätzlich zur Setlist oder alleinstehend belegt werden. Hier besteht die Möglichkeit eine setList dynamisch zu belegen.
+
+Version 1
+ - [TYPE=dummy]:on,off              dropdownliste on und off
+ - [TYPE=dummy]:slider,1,1,100      slider 
+ - [TYPE=dummy]:noArg               keine Option
+ - [TYPE=dummy]:Arg                 freies Optionseld
+ etc. ..
+ 
+macht alle dummys per Dropdownlist verfügbar,
+für jeden dieser Dummys wird ein gleichlautendes Reading angelegt, welches die angelegte Schaltoption beinhalten kann 
+ 
+Version 2
+ - status:[TYPE=dummy]
+ erzeugt in der Dropdownliste den Eintrag status mit allen ddummys als Auswahloption verfügbar.  
+ hier muss zusätzlich das Attribut 'readinglist' mit 'status' belegt werden, andernfalls wird der state mit der Auswahl belegt.
+
+
+
+<strong>MSwitch_Switching_once</strong>
+Bei Aktivierung dieses Attributes (1) werden Befehlsketten NICHT ausgeführt, wennn sie der letzten ausgeführten Befehlskette entsprechen.
+Dieses kann (sollte) insbesondere bei Temperaturüberwachungen oder ähnlichem eingesetzt werden.
+Diese Sperre von Befehlsketten wird durch das ausführen einer ABWEICHENDEN Befehlskette gelöscht und dieser neuen Befehlskette entsprechend gesetzt.
+
+Alternnativ kann diese Sperre mit dem Befeht "set DEVICE reset_Switching_once" gelöscht werden.
+
+Hiermit wird das wiederholte Schalten eines Devices vermieden , wenn die Auslöser zyklisch sendende Sensoren oder ähnliches sind.
+
+Die Grundeinstellung bei nicht gesetztem Attribut ist 0 .
+
+
+<strong>MSwitch_Reset_EVT_CMD1_COUNT</strong>
+Bei gesetzten Attribut wird das Reading EVT_CMD1_COUNT angelegt.
+Bei jedem Eintreffen des Triggers für den Schaltkanal1 (Cmd1) wird dieses Reading um 1 hochgezählt.
+Bei erreichen des Attributwertes witrd dieses automatisch auf 0 gesetzt.
+
+Auf dieses Reading kann in Conditions ec. zugegriffen werden.
+
+<strong>MSwitch_Reset_EVT_CMD2_COUNT</strong>
+Bei gesetzten Attribut wird das Reading EVT_CMD2_COUNT angelegt.
+Bei jedem Eintreffen des Triggers für den Schaltkanal2 (Cmd2) wird dieses Reading um 1 hochgezählt.
+Bei erreichen des Attributwertes witrd dieses automatisch auf 0 gesetzt.
+
+Auf dieses Reading kann in Conditions ec. zugegriffen werden.
+
+<strong></strong>
+<hr>
+->
+#################################################################################################
+Help Get
+#################################################################################################
+<- get-
+Angebotene Get-Befehle sind unter Umständen von der Grundkonfiguration abhängig,
+d.H nicht in jedem Mode werden alle Befehle angeboten.
+<hr>
+<strong>get DEVICE active_timer show,delete</strong>
+ - Show
+Zeigt alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen oder verzögerten Schaltbefehlen resultieren.
+
+ - Delete
+Löscht alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen oder verzögerten Schaltbefehlen resultieren.
+Schaltbefehle basierend auf rein zeitabhängigen Angaben werden neu berechnet und gesetzt.
+
+
+<strong>get DEVICE HTTPresponse</strong>
+
+Zeigt den Inhalt einer zuvor mit 'loadHTTP' geladenen HTML-Datei.
+
+<strong>get DEVICE config</strong>
+
+Zeigt die Konfigurationsdatei des MSwitchdevices an; diese kann in dem Fenster editiert werden.
+Das sollte nur von erfahrenen Usern getan werden!
+Im Normalfall sollte das Device nur über die Weboberfläche konfiguriert werden und eine falsche Konfiguration kann hier zu einem FHEM Absturz führen. 
+
+
+<strong>get DEVICE support_info</strong>
+
+Öffnet ein Fenster mit einer formatierten Ansicht aller Einstellungen des Devices.
+Bei Supportanfragen sollte dieses immer mit geposted werden. 
+
+<strong>get DEVICE restore_MSwitch_Data this_device|all_devices</strong>
+ - this_device
+Stellt die Daten des Devices aus der Backupdatei wieder her, sofern diese in der Backupdatei gefunden werden (gesucht wird hier nach dem Namen des Devices).
+
+ - all_devices
+Stellt die Daten aller MSwitch Devices wieder her, sofern diese in der Backupdatei vorhanden sind. Diese Aktion kann einige Zeit in Anspruch nehmen und wird daher im Hintergrund (nonblocking) ausgeführt.
+Nach Beendigung erfolgt eine Benachrichtigung.
+
+Die Devices sind nach einem Restore funktionsfähig.
+Empfohlen wird ein Neustart von FHEM.. 
+
+
+<strong>get DEVICE Eventlog sequenzformated,timeline,clear</strong>
+ - timeline
+Zeigt alle (historischen) eingegangenen Events (abhängig von enzsprechender Attributeinstellung) in eingegangener Reihenfolge
+
+ - sequenzformated
+Zeigt alle eingegangenen Events vorformatiert für eine Sequenzabfrage
+
+ - clear
+Löscht die Liste der eingegangenen Events
+
+<strong></strong>
+<hr>
+->
+
+#################################################################################################
+Help Set
+#################################################################################################
+<- set-
+Angebotene Set-Befehle sind unter Umständen von der Grundkonfiguration abhängig,
+d.H nicht in jedem Mode werden alle Befehle angeboten.
+<hr>
+<strong>set DEVICE wizard</strong>
+Schaltet das Device in den Wizardmode.
+In diesem Mode können at's, notifys undvorkonfigurierte Devices importiert werden.
+Weiterhinh können Devices mithilfe eines Wizards angelegt werden.
+Dieser Set steht nur bei neu angelegten und unveränderten Devices zur Verfügung. 
+
+
+<strong>set DEVICE loadHTTP</strong>
+Lädt den Inhalt einer HTML Seite. Dieser kann gebutzt werden , um daraus Readings zu extrahieren.
+Das weitere Verarbeitung kann mit den Attributen 'MSwitch_ExtraktfromHTTP' und 'MSwitch_ExtraktHTTPMapping' beeinflusst werden.
+Der gesamte Inhalt der eingelesenen Daten kann mit 'get HTTPresponse' angezeigt werden.
+Format:
+   loadHTTP http://www.myhost.com/directory/
+   loadHTTP https://www.myhost.com/
+   loadHTTP http://www.myhost.com:8080/
+   loadHTTP http://user:password@www.myhost.com/
+
+<strong>set DEVICE reset_device</strong>
+Löscht alle Daten eines MSwitch-devices und versetzt diesen in den Zustand, als wäre es neu angelegt.
+Achtung: diese Aktion ist nicht rückgängig zu machen.
+
+<strong>set DEVICE reload_timer</strong>
+Alle anstehenden Timer (aus zeitgesteuerter Schaltung) werden gelöscht und im Anschluss neu berechnet.
+
+<strong>set DEVICE del_delays</strong>
+Löscht alle anstehenden Befehle, die aus zeitverzögertem Schalten resultieren
+
+<strong>set DEVICE on|off [parameter]</strong>
+Setzt das Device in den Status 'on'. Alle Befehle der 'on/off-Zweige' werden ausgeführt.
+Optional kann den Befehlen 'on' und 'off' ein weiterer Parameter mit übergeben werden.
+Dieser wird im Reading 'Parameter' hinterlegt und es kann sofort in 'Freecmds' oder 'Conditions' darauf zugegriffen werden. 
+
+<strong>set DEVICE off [parameter]</strong>
+Setzt das Device in den Status 'off'. Alle Befehle der 'on/off-Zweige' werden ausgeführt.
+Optional kann den Befehlen 'on' und 'off' ein weiterer Parameter mit übergeben werden.
+Dieser wird im Reading 'Parameter' hinterlegt und es kann sofort in 'Freecmds' oder 'Conditions' darauf zugegriffen werden. 
+
+
+<strong>set DEVICE active</strong>
+Setzt das MSwitch-Device in den Status 'active'. 
+
+<strong>set DEVICE inactive</strong>
+Setzt das Device in den Status 'inactive'. Es werden keine Befehle mehr ausgeführt.
+Dieser Status entspricht dem Attribut 'disable', ist aber nicht mit dem roten Fragezeichen (fhem save) verbunden.
+
+<strong>set DEVICE change_renamed oldname newname</strong>
+Sollten sich Devicenamen im ausführenden Teil geändert habe (affected Devices, Conditions, etc.),
+kann das MSwitch mit diesem Befehl angepasst werden, ohne alle Einstellungen manuell anpassen zu müssen.
+
+<strong>set DEVICE exec_cmd_1 ID [ID]</strong>
+Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges 1.
+Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt. 
+  
+<strong>set DEVICE exec_cmd_2 ID [ID]</strong>
+Bewirkt das sofortige Ausführen des entsprechenden Befehlszweiges 2.
+Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt. 
+
+<strong>set DEVICE backup_MSwitch</strong>
+Erstellt eine Backup-Datei aller MSwitch Devices unter ./fhem/MSwitch_backup.cfg.
+Daten dieser Datei können im Bedarfsfall für einzelne oder gleichzeitig alle MSwitch Devices wieder zurückgespielt (hergestellt) werden. 
+
+<strong>set DEVICE reset_cmd_count: 1|2</strong>
+Löscht das entsprechende EVT_CMD_COUNT - Reading; entspricht damit einer Rückstellung auf '0'. 
+
+<strong>set DEVICE fakeevent [device]:reading:arg</strong>
+Beispiel:fakeevent state:on
+
+Das MSwitch Device reagiert so, als wäre statt des internen "fakes-Befehls" ohne dieses Event tatsächlich vom triggernden Gerät generiert worden.
+
+<strong>set DEVICE del_repeats</strong>
+Löscht ale Befehlswiederholungen , die aus Befehlszweigen resultieren und dort definiert wurden.
+
+<strong>set DEVICE wait ss</strong>
+Veranlasst das Mswitch für den angegebenen Zeitraum in Sekunden (ss) auf keine Events zu regieren
+
+<strong>set DEVICE reset_Switching_once</strong>
+löscht eine durch das Attribut "MSwitch_Switching_once = 1" gesetzte Sperre für Befehlsketten.
+
+<strong>MSwitch_Func_AVG</strong>
+Aktivierung der intergrierten Durchschnittsberechnung.
+In dieser Funktion können Readings angelegt werden , die den Durchschnittswert eingehender Readings beinhalten.
+Hierfür müssen die betreffenden Readings bereits als Trigger in einem der Kommandozweige definiert sein.
+
+Wenn ein Kommandozweig z.B auf das Reading DEVICE:pct:.* reagiert kann für deas Reading pct diese Funktion aktiviert werden.
+
+Die Syntax muss wie folgt lauten:
+pct->2->AVG_pct
+&lt;reading&gt; -> &lt;anzahl der werte&gt; -> &lt;name des anzulegenden readings&gt;
+
+pct-> reading für welches der Durchschnitt berechnet werden soll
+2 -> anzahl der eingegangenen Readings, die zur Berechnung herangezogen werden sollen
+AVG_pct -> ist der Name des neu anzulegenden Readings 
+
+mehrere Berechnungen sind durch "," zu trennen.
+
+Auf dieses angelegte Reading kann in Bedingungen etc. unmittelbar reagiert werden -> [$SELF:AVG_pct]
+Ein Fhemneustart bewirkt das Löschen aller 'historischen' Daten . Solange weniger Daten vorhanden sind als gefordert sind wir der 
+Mittelwert nur aus den vorhandenen Dataen gebildet.
+
+
+<strong>MSwitch_Func_DIFF</strong>
+Aktivierung der intergrierten Durchschnittsberechnung.
+In dieser Funktion können Readings angelegt werden , die den Differenzwert eingehender Readings beinhalten.
+Hierfür müssen die betreffenden Readings bereits als Trigger in einem der Kommandozweige definiert sein.
+
+Wenn ein Kommandozweig z.B auf das Reading DEVICE:pct:.* reagiert kann für deas Reading pct diese Funktion aktiviert werden.
+
+Die Syntax muss wie folgt lauten:
+pct->1->DIFF_pct
+&lt;reading&gt; -> &lt;Position des Vergleichswertes&gt; -> &lt;name des anzulegenden readings&gt;
+
+pct-> reading für welches der Durchschnitt berechnet werden soll
+1 -> Nummer des Vergleichsreadings (1=das letzte, 2=Vorletztes 3= .... )
+DIFF_pct -> ist der Name des neu anzulegenden Readings 
+
+Auf dieses angelegte Reading kann in Bedingungen etc. unmittelbar reagiert werden -> [$SELF:DIFF_pct]
+Ein Fhemneustart bewirkt das Löschen aller 'historischen' Daten. Daher wird das Reading nur dann aktualisiert, wenn der entsprechende
+geforderte Vergleichswert bereits vorhanden ist.
+
+<strong>MSwitch_Func_TEND</strong>
+Aktivierung der intergrierten Durchschnittsberechnung.
+
+In dieser Funktion können Readings angelegt werden , die den Tendenzwert eingehender Readings darstellen.
+Hierfür müssen die betreffenden Readings bereits als Trigger in einem der Kommandozweige definiert sein.
+
+
+Funktionsbeschreibung:
+
+Hiermit kann die Tendenz eines Readings ermittelt werden.
+Es wirden 2 Wertepaare gebildet. Diese werden durch die erste numerische Angabe im Atttribut definiert:
+
+eine 1 bedeutet, dass der aktuelle und der vorherige Wert verglichen werden
+eine 2 bedeutet, dass der Schnitt der letzten 2 Werten mit dem Schnitt der vorherigen 2 Werten verglichen werden 
+etc.
+
+ergiebt sich aus diesem Vergleich eine Differenz , und diese Differenz ist gösser als die zweite numerische Angabe im Attribut
+dann nimmt Reading "(NAME)_pct_change" den Wert "changed" an, anderfalls "not_changed".
+In diesem Fall werden alleweiteren Readings aktualisiert (u.A Richtung der neuen Tendenz).
+
+Mit der dritten numerischen (0/1) Angabe im Attribut kann angegeben werden, ob alle eingegangenen Werte zusätzlich verglichen werden sollen.
+Das bedeutet , das alle errechneten Werte (maximal und minimalwerte) gespeichert werden . Zusätlich zu oben erklärtem Vergleich (wenn dieser noch keinen Schaltvorgang ausgelöst hat) wird geprüft,
+ob der Vergleich zwischen dem aktuellen Reading und einem gespeicherten Maximal- oder Minimalwert die Schaltschwelle überschreitet. 
+Ist dieses der Fall wird ebenfalls die Tendenzumkehr angezeigt.
+
+Auf alle Readings kann direkt in den Conidions etc. [$SELF:reading] zugegriffen werden.
+
+Die Syntax muss wie folgt lauten:
+pct->1->2->TEND_pct->1
+&lt;reading&gt; -> &lt;Anzahl der Werte zur Paarbildung&gt; -> &lt;Schaltschwelle zur Tendenzumkehr&gt;  -> &lt;(optinal 0,1) Einbeziehung des Gesamtverlaufes&gt;
+
+Mit aktivierung dieser Funktion werden diverse Readings angelegt:
+
+- (NAME)_pct_change<small>
+Nimmt die Werte "changed" oder "no_change" . Der Wert "changed" wird nur dann angenommen , wenn das aktuell eingehende Reading
+eine Umkehr der Tendez auslöst (Richtungsumkehr UND Schaltschwelle ueberschritten).
+</small>
+- (NAME)_pct_direction_real<small>
+Nimmt den Wert "up" oder "down" an. Dieser entspricht dem realen Wert der Tendenz des aktuellen Readings an.
+</small>
+- (NAME)_pct_direction_tendenz<small>
+Nimmt den Wert "up" oder "down" an. Dieser muss nicht dem realen Wert entsprechen, sondern ist abhängig von der Paarbildung und dem Schwellwert.
+</small>
+- (NAME)_pct_direction_value<small>
+Nimmt den errechneten Differenzwert an, der zwischen dem aktuellen und dem vorherigen Wert (oder Wertepaare) des überwachten Reading 
+</small>
+
+<strong>MSwitch_Readings</strong>
+MSwitch_Readings sind in sowohl in der Funktion, als auch im Format analog den Fhem Userreadings.
+Der gravierende Unterschied ist, das diese Readings im Gegensatz zu den Userreadings direkt bei Eingang eines Events und/oder Schaltvorganges - vor der Ausführung der Schaltbefehle - gesetzt werden.
+Somit besteht direkt im ausführenden Befehlsteil die Möglichkeit , diese MSwitch_Reading dort an jeder Stelle einzubauen und zu verwenden (Befehle, Bedingungen, etc.).
+
+In den MSwitch_Readings besteht in bekanntem Umfang Zugriff auf Systemvariablen ($NAME,$EVENT, etc.)
+
+<strong>MSwitch_EventMap</strong>
+MSwitch_EventMap ist in sowohl in der Funktion, als auch im Format fast analog zu dem FhemAttribut Eventmap.
+Der gravierende Unterschied ist, das dieses Eventmap nur für eingehende Events greift. Alle ausgehenden Events und/oder Statusmeldungen
+bleiben hiervon unberührt.
+Weiterhin ist eine dritte angabe mlglch , diese bestimmt den Eventteil, für den das Mapping angewendet werden soll.
+dieses kann lauten: 
+EVENT - Anwendung alle Eventteile
+EVTPART1(2)(3) - Anwendung auf angegebenes Eventteil
+bleibt das dritte Feld frei wird ebenfalls auf das gesamte Event angewendet.
+
+Bleiben nach dem Mapping nur leere Felder übrig, dann werden diese durch 'undef' ersetzt.
+
+Format :  [/REGEX:ERSETZT_DURCH:EVENT/]
+mehrere Mappins sind durch Komma zu trennen.
+
+Es wird ein weiteres Reading (EVENT_ORG) angelegt. Dieses enthält immer das original eingehende Event.
+Ein Event wird durch dieses Reading nicht ausgelöst, es steht aber im aktuellen Durchlauf zur Verfügung.
+
+Wenn diese Funktion aktiviert ist müssen sich alle internen Aktionen (Bedingungen,Befehle etc.) nach diesem gemappten Event richten.
+
+
+<strong></strong>
+<hr>
+->
