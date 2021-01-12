@@ -236,8 +236,10 @@ Schaltbefehl erfolgt nur in angegebenem Zeitraum
 Readingabhängiges schalten:
 Schaltbefehl erfolgt nur bei erfüllter Bedingung.
  - [Devicename:Reading] =/>/< X oder [Devicename:Reading] eq "x"
-Um nur den numerischen Wert eine Readings zu erhalten muss dem Ausdruck ein ":d" angehangen werden
- - [Devicename:Reading:d]
+ 
+Um nur den numerischen Wert eine Readings zu erhalten muss folgende Formatierung genutzt werden:
+ - [ReadingsNum:Devicename:Reading:0]
+hierbei ist 0 der Ruckgabewert falls kein Wert definiert ist.
 
 Je nach Attributeinstellung kann hier auch auf historische Events zugegriffen werden
  - [Devicename:Reading:h<x>]
@@ -1145,9 +1147,19 @@ Somit besteht direkt im ausführenden Befehlsteil die Möglichkeit , diese MSwit
 In den MSwitch_Readings besteht in bekanntem Umfang Zugriff auf Systemvariablen ($NAME,$EVENT, etc.)
 
 <strong>MSwitch_EventMap</strong>
-MSwitch_EventMap ist in sowohl in der Funktion, als auch im Format analog zu dem FhemAttribut Eventmap.
+MSwitch_EventMap ist in sowohl in der Funktion, als auch im Format fast analog zu dem FhemAttribut Eventmap.
 Der gravierende Unterschied ist, das dieses Eventmap nur für eingehende Events greift. Alle ausgehenden Events und/oder Statusmeldungen
 bleiben hiervon unberührt.
+Weiterhin ist eine dritte angabe mlglch , diese bestimmt den Eventteil, für den das Mapping angewendet werden soll.
+dieses kann lauten: 
+EVENT - Anwendung alle Eventteile
+EVTPART1(2)(3) - Anwendung auf angegebenes Eventteil
+bleibt das dritte Feld frei wird ebenfalls auf das gesamte Event angewendet.
+
+Bleiben nach dem Mapping nur leere Felder übrig, dann werden diese durch 'undef' ersetzt.
+
+Format :  [/REGEX:ERSETZT_DURCH:EVENT/]
+mehrere Mappins sind durch Komma zu trennen.
 
 Es wird ein weiteres Reading (EVENT_ORG) angelegt. Dieses enthält immer das original eingehende Event.
 Ein Event wird durch dieses Reading nicht ausgelöst, es steht aber im aktuellen Durchlauf zur Verfügung.
