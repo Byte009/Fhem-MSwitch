@@ -64,15 +64,15 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.05';  				# version
+my $version      = '5.06';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
 my $vupdate      = 'V5.0';					# versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VersionUpdate aus .
 my $undotime = 60;							# Standarzeit in der ein Undo angeboten wird
 
-my $startsafemode=0;
-my $savecount = 20;							# anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
+my $startsafemode=1;
+my $savecount = 60;							# anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
 my $savemodetime       = 3;    		        # Zeit für Zugriffe im Safemode ( 100000 = 1 sec )
 my $savemode2block       = 60;
       
@@ -1268,6 +1268,18 @@ sub MSwitch_Get($$@) {
 		}
 	return;
     }
+	
+	
+####################
+    if ( $opt eq 'statistics' ) 
+	{
+        my $return = MSwitch_Get_Statistik( $hash );
+		
+        return $return;;
+    }
+	
+	
+	
 ####################
     if ( $opt eq 'MSwitch_preconf' ) 
 	{
@@ -1670,6 +1682,188 @@ if ( AttrVal( $name, 'MSwitch_Statistic', "0" ) == 1 )
         return "Unknown argument $opt, choose one of reset_Switching_once:noArg HTTPresponse:noArg Eventlog:sequenzformated,timeline,clear support_info:noArg config:noArg active_timer:show,delete restore_MSwitch_Data:this_device,all_devices $extension $statistic";
     }
 }
+
+
+###########################################################
+
+sub MSwitch_Get_Statistik($) {
+	
+	my ( $hash ) = @_;
+	
+	
+		# $hash->{helper}{statistics}{notifyloop_incomming}=0;
+		# $hash->{helper}{statistics}{notifyloop_firsttest_passed}=0;
+		# $hash->{helper}{statistics}{notifyloop_wait_blocked}=0;
+		# $hash->{helper}{statistics}{notifyloop_startdelay_blocked}=0;
+		# $hash->{helper}{statistics}{eventloop_jason_blocked}=0;
+		
+		# $hash->{helper}{statistics}{eventloop_incomming}=0;
+		
+		
+		#$hash->{helper}{statistics}{starttime}=time;
+	
+	my $re="";
+	# $re.="";
+	# $re.="";
+	# $re.="";
+	
+	### make Types
+	
+	my $starttime =$hash->{helper}{statistics}{starttime};
+	my $typeoption="";
+		foreach my $a ( keys %{$hash->{helper}{statistics}{notifyloop_incomming_types}} ) 
+			{
+				$typeoption.="<option value=\"".$a."\">".$a." - Zugriffe: ".$hash->{helper}{statistics}{notifyloop_incomming_types}{$a}."</option>";
+            }
+	
+	
+	
+	
+	my $typenames="";
+	foreach my $a ( keys %{$hash->{helper}{statistics}{notifyloop_incomming_names}} ) 
+			{
+				$typenames.="<option value=\"".$a."\">".$a." - Zugriffe: ".$hash->{helper}{statistics}{notifyloop_incomming_names}{$a}."</option>";	
+            }
+	
+	
+	$re.="<table>";
+	
+	  
+	$re.="<tr>";
+	$re.="<td colspan = \"3\">Aufzeichnungsbeginn: ".FmtDateTime($starttime)."<\/td>";	
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td colspan = \"3\"><hr><\/td>";	
+	$re.="<\/tr>";
+	
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} Anzahl der Gesamtzugriffe:<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";
+	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_incomming}."<\/td>";
+	$re.="</tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} erste Prüfung - passed:<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_firsttest_passed}."<\/td>";
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} Safemode 2 aktiviert:<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{safemode_2_blocking_on}."<\/td>";
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} Wait - blocked:<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_wait_blocked}."<\/td>";
+	$re.="<\/tr>";
+	
+	
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} eingehende Events TYPES :<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td><select style=\"disabled\" >".$typeoption."\/<select><\/td>";
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} eingehende Events NAMES :<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td><select style=\"disabled\" >".$typenames."\/<select><\/td>";
+	$re.="<\/tr>";
+	
+	
+	
+	
+	
+	$re.="<tr>";
+	$re.="<td colspan = \"3\"><hr><\/td>";	
+	$re.="<\/tr>";
+	
+	
+	$re.="<tr>";
+	$re.="<td>{Event_LOOP} ankommend: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_incomming}."<\/td>";
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Event_LOOP} JasonFormat - blocked: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_jason_blocked}."<\/td>";
+	$re.="<\/tr>";
+	
+	
+	
+	$re.="<tr>";
+	$re.="<td>{Event_LOOP} Auslösebedingung - passed: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_firstcondition_passed}."<\/td>";
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Event_LOOP} Verteilt auf CMD1: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd1}."<\/td>";
+	$re.="<\/tr>";
+	
+		$re.="<tr>";
+	$re.="<td>{Event_LOOP} Verteilt auf CMD2: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd2}."<\/td>";
+	$re.="<\/tr>";
+	
+		$re.="<tr>";
+	$re.="<td>{Event_LOOP} Verteilt auf CMD3: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd3}."<\/td>";
+	$re.="<\/tr>";
+	
+		$re.="<tr>";
+	$re.="<td>{Event_LOOP} Verteilt auf CMD4: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd4}."<\/td>";
+	$re.="<\/tr>";
+	
+	
+	$re.="<tr>";
+	$re.="<td>{Event_LOOP} Verteilt auf Bridge: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventloop_bridge}."<\/td>";
+	$re.="<\/tr>";
+	
+	
+			$re.="<tr>";
+	$re.="<td>{Event_LOOP} nicht genutzt : <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td> ".$hash->{helper}{statistics}{eventignored}."<\/td>";
+	$re.="<\/tr>";
+	
+	
+	$re.="<\/table>";
+	
+	
+	
+	
+	
+	#$own_hash->{helper}{statistics}{Eventignored}++ if $statistic ==1 && $check != 1; #statistik	
+
+	
+	#$own_hash->{helper}{statistics}{eventloop_cmd2}++ if $statistic ==1; #statistik	
+
+	#$own_hash->{helper}{statistics}{eventloop_jason_blocked}
+	#return $re;
+	return "<span style=\"font-size: medium\">".$re."<\/span>";
+	
+	
+}
+
+
+
 ####################
 sub MSwitch_AsyncOutput ($) {
     my ( $client_hash, $text ) = @_;
@@ -3155,12 +3349,14 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
 		
 		# $hash->{helper}{statistics}{eventloop_incomming}=0;
 		
-		
+		 delete( $hash->{helper}{statistics} );
+		 delete( $hash->{helper}{statistics}{notifyloop_incomming_names} );
 		$hash->{helper}{statistics}{starttime}=time;
 	}
 	
 	if ( $aName eq 'MSwitch_Statistic' && $aVal eq '0' ) {
-		  delete( $hash->{helper}{statistics} );
+		   delete( $hash->{helper}{statistics} );
+		 delete( $hash->{helper}{statistics}{notifyloop_incomming_names} );
 	}
 		
 # random
@@ -3387,6 +3583,9 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
         {
             $hash->{NOTIFYDEV} = $name;
         }
+		
+		readingsSingleUpdate( $hash, "state", '???', 1 );
+		return;
     }
 
 ## Mswitch CMDs
@@ -3580,9 +3779,15 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 	
 	
 	
+	
+	
+	
+	
 	if ( $testarg eq 'MSwitch_Statistic' ) {
 		  delete( $hash->{helper}{statistics} );
 		  delete( $hash->{helper}{statistics}{notifyloop_incomming_names} );
+		  
+		
 	}
 	
 	
@@ -3624,6 +3829,25 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
             MSwitch_Clear_timer($hash);
             delete( $hash->{helper}{savemodeblock} );
             delete( $hash->{READINGS}{Safemode} );
+
+			MSwitch_Createtimer($hash);
+
+			if ( ReadingsVal( $name, '.Trigger_device', 'no_trigger' ) ne 'no_trigger'
+				and ReadingsVal( $name, '.Trigger_device', 'no_trigger' ) ne
+				"MSwitch_Self" )
+			{
+				$hash->{NOTIFYDEV} =
+				  ReadingsVal( $name, '.Trigger_device', 'no_trigger' );
+			}
+
+			if ( $init_done == 1
+				and ReadingsVal( $name, '.Trigger_device', 'no_trigger' ) eq
+				"MSwitch_Self" )
+			{
+				$hash->{NOTIFYDEV} = $name;
+			}
+			
+			readingsSingleUpdate( $hash, "state", '???', 1 );
 			return;
         }
 
@@ -4383,7 +4607,7 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
 			my $ret = MSwitch_checkcondition( $triggercondition, $ownName,$eventcopy );
             if ( $ret eq 'false' )
 				{
-					$own_hash->{helper}{statistics}{eventloop_firstcondition_blocked}++ if $statistic ==1; #statistik
+					#$own_hash->{helper}{statistics}{eventloop_firstcondition_blocked}++ if $statistic ==1; #statistik
                     next EVENT;
                 }
             }
@@ -4522,6 +4746,10 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
 			{
                 ### pruefe Bridge
                 my ( $chbridge, $zweig, $bridge ) =MSwitch_checkbridge( $own_hash, $ownName, $eventcopy, );
+				
+				$own_hash->{helper}{statistics}{eventloop_bridge}++ if $statistic ==1 && $chbridge eq "found bridge";
+
+				
                 next EVENT if $chbridge eq "found bridge";
             }
 
@@ -4535,6 +4763,11 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
             $testvar = MSwitch_checktrigger_new( $own_hash,$triggeron, 'on' );
                 if (defined $testvar && $testvar ne 'undef' )
 				{
+					
+					
+					$own_hash->{helper}{statistics}{eventloop_cmd1}++ if $statistic ==1; #statistik	
+
+					
                     $set       = $testvar;
                     $check     = 1;
                     $foundcmd1 = 1;
@@ -4547,6 +4780,8 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
             $testvar =MSwitch_checktrigger_new( $own_hash,$triggeroff,'off');
                 if (defined $testvar && $testvar ne 'undef')
 				{
+					$own_hash->{helper}{statistics}{eventloop_cmd2}++ if $statistic ==1; #statistik	
+
                     $set       = $testvar;
                     $check     = 1;
                     $foundcmd2 = 1;
@@ -4563,6 +4798,8 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
                 $testvar = MSwitch_checktrigger_new( $own_hash, $triggercmdoff, 'offonly' );
                 if ( defined $testvar && $testvar ne 'undef' )
 				{
+					$own_hash->{helper}{statistics}{eventloop_cmd4}++ if $statistic ==1; #statistik	
+
                     MSwitch_LOG( $ownName, 6, "Befehl eingefuegt (cmdoff)");
                     push @cmdarray, $own_hash . ',off,check,' . $eventcopy;
                     $check     = 1;
@@ -4575,12 +4812,21 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
                 $testvar = MSwitch_checktrigger_new( $own_hash,$triggercmdon,'ononly');
                 if ( defined $testvar && $testvar ne 'undef' )
 				{
+					$own_hash->{helper}{statistics}{eventloop_cmd3}++ if $statistic ==1; #statistik	
+
+
+
                     MSwitch_LOG( $ownName, 6,"Befehl eingefuegt (cmdon)");
                     push @cmdarray, $own_hash . ',on,check,' . $eventcopy;
                     $check     = 1;
                     $foundcmd1 = 1;
                 }
             }
+			
+			
+$own_hash->{helper}{statistics}{eventignored}++ if $statistic ==1 && $check != 1; #statistik	
+
+			
 
 #### prüfen
             # speichert 20 events ab zur weiterne funktion ( funktionen )
@@ -12357,6 +12603,9 @@ sub MSwitch_Safemode($) {
               . " wurde automatisch deaktiviert ( Safemode 1 )" );
         $hash->{helper}{savemodeblock}{blocking} = 'on';
         readingsSingleUpdate( $hash, "Safemode", 'on', 1 );
+		MSwitch_Delete_Delay( $hash, 'all' );
+        MSwitch_Clear_timer($hash);
+		readingsSingleUpdate( $hash, "state", 'disabled(safemode)', 1 );
         $attr{$Name}{disable} = '1';
     }
 	
@@ -12373,7 +12622,8 @@ sub MSwitch_Safemode($) {
              . " wurde automatisch für $savemode2block sekunden blockiert ( Safemode 2 )" );
 			  
 			  	  
-			  
+		$hash->{helper}{statistics}{safemode_2_blocking_on}++ if $statistic ==1; #statistik	
+	  
         readingsSingleUpdate( $hash, "waiting", ( time + $savemode2block ),0 );
     }
 	
