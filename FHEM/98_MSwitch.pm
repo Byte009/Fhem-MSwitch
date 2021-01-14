@@ -1690,6 +1690,21 @@ sub MSwitch_Get_Statistik($) {
 	
 	my ( $hash ) = @_;
 	my $re="";
+	
+	
+	
+	
+	if (!exists $hash->{helper}{statistics}{starttime})
+		{
+			
+			return "noch keine Daten aufgezeichnet!";
+			
+		}
+	
+	
+	
+	
+	
 	my $starttime =$hash->{helper}{statistics}{starttime};
 	my $akttime = time;
 	my $readtime = $akttime -$starttime;
