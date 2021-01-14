@@ -4865,7 +4865,8 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
 		
 		#Log3("test",0,"check   $check");	
 $own_hash->{helper}{statistics}{eventignored}++ if $statistic ==1 && $check != 1; #statistik	
-$own_hash->{helper}{statistics}{eventloop}{unused}{$eventcopy}++ if $statistic ==1 && $check != 1; #statistik	
+my $statevent = $eventteile[0].":".$eventteile[1];
+$own_hash->{helper}{statistics}{eventloop}{unused}{$statevent}++ if $statistic ==1 && $check != 1; #statistik	
 
 		
 
