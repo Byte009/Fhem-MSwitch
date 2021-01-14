@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.06';  				# version
+my $version      = '5.07';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -1689,66 +1689,99 @@ if ( AttrVal( $name, 'MSwitch_Statistic', "0" ) == 1 )
 sub MSwitch_Get_Statistik($) {
 	
 	my ( $hash ) = @_;
-	
-	
-		# $hash->{helper}{statistics}{notifyloop_incomming}=0;
-		# $hash->{helper}{statistics}{notifyloop_firsttest_passed}=0;
-		# $hash->{helper}{statistics}{notifyloop_wait_blocked}=0;
-		# $hash->{helper}{statistics}{notifyloop_startdelay_blocked}=0;
-		# $hash->{helper}{statistics}{eventloop_jason_blocked}=0;
-		
-		# $hash->{helper}{statistics}{eventloop_incomming}=0;
-		
-		
-		#$hash->{helper}{statistics}{starttime}=time;
-	
 	my $re="";
-	# $re.="";
-	# $re.="";
-	# $re.="";
-	
-	### make Types
-	
 	my $starttime =$hash->{helper}{statistics}{starttime};
+	my $akttime = time;
+	my $readtime = $akttime -$starttime;
+	my ($Stunden, $Minuten, $Sekunden)=(int($readtime/3600), int(($readtime % 3600) / 60), $readtime % 60);
+	
+	$Stunden = sprintf("%02d",$Stunden);
+	$Minuten = sprintf("%02d",$Minuten);
+	$Sekunden = sprintf("%02d",$Sekunden);
+	
 	my $typeoption="";
-		foreach my $a ( keys %{$hash->{helper}{statistics}{notifyloop_incomming_types}} ) 
+	my $inhalt = $hash->{helper}{statistics}{notifyloop_incomming_types};
+	my %sort;
+    foreach my $a ( keys %{$inhalt} ) 
+	
 			{
-				$typeoption.="<option value=\"".$a."\">".$a." - Zugriffe: ".$hash->{helper}{statistics}{notifyloop_incomming_types}{$a}."</option>";
-            }
-	
-	
-	
-	
+			$sort{$a} = $hash->{helper}{statistics}{notifyloop_incomming_types}{$a};
+			}
+	foreach my $key (reverse sort { $sort{$a} <=> $sort{$b} } keys %sort) 
+			{
+				$typeoption.="<option value=\"\">".$key." - Zugriffe: ".$sort{$key}."</option>";
+			}
+			
 	my $typenames="";
-	foreach my $a ( keys %{$hash->{helper}{statistics}{notifyloop_incomming_names}} ) 
+	$inhalt = $hash->{helper}{statistics}{notifyloop_incomming_names};
+	my %sort1;
+    foreach my $a ( keys %{$inhalt} ) 
+	
 			{
-				$typenames.="<option value=\"".$a."\">".$a." - Zugriffe: ".$hash->{helper}{statistics}{notifyloop_incomming_names}{$a}."</option>";	
-            }
+			$sort1{$a} = $hash->{helper}{statistics}{notifyloop_incomming_names}{$a};
+			}
+	foreach my $key (reverse sort { $sort1{$a} <=> $sort1{$b} } keys %sort1) 
+			{
+				$typenames.="<option value=\"\">".$key." - Zugriffe: ".$sort1{$key}."</option>";
+			}
 	
+	my $unused="";
+	$inhalt = $hash->{helper}{statistics}{eventloop}{unused};
+	my %sort2;
+    foreach my $a ( keys %{$inhalt} ) 
 	
+			{
+			$sort2{$a} = $hash->{helper}{statistics}{eventloop}{unused}{$a};
+			}
+	foreach my $key (reverse sort { $sort2{$a} <=> $sort2{$b} } keys %sort2) 
+			{
+				$unused.="<option value=\"\">".$key." - Zugriffe: ".$sort2{$key}."</option>";
+			}
+	
+
 	$re.="<table>";
 	
-	  
 	$re.="<tr>";
 	$re.="<td colspan = \"3\">Aufzeichnungsbeginn: ".FmtDateTime($starttime)."<\/td>";	
+	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td colspan = \"3\">Messzeit: $Stunden:$Minuten:$Sekunden<\/td>";	
 	$re.="<\/tr>";
 	
 	$re.="<tr>";
 	$re.="<td colspan = \"3\"><hr><\/td>";	
 	$re.="<\/tr>";
 	
-	
 	$re.="<tr>";
-	$re.="<td>{Notify_FN} Anzahl der Gesamtzugriffe:<\/td>";
+	$re.="<td>{Notify_FN} Anzahl der Gesamtzugriffe (Eventpakete):<\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";
 	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_incomming}."<\/td>";
 	$re.="</tr>";
 	
+	# $re.="<tr>";
+	# $re.="<td>{Notify_FN} Anzahl der Gesamtzugriffe:<\/td>";
+	# $re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";
+	# $re.="<td> ".$hash->{helper}{statistics}{notifyloop_incomming_packages}." Einzelevents in Paketen<\/td>";
+	# $re.="</tr>";
+	
 	$re.="<tr>";
-	$re.="<td>{Notify_FN} erste Prüfung - passed:<\/td>";
+	$re.="<td>{Notify_FN} Systemprüfung - passed:<\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
 	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_firsttest_passed}."<\/td>";
 	$re.="<\/tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} Startdelay blocked: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";
+	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_startdelay_blocked}."<\/td>";
+	$re.="</tr>";
+	
+	$re.="<tr>";
+	$re.="<td>{Notify_FN} erste Minute nach Systemstart: <\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";
+	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_incomming_firstminute}."<\/td>";
+	$re.="</tr>";
 	
 	$re.="<tr>";
 	$re.="<td>{Notify_FN} Safemode 2 aktiviert:<\/td>";
@@ -1762,8 +1795,6 @@ sub MSwitch_Get_Statistik($) {
 	$re.="<td> ".$hash->{helper}{statistics}{notifyloop_wait_blocked}."<\/td>";
 	$re.="<\/tr>";
 	
-	
-	
 	$re.="<tr>";
 	$re.="<td>{Notify_FN} eingehende Events TYPES :<\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
@@ -1776,14 +1807,9 @@ sub MSwitch_Get_Statistik($) {
 	$re.="<td><select style=\"disabled\" >".$typenames."\/<select><\/td>";
 	$re.="<\/tr>";
 	
-	
-	
-	
-	
 	$re.="<tr>";
 	$re.="<td colspan = \"3\"><hr><\/td>";	
 	$re.="<\/tr>";
-	
 	
 	$re.="<tr>";
 	$re.="<td>{Event_LOOP} ankommend: <\/td>";
@@ -1797,8 +1823,6 @@ sub MSwitch_Get_Statistik($) {
 	$re.="<td> ".$hash->{helper}{statistics}{eventloop_jason_blocked}."<\/td>";
 	$re.="<\/tr>";
 	
-	
-	
 	$re.="<tr>";
 	$re.="<td>{Event_LOOP} Auslösebedingung - passed: <\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
@@ -1811,24 +1835,23 @@ sub MSwitch_Get_Statistik($) {
 	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd1}."<\/td>";
 	$re.="<\/tr>";
 	
-		$re.="<tr>";
+	$re.="<tr>";
 	$re.="<td>{Event_LOOP} Verteilt auf CMD2: <\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
 	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd2}."<\/td>";
 	$re.="<\/tr>";
 	
-		$re.="<tr>";
+	$re.="<tr>";
 	$re.="<td>{Event_LOOP} Verteilt auf CMD3: <\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
 	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd3}."<\/td>";
 	$re.="<\/tr>";
 	
-		$re.="<tr>";
+	$re.="<tr>";
 	$re.="<td>{Event_LOOP} Verteilt auf CMD4: <\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
 	$re.="<td> ".$hash->{helper}{statistics}{eventloop_cmd4}."<\/td>";
 	$re.="<\/tr>";
-	
 	
 	$re.="<tr>";
 	$re.="<td>{Event_LOOP} Verteilt auf Bridge: <\/td>";
@@ -1836,27 +1859,20 @@ sub MSwitch_Get_Statistik($) {
 	$re.="<td> ".$hash->{helper}{statistics}{eventloop_bridge}."<\/td>";
 	$re.="<\/tr>";
 	
-	
-			$re.="<tr>";
+	$re.="<tr>";
 	$re.="<td>{Event_LOOP} nicht genutzt : <\/td>";
 	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
 	$re.="<td> ".$hash->{helper}{statistics}{eventignored}."<\/td>";
 	$re.="<\/tr>";
 	
+	$re.="<tr>";
+	$re.="<td>{Event_LOOP} ungenutzte Events :<\/td>";
+	$re.="<td>&nbsp;&nbsp;&nbsp;<\/td>";	
+	$re.="<td><select style=\"disabled\" >".$unused."\/<select><\/td>";
+	$re.="<\/tr>";
 	
 	$re.="<\/table>";
 	
-	
-	
-	
-	
-	#$own_hash->{helper}{statistics}{Eventignored}++ if $statistic ==1 && $check != 1; #statistik	
-
-	
-	#$own_hash->{helper}{statistics}{eventloop_cmd2}++ if $statistic ==1; #statistik	
-
-	#$own_hash->{helper}{statistics}{eventloop_jason_blocked}
-	#return $re;
 	return "<span style=\"font-size: medium\">".$re."<\/span>";
 	
 	
@@ -3351,7 +3367,7 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
 		
 		 delete( $hash->{helper}{statistics} );
 		 delete( $hash->{helper}{statistics}{notifyloop_incomming_names} );
-		$hash->{helper}{statistics}{starttime}=time;
+		
 	}
 	
 	if ( $aName eq 'MSwitch_Statistic' && $aVal eq '0' ) {
@@ -4167,7 +4183,7 @@ sub MSwitch_Notify($$) {
 if ( AttrVal( $ownName, 'MSwitch_Statistic', "0" ) == 1 ) {$statistic =1}
 
 
-if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
+if ( grep( m/^EVENT|EVTFULL|writelog|last_exec_cmd|EVTPART.*/, @{$events} ) )
     {
 	Log3( $ownName, 5,"hard exit ...");
 	Log3( $ownName,5,"$ownName - $devName ");
@@ -4276,14 +4292,14 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
     if (   $init_done && $devName eq "global"&& grep( m/^MODIFIED $ownName$/, @{$events} ) )
     {
         # reaktion auf eigenes notify start / define / modify
-        my $timecond = gettimeofday() + 5;
+        my $timecond = gettimeofday() + 1;
         InternalTimer( $timecond, "MSwitch_LoadHelper", $own_hash );
     }
 
     if (   $init_done && $devName eq "global" && grep( m/^DEFINED $ownName$/, @{$events} ) )
     {
         # reaktion auf eigenes notify start / define / modify
-        my $timecond = gettimeofday() + 5;
+        my $timecond = gettimeofday() + 1;
         InternalTimer( $timecond, "MSwitch_LoadHelper", $own_hash );
     }
 ############################################
@@ -4302,16 +4318,7 @@ if ( grep( m/^EVENT|EVTFULL|EVTPART.*/, @{$events} ) )
 # nur abfragen für eigenes Notify ENDE
 #########################################
 
- if ($statistic ==1){
-	 
-$own_hash->{helper}{statistics}{notifyloop_incomming}++; 
-$own_hash->{helper}{statistics}{notifyloop_incomming_names}{$devName}++;
-$own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
 
-
-
-
- }
 
 
 # Return without any further action if the module is disabled
@@ -4327,7 +4334,7 @@ $own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
 
 
 
-
+$own_hash->{helper}{statistics}{starttime}=time if !exists $own_hash->{helper}{statistics}{starttime};
 
 
 
@@ -4355,6 +4362,37 @@ $own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
     }
 ############################
 
+
+ if ($statistic ==1){
+	 
+$own_hash->{helper}{statistics}{notifyloop_incomming}++; 
+#$own_hash->{helper}{statistics}{notifyloop_incomming_packages}=$own_hash->{helper}{statistics}{notifyloop_incomming_packages} +@{$events};
+
+
+
+
+
+
+
+
+
+$own_hash->{helper}{statistics}{notifyloop_incomming_names}{$devName}++;
+$own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
+
+my $starttime = $own_hash->{helper}{statistics}{starttime};
+my $akttime = time;
+    
+if ($akttime - ($starttime+60) < 0)
+{
+	$own_hash->{helper}{statistics}{notifyloop_incomming_firstminute}++;
+	
+}
+
+ }
+
+
+
+#############################
 # test wait attribut
     if ( ReadingsVal( $ownName, "waiting", '0' ) > time ) 
 	{
@@ -4368,7 +4406,7 @@ $own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
         # reading löschen
         delete( $own_hash->{READINGS}{waiting} );
     }
-############################
+############################  notifyloop_firsttest_passed
 
 	MSwitch_Safemode($own_hash);
 
@@ -4464,7 +4502,7 @@ $own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
 
 
 
-
+# notifyloop_incomming
 
 ## EVENTMAINLOOP	
 ##########################
@@ -4822,11 +4860,17 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
                     $foundcmd1 = 1;
                 }
             }
-			
-			
-$own_hash->{helper}{statistics}{eventignored}++ if $statistic ==1 && $check != 1; #statistik	
+		
 
-			
+		
+		#Log3("test",0,"check   $check");	
+$own_hash->{helper}{statistics}{eventignored}++ if $statistic ==1 && $check != 1; #statistik	
+$own_hash->{helper}{statistics}{eventloop}{unused}{$eventcopy}++ if $statistic ==1 && $check != 1; #statistik	
+
+		
+
+#notifyloop_incomming_names:
+		
 
 #### prüfen
             # speichert 20 events ab zur weiterne funktion ( funktionen )
