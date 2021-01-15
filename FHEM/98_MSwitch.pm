@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.09';  				# version
+my $version      = '5.10';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -4634,7 +4634,8 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
 
 
 
-
+# teste auf mswitch-eventmap  -> vor triggercondition				
+	$eventcopy = MSwitch_Eventmap($own_hash,$ownName,$eventcopy);
 
 
 
@@ -4677,8 +4678,7 @@ $eventcopy = $eventteile[0].":".$eventteile[1].":".$eventteile[2];
 # Teste auf einhaltung Triggercondition für ausführung zweig 1 und zweig 2
 # kann ggf an den anfang der routine gesetzt werden ? test erforderlich
         
-# teste auf mswitch-eventmap  -> vor triggercondition				
-	$eventcopy = MSwitch_Eventmap($own_hash,$ownName,$eventcopy);	
+	
 
     
 		if ( $triggercondition ne '' ) 
