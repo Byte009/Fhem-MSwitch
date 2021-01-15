@@ -916,7 +916,7 @@ Angebotene Get-Befehle sind unter Umständen von der Grundkonfiguration abhängi
 d.H nicht in jedem Mode werden alle Befehle angeboten.
 <hr>
 
-<strong>get DEVICE sysextenson</strong>
+<strong>get DEVICE sysextension</strong>
 
 Einbindung von HTM/Javacode 
 
