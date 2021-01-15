@@ -915,6 +915,14 @@ Help Get
 Angebotene Get-Befehle sind unter Umständen von der Grundkonfiguration abhängig,
 d.H nicht in jedem Mode werden alle Befehle angeboten.
 <hr>
+
+<strong>get DEVICE sysextenson</strong>
+
+Einbindung von HTM/Javacode 
+
+Hier kann frei wählbarer Cide angegeben werden , der im Device und u.U in der Detailansicht angezeigt (ausgefuhrt) wird.
+Je nach Verfügbarkeit können hier MSwitch-Widgets eingesetzt werden.
+
 <strong>get DEVICE active_timer show,delete</strong>
  - Show
 Zeigt alle anstehenden (gesetzten) Timer des Devices, die aus zeitabhängigen oder verzögerten Schaltbefehlen resultieren.
@@ -1183,7 +1191,15 @@ Dabei ist jedoch zu beachten , das diese Statistikfunktion selber sowohl eine er
 
 Die Statistikdaten bleiben bei Fhemneustart nicht erhalten.
 
-<strong></strong>
+<strong>MSwitch_SysExtension</strong>
+
+Ermöglicht die Einbindung von HTML/Java code. 
+Dieser Code wird je nach Einstellung sowohl in der Raumansicht, als auch in der Detailansicht angezeigt.
+
+Hier können (je nach Verfügbarskeit) MSwitch-Widgets engesetz werden.
+
+Option 1 - ansicht nur in der Detailansicht 
+Option 2 - Ansicht in der Raumansicht und der Detailansicht
 
 <hr>
 ->
