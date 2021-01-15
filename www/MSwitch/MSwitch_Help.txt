@@ -962,6 +962,12 @@ Zeigt alle eingegangenen Events vorformatiert für eine Sequenzabfrage
  - clear
 Löscht die Liste der eingegangenen Events
 
+
+<strong>get DEVICE statistics</strong>
+
+Zeigt die Statistikdaten des Gerätes an.
+Diese Funktion steht nur bei gesetztem Attribut MSwitch_Statistic zur verfügung.
+
 <strong></strong>
 <hr>
 ->
@@ -1166,7 +1172,18 @@ Ein Event wird durch dieses Reading nicht ausgelöst, es steht aber im aktuellen
 
 Wenn diese Funktion aktiviert ist müssen sich alle internen Aktionen (Bedingungen,Befehle etc.) nach diesem gemappten Event richten.
 
+<strong>MSwitch_Statistic</strong>
+Bei aktieviertem Attribut werden verschiedene Statistikdaten des Devices temporär gespeichert und können Ausgewertet werden.
+Anhand dieser kann die Systemlast erheblich redziert werden durch z.B Anpassung der "Event-on-.." Attribute des auslösenden Gerätes und/oder 
+Eingrenzung des Triggers etc.
+
+Anzeigen lassenn sich diese Daten mit get DEVICE statistics.
+
+Dabei ist jedoch zu beachten , das diese Statistikfunktion selber sowohl eine erhöhte Systemlast auslöst, als auch einen erhöhten Speicherbedarf beansprucht.
+
+Die Statistikdaten bleiben bei Fhemneustart nicht erhalten.
 
 <strong></strong>
+
 <hr>
 ->
