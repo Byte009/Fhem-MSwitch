@@ -41,7 +41,7 @@
 
 	var configstart = [
 	'#V Version',
-	'#VS V5.00',
+	'#VS V5.0',
 	'#S .First_init -> done',
 	'#S .Trigger_off -> no_trigger',
 	'#S .Trigger_cmd_off -> no_trigger',
@@ -378,6 +378,10 @@ function saveconfig(name,mode){
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
 	conf = changevar(conf);
+	
+	
+	// alert(conf);
+	
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
 	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
@@ -493,6 +497,7 @@ function startconfig(){
 	document.getElementById('importCONFIG').innerHTML = html;
 	document.getElementById('help').innerHTML = 'Hier können MSwitch_Konfigurationsdateien eingespielt werden. Dieses sollte nur von erfahrenen Usern genutzt werden. Es findet keine Prüfung auf Fehler statt und fehlerhafte Dateien können Fhem zum Absturz bringen.<br>Die vorgegebene Datei entspricht einem unkonfigurierten MSwitch';
 	fillconfig('rawconfig3');
+	//alert("ok");
 	return;
 }
 
