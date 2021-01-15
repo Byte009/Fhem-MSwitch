@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.07';  				# version
+my $version      = '5.08';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -1201,9 +1201,10 @@ sub MSwitch_Get($$@) {
 	{
 		my $cs = $args[1] ;
 		$cs =~ s/#\[sp\]/ /g;
-		$cs = MSwitch_dec( $hash, $cs );
 		my $exec = "set ".$args[0]." ".$cs;
+		$exec = MSwitch_dec( $hash, $exec );
 		my $errorout="<small>$WARNINGS:<br>";
+		#Log3("test",0,"cmd: $exec");
 		my $errors = AnalyzeCommandChain( undef, $exec );
 		  if ( defined($errors) and $errors ne "OK" )
 				{
@@ -12436,7 +12437,8 @@ sub MSwitch_repeat($) {
         MSwitch_LOG( $name, 6,"Befehlswiederholungen ausgeführt: $cs  L:" . __LINE__ );
         if ( $cs =~ m/{.*}/ ) 
 		{
-            $cs =~ s/\[SR\]/\|/g;
+            #$cs =~ s/\[SR\]/\|/g;
+			$cs = MSwitch_dec($hash,$cs);
 			{
 			no warnings;
             eval($cs);
@@ -12448,6 +12450,8 @@ sub MSwitch_repeat($) {
         }
         else 
 		{
+			$cs = MSwitch_dec($hash,$cs);
+			
             my $errors = AnalyzeCommandChain( undef, $cs );
             if ( defined($errors) ) 
 			{
@@ -13044,8 +13048,9 @@ sub MSwitch_dec($$) {
     ###########################################################################
     ## ersetze gruppenname durch devicenamen
     ## test - nur wenn attribut gesetzt noch einfügen
-
-    if ( AttrVal( $name, 'MSwitch_Device_Groups', 'undef' ) ne "undef" ) {
+#Log3("test",0,"$todec");
+    if ( AttrVal( $name, 'MSwitch_Device_Groups', 'undef' ) ne "undef" )
+	{
         my $testgroups = $data{MSwitch}{$name}{groups};
         my @msgruppen  = ( keys %{$testgroups} );
 
