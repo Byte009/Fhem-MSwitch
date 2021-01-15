@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.08';  				# version
+my $version      = '5.09';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -4195,8 +4195,15 @@ sub MSwitch_Notify($$) {
 	my $devType = $dev_hash->{TYPE};
     my $events = deviceEvents( $dev_hash, 1 );
 	
+    my $statistic=0;
+
+
+
 
 if ( AttrVal( $ownName, 'MSwitch_Statistic', "0" ) == 1 ) {$statistic =1}
+
+
+
 
 
 if ( grep( m/^EVENT|EVTFULL|writelog|last_exec_cmd|EVTPART.*/, @{$events} ) )
@@ -4617,8 +4624,19 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
 	}		
 		################################
 
-# teste auf mswitch-eventmap  -> vor triggercondition				
-	$eventcopy = MSwitch_Eventmap($own_hash,$ownName,$eventcopy);	
+
+			
+$own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic ==1; #statistik	
+
+### ab hier ist das event durch condition akzeptiert	
+
+delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben auf nach abarbeitung conditions
+
+
+
+
+
+
 
 		# temporär
 		# setze eingehendes Event :
@@ -4647,17 +4665,30 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
 		$own_hash->{helper}{evtparts}{event}	=$eventteile[1].":".$eventteile[2];
 		$own_hash->{helper}{aktevent}=$eventcopy;
 
+$eventcopy = $eventteile[0].":".$eventteile[1].":".$eventteile[2];
 
+# update der readings
+			#if ( $event ne '' ) 
+			#{
+              MSwitch_EventBulk( $own_hash, $eventcopy, '0','MSwitch_Notify' );
+			#}
+			
+			
 # Teste auf einhaltung Triggercondition für ausführung zweig 1 und zweig 2
 # kann ggf an den anfang der routine gesetzt werden ? test erforderlich
         
-        $triggercondition =~ s/#\[dp\]/:/g;
-		$triggercondition =~ s/#\[pt\]/./g;
-		$triggercondition =~ s/#\[ti\]/~/g;
-		$triggercondition =~ s/#\[sp\]/ /g;
-		
+# teste auf mswitch-eventmap  -> vor triggercondition				
+	$eventcopy = MSwitch_Eventmap($own_hash,$ownName,$eventcopy);	
+
+    
 		if ( $triggercondition ne '' ) 
 			{
+				
+			$triggercondition =~ s/#\[dp\]/:/g;
+			$triggercondition =~ s/#\[pt\]/./g;
+			$triggercondition =~ s/#\[ti\]/~/g;
+			$triggercondition =~ s/#\[sp\]/ /g;
+	
 			my $ret = MSwitch_checkcondition( $triggercondition, $ownName,$eventcopy );
             if ( $ret eq 'false' )
 				{
@@ -4665,19 +4696,12 @@ if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
                     next EVENT;
                 }
             }
-			
-$own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic ==1; #statistik	
+		
 
 
-### ab hier ist das event durch condition akzeptiert	
 
-delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben auf nach abarbeitung conditions
 
-# update der readings
-			#if ( $event ne '' ) 
-			#{
-              MSwitch_EventBulk( $own_hash, $eventcopy, '0','MSwitch_Notify' );
-			#}
+
 
 # teste auf mswitch-reading - evtl umsetzen -> nach triggercondition				
 	MSwitch_Readings($own_hash,$ownName,$eventteile[1]);	
@@ -10436,11 +10460,16 @@ sub MSwitch_Clear_timer($) {
 sub MSwitch_Createtimer($) 
 {
 
+
+
+
 	my ($hash) = @_;
     my $Name = $hash->{NAME};
 	my $we = AnalyzeCommand( 0, '{return $we}' );
 	my $aktuellezeit = gettimeofday();
 	my $timerexist = 0;
+	
+	my @nexttimer;
 	MSwitch_Clear_timer($hash);
 	delete( $hash->{helper}{wrongtimespec} );
 	#### aktuelle daten setzen
@@ -10682,6 +10711,7 @@ sub MSwitch_Createtimer($)
 				my $inhalt = $timetoexecuteunix . "-" . $number . $id;
 				$hash->{helper}{timer}{$inhalt} = "$inhalt";
 				my $msg = $Name . " " . $timetoexecuteunix . " " . $number . $id;
+				push @nexttimer,$timetoexecuteunix;
 				InternalTimer( $timetoexecuteunix, "MSwitch_Execute_Timer", $msg );
 			}
 			
@@ -10752,13 +10782,28 @@ sub MSwitch_Createtimer($)
 				my $inhalt = $timetoexecuteunix . "-" . $number . $id;
 				$hash->{helper}{timer}{$inhalt} = "$inhalt";
 				my $msg = $Name . " " . $timetoexecuteunix . " " . $number . $id;
+				push @nexttimer,$timetoexecuteunix;
 				InternalTimer( $timetoexecuteunix, "MSwitch_Execute_Timer", $msg );
 			}
 		}
 	} # ENDE EACHTIMER
 	}
 
-	return if $timerexist == 0;
+	if ($timerexist == 0){
+		readingsSingleUpdate( $hash, "Next_Timer", "no_timer", 0 );	
+		return;
+		}
+		
+	@nexttimer = sort @nexttimer;
+	
+	my $nexttime = FmtDateTime($nexttimer[0]);
+	my @nt = split / /,$nexttime;
+	
+	readingsSingleUpdate( $hash, "Next_Timer", $nt[1], 0 );
+	
+
+	
+	
     # berechne zeit bis 23,59 und setze timer auf create timer
 	# nur ausführen wenn timer belegt 
     my $newask = timelocal( '59', '59', '23', $date, $aktmonth, $aktyear );
@@ -10767,6 +10812,7 @@ sub MSwitch_Createtimer($)
     my $msg         = $Name . " " . $newask . " " . 5;
     my $inhalt      = $newask . "-" . 5;
     $hash->{helper}{timer}{$newask} = "$inhalt";
+	
     InternalTimer( $newask, "MSwitch_Execute_Timer", $msg );
 	return;
 }
@@ -10898,6 +10944,57 @@ sub MSwitch_Execute_Timer($) {
             }
         }
     }
+	
+	
+	
+	# ############ timerhash anpassen , nächstes timerevent melden
+	    my $settime = int (time);
+	    my $timehash = $hash->{helper}{timer};
+		my @nexttimer;
+        foreach my $a ( sort keys %{$timehash} ) 
+		{
+            my @string  = split( /-/,  $hash->{helper}{timer}{$a} );
+            my @string1 = split( /ID/, $string[1] );
+            my $number  = $string1[0];
+            my $id      = $string1[1];
+			
+			#delete( $hash->{helper}{timer}{$a}) if $timehash <= $settime;
+			#my $posix= POSIX::strftime( "%H:%M", $string[0] );
+			
+			if ($string[0] <= $settime)
+			{
+				#Log3("test",0,"DEL $string[0]  string");
+				#Log3("test",0,"DEL $settime   settime");
+				delete( $hash->{helper}{timer}{$a})
+			}
+			else
+			{
+				#Log3("test",0,"no DEL $string[0] - $settime");
+				push @nexttimer,$hash->{helper}{timer}{$a};
+			}
+		
+		}
+	@nexttimer = sort @nexttimer;
+	if (exists $nexttimer[0])
+	{
+		
+		
+	my @aktset = split (/-/, $nexttimer[0]);
+		
+	my $nexttime = FmtDateTime($aktset[0]);
+	
+	
+	
+	
+	my @nt = split / /,$nexttime;
+	readingsSingleUpdate( $hash, "Next_Timer", $nt[1], 1 );
+	}
+	else
+	{
+		readingsSingleUpdate( $hash, "Next_Timer", "no_timer", 1 );
+	}
+	##############################################################
+	
     my $extime = POSIX::strftime( "%H:%M", localtime );
     readingsBeginUpdate($hash);
     readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents);
@@ -12202,6 +12299,7 @@ sub MSwitch_saveconf($$) {
         }
     }
 
+
     return;
 }
 ################################################
@@ -13092,9 +13190,9 @@ sub MSwitch_makefreecmdonly($$) {
 
     my $newcode = "";
 
-    if ( exists $hash->{helper}{eventfrom} )
+    if ( exists $hash->{helper}{evtparts}{device} )
 	{
-        $newcode .= "my \$NAME = \"" . $hash->{helper}{eventfrom} . "\";";
+        $newcode .= "my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";";
     }
     else 
 	{
@@ -13147,9 +13245,9 @@ sub MSwitch_makefreecmd($$) {
 		my $newcode = "";
 
         ## variablendeklaration für perlcode / wird anfangs eingefügt
-        if ( exists $hash->{helper}{eventfrom} )
+        if ( exists $hash->{helper}{evtparts}{device} )
 		{
-            $newcode .= "my \$NAME = \"" . $hash->{helper}{eventfrom} . "\";\n";
+            $newcode .= "my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";\n";
         }
         else
 		{
