@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.10';  				# version
+my $version      = '5.11';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -620,28 +620,34 @@ sub MSwitch_summary($) {
     my $optiontime;
     my $devtitletime = '';
     my $triggertime  = ReadingsVal( $name, '.Trigger_device', 'not defined' );
-    my $devtime      = ReadingsVal( $name, '.Trigger_time', '' );
-    $devtime =~ s/\[//g;
-    $devtime =~ s/\]/ /g;
-    my @devtime = split( /~/, $devtime );
+	
+	
+	
+	
+	
+	
+    my $devtime1      = ReadingsVal( $name, '.Trigger_time_1', '' );
+	my $devtime2      = ReadingsVal( $name, '.Trigger_time_2', '' );
+	my $devtime3      = ReadingsVal( $name, '.Trigger_time_3', '' );
+	my $devtime4      = ReadingsVal( $name, '.Trigger_time_4', '' );
+	
+	
+	
     $optiontime .= "<option value=\"Time:\">At: aktiv</option>";
-    my $count = @devtime;
-    $devtime[0] =~ s/on/on+cmd1: /g        if defined $devtime[0];
-    $devtime[1] =~ s/off/off+cmd2: /g      if defined $devtime[1];
-    $devtime[2] =~ s/ononly/only cmd1: /g  if defined $devtime[2];
-    $devtime[3] =~ s/offonly/only cmd2: /g if defined $devtime[3];
+  
+  
 
     if ( $mode ne "Notify" ) 
 	{
-        $optiontime .="<option value=\"$devtime[0]\">" . $devtime[0] . "</option>" if defined $devtime[0];
-        $optiontime .= "<option value=\"$devtime[1]\">" . $devtime[1] . "</option>" if defined $devtime[1];
+        $optiontime .="<option value=\"$devtime1\">" . $devtime1 . "</option>" if  $devtime1 ne 'undef' and $devtime1 ne "";
+        $optiontime .= "<option value=\"$devtime2\">" . $devtime2 . "</option>" if  $devtime2 ne 'undef'and $devtime2 ne "";
     }
 
-    $optiontime .= "<option value=\"$devtime[2]\">" . $devtime[2] . "</option>" if defined $devtime[2];
-    $optiontime .= "<option value=\"$devtime[3]\">" . $devtime[3] . "</option>" if defined $devtime[3];
+    $optiontime .= "<option value=\"$devtime3\">" . $devtime3 . "</option>" if  $devtime3 ne 'undef'and $devtime3 ne "";
+    $optiontime .= "<option value=\"$devtime4\">" . $devtime4 . "</option>" if $devtime4 ne 'undef' and $devtime4 ne ""; 
 
     my $affectedtime = '';
-    if ( $count == 0 )
+    if ( $devtime4 eq '' and $devtime3 eq '' and $devtime2 eq '' and $devtime1 eq '')
 	{
         $timer = 0;
         $affectedtime =
@@ -10881,13 +10887,13 @@ sub MSwitch_Execute_Timer($) {
 
 	if (!defined $hash || !defined $Name || $hash eq "" || $Name eq "")
 	{
-		MSwitch_LOG( "MSwitch_Error", 0,"##################################"  );
-		MSwitch_LOG( "MSwitch_Error", 0,"MSwitch_Error in exec_timer " );
-		MSwitch_LOG( "MSwitch_Error", 0,"eingehende daten: $input " );
-		MSwitch_LOG( "MSwitch_Error", 0,"eingehender Hash: $hash " );
-		MSwitch_LOG( "MSwitch_Error", 0,"eingehender Name: $Name ");
-		MSwitch_LOG( "MSwitch_Error", 0,"Routine abgebrochen");
-		MSwitch_LOG( "MSwitch_Error", 0,"##################################"  );
+		# MSwitch_LOG( "MSwitch_Error", 5,"##################################"  );
+		# MSwitch_LOG( "MSwitch_Error", 5,"MSwitch_Error in exec_timer " );
+		# MSwitch_LOG( "MSwitch_Error", 5,"eingehende daten: $input " );
+		# MSwitch_LOG( "MSwitch_Error", 5,"eingehender Hash: $hash " );
+		# MSwitch_LOG( "MSwitch_Error", 5,"eingehender Name: $Name ");
+		# MSwitch_LOG( "MSwitch_Error", 5,"Routine abgebrochen");
+		# MSwitch_LOG( "MSwitch_Error", 5,"##################################"  );
 		return;
 	}
 
