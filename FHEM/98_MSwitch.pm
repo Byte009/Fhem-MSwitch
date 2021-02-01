@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.11';  				# version
+my $version      = '5.12';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -3264,7 +3264,7 @@ sub MSwitch_toggle($$) {
 	}
 	
     my @togglepart = split( /:/, $4 );
-	MSwitch_LOG( $Name, 6, "Toggleparts @togglepart!!! L:" . __LINE__ );
+	MSwitch_LOG( $Name, 6, "Toggleparts @togglepart L:" . __LINE__ );
 	my $trenner=",";
 	
 	if ($togglepart[0] =~ m/^\[(.)\]/)
@@ -3275,7 +3275,7 @@ sub MSwitch_toggle($$) {
 		$trenner = $togglepart[0];
 		$trenner =~ s/\[//g;
 		$trenner =~ s/\]//g;
-		MSwitch_LOG( $Name, 6, "Trennercheck $togglepart[0]!!! L:" . __LINE__ );
+		MSwitch_LOG( $Name, 6, "Trennercheck $togglepart[0] L:" . __LINE__ );
 		shift @togglepart;
 	}
 	
@@ -3290,7 +3290,7 @@ sub MSwitch_toggle($$) {
         $togglepart[1] =~ s/\[//g;
         $togglepart[1] =~ s/\]//g;
         @muster = split( /$trenner/, $togglepart[1] );
-		MSwitch_LOG( $Name, 6, "cmds @cmds!!! L:" . __LINE__ );		
+		MSwitch_LOG( $Name, 6, "cmds @cmds L:" . __LINE__ );		
         $anzmuster = @cmds;
     }
     else 
@@ -3303,14 +3303,23 @@ sub MSwitch_toggle($$) {
         $togglepart[2] =~ s/\]//g;
         $reading = $togglepart[2];
     }
+	
+MSwitch_LOG( $Name, 6, "geprueftes reading:: $reading L:" . __LINE__ );	
+	
 	my $aktstate;
 
-	if ($reading eq "MSwitch_Self")
+	if ($reading eq "MSwitch_Self" or $reading eq "MSwitch_self" )
 	{
 		$aktstate = ReadingsVal( $Name, 'last_toggle_state', 'undef' );	
+		
+		MSwitch_LOG( $Name, 6, "aktueller state des devices (ms): $aktstate L:" . __LINE__ );
 	} else {
 		$aktstate = ReadingsVal( $devicename, $reading, 'undef' );	
+		
+		MSwitch_LOG( $Name, 6, "aktueller state des devices: $aktstate L:" . __LINE__ );
 	}
+
+
 
     my $foundmuster;
     for ( my $i = 0 ; $i < $anzmuster ; $i++ ) {
@@ -4377,6 +4386,9 @@ $own_hash->{helper}{statistics}{starttime}=time if !exists $own_hash->{helper}{s
 		
 		#abbruch wenn GLOBAL und eigenes device
 		return if ( ReadingsVal( $ownName, ".Trigger_device", "no_trigger" ) eq "all_events"  and $ownName eq $devName);
+		
+		
+		
 	}
 ######################################
 
@@ -4398,13 +4410,6 @@ $own_hash->{helper}{statistics}{notifyloop_incomming}++;
 #$own_hash->{helper}{statistics}{notifyloop_incomming_packages}=$own_hash->{helper}{statistics}{notifyloop_incomming_packages} +@{$events};
 
 
-
-
-
-
-
-
-
 $own_hash->{helper}{statistics}{notifyloop_incomming_names}{$devName}++;
 $own_hash->{helper}{statistics}{notifyloop_incomming_types}{$devType}++;
 
@@ -4413,8 +4418,7 @@ my $akttime = time;
     
 if ($akttime - ($starttime+60) < 0)
 {
-	$own_hash->{helper}{statistics}{notifyloop_incomming_firstminute}++;
-	
+	$own_hash->{helper}{statistics}{notifyloop_incomming_firstminute}++;	
 }
 
  }
