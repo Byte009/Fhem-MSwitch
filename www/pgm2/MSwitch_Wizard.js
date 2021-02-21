@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V5.0';
+	var version = 'V5.1';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -268,6 +268,15 @@ function start1(name){
 		r3 = $('<a href=\"javascript: reset()\">Reset this device ('+name+')</a>');
 		$(r3).appendTo('[class=\"detLink showDSI\"]');
 		document.getElementById('mode').innerHTML += '<br>Wizard Version:'+version+'<br>Info:'+info;
+		
+		
+		
+		document.getElementById('mode').innerHTML += '<small><br>Templatefiles: '+templatefile;
+		document.getElementById('mode').innerHTML += '<small><br>Preconffile: '+preconffile;
+		
+		
+		
+		
 		// fülle configfenster
 
 	document.getElementById('importAT').style.display='none';
