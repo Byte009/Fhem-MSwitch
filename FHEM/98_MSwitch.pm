@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.13';  				# version
+my $version      = '5.14';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -98,7 +98,7 @@ $data{MSwitch}{version}       = $version;
 my $param = {
         url     => "$updateinfolink",
         timeout => 5,
-        hash    => ,    # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
+        hash    => '',    # Muss gesetzt werden, damit die Callback funktion wieder $hash hat
         method => "GET",    # Lesen von Inhalten
         header => "User-Agent: None\r\nAccept: application/json"
         ,                   # Den Header gemäß abzufragender Daten ändern
@@ -4622,15 +4622,34 @@ $trigcmdon0 = "" if !defined $trigcmdon0;
 $trigcmdoff0 = "" if !defined $trigcmdoff0;
 
 
+$trigon = ".*" if $trigon0 eq "*";
+$trigoff = ".*" if $trigoff0 eq "*";
+$trigcmdon = ".*" if $trigcmdon0 eq "*";
+$trigcmdoff = ".*" if $trigcmdoff0 eq "*";
+
+$trigon0 = ".*" if $trigon0 eq "*";
+$trigoff0 = ".*" if $trigoff0 eq "*";
+$trigcmdon0 = ".*" if $trigcmdon0 eq "*";
+$trigcmdoff0 = ".*" if $trigcmdoff0 eq "*";
+
+
 $trigon = ".*" if $trigon0 eq ".*";
 $trigoff = ".*" if $trigoff0 eq ".*";
 $trigcmdon = ".*" if $trigcmdon0 eq ".*";
 $trigcmdoff = ".*" if $trigcmdoff0 eq ".*";
 
+
+
+
 $trigon0 = "" if $trigon0 eq ".*";
 $trigoff0 = "" if $trigoff0 eq ".*";
 $trigcmdon0 = "" if $trigcmdon0 eq ".*";
 $trigcmdoff0 = "" if $trigcmdoff0 eq ".*";
+
+
+
+
+
 
 
 
@@ -4645,21 +4664,30 @@ $trigcmdoff = "" if !defined $trigcmdoff;
 
 
 my $string ="(";
- $string .="$trigon0|$trigon" if $trigon0 ne "no_trigger";
+ $string .="|$trigon0|$trigon" if $trigon0 ne "no_trigger";
  $string .="|$trigoff0|$trigoff" if $trigoff0 ne "no_trigger";
  $string .="|$trigcmdon0|$trigcmdon" if $trigcmdon0 ne "no_trigger";
- $string .="|$trigcmdoff|$trigcmdoff" if $trigcmdoff ne "no_trigger";
+ $string .="|$trigcmdoff0|$trigcmdoff" if $trigcmdoff ne "no_trigger";
  $string .=")";
  
  
- MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
+
  
 
 $string =~ s/\|+/|/g;
 $string =~ s/\|\)/)/g;
 $string =~ s/\(\|/(/g;
-$string =~ s/\|\*/.*/g;
+#$string =~ s//(?:.\|\s?)+/.*/g;
 
+# MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
+#shift $string;
+
+
+
+
+
+#$string =~ s/\(\*/(.*/g;
+ MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
 if ($string eq "()"){
 $own_hash->{helper}{statistics}{notifyloop_blocked_from_grep}++ if $statistic ==1; #statistik
 MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $string ->@eventscopy" );
@@ -4668,7 +4696,7 @@ MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $strin
 }
 
 
-if (1 == 2){
+if (1 == 1){
 
 #if ( grep( m/$string/, @{$events} ) )
 if (my @grep= grep( m/$string/, @eventscopy )  )
