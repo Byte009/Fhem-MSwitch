@@ -4615,41 +4615,20 @@ my $trigoff = (split (/:/,$triggeroff  ))[1];
 my $trigcmdon = (split (/:/,$triggercmdon))[1];
 my $trigcmdoff = (split (/:/,$triggercmdoff ))[1];
 
-
 $trigon0 = "" if !defined $trigon0;
 $trigoff0 = "" if !defined $trigoff0;
 $trigcmdon0 = "" if !defined $trigcmdon0;
 $trigcmdoff0 = "" if !defined $trigcmdoff0;
-
-
-$trigon = ".*" if $trigon0 eq "*";
-$trigoff = ".*" if $trigoff0 eq "*";
-$trigcmdon = ".*" if $trigcmdon0 eq "*";
-$trigcmdoff = ".*" if $trigcmdoff0 eq "*";
-
-$trigon0 = ".*" if $trigon0 eq "*";
-$trigoff0 = ".*" if $trigoff0 eq "*";
-$trigcmdon0 = ".*" if $trigcmdon0 eq "*";
-$trigcmdoff0 = ".*" if $trigcmdoff0 eq "*";
-
 
 $trigon = ".*" if $trigon0 eq ".*";
 $trigoff = ".*" if $trigoff0 eq ".*";
 $trigcmdon = ".*" if $trigcmdon0 eq ".*";
 $trigcmdoff = ".*" if $trigcmdoff0 eq ".*";
 
-
-
-
 $trigon0 = "" if $trigon0 eq ".*";
 $trigoff0 = "" if $trigoff0 eq ".*";
 $trigcmdon0 = "" if $trigcmdon0 eq ".*";
 $trigcmdoff0 = "" if $trigcmdoff0 eq ".*";
-
-
-
-
-
 
 
 
@@ -4659,10 +4638,6 @@ $trigcmdon = "" if !defined $trigcmdon;
 $trigcmdoff = "" if !defined $trigcmdoff;
 
 
-
-
-
-
 my $string ="(";
  $string .="|$trigon0|$trigon" if $trigon0 ne "no_trigger";
  $string .="|$trigoff0|$trigoff" if $trigoff0 ne "no_trigger";
@@ -4670,13 +4645,19 @@ my $string ="(";
  $string .="|$trigcmdoff0|$trigcmdoff" if $trigcmdoff ne "no_trigger";
  $string .=")";
  
- 
-
- 
 
 $string =~ s/\|+/|/g;
 $string =~ s/\|\)/)/g;
 $string =~ s/\(\|/(/g;
+
+
+# MSwitch_LOG( $ownName, 0, "### GREPFILTER $ownName -> Firststring -> $string" );
+
+
+
+$string =~ s/\(\*/(.*/g;
+$string =~ s/\|\*/|.*/g;
+
 #$string =~ s//(?:.\|\s?)+/.*/g;
 
 # MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
@@ -4687,7 +4668,7 @@ $string =~ s/\(\|/(/g;
 
 
 #$string =~ s/\(\*/(.*/g;
- MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
+ #MSwitch_LOG( $ownName, 0, "### GREPFILTER $ownName -> Firststring -> $string" );
 if ($string eq "()"){
 $own_hash->{helper}{statistics}{notifyloop_blocked_from_grep}++ if $statistic ==1; #statistik
 MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $string ->@eventscopy" );
@@ -4696,7 +4677,7 @@ MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $strin
 }
 
 
-if (1 == 2){
+if (1 == 1){
 
 #if ( grep( m/$string/, @{$events} ) )
 if (my @grep= grep( m/$string/, @eventscopy )  )
