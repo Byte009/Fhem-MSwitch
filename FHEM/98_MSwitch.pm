@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.14';  				# version
+my $version      = '5.15';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -335,6 +335,7 @@ my $attrdummy ="  disable:0,1"
 . "  useSetExtensions:0,1"
 . "  setList:textField-long "
 . "  readingList:textField-long "
+. "  MSwitch_SysExtension:0,1,2 "
 . $readingFnAttributes;
 
 
@@ -367,6 +368,7 @@ my $attractivedummy = "  disable:0,1"
 . "  MSwitch_ExtraktfromHTTP:textField-long"
 . "  MSwitch_ExtraktHTTPMapping:textField-long"
 . "  MSwitch_Switching_once:0,1 "
+. "  MSwitch_SysExtension:0,1,2 "
 . $readingFnAttributes;
 		  
 my $attrresetlist =
@@ -422,6 +424,7 @@ my $attrresetlist =
 . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
 . "  MSwitch_Switching_once:0,1"
 . "  MSwitch_SysExtension:0,1,2 "
+. "  useSetExtensions:0,1"
 . $readingFnAttributes;				
 
 #################
@@ -1293,6 +1296,8 @@ sub MSwitch_Get($$@) {
 			{
 			#fhemmode
 			$cs =~ s/#\[sp\]/ /g;
+			$cs =~ s/#\[se\]/;/g;
+			$cs =~ s/#\[nl\]//g;
 			$cs = MSwitch_dec( $hash, $cs );
 			my $exec = $cs;
 			my $errorout="<small>$WARNINGS:<br>";
@@ -1307,7 +1312,10 @@ sub MSwitch_Get($$@) {
 					$errorout.="$WARNINGSOUT";
 				}
 			delete( $hash->{helper}{aktevent} );
-			return "<small>$EXECUTEDCMD:</small><br><br>$exec<br><br>$errorout";	
+			$exec =~ s/;/;<br>/g;
+			$exec =~ s/^{/{<br>/g;
+			$exec =~ s/}$/}<br>/g;
+			return "<small>$EXECUTEDCMD (Fhemmode):</small><br><br>$exec<br><br>$errorout";	
 			}
 		}
 	return;
