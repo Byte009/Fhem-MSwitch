@@ -4685,7 +4685,7 @@ MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $strin
 }
 
 
-if (1 == 1){
+if (1 == 2){
 
 #if ( grep( m/$string/, @{$events} ) )
 if (my @grep= grep( m/$string/, @eventscopy )  )
