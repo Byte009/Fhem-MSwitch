@@ -1,4 +1,4 @@
 Version
-5.15
-Fix test comand
+5.16
+fix state - add setmagic conditions
 
