@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.15';  				# version
+my $version      = '5.16';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -925,7 +925,7 @@ sub MSwitch_LoadHelper($) {
         $hash->{helper}{config} = "no_config";
         readingsBeginUpdate($hash);
         readingsBulkUpdate( $hash, ".V_Check", $vupdate );
-        readingsBulkUpdate( $hash, "state",    'active' );
+###        readingsBulkUpdate( $hash, "state",    'active' );
         if ( defined $ctrigg && $ctrigg ne '' ) 
 		{
             readingsBulkUpdate( $hash, ".Device_Events", $ctrigg );
@@ -1083,6 +1083,17 @@ sub MSwitch_LoadHelper($) {
 	{
       $hash->{NOTIFYDEV} = 'no_trigger';
     }
+	
+	 if ( AttrVal( $Name, 'MSwitch_Mode', "" ) eq 'Notify' ) 
+	{
+		
+		#if ( ReadingsVal( $Name, 'state', 'undef' ) ne "inactive" )
+		
+		#{
+   ### # readingsSingleUpdate( $hash, "state", "active", 0 );
+		#}
+    }
+	
 	
 	
 	
@@ -3684,7 +3695,7 @@ if (defined $aVal && $aVal ne "" && $aName eq 'MSwitch_Debug')
             $hash->{NOTIFYDEV} = $name;
         }
 		
-		readingsSingleUpdate( $hash, "state", '???', 1 );
+###		readingsSingleUpdate( $hash, "state", '???', 1 );
 		return;
     }
 
@@ -3879,7 +3890,7 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 			my $errors = AnalyzeCommandChain( undef, $cs );
 			if ( defined($errors) ) {MSwitch_LOG( $name, 1,"$name MSwitch_Notify: Fehler bei Befehlsausführung $errors -> Comand: $_ ". __LINE__ );}
 			setDevAttrList( $name, $attrresetlist );
-			readingsSingleUpdate( $hash, "state", "active", 1 );
+###			readingsSingleUpdate( $hash, "state", "active", 1 );
 			$hash->{MODEL}     = 'Notify' . " " . $version;
 			setDevAttrList( $name, $attrresetlist );
 			if ($init_done) 
@@ -3976,7 +3987,7 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 				$hash->{NOTIFYDEV} = $name;
 			}
 			
-			readingsSingleUpdate( $hash, "state", '???', 1 );
+###			readingsSingleUpdate( $hash, "state", '???', 1 );
 			return;
         }
 
@@ -4327,7 +4338,7 @@ if ( grep( m/EVENT|EVTFULL|writelog|last_exec_cmd|EVTPART.*/, @{$events} ) )
             readingsBulkUpdate( $own_hash, ".Trigger_on",     "no_trigger", 1 );
             readingsBulkUpdate( $own_hash, ".Trigger_device",  "no_trigger", 1 );
             readingsBulkUpdate( $own_hash, ".Trigger_log",     "off",        1 );
-            readingsBulkUpdate( $own_hash, "state",           "active",     1 );
+###            readingsBulkUpdate( $own_hash, "state",           "active",     1 );
             readingsBulkUpdate( $own_hash, ".V_Check",        $vupdate,     1 );
             readingsBulkUpdate( $own_hash, ".First_init",     'done' );
             readingsEndUpdate( $own_hash, 0 );
@@ -4609,117 +4620,140 @@ if ($akttime - ($starttime+60) < 0)
 
 # teste eventpaket auf vorkommen voj gesetzten events
 
-if ( $triggerlog ne 'on' && ReadingsVal( $ownName, '.Distributor', '0' ) eq "0" ){
-#if (  ReadingsVal( $ownName, '.Distributor', '0' ) eq "0" ){
 
 
-my $trigon0 = (split (/:/,$triggeron))[0];
-my $trigoff0 = (split (/:/,$triggeroff  ))[0];
-my $trigcmdon0 = (split (/:/,$triggercmdon))[0];
-my $trigcmdoff0 = (split (/:/,$triggercmdoff ))[0];
+# if ( $triggerlog ne 'on' && ReadingsVal( $ownName, '.Distributor', '0' ) eq "0" )
+# {
+# #if (  ReadingsVal( $ownName, '.Distributor', '0' ) eq "0" ){
 
-my $trigon = (split (/:/,$triggeron))[1];
-my $trigoff = (split (/:/,$triggeroff  ))[1];
-my $trigcmdon = (split (/:/,$triggercmdon))[1];
-my $trigcmdoff = (split (/:/,$triggercmdoff ))[1];
+# # MSwitch_LOG( $ownName, 6, "### ON |$triggeron" );
+# # MSwitch_LOG( $ownName, 6, "### OFF |$triggeroff" );
+# # MSwitch_LOG( $ownName, 6, "### CMDON |$triggercmdon" );
+# # MSwitch_LOG( $ownName, 6, "### CMDOFF |$triggercmdoff" );
 
-$trigon0 = "" if !defined $trigon0;
-$trigoff0 = "" if !defined $trigoff0;
-$trigcmdon0 = "" if !defined $trigcmdon0;
-$trigcmdoff0 = "" if !defined $trigcmdoff0;
+# # if ( $triggercmdon.$triggercmdoff.$triggeron.$triggeroff =~ m/\(|\)/ ) 
+		# # {
+# # MSwitch_LOG( $ownName, 6, "### KLAMMER FOUND" );
+# # MSwitch_LOG( $ownName, 0, "### KLAMMER FOUND" );
+		# # }else{
+		
 
-$trigon = ".*" if $trigon0 eq ".*";
-$trigoff = ".*" if $trigoff0 eq ".*";
-$trigcmdon = ".*" if $trigcmdon0 eq ".*";
-$trigcmdoff = ".*" if $trigcmdoff0 eq ".*";
-
-$trigon0 = "" if $trigon0 eq ".*";
-$trigoff0 = "" if $trigoff0 eq ".*";
-$trigcmdon0 = "" if $trigcmdon0 eq ".*";
-$trigcmdoff0 = "" if $trigcmdoff0 eq ".*";
+# # MSwitch_LOG( $ownName, 6, "###NO KLAMMER FOUND" );
+# # MSwitch_LOG( $ownName, 0, "###NO KLAMMER FOUND" );
 
 
 
-$trigon = "" if !defined $trigon;
-$trigoff = "" if !defined $trigoff;
-$trigcmdon = "" if !defined $trigcmdon;
-$trigcmdoff = "" if !defined $trigcmdoff;
+# my $trigon0 = (split (/:/,$triggeron))[0];
+# my $trigoff0 = (split (/:/,$triggeroff  ))[0];
+# my $trigcmdon0 = (split (/:/,$triggercmdon))[0];
+# my $trigcmdoff0 = (split (/:/,$triggercmdoff ))[0];
+
+# my $trigon = (split (/:/,$triggeron))[1];
+# my $trigoff = (split (/:/,$triggeroff  ))[1];
+# my $trigcmdon = (split (/:/,$triggercmdon))[1];
+# my $trigcmdoff = (split (/:/,$triggercmdoff ))[1];
+
+# $trigon0 = "" if !defined $trigon0;
+# $trigoff0 = "" if !defined $trigoff0;
+# $trigcmdon0 = "" if !defined $trigcmdon0;
+# $trigcmdoff0 = "" if !defined $trigcmdoff0;
+
+# $trigon = ".*" if $trigon0 eq ".*";
+# $trigoff = ".*" if $trigoff0 eq ".*";
+# $trigcmdon = ".*" if $trigcmdon0 eq ".*";
+# $trigcmdoff = ".*" if $trigcmdoff0 eq ".*";
+
+# $trigon0 = "" if $trigon0 eq ".*";
+# $trigoff0 = "" if $trigoff0 eq ".*";
+# $trigcmdon0 = "" if $trigcmdon0 eq ".*";
+# $trigcmdoff0 = "" if $trigcmdoff0 eq ".*";
 
 
-my $string ="(";
- $string .="|$trigon0|$trigon" if $trigon0 ne "no_trigger";
- $string .="|$trigoff0|$trigoff" if $trigoff0 ne "no_trigger";
- $string .="|$trigcmdon0|$trigcmdon" if $trigcmdon0 ne "no_trigger";
- $string .="|$trigcmdoff0|$trigcmdoff" if $trigcmdoff ne "no_trigger";
- $string .=")";
+
+# $trigon = "" if !defined $trigon;
+# $trigoff = "" if !defined $trigoff;
+# $trigcmdon = "" if !defined $trigcmdon;
+# $trigcmdoff = "" if !defined $trigcmdoff;
+
+
+# my $string ="(";
+ # $string .="|$trigon0|$trigon" if $trigon0 ne "no_trigger";
+ # $string .="|$trigoff0|$trigoff" if $trigoff0 ne "no_trigger";
+ # $string .="|$trigcmdon0|$trigcmdon" if $trigcmdon0 ne "no_trigger";
+ # $string .="|$trigcmdoff0|$trigcmdoff" if $trigcmdoff ne "no_trigger";
+ # $string .=")";
  
 
-$string =~ s/\|+/|/g;
-$string =~ s/\|\)/)/g;
-$string =~ s/\(\|/(/g;
+# MSwitch_LOG( $ownName, 6, "### GREPFILTER |$trigcmdon0|$trigcmdon" );
+# MSwitch_LOG( $ownName, 6, "### GREPFILTER |$trigcmdoff0|$trigcmdoff" );
+
+# MSwitch_LOG( $ownName, 6, "### GREPFILTER $ownName -> Firststring -> $string" );
 
 
-# MSwitch_LOG( $ownName, 0, "### GREPFILTER $ownName -> Firststring -> $string" );
+# $string =~ s/\|+/|/g;
+# $string =~ s/\|\)/)/g;
+# $string =~ s/\(\|/(/g;
 
 
-
-$string =~ s/\(\*/(.*/g;
-$string =~ s/\|\*/|.*/g;
-
-#$string =~ s//(?:.\|\s?)+/.*/g;
-
-# MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
-#shift $string;
+# # MSwitch_LOG( $ownName, 0, "### GREPFILTER $ownName -> Firststring -> $string" );
 
 
 
+# $string =~ s/\(\*/(.*/g;
+# $string =~ s/\|\*/|.*/g;
+
+# #$string =~ s//(?:.\|\s?)+/.*/g;
+
+# # MSwitch_LOG( $ownName, 6, "### GREPFILTER -> Firststring -> $string" );
+# #shift $string;
 
 
-#$string =~ s/\(\*/(.*/g;
- #MSwitch_LOG( $ownName, 0, "### GREPFILTER $ownName -> Firststring -> $string" );
-if ($string eq "()"){
-$own_hash->{helper}{statistics}{notifyloop_blocked_from_grep}++ if $statistic ==1; #statistik
-MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $string ->@eventscopy" );
-		return;
+
+
+
+# #$string =~ s/\(\*/(.*/g;
+# MSwitch_LOG( $ownName, 6, "### GREPFILTER $ownName -> Finalstring -> $string" );
+# if ($string eq "()"){
+# $own_hash->{helper}{statistics}{notifyloop_blocked_from_grep}++ if $statistic ==1; #statistik
+# MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nosearchstring -> Abbruch -> $string ->@eventscopy" );
+		# return;
 	
-}
+# }
 
 
-if (1 == 2){
+# if (1 == 2){
 
-#if ( grep( m/$string/, @{$events} ) )
-if (my @grep= grep( m/$string/, @eventscopy )  )
-	{
-		MSwitch_LOG( $ownName, 6, "### GREPFILTER -> foundstring  -> -$string- ->@eventscopy" );
-		#MSwitch_LOG( $ownName, 6, "### @grep" );
-		#MSwitch_LOG( $ownName, 6, "### @eventscopy" );	
-		#MSwitch_LOG( $ownName, 6, @grep );
-		#MSwitch_LOG( $ownName, 6, @eventscopy );
+# #if ( grep( m/$string/, @{$events} ) )
+# if (my @grep=eval( grep( m/$string/, @eventscopy) )  )
+	# {
+		# MSwitch_LOG( $ownName, 6, "### GREPFILTER -> foundstring  -> -$string- ->@eventscopy" );
+		# #MSwitch_LOG( $ownName, 6, "### @grep" );
+		# #MSwitch_LOG( $ownName, 6, "### @eventscopy" );	
+		# #MSwitch_LOG( $ownName, 6, @grep );
+		# #MSwitch_LOG( $ownName, 6, @eventscopy );
 		
 	
+		# my $sorted = @eventscopy - @grep;
+		# #MSwitch_LOG( $ownName, 6, "sorted $sorted" );
 		
+		# @eventscopy =@grep;
 		
-		my $sorted = @eventscopy - @grep;
-		#MSwitch_LOG( $ownName, 6, "sorted $sorted" );
+		# $own_hash->{helper}{statistics}{sortout_from_grep}=$own_hash->{helper}{statistics}{sortout_from_grep}+$sorted if $statistic ==1; #statistik
 		
-		@eventscopy =@grep;
+	# }
+	# else
+	# {
+		# MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nofoundstring -> Abbruch -> $string ->@eventscopy" );
 		
-		$own_hash->{helper}{statistics}{sortout_from_grep}=$own_hash->{helper}{statistics}{sortout_from_grep}+$sorted if $statistic ==1; #statistik
+		# $own_hash->{helper}{statistics}{notifyloop_blocked_from_grep}++ if $statistic ==1; #statistik
 		
-		
-		
-	}
-	else
-	{
-		MSwitch_LOG( $ownName, 6, "### GREPFILTER -> nofoundstring -> Abbruch -> $string ->@eventscopy" );
-		
-		$own_hash->{helper}{statistics}{notifyloop_blocked_from_grep}++ if $statistic ==1; #statistik
-		
-		return;
-	}
+		# return;
+	# }
 	
-}
-}
+# }
+# }
+
+# #}
 ###############################
 
 # notifyloop_incomming
@@ -5162,7 +5196,7 @@ $own_hash->{helper}{statistics}{eventloop}{unused}{$statevent}++ if $statistic =
             if ( $devicemode eq "Notify" and $activecount == 0 )
 			{
                 # reading activity aktualisieren
-                readingsSingleUpdate( $own_hash, "state",'active', $showevents )if ReadingsVal( $ownName, 'state', '0' ) eq "active";
+          ###      readingsSingleUpdate( $own_hash, "state",'active', $showevents )if ReadingsVal( $ownName, 'state', '0' ) eq "active";
                 $activecount = 1;
             }
 		
@@ -10201,6 +10235,9 @@ $condition= MSwitch_change_snippet($hash,$condition);
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
 
+   # MSwitch_LOG( $name, 6, "Bedingungsprüfung Bedingung: $condition ");
+
+
 #################################
     # readingsfunction
 ############# ersetze funktionsstring durch readingsstring
@@ -10246,6 +10283,11 @@ $condition= MSwitch_change_snippet($hash,$condition);
     # $condition
     # perlersetzung
 ##############
+
+
+	#MSwitch_LOG( $name, 6, "Bedingungsprüfung3 Bedingung: $condition ");
+
+
     my $x     = 0;
     my $field = "";
     my $SELF  = $name;
@@ -10333,6 +10375,10 @@ $condition= MSwitch_change_snippet($hash,$condition);
         return "false";
     }
 
+	#MSwitch_LOG( $name, 6, "Bedingungsprüfung5 Bedingung: $condition ");
+
+
+
     my $arraycount = '0';
     my $finalstring;
     my $answer;
@@ -10351,6 +10397,12 @@ $condition= MSwitch_change_snippet($hash,$condition);
     my @perlarray;
     ### perlteile trennen
     #######################
+	
+	
+	
+	
+	
+	
 	my $evtfull=$hash->{helper}{evtparts}{evtfull};
 	 $event=$hash->{helper}{evtparts}{event};
 	my $evtparts1=$hash->{helper}{evtparts}{evtpart1};
@@ -10359,6 +10411,15 @@ $condition= MSwitch_change_snippet($hash,$condition);
 	
     my $evtcmd1 = ReadingsVal( $name, 'EVT_CMD1_COUNT', '0' );
     my $evtcmd2 = ReadingsVal( $name, 'EVT_CMD2_COUNT', '0' );
+	
+	
+	
+	
+		MSwitch_LOG( $name, 6,"### SUB_checkcondition - EVENT $event###");
+
+	
+	
+	
 	
 	$condition =~ s/\:\$EVENT/:$event/ig;
     $condition =~ s/\:\$EVTFULL/:$evtfull/ig;
@@ -10381,6 +10442,10 @@ $condition= MSwitch_change_snippet($hash,$condition);
     $condition =~ s/{sunrise\(\)}/{ sunrise\(\) }/ig;
 
     $x = 0;
+	
+
+	
+	
     while ( $condition =~ m/(.*?)(\$NAME)(.*)?/ )
 	{
         my $firstpart  = $1;
@@ -11260,6 +11325,66 @@ sub MSwitch_Execute_Timer($) {
         MSwitch_Createtimer($hash);
         return;
     }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	    my $extime = POSIX::strftime( "%H:%M", localtime );
+    readingsBeginUpdate($hash);
+    readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents);
+    readingsBulkUpdate( $hash, "EVTFULL", $Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents);
+    readingsBulkUpdate( $hash, "EVTPART1", $Name ,$showevents);
+    readingsBulkUpdate( $hash, "EVTPART2", "execute_timer_P" . $param ,$showevents);
+    readingsBulkUpdate( $hash, "EVTPART3", $extime ,$showevents );
+    readingsEndUpdate( $hash, $showevents );
+
+
+    MSwitch_LOG( $Name, 6,"ausführung Timer: setze event L:" . __LINE__ );
+
+
+	$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;;
+	$hash->{helper}{evtparts}{event}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
+	$hash->{helper}{evtparts}{evtpart1}=$Name;
+	$hash->{helper}{evtparts}{evtpart2}="execute_timer_P" . $param;
+	$hash->{helper}{evtparts}{evtpart3}=$extime ;
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
     if ( AttrVal( $Name, 'MSwitch_Condition_Time', "0" ) eq '1' )
 	{
         my $triggercondition = ReadingsVal( $Name, '.Trigger_condition', '' );
@@ -11324,14 +11449,11 @@ sub MSwitch_Execute_Timer($) {
 	}
 	##############################################################
 	
-    my $extime = POSIX::strftime( "%H:%M", localtime );
-    readingsBeginUpdate($hash);
-    readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents);
-    readingsBulkUpdate( $hash, "EVTFULL", $Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents);
-    readingsBulkUpdate( $hash, "EVTPART1", $Name ,$showevents);
-    readingsBulkUpdate( $hash, "EVTPART2", "execute_timer_P" . $param ,$showevents);
-    readingsBulkUpdate( $hash, "EVTPART3", $extime ,$showevents );
-    readingsEndUpdate( $hash, $showevents );
+####################
+
+
+
+
 
     if ( $param eq '1' )
 	{
@@ -11716,9 +11838,78 @@ sub MSwitch_checktrigger_new(@) {
 	MSwitch_LOG( $ownName, 6,"start triggerfeld: $triggerfield  L:" . __LINE__ );
 
 # trigger enthält bedingung
+
+
+
+		if  ($triggerfield =~ m/(.*)\[(.*)(\[.*?\])/ )
+		{
+			
+			
+			
+			MSwitch_LOG( $ownName, 6,"found s1: $1  L:" . __LINE__ );
+			
+			MSwitch_LOG( $ownName, 6,"found s2: $2  L:" . __LINE__ );
+			
+			
+			my $begin =$1;
+			my $start =$2;
+			my $setmagic=$3;
+			my $workmagic =  $3;
+			
+			$workmagic =~ s/\$SELF/$ownName/;
+			$workmagic =~ s/.$//;
+			$workmagic =~ s/^.//;
+			MSwitch_LOG( $ownName, 6,"found setmagic: $setmagic  L:" . __LINE__ );
+			MSwitch_LOG( $ownName, 6,"found workmagic: $workmagic  L:" . __LINE__ );
+
+			my ($device,$reading) = split (/:/,$workmagic);
+			my $magicinhalt= ReadingsVal( $device, $reading, 0 );
+			MSwitch_LOG( $ownName, 6,"magicinhalt: $magicinhalt  L:" . __LINE__ );
+			
+			
+			
+			$triggerfield = $begin."[".$start.$magicinhalt."]";
+			
+			MSwitch_LOG( $ownName, 6,"found triggerfield out: $triggerfield  L:" . __LINE__ );
+			
+		}
+
+
+
+
+
+
+
+
+
 	if ( $triggerfield =~ m/(.*)\[(.*)\]/ )
 	{
+		
+		
+		
+		# suche setmagic
+		
+		
+		
+		
+		        # $x = 0;
+        # while ( $devicedetails{ $device . '_repeattime' } =~ m/\[(.*)\:(.*)\]/ )
+        # {
+            # $x++;               # notausstieg notausstieg
+            # last if $x > 20;    # notausstieg notausstieg
+            # my $setmagic = ReadingsVal( $1, $2, 0 );
+            # $devicedetails{ $device . '_repeattime' } = $setmagic;
+        # }
+		
+		
+		
+		
 		MSwitch_LOG( $ownName, 6,"Zsatzbedingung gefunden: $triggerfield  L:" . __LINE__ );
+		
+
+		
+		
+		
 		my $eventpart =$1;
 		my $eventbedingung = $2;
 		my $eventparts = $own_hash->{helper}{evtparts}{parts};
