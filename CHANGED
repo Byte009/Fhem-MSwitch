@@ -1,4 +1,8 @@
 Version
+5.17
+add dynamic attr Mswitch_wait
+
+Version
 5.16
 fix state - add setmagic conditions
 
