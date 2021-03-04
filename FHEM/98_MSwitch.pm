@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.16';  				# version
+my $version      = '5.17';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -4391,6 +4391,13 @@ if ( grep( m/EVENT|EVTFULL|writelog|last_exec_cmd|EVTPART.*/, @{$events} ) )
 	my $activecount = 0;
     my $anzahl;
 	my $mswait			= AttrVal( $ownName, "MSwitch_Wait", 0 );
+	
+	
+	#MSwitch_LOG( $ownName, 6," !!!!!! $ownName-> Wait auf $mswait gesetzt L:" . __LINE__ );
+	$mswait = MSwitch_check_setmagic_i($own_hash,$mswait);
+	#MSwitch_LOG( $ownName, 6," !!!!!! $ownName-> Wait auf $mswait gesetzt L:" . __LINE__ );
+
+	
     my $showevents     	= AttrVal( $ownName, "MSwitch_generate_Events", 0 );
 	if (AttrVal( $ownName, 'MSwitch_Debug', '0' ) ne "0" ){$showevents = 1};
 	
@@ -4993,7 +5000,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 				{
                     delete( $own_hash->{helper}{sequenz}{$x} );
                     MSwitch_LOG( $ownName, 6, "Sequenz $x gefunden " );
-                    readingsSingleUpdate( $own_hash, "SEQUENCE", 'match',$showevents );
+                    readingsSingleUpdate( $own_hash, "SEQUENCE", 'match',1);
                     readingsSingleUpdate( $own_hash, "SEQUENCE_Number", $x, $showevents );
                     last SEQ;
                 }
@@ -5001,7 +5008,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 				{
                     if ( ReadingsVal( $ownName, "SEQUENCE", 'undef' ) eq "match" )
                         {
-                            readingsSingleUpdate( $own_hash, "SEQUENCE",'no_match', $showevents );
+                            readingsSingleUpdate( $own_hash, "SEQUENCE",'no_match', 1 );
                         }
                     if ( ReadingsVal( $ownName, "SEQUENCE_Number", 'undef' )ne "0" )
                         {
@@ -5224,8 +5231,18 @@ $own_hash->{helper}{statistics}{eventloop}{unused}{$statevent}++ if $statistic =
 #################################################
 # abfrage und setzten von blocking
 # schalte blocking an , wenn anzahl grösser 0 und MSwitch_Wait gesetzt
+
+
+
         if (($foundcmd1 eq "1"  || $foundcmd2 eq "1") && $mswait > 0 )
 			{
+				
+				
+			MSwitch_LOG( $ownName, 6," !!!!!! $ownName-> Wait auf $mswait gesetzt L:" . __LINE__ );
+
+				
+				
+				
                 readingsSingleUpdate( $own_hash, "waiting", ( time + $mswait ),0 );
             }
 # abfrage und setzten von blocking ENDE
@@ -5996,6 +6013,37 @@ MSwitch_defineWidgets($hash);
         $system =~ s/\[tr\]/#[tr]/g;
 		
 		###############################
+		
+		
+		if ( $system =~ m/\[Reading:(.*?)\]/s ) 
+		{
+			
+			my $count =0;
+			while ( $system =~ m/\[Reading:(.*?)\]/s ) 
+			{				
+				$count++;
+				last if $count >20;
+				my $argumente ;
+				my $orgwidget = $1;
+				my @args = (split/:/,$1,2);
+				my $reading =$args[0];
+				my $current = ReadingsVal( $Name, $reading, 'undef' );
+			
+				
+				my $widget ="<span class=\"dval\" informid=\"Lueftungskontrolle-$reading\">$current</span>";
+				
+				
+				
+				#
+				
+				
+				$system =~ s/\[Reading:$orgwidget\]/$widget/g;		
+			}	
+			
+			
+		}
+		
+		
 		
 		if ( $system =~ m/\[Widget:(.*?)\]/s ) 
 		{
@@ -10443,7 +10491,7 @@ $condition= MSwitch_change_snippet($hash,$condition);
 
     $x = 0;
 	
-
+#\[DAY\]
 	
 	
     while ( $condition =~ m/(.*?)(\$NAME)(.*)?/ )
@@ -10455,7 +10503,12 @@ $condition= MSwitch_change_snippet($hash,$condition);
         $x++;
         last if $x > 10;    #notausstieg
     }
+MSwitch_LOG( $name, 6, "############# $condition" . __LINE__ );
 
+
+
+
+## kürzer schreiben
     $x = 0;
     while ( $condition =~ m/(.*?)(\$SELF)(.*)?/ )
 	{
@@ -10466,6 +10519,8 @@ $condition= MSwitch_change_snippet($hash,$condition);
         $x++;
         last if $x > 10;    #notausstieg
     }
+
+MSwitch_LOG( $name, 6, "############# $condition" . __LINE__ );
 
     my $searchstring;
     $x = 0;
@@ -10542,6 +10597,11 @@ $condition= MSwitch_change_snippet($hash,$condition);
     $part3      = '';
     $lenght     = '';
 
+
+MSwitch_LOG( $name, 6, "############# $condition" . __LINE__ );
+
+
+
     ## verursacht fehlerkennung bei angabe von regex [a-zA-Z]
 	ARGUMENT: for ( $i = 0 ; $i <= 10 ; $i++ )
 	{
@@ -10614,7 +10674,7 @@ $condition= MSwitch_change_snippet($hash,$condition);
 
 	my $ret;
 	{
-		no warnings;
+		#no warnings;
 		$ret = eval $finalstring;
 	}
 
@@ -13800,6 +13860,9 @@ sub MSwitch_check_setmagic_i($$) {
 
     # setmagic ersetzung
 
+
+ $msg =~ s/\$SELF/$name/;
+
     my $x = 0;
     while ( $msg =~ m/(.*)\[(.*)\:(.*)\:i\](.*)/ ) {
         $x++;    # notausstieg notausstieg
@@ -13814,6 +13877,17 @@ sub MSwitch_check_setmagic_i($$) {
         my $setmagic = ReadingsNum( $2, $3, 0 );
         $msg = $1 . $setmagic . $4;
     }
+	
+	
+	  
+    if ( $msg =~ m/\[(.*)\:(.*)\]/ ) {
+      
+        my $setmagic = ReadingsVal( $1, $2, 0 );
+        $msg =  $setmagic ;
+    }
+	
+	
+	
     return $msg;
 }
 
