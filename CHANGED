@@ -1,4 +1,8 @@
 Version
+5.18
+add to TIMER CDAY,lastday 
+
+Version
 5.17
 add dynamic attr Mswitch_wait
 
