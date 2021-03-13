@@ -486,8 +486,9 @@ Befehle werden nur in den angegebenen Kalenderwochen ausgeführt
 CMONTH=1,2,3,4,5,6,7,8,9,10,11,12
 Befehle werden nur in angegebenen Kalendermonaten ausgeführt
 
-CDAY=1,2,3  (1-31)
-Befehle werden nur an angegebenen Kalendertagen ausgeführt
+CDAY=1,2,3,lastday  (1-31,lastday)
+Befehle werden nur an angegebenen Kalendertagen ausgeführt.
+Die Option lastday führt den Schaltvorgang am letzten tag eines Monats aus.
 
 DATE=10.10.2020
 Befehle werden nur zu angegebenem Datum ausgeführt 
