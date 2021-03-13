@@ -1011,10 +1011,233 @@ if(typeof fromsc == 'undefined'){
 	targetval =document.getElementById(targetid).value;
 	targetval = targetval.replace(/\u2424/g,'\n');
 	sel ='<div style="white-space:nowrap;"><br>';
-	sel = sel+'<textarea id="valtrans" cols="80" name="TextArea1" rows="10" onChange="bigwindowformat(\''+targetid+'\',\''+fromsc+'\')">'+targetval+'</textarea>';
+	sel = sel+'<textarea id="valtrans" cols="130" name="TextArea1" rows="10" onChange="bigwindowformat(\''+targetid+'\',\''+fromsc+'\')">'+targetval+'</textarea>';
 	sel = sel+'</div>';
+	
+	if (FUTURELEVEL == "1"){
+	sel = sel+'<table id="t1" width="100%">';
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>Verfügbare Variablen und Ausdrücke <input type="button" value="show" onclick="javascript: showvars()"></td>';
+	sel = sel+'</tr>';
+	sel = sel+'</table>';
+	
+	sel = sel+'<table id="t2" width="100%" style="display:none">';
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>Verfügbare Variablen und Ausdrücke <input type="button" value="hide" onclick="javascript: hidevars()"></td>';
+	sel = sel+'</tr>';
+	sel = sel+'</table>';
+	
+sel = sel+'<table  id="vars" border ="0" width="100%" style="display:none">';
+sel = sel+'<tr>';
+sel = sel+'<td>';
+	
+	
+	
+	
+	sel = sel+'<table border ="1">';
+
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$we / !\$we </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>nur an Wochenenden / Wochentagen</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>isday / !isday </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Tag / nicht Tag</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$year </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Jahr</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr >';
+	sel = sel+'<td><small>\$month </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Monat (1-12)</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$day </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Tag des Monats (1-30/31)</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$wday </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Wochentag (1-7)</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$yday </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Kalendertag (1-356)</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$hms </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>aktuelle Zeit (hh:mm:ss)</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\$SELF </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>enthält den eigenen Namen</td>';
+	sel = sel+'</tr>';
+	
+	
+	
+	sel = sel+'</table>';
+
+sel = sel+'</td>';
+sel = sel+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
+sel = sel+'<td>';
+
+
+	sel = sel+'<table border ="1">';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>[HH:MM-HH:MM] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>schaltet nur in angegebenem Zeitraum</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>[HH:MM-HH:MM|1234567] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>schaltet nur in angegebenem Zeitraum an agegebenen Tagen</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>[!HH:MM-HH:MM] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>schaltet nur ausserhalb des angegebenem Zeitraumes</td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'</table>';
+	
+	
+	sel = sel+'<br>';
+	
+	sel = sel+'<table border ="1">';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>$EVENT</td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Enthält das zuletzt eingegangene Event </td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>$EVTFULL</td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Enthält das zuletzt eingegangene Event </td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>$EVTPART* (1,2,3)</td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Enthält entsprechende Teile des zuletzt eingegangenen Events </td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td nowrap><small>[EV(ENT/TFULL/TPART1,2,3):h*]</td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small>Enthält historisch eingegangene Events * -> Nummer, 0 ist das letzte Event </td>';
+	sel = sel+'</tr>';
+	
+	sel = sel+'</table>';
+	
+	
+	
+	
+	
+	
+
+sel = sel+'</td>';
+sel = sel+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
+sel = sel+'<td>';
+
+	sel = sel+'<table border ="1">';
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[Device:Reading\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> liefert Inhalt eines Readings</td>';
+	sel = sel+'</tr>';	
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[Device:Reading:d\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> liefert numerischen Inhalt eines Readings</td>';
+	sel = sel+'</tr>';	
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[ReadingsVal:Device:Reading:Standart\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> Zugriff auf Reading</td>';
+	sel = sel+'</tr>';	
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[ReadingsNum:Device:Reading:Standart\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> Zugriff auf Reading (numerisch)</td>';
+	sel = sel+'</tr>';	
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[ReadingsAge:Device:Reading:Standart\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> Zugriff auf Readingsalter</td>';
+	sel = sel+'</tr>';	
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[AttrVal:Device:Attr:Standart\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> Zugriff auf Attribut</td>';
+	sel = sel+'</tr>';	
+	
+	sel = sel+'<tr>';
+	sel = sel+'<td><small>\[InternalVal:Device:Reading:Standart\] </td>';
+	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
+	sel = sel+'<td><small> Zugriff auf Internal</td>';
+	sel = sel+'</tr>';	
+	
+	
+	sel = sel+'</table>';
+
+
+sel = sel+'</td>';
+sel = sel+'</tr>';
+sel = sel+'</table>';	
+	
+	}
+
+	
+	
+	
 	FW_okDialog(sel,''); 
 	}	
+
+
+function showvars(){
+
+$("#vars").css("display","block");
+$("#t1").css("display","none");
+$("#t2").css("display","block");
+return;
+}
+
+function hidevars(){
+
+$("#vars").css("display","none");
+$("#t1").css("display","block");
+$("#t2").css("display","none");
+return;
+}
 
 function bigwindowformat(targetid,fromsc){
 	if (debug == 'on'){ alert('bigwindowformat') };

@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V5.1';
+	var version = 'V5.2';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1489,6 +1489,7 @@ if (cmdsatz[0] == "ATTR"){
 		}
 
 		if (befehl == "SELECT"){
+		
 			var toset = cmdsatz[1];
 			var text = cmdsatz[2];
 			selectinput(text,toset,newtemplate,typ);
@@ -1882,6 +1883,13 @@ var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
+
+//out+="<br>"+text+"<br>";
+//out+="<br>"+toset+"<br>";
+//out+="<br>"+newtemplate+"<br>";
+//out+="<br>"+typ+"<br>";
+
+
 	if (typ =="S")
 	{
 		if(toset == "Device_to_switch")
@@ -1890,6 +1898,7 @@ out+="<br>&nbsp;<br>";
 		}
 		else if(toset == "comand_cmd1" || toset == "comand_cmd2")
 		{
+			// ##############################
 			selectlist =cmdselect(text,toset,newtemplate,typ)
 			out+=selectlist;
 			out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: cmdselectok(\""+toset+"\",\""+typ+"\")'>";
@@ -1897,6 +1906,9 @@ out+="<br>&nbsp;<br>";
 			out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 			document.getElementById('importTemplate1').innerHTML = out;
 			return;
+			
+			
+			// ###############################
 		}
 		else
 		{
@@ -2304,6 +2316,8 @@ function makecmdhashtemp(line){
 	if (line === undefined){
 		return;
 	}
+	
+	
 	var retoption = '<select id =\"comand\" name=\"\" onchange=\"javascript: selectcmdoptionstemp(this.value)\">';
 	retoption +='<option selected value=\"0\">Befehl wählen</option>';
 	
@@ -2322,6 +2336,13 @@ function makecmdhashtemp(line){
 		}
 	retoption +='</select>';
 	var arraysetskeys = Object.keys(sets);
+	
+	
+	
+	
+	
+	
+	
 	return retoption;
 }
 
@@ -2329,8 +2350,16 @@ function makecmdhashtemp(line){
 
 function selectcmdoptionstemp(inhalt){
 	
+	
+	//alert("erstelle  params ");
+	
 	document.getElementById('setcmd1temp').innerHTML ='';
 	// wenn undefined textfeld erzeugen
+	
+	
+	
+	///alert(sets[inhalt] );
+	
 	if (sets[inhalt] == 'noArg'){ return;}
 	// wenn noarg befehl übernehmen
 	if (sets[inhalt] === undefined){ 
@@ -2339,28 +2368,46 @@ function selectcmdoptionstemp(inhalt){
 	return;
 	}
 	
-	if (inhalt == "rgb"){
-	retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"'+PREASSIGMENT+'\">&nbsp;';
-	document.getElementById('setcmd1temp').innerHTML = retoption1;
-	return;
+	// if (inhalt == "rgb"){
+	// retoption1 = '<input name=\"\" id=\"comand1\" type=\"text\" value=\"'+PREASSIGMENT+'\">&nbsp;';
+	// document.getElementById('setcmd1temp').innerHTML = retoption1;
+	// return;
 	
-	}
+	// }
 	
 	// wenn liste subcmd erzeugen
 	var retoption1;
-	retoption1 = '<select id =\"comand1\" name=\"\">';
-	retoption1 +='<option selected value=\"0\">Option wählen</option>';
-	
+
+
 	var cmdset1= new Array;
 	cmdset1= sets[inhalt].split(",");
 	console.log(cmdset1);
 	var anzahl = cmdset1.length;
+	
+		retoption1 = '<input style=\'background-color : #d1d1d1\' readonly name=\"\" id=\"comand1\" type=\"text\" value=\"'+PREASSIGMENT+'\"><br>&nbsp;<br>';
+		
+		retoption1 +="<div class='fhemWidget' cmd='wizardcont' reading='container' dev='"+devicename+"' arg='"+cmdset1+"' current='10'></div>";
+		
+		document.getElementById('setcmd1temp').innerHTML = retoption1;
+		
+		var r = $("head").attr("root");
+		if(r)
+		FW_root = r;
+		FW_replaceWidgets($("html"));
+		return;
+//	}
+	
+	// nicht genutzt
+	retoption1 = '<select id =\"comand1\" name=\"\">';
+	retoption1 +='<option selected value=\"0\">Option wählen</option>';
+	
 	for (i=0; i<anzahl; i++)
 		{
 		retoption1 +='<option value='+cmdset1[i]+'>'+cmdset1[i]+'</option>';
 		}
 	retoption1 +='</select>';
 	document.getElementById('setcmd1temp').innerHTML = retoption1;
+	return;
 }
 
 
@@ -2406,4 +2453,10 @@ function renewdevices(data,newtemplate,newcmd)
 	return;
 }
 
+// ##################################
+// erhält deten von fhem.pl über gesetzte widgets
+function setargument(argument){
+document.getElementById('comand1').value=argument;
+return;
+}
 
