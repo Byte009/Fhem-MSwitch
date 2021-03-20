@@ -18,9 +18,10 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '5.0';
+	var version = '5.1';
 	var info = '';
 	var debug ='off';
+	var datatarget ='undef';
 	
 //var innerset = $( "div[cmd='set']" ).html();
 //####################################################################################################
@@ -130,12 +131,210 @@ if (RENAME == 'on'){
 	$(r1).appendTo('.col1');
 }
 
+
+
 // quickedit anpassen
 if (QUICKEDIT == '0'){
 	$("#devices").prop("disabled", false);
 	document.getElementById('aw_great').value='schow greater list';
 	document.getElementById('lockedit').checked = false  ;
 	}
+	
+// definiere hilfe fürbigwindow
+
+	varinf = '<table id="t1" width="100%">';
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>Verfügbare Variablen und Ausdrücke <input type="button" value="show" onclick="javascript: showvars()"></td>';
+	varinf = varinf+'</tr>';
+	varinf = varinf+'</table>';
+	
+	varinf = varinf+'<table id="t2" width="100%" style="display:none">';
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>Verfügbare Variablen und Ausdrücke <input type="button" value="hide" onclick="javascript: hidevars()"></td>';
+	varinf = varinf+'</tr>';
+	varinf = varinf+'</table>';
+	
+varinf = varinf+'<table  id="vars" border ="0" width="100%" style="display:none">';
+varinf = varinf+'<tr>';
+varinf = varinf+'<td>';
+	
+	
+	
+	
+	varinf = varinf+'<table border ="1">';
+
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$we / !\$we </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>nur an Wochenenden / Wochentagen</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>isday / !isday </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Tag / nicht Tag</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$year </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Jahr</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr >';
+	varinf = varinf+'<td><small>\$month </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Monat (1-12)</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$day </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Tag des Monats (1-30/31)</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$wday </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Wochentag (1-7)</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$yday </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Kalendertag (1-356)</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$hms </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>aktuelle Zeit (hh:mm:ss)</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$SELF </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>enthält den eigenen Namen</td>';
+	varinf = varinf+'</tr>';
+	
+	
+	
+	varinf = varinf+'</table>';
+
+varinf = varinf+'</td>';
+varinf = varinf+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
+varinf = varinf+'<td>';
+
+
+	varinf = varinf+'<table border ="1">';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>[HH:MM-HH:MM] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>schaltet nur in angegebenem Zeitraum</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>[HH:MM-HH:MM|1234567] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>schaltet nur in angegebenem Zeitraum an agegebenen Tagen</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>[!HH:MM-HH:MM] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>schaltet nur ausserhalb des angegebenem Zeitraumes</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'</table>';
+	
+	
+	varinf = varinf+'<br>';
+	
+	varinf = varinf+'<table border ="1">';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>$EVENT</td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Enthält das zuletzt eingegangene Event </td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>$EVTFULL</td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Enthält das zuletzt eingegangene Event </td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>$EVTPART* (1,2,3)</td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Enthält entsprechende Teile des zuletzt eingegangenen Events </td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td nowrap><small>[EV(ENT/TFULL/TPART1,2,3):h*]</td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>Enthält historisch eingegangene Events * -> Nummer, 0 ist das letzte Event </td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'</table>';
+varinf = varinf+'</td>';
+varinf = varinf+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
+varinf = varinf+'<td>';
+
+	varinf = varinf+'<table border ="1">';
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[Device:Reading\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> liefert Inhalt eines Readings</td>';
+	varinf = varinf+'</tr>';	
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[Device:Reading:d\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> liefert numerischen Inhalt eines Readings</td>';
+	varinf = varinf+'</tr>';	
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[ReadingsVal:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> Zugriff auf Reading</td>';
+	varinf = varinf+'</tr>';	
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[ReadingsNum:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> Zugriff auf Reading (numerisch)</td>';
+	varinf = varinf+'</tr>';	
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[ReadingsAge:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> Zugriff auf Readingsalter</td>';
+	varinf = varinf+'</tr>';	
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[AttrVal:Device:Attr:Standart\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> Zugriff auf Attribut</td>';
+	varinf = varinf+'</tr>';	
+	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\[InternalVal:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small> Zugriff auf Internal</td>';
+	varinf = varinf+'</tr>';	
+	
+	
+	varinf = varinf+'</table>';
+
+
+	varinf = varinf+'</td>';
+	varinf = varinf+'</tr>';
+	varinf = varinf+'</table>';	
+
+
 	
 // devhelp ersetzen
 
@@ -147,6 +346,8 @@ $( "[class=\"detLink devSpecHelp\"]" ).html(r3);
 r4 = $('<br><div id="helptext">Hilfetext<\div>');
 $(r4).appendTo("#content");
 $("#helptext").css("display","none");
+
+
 
 // EXEC1   ##################################################
 	
@@ -676,6 +877,90 @@ function textfieldlong(copytofield,target)
 	}
 
 
+function setargument(argument1,argument2){
+document.getElementById(argument1).value=argument2;
+return;
+}
+
+
+
+function changeinput(argument1,argument3,argument4,argument5){
+
+	var argument2 = argument1+"_widget";
+	var selected =document.getElementById(argument3).value;
+	var myRegEx = new RegExp('\\[|\\$|{|\s');  
+	treffer = selected.match(myRegEx);
+	if (treffer !== null)
+	{
+		var sel ="";
+		
+		
+		if (LANGUAGE == "DE"){sel = "Anzeige des Widgets ist mit angegebenen Werten nicht möglich ";}
+		if (LANGUAGE == "EN"){sel = "The widget cannot be displayed with the specified values";}
+		
+		FW_okDialog(sel) ;
+		return;
+	}
+	
+	
+	
+var test = document.getElementById(argument1).style.display;
+var test1 = document.getElementById(argument2).style.display;
+var oldval = document.getElementById(argument3).value;
+var tofield = argument3+"_oldval";
+
+
+ if ( test1 == 'none'){
+	 
+	 activate(document.getElementById(argument5).value, argument1, argument4, argument3)
+	 
+ }
+ else{
+ $("#"+argument2+"").css("display","none");
+ }
+
+
+//textfeld wird an
+if ( test == 'none'){
+	
+	document.getElementById(tofield).value = oldval;
+	
+$("#"+argument1+"").css("display","table-cell");
+}
+else{
+$("#"+argument1+"").css("display","none");
+}
+
+return;
+}
+
+
+
+function makewidget(copytofield,target,werte){
+	
+	var selected =document.getElementById(copytofield).value;
+	
+	retoption1 ="<table border ='0'>";
+	retoption1 +="<tr>";
+	
+	retoption1 +="<td>";
+	retoption1 +="<div class='fhemWidget' type='set "+devicename+" wizardcont1 "+copytofield+" ' cmd='' reading='container' dev='' arg='"+werte+"' current='"+selected+"'></div>";
+	retoption1 +="</td>";
+	
+	retoption1 +="</tr>";
+	retoption1 +="</table>";
+
+	document.getElementById(target+"_widget").innerHTML = retoption1  + '';
+	
+	$("#"+target+"").css("display","none");
+
+	var datatarget =target;
+	
+	return;
+	
+}
+
+
 
 function textfield(copytofield,target)
 	{
@@ -683,12 +968,15 @@ function textfield(copytofield,target)
 		var selected =document.getElementById(copytofield).value;
 	
 		if (copytofield.indexOf('cmdonopt') != -1) {
-		var selectfield = "<input type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"     onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"  >"  ;
-		document.getElementById(target).innerHTML = selectfield + '<br>';	
+		var selectfield = "<input id='"+copytofield+"_oldval' type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"     onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"  >"  ;
+		document.getElementById(target).innerHTML = selectfield + '';
+
+		
 		}
-		else{
-		var selectfield = "<input type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\" onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\">"  ;
-		document.getElementById(target).innerHTML = selectfield + '<br>';
+		else
+		{
+		var selectfield = "<input id='"+copytofield+"_oldval'  type='text' size='30' value='" + selected +"' onfocus=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\" onchange=\"javascript: showtextfield(this.value,'" + copytofield + "','" + target + "')\"  >"  ;
+		document.getElementById(target).innerHTML = selectfield + '';
 		}
 		return;
 	}
@@ -723,6 +1011,9 @@ function activate(state,target,options,copytofield){
 	debug += 'target: '+target+'<br>';
 	debug += 'options: '+options+'<br>';
 	debug += 'copytofield: '+copytofield+'<br>';
+	
+
+	
 	var globaldetails3='undefined';
 	var x = document.getElementsByClassName('devdetails2');
     for (var i = 0; i < x.length; i++) 
@@ -746,8 +1037,18 @@ function activate(state,target,options,copytofield){
 		}
 	if (state == 'no_action')
 		{
+			
+	var but = target+"_but";
+	var widget = target+"_widget";
+
+	 $("#"+but+"").css("display","none");
+	 $("#"+widget+"").css("display","none");
 		return;
+		
 		}
+		
+		
+		
 	var optionarray = options.split(" ");
 	var werte = new Array();
 	for (var key in optionarray )
@@ -764,24 +1065,80 @@ function activate(state,target,options,copytofield){
 		{
 		werte[state]='textField';
 		}	
-	
 	devicecmd = werte[state].split(",");
+	if (devicecmd[0] == 'noArg'){noarg(target,copytofield);}
+	else if (devicecmd[0] == 'no_Action')
+	{
+		noaction();
+	}
+	
+	else if (devicecmd[0] == 'textfieldLong'){textfieldlong(copytofield,target);}
+	//else if (devicecmd[0] == 'select') {selectfield(werte[state],target,copytofield);}
+//	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);}
+/* 	else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);}
+	else if (devicecmd[0] == 'textField'){textfield(copytofield,target);}
+	else if (devicecmd[0] == 'colorpicker'){textfield(copytofield,target);}
+	else if (devicecmd[0] == 'RGB'){textfield(copytofield,target);}
+	 */
+	
+	else {textfield(copytofield,target);}
+	
+	if (webwidget == 1 && state != '[FREECMD]' && devicecmd[0] != "noArg" )
+	{
 
-	if (devicecmd[0] == 'noArg')
-		{
-		noarg(target,copytofield);
-		return;
-		}
+	var selected =document.getElementById(copytofield).value;
+	var myRegEx = new RegExp('\\[|\\$|{|\s');  
+	treffer = selected.match(myRegEx);
+	
+	
+	if ( werte[state]  != "noArg" && treffer === null)
+	{
+	makewidget(copytofield,target,werte[state]);
+	
+	var r = $("head").attr("root");
+		if(r)
+		FW_root = r;
+		FW_replaceWidgets($("html"));
+		 
+	
+	var but = target+"_but"; 
+	$("#"+but+"").css("display","");
+	
+	var widget = target+"_widget";
+	 $("#"+widget+"").css("display","table-cell");
+	 return;
+	 
+	 
+	}
+	else if ( werte[state]  != "noArg"  && treffer !== null )
+	{
 		
-	else if (devicecmd[0] == 'textfieldLong'){textfieldlong(copytofield,target);return;}	
-		
-	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);return;}
-	else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);return;}
-	else if (devicecmd[0] == 'textField'){textfield(copytofield,target);return;}
-	else if (devicecmd[0] == 'colorpicker'){textfield(copytofield,target);return;}
-	else if (devicecmd[0] == 'RGB'){textfield(copytofield,target);return;}
-	else if (devicecmd[0] == 'no_Action'){noaction();return;}
-	else {selectfield(werte[state],target,copytofield);return;}
+	makewidget(copytofield,target,werte[state]);
+	
+	var r = $("head").attr("root");
+		if(r)
+		FW_root = r;
+		FW_replaceWidgets($("html"));
+		 
+	
+	var but = target+"_but"; 
+	$("#"+but+"").css("display","");
+	
+	
+	$("#"+target+"").css("display","table-cell");
+	
+	var widget = target+"_widget";
+	 $("#"+widget+"").css("display","none");
+	 return;	
+
+	}
+	}
+	
+	var but = target+"_but";
+	var widget = target+"_widget";
+	$("#"+but+"").css("display","none");
+	$("#"+widget+"").css("display","none");
+	
 	return;
 	}
 	
@@ -1002,223 +1359,32 @@ function vupdate(){
 	}
 
 // Fenster für Schaltbedingungen	
-function bigwindow(targetid,fromsc){
+function bigwindow(targetid,fromsc,type){
 if (debug == 'on'){ alert('bigwindow') };
+
+
 
 if(typeof fromsc == 'undefined'){
 	fromsc = "noweb";
 }
+
+if(typeof type == 'undefined'){
+	type = 0;
+}
+
+//alert(type);	
 	targetval =document.getElementById(targetid).value;
 	targetval = targetval.replace(/\u2424/g,'\n');
 	sel ='<div style="white-space:nowrap;"><br>';
 	sel = sel+'<textarea id="valtrans" cols="130" name="TextArea1" rows="10" onChange="bigwindowformat(\''+targetid+'\',\''+fromsc+'\')">'+targetval+'</textarea>';
 	sel = sel+'</div>';
 	
-	if (FUTURELEVEL == "1"){
-	sel = sel+'<table id="t1" width="100%">';
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>Verfügbare Variablen und Ausdrücke <input type="button" value="show" onclick="javascript: showvars()"></td>';
-	sel = sel+'</tr>';
-	sel = sel+'</table>';
-	
-	sel = sel+'<table id="t2" width="100%" style="display:none">';
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>Verfügbare Variablen und Ausdrücke <input type="button" value="hide" onclick="javascript: hidevars()"></td>';
-	sel = sel+'</tr>';
-	sel = sel+'</table>';
-	
-sel = sel+'<table  id="vars" border ="0" width="100%" style="display:none">';
-sel = sel+'<tr>';
-sel = sel+'<td>';
-	
-	
-	
-	
-	sel = sel+'<table border ="1">';
 
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$we / !\$we </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>nur an Wochenenden / Wochentagen</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>isday / !isday </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Tag / nicht Tag</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$year </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Jahr</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr >';
-	sel = sel+'<td><small>\$month </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Monat (1-12)</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$day </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Tag des Monats (1-30/31)</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$wday </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Wochentag (1-7)</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$yday </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Kalendertag (1-356)</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$hms </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>aktuelle Zeit (hh:mm:ss)</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\$SELF </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>enthält den eigenen Namen</td>';
-	sel = sel+'</tr>';
-	
-	
-	
-	sel = sel+'</table>';
-
-sel = sel+'</td>';
-sel = sel+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
-sel = sel+'<td>';
-
-
-	sel = sel+'<table border ="1">';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>[HH:MM-HH:MM] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>schaltet nur in angegebenem Zeitraum</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>[HH:MM-HH:MM|1234567] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>schaltet nur in angegebenem Zeitraum an agegebenen Tagen</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>[!HH:MM-HH:MM] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>schaltet nur ausserhalb des angegebenem Zeitraumes</td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'</table>';
-	
-	
-	sel = sel+'<br>';
-	
-	sel = sel+'<table border ="1">';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>$EVENT</td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Enthält das zuletzt eingegangene Event </td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>$EVTFULL</td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Enthält das zuletzt eingegangene Event </td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>$EVTPART* (1,2,3)</td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Enthält entsprechende Teile des zuletzt eingegangenen Events </td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td nowrap><small>[EV(ENT/TFULL/TPART1,2,3):h*]</td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small>Enthält historisch eingegangene Events * -> Nummer, 0 ist das letzte Event </td>';
-	sel = sel+'</tr>';
-	
-	sel = sel+'</table>';
-	
-	
-	
-	
-	
-	
-
-sel = sel+'</td>';
-sel = sel+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
-sel = sel+'<td>';
-
-	sel = sel+'<table border ="1">';
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[Device:Reading\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> liefert Inhalt eines Readings</td>';
-	sel = sel+'</tr>';	
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[Device:Reading:d\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> liefert numerischen Inhalt eines Readings</td>';
-	sel = sel+'</tr>';	
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[ReadingsVal:Device:Reading:Standart\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> Zugriff auf Reading</td>';
-	sel = sel+'</tr>';	
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[ReadingsNum:Device:Reading:Standart\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> Zugriff auf Reading (numerisch)</td>';
-	sel = sel+'</tr>';	
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[ReadingsAge:Device:Reading:Standart\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> Zugriff auf Readingsalter</td>';
-	sel = sel+'</tr>';	
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[AttrVal:Device:Attr:Standart\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> Zugriff auf Attribut</td>';
-	sel = sel+'</tr>';	
-	
-	sel = sel+'<tr>';
-	sel = sel+'<td><small>\[InternalVal:Device:Reading:Standart\] </td>';
-	sel = sel+'<td><small>&nbsp;-&nbsp;</td>';
-	sel = sel+'<td><small> Zugriff auf Internal</td>';
-	sel = sel+'</tr>';	
-	
-	
-	sel = sel+'</table>';
-
-
-sel = sel+'</td>';
-sel = sel+'</tr>';
-sel = sel+'</table>';	
-	
+	if (FUTURELEVEL == "1" && type===1)
+	{
+	sel = sel+varinf;
 	}
 
-	
-	
-	
 	FW_okDialog(sel,''); 
 	}	
 
@@ -1270,7 +1436,8 @@ if (debug == 'on'){ alert('deviceselect') };
 	sel = sel+'</div>';
 	FW_okDialog(sel,'',removeFn) ; 
 	}
-	 function  showgroup(group){
+	
+	function  showgroup(group){
 	cmd ='set '+devicename+' showgroup '+group;
 	FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
 		 return;
@@ -1424,6 +1591,7 @@ function getCookieValue(a) {
 function showtextfield(newValue,copytofield,target)
 	{
 	if (debug == 'on'){ alert('showtextfield') };
+	//alert("showtextfield");
 	document.getElementById(copytofield).value = newValue;
 	}
 

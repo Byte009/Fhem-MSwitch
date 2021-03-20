@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V5.2';
+	var version = 'V5.21';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -2426,7 +2426,7 @@ function changevar(text){
 		}
 return text;
 }
-
+ 
 // ##################################
 
 function setATTRS()
