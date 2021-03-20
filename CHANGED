@@ -1,4 +1,8 @@
 Version
+5.3
+add widgets to web.js - mask " to \" at events
+
+Version
 5.2
 add ATTR Mswitch_Futurelevel, add widgets to wizard, change sub conditions, change timerhandling
 
