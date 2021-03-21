@@ -16,7 +16,7 @@
 #          	CommandSet() statt fhem()
 #          	del_repeats mehrfach - in sub auslager
 #			event EVENTFULL nur nach aktivierung im frontend auf 1 setzen
-#
+#		bug widgets / bug conditions timer
 #################################################################
 #
 #---------------------------------------------------------------
