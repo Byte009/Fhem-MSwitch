@@ -78,7 +78,7 @@ my $savemode2block       = 60;
       
 my $rename             = "off";        		# on/off rename in der FW_summary möglich
 
-my $webwidget = 1 ; 						# standartverhalten webwidgets
+my $webwidget = 0 ; 						# standartverhalten webwidgets
 my $standartstartdelay = 30; 				# zeitraum nach fhemstart , in dem alle aktionen geblockt werden. kann durch attribut überschrieben werden .
 #my $eventset = '0';
 my $deletesavedcmds = 1800; 				# zeitraum nachdem gespeicherte devicecmds gelöscht werden ( beschleunigung des webinterfaces )
