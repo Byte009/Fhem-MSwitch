@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.31';  				# version
+my $version      = '5.32';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -5509,7 +5509,7 @@ sub	MSwitch_Eventmap(@){
 		my $change;
 		my $part;
 		my $muster;
-		my $inhalt = $data{MSwitch}{$name}{Eventmap}{$key};
+		$inhalt = $data{MSwitch}{$name}{Eventmap}{$key};
 		
 		#Log3("test",0,"key: ".$key);
 		#Log3("test",0,"inhalt: ".$inhalt);
@@ -7526,11 +7526,11 @@ MS-HELPdelay
                   . $_
                   . "' name='cmdseton"
                   . $nopoint
-                  . "' size='10'  value ='"
+                  . "' size='30'  value ='"
                   . $cmdsatz{$devicenamet} . "'>
 					<input type='$hidden' id='cmdonopt". $_. "1' name='cmdonopt"
                   . $nopoint
-                  . "' size='10'  value ='"
+                  . "' size='30'  value ='"
                   . $savedetails{ $aktdevice . '_onarg' } . "'>
 					  </td>
 					  <td nowrap id='" . $_ . "_on_sel'></td>
@@ -7552,24 +7552,11 @@ MS-HELPdelay
             else {
                 # freecmd
                 $savedetails{ $aktdevice . '_onarg' } =~ s/'/&#039/g;
-                $SET1 =
-"<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdonopt' style=\"width:97%;\" "
-                  . $_
-                  . "1' name='cmdonopt"
-                  . $nopoint . "'
-				>" . $savedetails{ $aktdevice . '_onarg' } . "</textarea>";
-                "<input type='$hidden' id='"
-                  . $_
-                  . "_on' name='cmdon"
-                  . $nopoint
-                  . "' size='20'  value ='cmd'>
-				<input type='$hidden' id='cmdseton"
-                  . $_
-                  . "' name='cmdseton"
-                  . $nopoint
-                  . "' size='20'  value ='cmd'>
-				<span  style='text-align: left;' class='col2' nowrap id='" . $_
-                  . "_on_sel'>	</span>			  ";
+                $SET1 ="<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdonopt' style=\"width:97%;\" "
+                  . $_. "1' name='cmdonopt". $nopoint . "'>" . $savedetails{ $aktdevice . '_onarg' } . "</textarea>";
+                "<input type='$hidden' id='". $_. "_on' name='cmdon". $nopoint. "' size='20'  value ='cmd'>
+				<input type='$hidden' id='cmdseton". $_. "' name='cmdseton". $nopoint. "' size='20'  value ='cmd'>
+				<span  style='text-align: left;' class='col2' nowrap id='" . $_. "_on_sel'>	</span>			  ";
             }
 
 ########################
@@ -10442,7 +10429,7 @@ sub MSwitch_checkcondition($$$) {
 
 	my $futurelevel = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
 	
-	
+	my $we = AnalyzeCommand( 0, '{return $we}' );
 	if ( $futurelevel ne "1" )
 	{
 		
@@ -11042,7 +11029,7 @@ sub MSwitch_checkcondition($$$) {
 	MSwitch_LOG( $name, 6, "Found time: $second länge $secondlenght -> $HH,$MM,$SS" );
 	
 	
-	my $newsecond = time_str2num("$year-$month-$mday $HH:$MM:$SS");
+	$newsecond = time_str2num("$year-$month-$mday $HH:$MM:$SS");
 	
 	
 	$condition = $first.$sign.$newsecond.$last;
@@ -12611,11 +12598,16 @@ sub MSwitch_Execute_Timer($) {
     readingsEndUpdate( $hash, $showevents );
 
 
-    MSwitch_LOG( $Name, 6,"ausführung Timer $Name: setze event L:" . __LINE__ );
+    MSwitch_LOG( $Name, 0,"ausführung Timer $Name: setze event L:" . __LINE__ );
 
 
-	$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;;
+	$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
 	$hash->{helper}{evtparts}{event}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
+	
+	Log3("test",0,$Name . ":execute_timer_P" . $param . ":" . $extime ." , ".$showevents);
+	
+	
+	
 	$hash->{helper}{evtparts}{evtpart1}=$Name;
 	$hash->{helper}{evtparts}{evtpart2}="execute_timer_P" . $param;
 	$hash->{helper}{evtparts}{evtpart3}=$extime ;
