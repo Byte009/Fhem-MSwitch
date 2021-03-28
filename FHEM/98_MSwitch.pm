@@ -12598,13 +12598,13 @@ sub MSwitch_Execute_Timer($) {
     readingsEndUpdate( $hash, $showevents );
 
 
-    MSwitch_LOG( $Name, 0,"ausführung Timer $Name: setze event L:" . __LINE__ );
+    MSwitch_LOG( $Name, 6,"ausführung Timer $Name: setze event L:" . __LINE__ );
 
 
 	$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
 	$hash->{helper}{evtparts}{event}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
 	
-	Log3("test",0,$Name . ":execute_timer_P" . $param . ":" . $extime ." , ".$showevents);
+	Log3("test",5,$Name . ":execute_timer_P" . $param . ":" . $extime ." , ".$showevents);
 	
 	
 	
