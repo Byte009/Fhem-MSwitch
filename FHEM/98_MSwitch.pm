@@ -3,7 +3,7 @@
 # copyright Thomas Pause ########################################
 #
 # 98_MSwitch.pm
-#
+# 
 #################################################################
 #
 # MSwitchtoggle Suchmuster ab V3 [Befehl 1,Befehl 2,Befehl 3]:[1,2,3]:[reading]
@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.32';  				# version
+my $version      = '5.4';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -342,7 +342,8 @@ my $attrdummy ="  disable:0,1"
 . "  setList:textField-long "
 . "  readingList:textField-long "
 . "  MSwitch_SysExtension:0,1,2 "
-. $readingFnAttributes;
+. "  useSetExtensions:0,1";
+#. $readingFnAttributes;
 
 
 my $attractivedummy = "  disable:0,1"
@@ -377,6 +378,7 @@ my $attractivedummy = "  disable:0,1"
 . "  MSwitch_ExtraktHTTPMapping:textField-long"
 . "  MSwitch_Switching_once:0,1 "
 . "  MSwitch_SysExtension:0,1,2 "
+. "  useSetExtensions:0,1"
 . $readingFnAttributes;
 		  
 my $attrresetlist =
@@ -436,7 +438,7 @@ my $attrresetlist =
 . "  MSwitch_SysExtension:0,1,2 "
 . "  useSetExtensions:0,1"
 . $readingFnAttributes;				
-
+ 
 #################
 #newblock
 my %sets = (
@@ -1233,7 +1235,7 @@ sub MSwitch_Get($$@) {
     else 
 	{
         $KLAMMERFEHLER ="Error in brace replacement, number of opening and closing parentheses does not match.";
-        $CONDTRUE        = "Condition is true and is executed";
+        $CONDTRUE        = "Condition is true and is executed</green>";
         $CONDTRUE1       = "Condition is not true and will not be executed";
         $KLARZEITEN      = "If statement Perl clears:";
         $READINGSTATE    = "States of the checked readings:";
@@ -1452,10 +1454,16 @@ sub MSwitch_Get($$@) {
 		
         my $ret1 = MSwitch_checkcondition( $condstring, $name, $eventstring );
         my $condstring1 = $hash->{helper}{conditioncheck};
+		my $condstring2 = $hash->{helper}{conditioncheck1};
         my $errorstring = $hash->{helper}{conditionerror};
         if ( !defined $errorstring ) { $errorstring = '' }
+		
         $condstring1 =~ s/</\&lt\;/g;
         $condstring1 =~ s/>/\&gt\;/g;
+		
+		$condstring2 =~ s/</\&lt\;/g;
+        $condstring2 =~ s/>/\&gt\;/g;
+		
         $errorstring =~ s/</\&lt\;/g;
         $errorstring =~ s/>/\&gt\;/g;
 
@@ -1475,10 +1483,10 @@ sub MSwitch_Get($$@) {
         }
         else {
             if ( $ret1 eq 'true' ) {
-                $ret1 = $CONDTRUE;
+                $ret1 = "<div style=\"color: #2cc703\">".$CONDTRUE."</div>";
             }
             if ( $ret1 eq 'false' ) {
-                $ret1 = $CONDTRUE1;
+                $ret1 = "<div style=\"color: #FF0000\">".$CONDTRUE1."</div>";
             }
         }
         $condstring =~ s/~/ /g;
@@ -1494,16 +1502,34 @@ sub MSwitch_Get($$@) {
             my ( $st1, $st2 ) = split( / /, $timestamp );
             $condmarker = $1 . $st2 . $3;
         }
+		
+		
+		
+		my $test=$condstring1;
+		my $test1=$condstring2;
+		$test =~ s/ //g;
+		$test1 =~ s/ //g;
+		
+		
         $ret =
             $INCOMMINGSTRING
-          . "<br>$condstring<br><br>"
+          . "<br><small>$condstring</small><br><br>"
           . $STATEMENTPERL
-          . "<br>$condstring1<br><br>";
-        $ret .= $KLARZEITEN . "<br>$condmarker<br><br>" if $x > 0;
-        $ret .= $ret1;
+		  . "<br><small>$condstring2";
+        $ret .= "<br>$condstring1</small><br>" if $test ne $test1;
+		$ret .= "</small><br>" if $test eq $test1;
+		
+		 $ret .= "<br>";
+		  
+        $ret .= $KLARZEITEN . "<br><small>$condmarker</small><br><br>" if $x > 0;
+        $ret .= "<u>".$ret1."</u>";
         my $condsplit = $condmarker;
-        my $reads     = '<br><br>' . $READINGSTATE . '<br><br>';
+        my $reads     = '<br><br>' . $READINGSTATE . '<br>';
         $x = 0;    # exit
+
+
+### old
+
 
         while ( $condsplit =~m/(.*)(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)(.*?\))(.*)/)
         {
@@ -1512,11 +1538,31 @@ sub MSwitch_Get($$@) {
             $condsplit = $1 . $4;
             $x++;    # exit
             last if $x > 20;
-            $reads .=
-              $readname . "     " . $INHALT . " " . $readinginhalt . "<br>";
+            #$reads .="<small>-".$readname . "     " . $INHALT . " " . $readinginhalt . "<br>";
+			$reads .="<small>- ".$readname . " -> " . $readinginhalt . "</small><br>";
+
         }
 
-        $ret .= $reads if $x > 0;
+
+		
+			### new	
+
+	#my $condhash = $data{MSwitch}{$hash}{condition};
+
+        foreach my $key ( keys %{ $data{MSwitch}{$hash}{condition} } )
+		{
+	
+		$reads.="<small>- $data{MSwitch}{$hash}{condition}{$key}</small><br>";
+		
+		#MSwitch_LOG( $name, 6, "KEY: $key ");
+		$x++
+		}
+		delete $data{MSwitch}{$hash}{condition};
+		
+		 $ret .= $reads if $x > 0;
+		
+		
+		
 ## anzeige funktionserkennung
         if ( defined $hash->{helper}{eventhistory}{DIFFERENCE} ) 
 		{
@@ -1666,6 +1712,14 @@ sub MSwitch_Get($$@) {
                   . $time
                   . " neuberechnung aller Schaltzeiten </div>";
             }
+
+			 if ( $number eq '51' ) {
+                $ret .=
+                    "<div nowrap>"
+                  . $time
+                  . " nachberechnung der Schaltzeiten (holiday-einbindung)</div>";
+            }
+
 
             if ( $number eq '6' ) {
                 $ret .=
@@ -4366,7 +4420,6 @@ sub MSwitch_Notify($$) {
     my $events = deviceEvents( $dev_hash, 1 );
 	
     my $statistic=0;
-
 
 
 
@@ -7554,9 +7607,14 @@ MS-HELPdelay
                 $savedetails{ $aktdevice . '_onarg' } =~ s/'/&#039/g;
                 $SET1 ="<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdonopt' style=\"width:97%;\" "
                   . $_. "1' name='cmdonopt". $nopoint . "'>" . $savedetails{ $aktdevice . '_onarg' } . "</textarea>";
-                "<input type='$hidden' id='". $_. "_on' name='cmdon". $nopoint. "' size='20'  value ='cmd'>
-				<input type='$hidden' id='cmdseton". $_. "' name='cmdseton". $nopoint. "' size='20'  value ='cmd'>
-				<span  style='text-align: left;' class='col2' nowrap id='" . $_. "_on_sel'>	</span>			  ";
+				  
+				  
+				  
+                $SET1 .="<input type='$hidden' id='". $_. "_on' name='cmdon". $nopoint. "' size='20'  value ='cmd'>";
+				
+				$SET1 .="<input type='$hidden' id='cmdseton". $_. "' name='cmdseton". $nopoint. "' size='20'  value ='cmd'>";
+				
+				$SET1 .="<span  style='text-align: left;' class='col2' nowrap id='" . $_. "_on_sel'>	</span>			  ";
             }
 
 ########################
@@ -7581,7 +7639,7 @@ MS-HELPdelay
 						<option value='no_action'>no_action</option>" . $option2html . "</select>
 						</td>";
 						
-						 
+						  
 			
 					
 					
@@ -10193,7 +10251,7 @@ sub MSwitch_Exec_Notif($$$$$) {
                     }
                     else 
 					{
-                        MSwitch_LOG( $name, 6,"finaler Befehl auf Ausführungsstapel geschoben:\n \n$cs\n \n");
+                        MSwitch_LOG( $name, 6,"finaler Befehl auf Ausführungsstapel geschoben ".__LINE__.":\n \n$cs\n \n");
 						push( @execute, $cs );
                         if ( $out eq '1' )
 						{
@@ -10421,51 +10479,30 @@ return $satz;
 
 sub MSwitch_checkcondition($$$) {
 	
-	
-
 	my ( $condition, $name, $event ) = @_;
 	my $conditionorg = $condition;
 	my $hash = $modules{MSwitch}{defptr}{$name};
-
 	my $futurelevel = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
+	#my $attrrandomnumber = AttrVal( $name, 'MSwitch_RandomNumber', '' );
 	
-	my $we = AnalyzeCommand( 0, '{return $we}' );
+	my $answer;
+	
 	if ( $futurelevel ne "1" )
 	{
-		
 		MSwitch_LOG( $name, 6,"$name -> FLevel $futurelevel" );
-		
-		
 		my $ret = MSwitch_checkcondition1($condition, $name, $event );
 		return $ret;
     }
-	
-#my $ret = MSwitch_checkcondition1($condition, $name, $event );
-#		return $ret;
-	
-	MSwitch_LOG( $name, 6,"### SUB_checkcondition ###");
+		
+	MSwitch_LOG( $name, 6,"SUB_checkcondition");
     MSwitch_LOG( $name, 6, "Bedingungsprüfung Bedingung: $condition ");
-	
-	
 	MSwitch_LOG( $name, 6, "übergebenes Event: $event ");
-	
-	
 	
 	# abbruch bei leerer condition
 	if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
-	
-	
-	
-	
+
 	############# prüfe klammerfehler 
-	
-	
-	
-	
-	
-	
-	
 	
 	my $anzahlk1 = $condition =~ tr/{//;
     my $anzahlk2 = $condition =~ tr/}//;
@@ -10494,8 +10531,9 @@ sub MSwitch_checkcondition($$$) {
         return "false";
     }
 	
-	
-	
+
+	my $we = AnalyzeCommand( 0, '{return $we}' );
+	my $time = int(time);
 	##############################
 	
 	my ( $sec, $min, $hour, $mday, $month, $year, $wday, $yday, $isdst ) =localtime( gettimeofday() );
@@ -10511,39 +10549,26 @@ sub MSwitch_checkcondition($$$) {
 	my $debugmode = AttrVal( $name, 'MSwitch_Debug',    "0" );
 	
 	my $finalstring ="";
+	my $finalstring1 ="";
+	my $finalstring2 ="";
 	my $field = "";
 	my $SELF  = $name;
 	my $searchstring;
 	
-	
-	
 	###########################
-	
-	
 	my ($evtparts1,$evtparts2,$evtparts3) = split(/:/,$event,3);
-	
 	my $evtfull=$event;
-	
-	
 	###############################
-	
-	#my $evtfull=$hash->{helper}{evtparts}{evtfull};
-	#   $event=$hash->{helper}{evtparts}{event};
-	#my $evtparts1=$hash->{helper}{evtparts}{evtpart1};
-	#my $evtparts2=$hash->{helper}{evtparts}{evtpart2};
-	#my $evtparts3=$hash->{helper}{evtparts}{evtpart3};
-	
 
 	# ersetzung snippet
+	
 	$condition= MSwitch_change_snippet($hash,$condition); 
 	
 	# ersetzungen
 	
-	
 	$condition =~ s/ AND / && /ig;
     $condition =~ s/ OR / || /ig;
     $condition =~ s/ = / == /ig;
-	
     $condition =~ s/\$year|\[YEAR\]/$year/g;
     $condition =~ s/\$month|\[MONTH\]/$month/g;
     $condition =~ s/\$day|\[DAY\]/$mday/g;
@@ -10551,553 +10576,234 @@ sub MSwitch_checkcondition($$$) {
 	$condition =~ s/\$wday|\[WDAY\]/$wday/g;
     $condition =~ s/\$min|\[MIN\]/$min/g;
     $condition =~ s/\$hour|\[HOUR\]/$hour/g;
-    $condition =~ s/\$hms|\[HMS\]/$hms/g;
-	
-	my $time = int(time);
-	
+    $condition =~ s/\$hms|\[HMS\]/'$hms'/g;
 	$condition =~ s/\$time/$time/g;
-	
 	$condition =~ s/\$NAME/$name/ig;
 	$condition =~ s/\$SELF/$name/ig;
-	
-	
-	MSwitch_LOG( $name, 6,"vor conditionersetzung -> $condition ");
+	#MSwitch_LOG( $name, 6,"vor conditionersetzung -> $condition ");
 	$condition =~ s/\:\$EVENT/:$event/ig;
     $condition =~ s/\:\$EVTFULL/:$evtfull/ig;
     $condition =~ s/\:\$EVTPART1/:$evtparts1/ig;
     $condition =~ s/\:\$EVTPART2/:$evtparts2/ig;
 	$condition =~ s/\:\$EVTPART3/:$evtparts3/ig;
-	
-	MSwitch_LOG( $name, 6,"nach 1. conditionersetzung -> $condition ");
-	
+	#MSwitch_LOG( $name, 6,"nach 1. conditionersetzung -> $condition ");
 	$condition =~ s/\$EVENT/"$event"/ig;
     $condition =~ s/\$EVTFULL/"$evtfull"/ig;
     $condition =~ s/\$EVTPART1/"$evtparts1"/ig;
     $condition =~ s/\$EVTPART2/"$evtparts2"/ig;
     $condition =~ s/\$EVTPART3/"$evtparts3"/ig;
-	MSwitch_LOG( $name, 6,"nach 2. conditionersetzung -> $condition ");
+	
+	#MSwitch_LOG( $name, 6,"nach 2. conditionersetzung -> $condition ");
 	
 	### ersetze setmagic ###
 	
 	my $change = $condition;
 	
-	
-	$change =~ s/\[\[/&#8658;[/ig;
-	$change =~ s/\]\]/]&#8656;/ig;
-	
-	#$change =~ s/\[\[/{EKO}[/ig;
-	#$change =~ s/\]\]/]{EKO}/ig;
-	
-	#	MSwitch_LOG( $name, 6,"nach [[ check -> $change ");
-	
-	# &#8596;
-	
 	my $x = 0;
-	my %argarray;
-    while ( $change =~ m/(.*)(\[.*\:.*\])(.*)/ ) {
+	my %setmarray;
+    while ( $change =~ m/(\[[a-zA-Z0-9:\|_]+\])/ ) 
+	{
+		my $treffer=$1;
 		
+		my $aktarg = "SETMAGIC_".$x;
+		$setmarray{$aktarg} =$treffer;
+		my $convertreffer=$treffer;
 		
-		my $first=$1;
-		my $second=$2;
-		my $third =$3;
-		MSwitch_LOG( $name, 6,"nach 1 -> $first");
-		MSwitch_LOG( $name, 6,"nach 2 -> $second ");
-		MSwitch_LOG( $name, 6,"nach 3-> $third ");
+		$convertreffer =~ s/\[/\\[/ig;
+		$convertreffer =~ s/\]/\\]/ig;
 		
-		$second =~ s/\[|\]//ig;
+		#MSwitch_LOG( $name, 6,"treffer -> $treffer");
+		#MSwitch_LOG( $name, 6,"convertreffer -> $convertreffer");
 		
-		MSwitch_LOG( $name, 6,"second raw -> $second ");
+		$change =~ s/$convertreffer/ $aktarg /ig;
 		
-		#my ($device,$reading) = split(/\:/,$second);
-		#MSwitch_LOG( $name, 6,"device -> $device ");
-		#MSwitch_LOG( $name, 6,"reading -> $reading ");
-		#my $setmagic = ReadingsVal( $device, $reading, 0 );
-		
-		my $aktarg = "ARG".$x;
-		
-	$argarray{$aktarg} =$second;
-		
-		
+		#MSwitch_LOG( $name, 6,"nach smlauf -> $change ");
+		#MSwitch_LOG( $name, 6,"##################### ");
+	
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
-        
-        $change = $first . $aktarg . $third;
-		
-		MSwitch_LOG( $name, 6,"nach smlauf -> $change ");
-		MSwitch_LOG( $name, 6,"##################### ");
     }
 	
+
+	#############
+	#MSwitch_LOG( $name, 6,"nach setmagic -> $change ");
 	
-	$change =~ s/&#8658;/[/ig;
-	$change =~ s/&#8656;/]/ig;
+	my %setnewmarray;
+	my %setnewminhaltarray;
 	
-	
-	MSwitch_LOG( $name, 6,"nach setmagic -> $change ");
-	
-	
-	foreach my $key ( (keys %argarray) )
+	foreach my $key ( (keys %setmarray) )
 		{
-			MSwitch_LOG( $name, 6,"key: $key -> ".$argarray{$key});
+			#MSwitch_LOG( $name, 6,"key: $key -> ".$setmarray{$key});
+			my $arg = $setmarray{$key};
+			my $testarg = $setmarray{$key};
+			$testarg =~ s/[0-9]+//gs;
+			
+			##########
+			if ( $arg =~ '\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.*?):(.*?):(.*?)\]' )  
+			{
+			my $evalstring = "$1('$2','$3','$4')";
+			my $inhalt = eval($evalstring);
+			MSwitch_LOG( $name, 6,"evalstring : $evalstring");
+			MSwitch_LOG( $name, 6,"evalreturn : $inhalt");
+			$setnewmarray{$key} =  $evalstring;
+			$setnewminhaltarray{$key} = $inhalt;
+			next;
+			}
+			###########
+			if ( $testarg =~ '\[.*?:h\]' ) #history
+			{
+				MSwitch_LOG( $name, 6,"found history: $arg -> ");
+				$setnewmarray{$key} = MSwitch_Checkcond_history( $arg, $name );
+				#MSwitch_LOG( $name, 6,"found history return: -$setnewmarray{$key}- ");
+				if ($setnewmarray{$key} eq "''")
+					{
+						$setnewmarray{$key} = "undef";
+						$setnewminhaltarray{$key} = $setnewmarray{$key};
+					}
+					else
+					{
+						$setnewminhaltarray{$key} = $setnewmarray{$key};
+						$setnewminhaltarray{$key} = $setnewmarray{$key};
+					}
+				next;
+			}
+			###########
+			if ( $testarg =~ '\[.*[a-zA-Z]{1}:.*\]' )  #reading
+			{
+				#MSwitch_LOG( $name, 6,"found setmagig: $arg -> ");
+				$setnewmarray{$key} = MSwitch_Checkcond_state( $arg, $name );
+				$setnewminhaltarray{$key} = eval ($setnewmarray{$key});
+				next;
+			}
+			
+			#MSwitch_LOG( $name, 6,"found nothing: $arg -> ");
+			$setnewmarray{$key} = $setmarray{$key};
+			$setnewminhaltarray{$key} = $setmarray{$key};
+				
 		}
 	
 	
+	my $change1 = $change;
 	
-	
-	# $x = 0;
-    # while ( $change =~ m/(.*)\[(.*)\:(.*)\:d\](.*)/ ) {
-        # $x++;               # notausstieg notausstieg
-        # last if $x > 20;    # notausstieg notausstieg
-        # my $setmagic = ReadingsNum( $2, $3, 0 );
-        # $change = $1 . $setmagic . $4;
-    # }
-	
-	#MSwitch_LOG( $name, 6,"nach setmagic :d -> $change ");
-
-	
-	#return "false";
-	
-	
-	
-	
-	
-	
-	# my $x=0;
-	# while (  $condition =~ m/(.*)(\{)(xxxsunset\([^}]*\)|sunrise\([^}]*\))(\})(.*)/ )
-    # {
-		
-		# MSwitch_LOG( $name, 6,"NC ### found sunset ###");
-		
-		
-		
-        # $x++;    # notausstieg
-        # last if $x > 20;    # notausstieg
-        # if ( defined $2 ) {
-
-			# my $part2;
-			# {
-			# no warnings;
-            # $part2 = eval $3;
-			# }
-            # chop($part2);
-            # chop($part2);
-            # chop($part2);
-            # my ( $testhour, $testmin ) = split( /:/, $part2 );
-            # if ( $testhour > 23 ) {
-                # $testhour = $testhour - 24;
-                # $testhour = '0' . $testhour if $testhour < 10;
-                # $part2    = $testhour . ':' . $testmin;
-            # }
-            # $condition = $part2;
-            # $condition = $1 . $condition if ( defined $1 );
-            # $condition = $condition . $5 if ( defined $5 );
-        # }
-    # }
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	# ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal
-	
-	while ( $condition =~m/(.*?)\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.*?):(.*?):(.*?)\](.*)/)
-    {
-        my $firstpart       = $1;
-        my $readingtyp      = $2;
-        my $readingdevice   = $3;
-        my $readingname     = $4;
-        my $readingstandart = $5;
-        my $lastpart        = $6;
-        $readingdevice =~ s/\$SELF/$name/;
-        my $code = "("
-          . $readingtyp . "('"
-          . $readingdevice . "', '"
-          . $readingname . "', '"
-          . $readingstandart . "'))";
-
-        $condition = $firstpart . $code . $lastpart;
-    }
-	
-	MSwitch_LOG( $name, 6,"NC ### $condition ###");
-	
-	####  ersetze perlcode 
-	while ( $condition =~ m/(.*)\{(.+)\}(.*)/ )    #z.b $WE
-    {
-        my $firstpart  = $1;
-        my $secondpart = $2;
-        my $lastpart   = $3;
-        my $exec       = "\$field = " . $2;
-        if ( $secondpart =~ m/(!\$.*|\$.*)/ )
+	foreach my $key ( (keys %setmarray) )
 		{
-            $field = $secondpart;
-        }
-        else 
+			my $log = "$setmarray{$key} -> $setnewmarray{$key} -> $setnewminhaltarray{$key}";
+		
+			$data{MSwitch}{$hash}{condition}{$key}=$log ;
+			
+			#MSwitch_LOG( $name, 6,"key: $key -> ".$log);
+			#MSwitch_LOG( $name, 6,"change: $change-> ");
+			
+			my $aktkey = $key;
+			#MSwitch_LOG( $name, 6,"aktkey: $aktkey-> ");
+	
+			if ( $setnewminhaltarray{$key} =~ '\d+$' )
+				{
+					#MSwitch_LOG( $name, 6,"FOUND DIGIT: $change-> ");
+					#MSwitch_LOG( $name, 6,"DIGIT-> $setnewminhaltarray{$key}");
+					$change =~ s/ $key /$setnewminhaltarray{$key}/g;
+					$change1 =~ s/ $key /$setnewminhaltarray{$key}/g;
+				}
+			elsif ( $setnewminhaltarray{$key} =~ '\d\d:\d\d' )
+				{
+					$change =~ s/ $key /$setnewminhaltarray{$key}/g;
+					$change1 =~ s/ $key /$setnewminhaltarray{$key}/g;
+				}
+			else
+				{	
+					$change =~ s/ $key /"$setnewminhaltarray{$key}"/g;
+					$change1 =~ s/ $key /$setnewmarray{$key}/g;
+					
+				}
+			
+			#MSwitch_LOG( $name, 6,"change1: $change-> ");
+		
+		}
+
+	#MSwitch_LOG( $name, 6,"______________________________________");
+	MSwitch_LOG( $name, 6,"newcondition: $change");
+	
+	
+	##### timererkennung
+	
+	$x = 0;
+	while ( $change =~ m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/ ) 
+	{
+		my $akttimer =$1;
+		my $orgtimer =$1;
+		$akttimer =~ s/\[/\\[/gs;
+		$akttimer =~ s/\]/\\]/gs;
+		$akttimer =~ s/\|/\\|/gs;	
+		MSwitch_LOG( $name, 6, "FOUND Timer: $akttimer ");
+		my $newtimer =  MSwitch_Checkcond_time( $orgtimer, $name );
+		MSwitch_LOG( $name, 6, "NEW Timer: $newtimer ");
+		$change =~ s/$akttimer/$newtimer/g;
+        $x++;    # notausstieg notausstieg
+        last if $x > 20;    # notausstieg notausstieg
+	}	
+
+	#MSwitch_LOG( $name, 6, "change vor zeiterk.: -$change- ");
+	# zeiterkennung
+	$x = 0;
+	while ( $change =~ m/(^\d\d:\d\d\s|\s\d\d:\d\d\s|\s\d\d:\d\d$|^\d\d:\d\d$)/ ) 
+	{
+		
+		my $foundtimeorg = $1;
+		my $foundtime = $1.":00";
+		MSwitch_LOG( $name, 6, "FOUND Zeitangabe: $foundtime ");
+		my ($HH,$MM,$SS) =split(/:/,$foundtime );
+		my $timecondtest = localtime;
+		$timecondtest =~ s/\s+/ /g;
+		my ( $tday, $tmonth, $tdate, $tn, $time1 ) = split( / /, $timecondtest );
+		my $newsecond = timelocal( '00', $MM, $HH, $tdate, $tmonth, $time1 );
+		$change =~ s/$foundtimeorg/ $newsecond /g;
+		$x++;    # notausstieg notausstieg
+        last if $x > 20;    # notausstieg notausstieg
+	}
+	
+	$finalstring ="if (" . $change . "){\$answer = 'true';} else {\$answer = 'false';} ";
+	
+	$finalstring2 ="if (" . $change . ")";
+	$finalstring1 ="if (" . $change1 . ") ";
+	
+	
+	
+    MSwitch_LOG( $name, 6, "Bedingungsprüfung (final): $finalstring ");
+	
+	my $ret;
 		{
-			{
 			no warnings;
-            eval($exec);
-			}
-        }
-
-        if ( $field =~ m/([0-9]{2}):([0-9]{2}):([0-9]{2})/ ) 
-		{
-            my $hh = $1;
-            if ( $hh > 23 ) { $hh = $hh - 24 }
-            $field = $hh . ":" . $2;
-        }
-
-        $condition = $firstpart . $field . $lastpart;
-    }
-	
-	#################
-	MSwitch_LOG( $name, 6,"NC --- ### $condition ###");
-	
-	my $exit=0;
-	####  ersetze zeitangaben
-	#while ( $condition =~m/(.*?)(\[!?\[[a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[?[a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]?\])(.*)?/)
-	
-	
-	
-	### hintere angabe
-	$exit=0;
-	while ( $condition =~m/(.*?)(\[!?[a-zA-Z0-9_][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}-\[[a-zA-Z0-9_][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]\])(.*)?/)
-    {
-		$exit ++;
-		last if $exit>5;
-        my $firstpart = $1;
-        $searchstring = $2; 
-        my $lastpart = $3;
-		MSwitch_LOG( $name, 6,"NC ### XXX searchstring ###");
+			$ret = eval $finalstring;
+		}
 		
-        # Searchstring -> [[t1:state]-[t2:state]]
-        while ( $searchstring =~ m/(.*?)(\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\])(.*)?/ )
-        {
-            my $read1           = '';
-            my $firstpart       = $1;
-            my $secsearchstring = $2;
-            my $lastpart        = $3;
-            if ( $secsearchstring =~ m/\[(.*):(.*)\]/ )
-			{
-                $read1 = ReadingsVal( $1, $2, 'undef' );
-            }
-            $searchstring = $firstpart . $read1 . $lastpart;
-        }
-        $condition = $firstpart . $searchstring . $lastpart;
-		MSwitch_LOG( $name, 6,"NC ###searchstring  $condition ###");
-    }
-	
-	MSwitch_LOG( $name, 6,"NC ### erste prüfung fertig $condition ###");
-	
-	
-	
-	## vordere angabe - hinten muss bereits hh:mm 
-	$exit=0;
-	while ( $condition =~m/(.*?)(\[!?\[[a-zA-Z0-9_][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-[0-9_][0-9_]:[0-9_][0-9_]\])(.*)?/)
-    {
-		$exit ++;
-		last if $exit>5;
-        my $firstpart = $1;
-        $searchstring = $2; 
-        my $lastpart = $3;
-		MSwitch_LOG( $name, 6,"NC ### XXX searchstring ###");
-		
-        # Searchstring -> [[t1:state]-[t2:state]]
-        while ( $searchstring =~ m/(.*?)(\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\])(.*)?/ )
-        {
-            my $read1           = '';
-            my $firstpart       = $1;
-            my $secsearchstring = $2;
-            my $lastpart        = $3;
-            if ( $secsearchstring =~ m/\[(.*):(.*)\]/ )
-			{
-                $read1 = ReadingsVal( $1, $2, 'undef' );
-            }
-            $searchstring = $firstpart . $read1 . $lastpart;
-        }
-        $condition = $firstpart . $searchstring . $lastpart;
-		MSwitch_LOG( $name, 6,"NC ###searchstring  $condition ###");
-    }
-	
-	MSwitch_LOG( $name, 6,"NC ### zweite prüfung fertig $condition ###");
-	
-	
-	
-	# doppelte angabe
-	$exit=0;
-	    while ( $condition =~m/(.*?)(\[!?\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]-\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\]\])(.*)?/)
-    {
-		$exit ++;
-		last if $exit>5;
-        my $firstpart = $1;
-        $searchstring = $2; 
-        my $lastpart = $3;
-		MSwitch_LOG( $name, 6,"NC ### XXX searchstring ###");
-		
-        # Searchstring -> [[t1:state]-[t2:state]]
-        while ( $searchstring =~ m/(.*?)(\[[a-zA-Z][a-zA-Z0-9_]{0,30}:[a-zA-Z0-9_]{0,30}\])(.*)?/ )
-        {
-            my $read1           = '';
-            my $firstpart       = $1;
-            my $secsearchstring = $2;
-            my $lastpart        = $3;
-            if ( $secsearchstring =~ m/\[(.*):(.*)\]/ )
-			{
-                $read1 = ReadingsVal( $1, $2, 'undef' );
-            }
-            $searchstring = $firstpart . $read1 . $lastpart;
-        }
-        $condition = $firstpart . $searchstring . $lastpart;
-		MSwitch_LOG( $name, 6,"NC ###searchstring  $condition ###");
-    }
-	
-	MSwitch_LOG( $name, 6,"NC ### zweite prüfung fertig $condition ###");
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	##########
-	
-	
-	#return "false";
-	
-	
-	
-	
-	####################
-	my $conditioncopy = $condition;
-    my @argarray;
-	my $arraycount = '0';
-    my $answer;
-    my $i;
-    my $pos;
-    my $pos1;
-    my $part;
-    my $part1;
-    my $part2;
-    my $part3;
-    my $lenght;
-	
-	#### ersetze argumente gegen Vars ARG
-	ARGUMENT: for ( $i = 0 ; $i <= 10 ; $i++ )
-	{
-        $pos = index( $condition, "[", 0 );
-        my $x = $pos;
-        if ( $x == '-1' ) { last ARGUMENT; }
-        $pos1 = index( $condition, "]", 0 );
-        $argarray[$arraycount] =substr( $condition, $pos, ( $pos1 + 1 - $pos ) );
-        $lenght = length($condition);
-        $part1  = substr( $condition, 0, $pos );
-        $part2  = 'ARG' . $arraycount;
-        $part3 = substr( $condition, ( $pos1 + 1 ), ( $lenght - ( $pos1 + 1 ) ) );
-        $condition = $part1 . $part2 . $part3;
-        $arraycount++;
-    }
-	
-	
-		MSwitch_LOG( $name, 6,"NC ### $condition ###");
-	
-
-	my $count = 0;
-    my $testarg;
-    my @newargarray;
-	
-	
-    foreach my $args (@argarray)
-	{
-	MSwitch_LOG( $name, 6,"ARG $count -> $args");	
-	$count++;	
-	}
-	
-	$count = 0;
-	
-	
-	#### bearbeite ARGUMENTE
-	
-	foreach my $args (@argarray)
-	{
-        $testarg = $args;
-        if ( $testarg =~ '.*:h\d{1,3}' )
-		{
-            # historyformatierung erkannt - auswerten über sub
-            # in der regex evtl auf zeilenende definieren
-			
-			
-            $newargarray[$count] = MSwitch_Checkcond_history( $args, $name );
-            $count++;
-            next;
-        } 
-        $testarg =~ s/[0-9]+//gs;
-		
-		
-        if ( $testarg eq '[:-:|]' || $testarg eq '[:-:]' || $testarg eq '[!:-:|]' || $testarg eq '[!:-:]')
-		
-		{
-            # timerformatierung erkannt - auswerten über sub
-            # my $param = $argarray[$count];
-            $newargarray[$count] = MSwitch_Checkcond_time( $args, $name );
-        }
-        elsif ( $testarg =~ '[.*:.*]' )
-		{
-            # stateformatierung erkannt - auswerten über sub
-            $newargarray[$count] = MSwitch_Checkcond_state( $args, $name );
-        }
-        else 
-		{
-            $newargarray[$count] = $args;
-        }
-        $count++;
-    }
-	
-	
-	$count = 0;
-    
-	
-	foreach my $args (@argarray)
-	{
-	MSwitch_LOG( $name, 6,"ARG $count -> $args -> $newargarray[$count]");	
-	$count++;	
-	}
-	
-	### ersetze Argumente
-	$count = 0;
-    my $tmp;
-    foreach my $args (@newargarray)
-	{
-        $tmp = 'ARG' . $count;
-        $condition =~ s/$tmp/$args/ig;
-        $count++;
-    }
-	
-	
-	MSwitch_LOG( $name, 6,"condition for time : $condition");	
-	
-	# automatische zeitumrechnung 
-	
-	# $sec, $min, $hour, $mday, $month, $year, $wday, $yday, $isdst
-	
-		$exit=0;
-	    while ( $condition =~m/(.*?)(^|\s|<|>|=|\(|\))([0-2][0-9]:[0-5][0-9]:?[0-5]?[0-9]?)(.*)/)
-    {
-		
-	my $first=$1;
-	my $sign = $2;
-	my $second=$3;
-	my $newsecond = $3;
-	my $last=$4;
-	
-	
-	$exit ++;
-		last if $exit>5;
-		
-		
-		MSwitch_LOG( $name, 6, "first: $first" );
-		MSwitch_LOG( $name, 6, "second: $second" );
-		
-		MSwitch_LOG( $name, 6, "last: $last" );
-	
-	my $secondlenght = length($second);
-	
-	
-	
-	if ($secondlenght == 5){$newsecond=$newsecond.":00";}
-	
-	my ($HH,$MM,$SS) =split(/:/,$newsecond );
-	
-	
-	
-	MSwitch_LOG( $name, 6, "Found time: $second länge $secondlenght -> $HH,$MM,$SS" );
-	
-	
-	$newsecond = time_str2num("$year-$month-$mday $HH:$MM:$SS");
-	
-	
-	$condition = $first.$sign.$newsecond.$last;
-	MSwitch_LOG( $name, 6, "! Found time: newscond $condition" );
-	
-	}
-	
-	
-	
-		#########################################
-	$finalstring ="if (" . $condition . "){\$answer = 'true';} else {\$answer = 'false';} ";
-   # MSwitch_LOG( $name, 6, "Bedingungsprüfung2 (final): $finalstring ");
-	
-	MSwitch_LOG( $name, 6, "Bedingungsprüfung2 (final): $finalstring ");
-	
-	
-	if ($name eq "timertest"){
-	return "false";
-	}
-	
-		my $ret;
-	{
-		#no warnings;
-		$ret = eval $finalstring;
-	}
-
 	if ($@)
 		{
-			
-			my $error = $@;
 			MSwitch_LOG( $name, 1, "############# " . __LINE__ );
-			MSwitch_LOG( $name, 1, "$name ERROR: $@ ");
+			MSwitch_LOG( $name, 1, "$name EERROR: $@ ");
 			MSwitch_LOG( $name, 1, "Finalstring: $finalstring");
 			MSwitch_LOG( $name, 1, "Event: $event");
 			MSwitch_LOG( $name, 1, "Eventfull: $evtfull");
 			MSwitch_LOG( $name, 1, "############# \n" );
-			
-			MSwitch_LOG( $name, 6, "############# " . __LINE__ );
-			MSwitch_LOG( $name, 6, "$name ERROR in conditions: $error ");
-			MSwitch_LOG( $name, 6, "Finalstring: $finalstring");
-			#MSwitch_LOG( $name, 1, "Event: $event");
-			#MSwitch_LOG( $name, 1, "Eventfull: $evtfull");
-			#MSwitch_LOG( $name, 1, "############# \n" );
-			
-			
-			
 			$hash->{helper}{conditionerror} = $@;
 			return 'false';
 		}
-
-    MSwitch_LOG( $name, 6,"Ergebniss Bedingungsprüfung ende: $ret " );
-    if ( $ret ne "true" )
+	
+	MSwitch_LOG( $name, 6,"Ergebniss Bedingungsprüfung : $ret " );
+	
+	
+	if ( $ret ne "true" )
 	{
         MSwitch_LOG( $name, 6, "Befehlsabbruch - Bedingung nicht erfüllt " );
     }
-    $hash->{helper}{conditioncheck} = $finalstring;
+    $hash->{helper}{conditioncheck} = $finalstring2;
+	$hash->{helper}{conditioncheck1} = $finalstring1;
 	
 	
-	MSwitch_LOG( $name, 6, "Ergebnis der Prüfung : $ret " );
+	
+	#$hash->{helper}{conditioncheck} = $finalstring;
+	#$hash->{helper}{conditioncheck1} = $finalstring;
 	
     return $ret;
-	
-	
-	
-	
-	
-	
-	
 }
 
 
@@ -11121,31 +10827,7 @@ sub MSwitch_checkcondition1($$$) {
 
 
 
-$condition= MSwitch_change_snippet($hash,$condition);
-
-	# my $aktsnippet ="";
-	# my $aktsnippetnumber ="";
-	# if ( $condition =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ ) 
-	# {			
-
-		# my $firstpart = $1;
-		# my $snipppetnumber = $2;
-		# my $lastpart =$3;	
-		
-# MSwitch_LOG( $name, 6, "Snippet firstpart: $firstpart " );
-# MSwitch_LOG( $name, 6, "Snippet snipppetnumber: $snipppetnumber " );
-# MSwitch_LOG( $name, 6, "Snippet lastpart: $lastpart " );
-		
-		
-		# MSwitch_LOG( $name, 6, "Snippet gefunden: $aktsnippetnumber " );
-		# my $snippet =	 $data{MSwitch}{$name}{snippet}{$snipppetnumber};
-		
-# MSwitch_LOG( $name, 6, "Snippet : $snippet " );		
-		
-		# $snippet =~ s/\n//g;
-		# $condition = $firstpart . $snippet . $lastpart;
-		# MSwitch_LOG( $name, 6, "Bedingung mit Snippetersetzung: $condition ");
-	# }
+	$condition= MSwitch_change_snippet($hash,$condition);
 	
 	$condition =~ s/\"\$EVENT\"/\$EVENT/g;
     $condition =~ s/\"\$EVTFULL\"/\$EVTFULL"/g;
@@ -11160,6 +10842,7 @@ $condition= MSwitch_change_snippet($hash,$condition);
     $condition =~ s/\[\$EVTPART3\]/\$EVTPART3/g;
     $condition =~ s/\[\$EVT_CMD1_COUNT\]/"\$EVT_CMD1_COUNT"/g;
     $condition =~ s/\[\$EVT_CMD2_COUNT\]/"\$EVT_CMD2_COUNT"/g;
+	
     #### evt anpassung wenn alleinstehend
     $condition =~ s/(?<!")\$EVENT(?!")|\[EVENT]/\$EVENT/g;
     $condition =~ s/(?<!")\$EVTFULL(?!")|\[EVTFULL]/\$EVTFULL/g;
@@ -11200,6 +10883,9 @@ $condition= MSwitch_change_snippet($hash,$condition);
     my $funktionsstringinc;
     my $hms = AnalyzeCommand( 0, '{return $hms}' );
 
+
+### alte jahr unf hms erkennung nicht übernommen
+
     if ( $condition =~ m/YEAR|MONTH|DAY|MIN|HOUR|HMS/ ) 
 	{
         while ( $condition =~ m/(.*)\[YEAR\](.*)([\d]{4})(.*)/ )
@@ -11229,6 +10915,11 @@ $condition= MSwitch_change_snippet($hash,$condition);
             $condition = $1 . "\"$hms\"" . $2;
         }
     }
+	
+	
+	
+	
+	
 
 ##############
     # $condition
@@ -11722,10 +11413,6 @@ sub MSwitch_Checkcond_time($$) {
     my $timeaktuell = timelocal( '00', $aktmin, $akthour, $date, $month, $time1 );
 
 
-
-
-
-
     if ( $timeaktuell < $timecond2 && $timecond2 < $timecond1 )
 	{
 		
@@ -11751,34 +11438,20 @@ sub MSwitch_Checkcond_time($$) {
 	if ($conditionorg  =~ '!')
 	{
 		    MSwitch_LOG( $name, 6,"negierung gefunden: $conditionorg L:" . __LINE__ );
-
 			$condition =~ s/!//;
-			
-			MSwitch_LOG( $name, 6,"negierung gefunden: $return  L:" . __LINE__ );
 			$return = "($timeaktuell < $timecond1 || $timeaktuell > $timecond2)";
 
 	}
 	else
 	{
-		
 		$return = "($timecond1 <= $timeaktuell && $timeaktuell < $timecond2)";
 	}
 	
-	
-	
-	
-	
-	
-    
     if ( $days ne '' )
 	{
         $daycondition = MSwitch_Checkcond_day( $days, $name, $adday, $day );
         $return = "($return $daycondition)";
     }
-	
-	
-
-	
 	
     MSwitch_LOG( $name, 6,"Ergebniss zeitbezogene Bedingung: $return L:" . __LINE__ );
     return $return;
@@ -12450,8 +12123,31 @@ sub MSwitch_Createtimer($)
     my $msg         = $Name . " " . $newask . " " . 5;
     my $inhalt      = $newask . "-" . 5;
     $hash->{helper}{timer}{$newask} = "$inhalt";
-	
     InternalTimer( $newask, "MSwitch_Execute_Timer", $msg );
+	
+	
+	
+	 my @found_devices = devspec2array("TYPE=holiday");
+	 
+	 
+	 MSwitch_LOG( $Name, 6,"found holiday: ".@found_devices );
+
+	 if (@found_devices  > 0)
+	 {
+		 
+	$newask = $newask + 59;
+    my $newassktest = FmtDateTime($newask);
+    my $msg         = $Name . " " . $newask . " " . 51;
+    my $inhalt      = $newask . "-" . 51;
+    $hash->{helper}{timer}{$newask} = "$inhalt";
+    InternalTimer( $newask, "MSwitch_Execute_Timer", $msg );
+		 
+		 
+	 }
+	 
+	
+	
+	
 	return;
 }
 ##############################
@@ -12598,15 +12294,16 @@ sub MSwitch_Execute_Timer($) {
     readingsEndUpdate( $hash, $showevents );
 
 
-    MSwitch_LOG( $Name, 6,"ausführung Timer $Name: setze event L:" . __LINE__ );
+   # MSwitch_LOG( $Name, 0,"ausführung Timer $Name: setze event L:" . __LINE__ );
 
 
-	$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
-	$hash->{helper}{evtparts}{event}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
+	#$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
+	#$hash->{helper}{evtparts}{event}=$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents;
 	
-	Log3("test",5,$Name . ":execute_timer_P" . $param . ":" . $extime ." , ".$showevents);
+	#Log3("test",0,$Name . ":execute_timer_P" . $param . ":" . $extime ." , ".$showevents);
 	
-	
+	$hash->{helper}{evtparts}{evtfull}=$Name . ":execute_timer_P" . $param . ":" . $extime ;
+	$hash->{helper}{evtparts}{event}=$Name . ":execute_timer_P" . $param . ":" . $extime ;
 	
 	$hash->{helper}{evtparts}{evtpart1}=$Name;
 	$hash->{helper}{evtparts}{evtpart2}="execute_timer_P" . $param;
