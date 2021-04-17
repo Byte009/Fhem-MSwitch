@@ -315,7 +315,7 @@ Increase Beschreibung im Wiki
 <hr>
 Einstellung des auzuführenden Kommandos bei entsprechendem getriggerten Event.
 
-Bei angebotenen Zusatzfeldern kann ein Wert übergeben werden, dieses kann auch ein Verweis auf ein Reading eines anderen Devices gesetzt.
+Bei angebotenen Zusatzfeldern kann ein Wert übergeben werden, dieses kann auch ein Verweis auf z.B ein Reading eines anderen Devices sein .
 z.B. [Device:Reading].
 
 Hier sind zwei Möglichkeiten gegeben:
@@ -1165,16 +1165,27 @@ In den MSwitch_Readings besteht in bekanntem Umfang Zugriff auf Systemvariablen 
 MSwitch_EventMap ist in sowohl in der Funktion, als auch im Format fast analog zu dem FhemAttribut Eventmap.
 Der gravierende Unterschied ist, das dieses Eventmap nur für eingehende Events greift. Alle ausgehenden Events und/oder Statusmeldungen
 bleiben hiervon unberührt.
-Weiterhin ist eine dritte angabe mlglch , diese bestimmt den Eventteil, für den das Mapping angewendet werden soll.
+Weiterhin ist eine dritte angabe moeglich , diese bestimmt den Eventteil, für den das Mapping angewendet werden soll.
 dieses kann lauten: 
+
 EVENT - Anwendung alle Eventteile
 EVTPART1(2)(3) - Anwendung auf angegebenes Eventteil
 bleibt das dritte Feld frei wird ebenfalls auf das gesamte Event angewendet.
 
+Achtung : bei diesem Vorgehen wird IMMER jedes Eventteil fuer sich bearbeitet, es besteht nicht die mÖglichkeit, ein komplettes Event zu aendern.
+
+EVENTFULL
+
+mit dieser Option wird das eingehende Event im ganzen betrachtet und kann entsprechend auch im ganzen bearbeitet werden.
+
 Bleiben nach dem Mapping nur leere Felder übrig, dann werden diese durch 'undef' ersetzt.
 
-Format :  [/REGEX:ERSETZT_DURCH:EVENT/]
-mehrere Mappins sind durch Komma zu trennen.
+Format :  /REGEX:ERSETZT_DURCH:EVENT/
+
+Das erste gefundene Zeichen in der Angbabe dient als Trenner für mehrere Mappings , in diesem Fall das "/".
+Mehrere Angaben müssen entsprechend wie folgt angegeben werden:
+
+/REGEX:ERSETZT_DURCH:EVENT/REGEX1:ERSETZT_DURCH1:EVENT/ ....
 
 Es wird ein weiteres Reading (EVENT_ORG) angelegt. Dieses enthält immer das original eingehende Event.
 Ein Event wird durch dieses Reading nicht ausgelöst, es steht aber im aktuellen Durchlauf zur Verfügung.
