@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.4';  				# version
+my $version      = '5.41';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -1496,9 +1496,9 @@ sub MSwitch_Get($$@) {
             $x++;                        # exit
             last if $x > 20;             # exit
             my $timestamp = FmtDateTime($2);
-            chop $timestamp;
-            chop $timestamp;
-            chop $timestamp;
+            #chop $timestamp;
+           # chop $timestamp;
+            #chop $timestamp;
             my ( $st1, $st2 ) = split( / /, $timestamp );
             $condmarker = $1 . $st2 . $3;
         }
@@ -10576,7 +10576,7 @@ sub MSwitch_checkcondition($$$) {
 	$condition =~ s/\$wday|\[WDAY\]/$wday/g;
     $condition =~ s/\$min|\[MIN\]/$min/g;
     $condition =~ s/\$hour|\[HOUR\]/$hour/g;
-    $condition =~ s/\$hms|\[HMS\]/'$hms'/g;
+    $condition =~ s/\$hms|\[HMS\]/$hms/g;
 	$condition =~ s/\$time/$time/g;
 	$condition =~ s/\$NAME/$name/ig;
 	$condition =~ s/\$SELF/$name/ig;
@@ -10760,6 +10760,25 @@ sub MSwitch_checkcondition($$$) {
 		$x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
 	}
+	
+		$x = 0;
+	while ( $change =~ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/ ) 
+	{
+		
+		my $foundtimeorg = $1;
+		my $foundtime = $1;
+		MSwitch_LOG( $name, 6, "FOUND Zeitangabe: $foundtime ");
+		my ($HH,$MM,$SS) =split(/:/,$foundtime );
+		my $timecondtest = localtime;
+		$timecondtest =~ s/\s+/ /g;
+		my ( $tday, $tmonth, $tdate, $tn, $time1 ) = split( / /, $timecondtest );
+		my $newsecond = timelocal( $SS, $MM, $HH, $tdate, $tmonth, $time1 );
+		$change =~ s/$foundtimeorg/ $newsecond /g;
+		$x++;    # notausstieg notausstieg
+        last if $x > 20;    # notausstieg notausstieg
+	}
+	
+	
 	
 	$finalstring ="if (" . $change . "){\$answer = 'true';} else {\$answer = 'false';} ";
 	
