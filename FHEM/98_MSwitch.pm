@@ -10613,7 +10613,7 @@ sub MSwitch_checkcondition($$$) {
 		$convertreffer =~ s/\]/\\]/ig;
 		
 		#MSwitch_LOG( $name, 6,"treffer -> $treffer");
-		#MSwitch_LOG( $name, 6,"convertreffer -> $convertreffer");
+		#MSwitch_LOG( $name, 6,"gespeichert -> $setmarray{$aktarg} ");
 		
 		$change =~ s/$convertreffer/ $aktarg /ig;
 		
@@ -10625,6 +10625,9 @@ sub MSwitch_checkcondition($$$) {
     }
 	
 
+#return "false";
+
+
 	#############
 	#MSwitch_LOG( $name, 6,"nach setmagic -> $change ");
 	
@@ -10633,10 +10636,13 @@ sub MSwitch_checkcondition($$$) {
 	
 	foreach my $key ( (keys %setmarray) )
 		{
-			#MSwitch_LOG( $name, 6,"key: $key -> ".$setmarray{$key});
+			MSwitch_LOG( $name, 6,"key: $key -> ".$setmarray{$key});
 			my $arg = $setmarray{$key};
 			my $testarg = $setmarray{$key};
 			$testarg =~ s/[0-9]+//gs;
+			
+			MSwitch_LOG( $name, 6,"testarg: $testarg -> ");
+			
 			
 			##########
 			if ( $arg =~ '\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.*?):(.*?):(.*?)\]' )  
@@ -10668,9 +10674,9 @@ sub MSwitch_checkcondition($$$) {
 				next;
 			}
 			###########
-			if ( $testarg =~ '\[.*[a-zA-Z]{1}:.*\]' )  #reading
+			if ( $testarg =~ '\[.*[a-zA-Z]{1}.:.*\]' )  #reading
 			{
-				#MSwitch_LOG( $name, 6,"found setmagig: $arg -> ");
+				MSwitch_LOG( $name, 6,"found setmagig: $arg -> ");
 				$setnewmarray{$key} = MSwitch_Checkcond_state( $arg, $name );
 				$setnewminhaltarray{$key} = eval ($setnewmarray{$key});
 				next;
@@ -10691,11 +10697,11 @@ sub MSwitch_checkcondition($$$) {
 		
 			$data{MSwitch}{$hash}{condition}{$key}=$log ;
 			
-			#MSwitch_LOG( $name, 6,"key: $key -> ".$log);
-			#MSwitch_LOG( $name, 6,"change: $change-> ");
+			MSwitch_LOG( $name, 6,"key: $key -> ".$log);
+			MSwitch_LOG( $name, 6,"change: $change-> ");
 			
 			my $aktkey = $key;
-			#MSwitch_LOG( $name, 6,"aktkey: $aktkey-> ");
+			MSwitch_LOG( $name, 6,"aktkey: $aktkey-> ");
 	
 			if ( $setnewminhaltarray{$key} =~ '\d+$' )
 				{
@@ -10716,7 +10722,7 @@ sub MSwitch_checkcondition($$$) {
 					
 				}
 			
-			#MSwitch_LOG( $name, 6,"change1: $change-> ");
+			MSwitch_LOG( $name, 6,"change1: $change-> ");
 		
 		}
 
