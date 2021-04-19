@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.41';  				# version
+my $version      = '5.42';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -10600,6 +10600,57 @@ sub MSwitch_checkcondition($$$) {
 	my $change = $condition;
 	
 	my $x = 0;
+	
+	
+	
+	
+	
+
+    while ( $change =~ m/\{(.*?)\}/ )    #z.b $WE
+    {
+		#MSwitch_LOG( $name, 6,"FOUND PERL ");
+		
+		my $orgstring = $1;
+        my $tochange       = "\$field = " . $1;
+		
+		#MSwitch_LOG( $name, 6,"$tochange");
+        eval($tochange);
+		#MSwitch_LOG( $name, 6,"$field");
+
+	# ersetze alle metazeichen 
+		$orgstring =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+	#MSwitch_LOG( $name, 6,"ORG: $orgstring");
+
+       $change =~ s/\{$orgstring\}/$field/ig;
+       $x++;
+       last if $x > 10;    #notausstieg
+    }
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	$x=0;
 	my %setmarray;
     while ( $change =~ m/(\[[a-zA-Z0-9:\|_]+\])/ ) 
 	{
