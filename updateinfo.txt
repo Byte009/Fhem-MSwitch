@@ -1,3 +1,3 @@
 Version
-5.41
-Fix: 3stellige Zeitangaben in Bedingungen
+5.42
+Fix: sunset/sunrise etc.
