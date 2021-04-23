@@ -1,3 +1,3 @@
 Version
-5.42
-Fix: sunset/sunrise etc.
+5.43
+diverse kleinere Fehler behoben
