@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.42';  				# version
+my $version      = '5.43';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -4421,7 +4421,7 @@ sub MSwitch_Notify($$) {
 	
     my $statistic=0;
 
-
+    return if !$devName;
 
 if ( AttrVal( $ownName, 'MSwitch_Statistic', "0" ) == 1 ) {$statistic =1}
 
@@ -10487,16 +10487,16 @@ sub MSwitch_checkcondition($$$) {
 	
 	my $answer;
 	
-	if ( $futurelevel ne "1" )
-	{
-		MSwitch_LOG( $name, 6,"$name -> FLevel $futurelevel" );
-		my $ret = MSwitch_checkcondition1($condition, $name, $event );
-		return $ret;
-    }
+	# if ( $futurelevel ne "1" )
+	# {
+		# MSwitch_LOG( $name, 6,"$name -> FLevel $futurelevel" );
+		# my $ret = MSwitch_checkcondition1($condition, $name, $event );
+		# return $ret;
+    # }
 		
 	MSwitch_LOG( $name, 6,"SUB_checkcondition");
-    MSwitch_LOG( $name, 6, "Bedingungsprüfung Bedingung: $condition ");
-	MSwitch_LOG( $name, 6, "übergebenes Event: $event ");
+    MSwitch_LOG( $name, 6,"Bedingungsprüfung Bedingung: $condition ");
+	MSwitch_LOG( $name, 6,"übergebenes Event: $event ");
 	
 	# abbruch bei leerer condition
 	if ( !defined($condition) ) { return 'true'; }
@@ -10629,30 +10629,12 @@ sub MSwitch_checkcondition($$$) {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 	
 	$x=0;
 	my %setmarray;
-    while ( $change =~ m/(\[[a-zA-Z0-9:\|_]+\])/ ) 
+    while ( $change =~ m/(\[[a-zA-Z0-9:\.\|_]+\])/ ) 
 	{
 		my $treffer=$1;
 		
@@ -10660,8 +10642,11 @@ sub MSwitch_checkcondition($$$) {
 		$setmarray{$aktarg} =$treffer;
 		my $convertreffer=$treffer;
 		
-		$convertreffer =~ s/\[/\\[/ig;
-		$convertreffer =~ s/\]/\\]/ig;
+		#$convertreffer =~ s/\[/\\[/ig;
+		#$convertreffer =~ s/\]/\\]/ig;
+		
+		
+		$convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
 		
 		#MSwitch_LOG( $name, 6,"treffer -> $treffer");
 		#MSwitch_LOG( $name, 6,"gespeichert -> $setmarray{$aktarg} ");
@@ -10788,9 +10773,14 @@ sub MSwitch_checkcondition($$$) {
 	{
 		my $akttimer =$1;
 		my $orgtimer =$1;
-		$akttimer =~ s/\[/\\[/gs;
-		$akttimer =~ s/\]/\\]/gs;
-		$akttimer =~ s/\|/\\|/gs;	
+		#$akttimer =~ s/\[/\\[/gs;
+		#$akttimer =~ s/\]/\\]/gs;
+		#$akttimer =~ s/\|/\\|/gs;	
+		
+		#convertreffer
+		
+		$akttimer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+		
 		MSwitch_LOG( $name, 6, "FOUND Timer: $akttimer ");
 		my $newtimer =  MSwitch_Checkcond_time( $orgtimer, $name );
 		MSwitch_LOG( $name, 6, "NEW Timer: $newtimer ");
@@ -14798,15 +14788,23 @@ sub MSwitch_makefreecmd($$) {
 		my $newcode = "";
 
         ## variablendeklaration für perlcode / wird anfangs eingefügt
-        if ( exists $hash->{helper}{evtparts}{device} )
-		{
-            $newcode .= "my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";\n";
-        }
-        else
-		{
-            $newcode .= "my \$NAME = \"\";\n";
-        }
+        # if ( exists $hash->{helper}{evtparts}{device} )
+		# {
+            
+        # }
+        # else
+		# {
+            # $newcode .= "my \$NAME = \"\";\n";
+        # }
 
+$hash->{helper}{evtparts}{device} = "" if !exists $hash->{helper}{evtparts}{device};
+$hash->{helper}{evtparts}{evtfull} = "" if !exists $hash->{helper}{evtparts}{evtfull};
+$hash->{helper}{evtparts}{evtfull} = "" if !exists $hash->{helper}{evtparts}{evtfull};
+$hash->{helper}{evtparts}{evtpart1} = "" if !exists $hash->{helper}{evtparts}{evtpart1};
+$hash->{helper}{evtparts}{evtpart2} = "" if !exists $hash->{helper}{evtparts}{evtpart2};
+$hash->{helper}{evtparts}{evtpart3} = "" if !exists $hash->{helper}{evtparts}{evtpart3};
+
+		$newcode .= "my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";\n";
         $newcode .= "my \$SELF = \"" . $name . "\";\n";
 		$newcode .="my \$EVTPART1 = \"" . $hash->{helper}{evtparts}{evtpart1} . "\";\n";
         $newcode .= "my \$EVTPART2 = \"" . $hash->{helper}{evtparts}{evtpart2} . "\";\n";
