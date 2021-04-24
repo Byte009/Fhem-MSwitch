@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.43';  				# version
+my $version      = '5.44';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -12376,29 +12376,6 @@ sub MSwitch_Execute_Timer($) {
 	$hash->{helper}{evtparts}{evtpart3}=$extime ;
 
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
     if ( AttrVal( $Name, 'MSwitch_Condition_Time', "0" ) eq '1' )
 	{
         my $triggercondition = ReadingsVal( $Name, '.Trigger_condition', '' );
@@ -12408,7 +12385,7 @@ sub MSwitch_Execute_Timer($) {
         $triggercondition =~ s/#\[sp\]/ /g;
         if ( $triggercondition ne '' )
 		{
-            my $ret = MSwitch_checkcondition( $triggercondition, $Name, '' );
+            my $ret = MSwitch_checkcondition( $triggercondition, $Name, $hash->{helper}{evtparts}{evtfull} );
             if ( $ret eq 'false' )
 			{
                 return;
