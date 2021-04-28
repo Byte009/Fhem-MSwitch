@@ -1,4 +1,8 @@
 Version
+5.45
+Add: negierte Bedingung fuer Tage [HH:MM-HH:MM|!1234567]
+
+Version
 5.44
 Fix: Timerevents-übergabe an Conditions
 
