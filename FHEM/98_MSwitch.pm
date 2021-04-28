@@ -49,7 +49,7 @@ use LWP::Simple;
 use JSON;
 use HttpUtils;
 use Color;
-     
+      
 my $err="";
 my $updateinfo  = "";    # wird mit info zu neuen versionen besetzt
 my $generalinfo = "";    # wird mit aktuellen informationen besetzt
