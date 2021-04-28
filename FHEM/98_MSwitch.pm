@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.44';  				# version
+my $version      = '5.45';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -10769,7 +10769,10 @@ sub MSwitch_checkcondition($$$) {
 	##### timererkennung
 	
 	$x = 0;
-	while ( $change =~ m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/ ) 
+	#while ( $change =~ m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/ ) 
+	
+	while ( $change =~ m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[!0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/ ) 
+	
 	{
 		my $akttimer =$1;
 		my $orgtimer =$1;
@@ -10835,6 +10838,12 @@ sub MSwitch_checkcondition($$$) {
 	
 	
     MSwitch_LOG( $name, 6, "Bedingungsprüfung (final): $finalstring ");
+	
+	
+	#return "false";
+	
+	
+	
 	
 	my $ret;
 		{
@@ -11430,6 +11439,8 @@ sub MSwitch_Checkcond_time($$) {
 	$condition =~ s/!//;
     $condition =~ s/\[//;
     $condition =~ s/\]//;
+	
+	
     my $hash         = $defs{$name};
     my $adday        = 0;
     my $days         = '';
@@ -11501,7 +11512,7 @@ sub MSwitch_Checkcond_time($$) {
 	
 	my $return;
 	
-	if ($conditionorg  =~ '!')
+	if ($conditionorg  =~ '\[!')
 	{
 		    MSwitch_LOG( $name, 6,"negierung gefunden: $conditionorg L:" . __LINE__ );
 			$condition =~ s/!//;
@@ -11565,6 +11576,18 @@ sub MSwitch_Checkcond_history($$) {
 sub MSwitch_Checkcond_day($$$$) {
     my ( $days, $name, $adday, $day ) = @_;
     MSwitch_LOG( $name, 6,"tagesbezogene Bedingung gefunden: $days L:" . __LINE__ );
+	
+	
+	my $rzeichen = "==";
+	if ($days  =~ '^!')
+	{
+	$days =~ s/!//;
+	MSwitch_LOG( $name, 6,"tagesbezogene Bedingung negiert: $days L:" . __LINE__ );	
+	$rzeichen = "!=";
+	}
+	
+	
+	
     my %daysforcondition = (
         "Mon" => 1,
         "Tue" => 2,
@@ -11581,7 +11604,7 @@ sub MSwitch_Checkcond_day($$$$) {
 	{
         if ( $adday == 1 ) { $args++; }
         if ( $args == 8 ) { $args = 1 }
-        $daycond = $daycond . "($day == $args) || ";
+        $daycond = $daycond . "($day $rzeichen $args) || ";
     }
     chop $daycond;
     chop $daycond;
