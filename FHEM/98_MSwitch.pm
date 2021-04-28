@@ -11579,11 +11579,13 @@ sub MSwitch_Checkcond_day($$$$) {
 	
 	
 	my $rzeichen = "==";
+	my $logik ="||";
 	if ($days  =~ '^!')
 	{
 	$days =~ s/!//;
 	MSwitch_LOG( $name, 6,"tagesbezogene Bedingung negiert: $days L:" . __LINE__ );	
 	$rzeichen = "!=";
+	$logik ="&&";
 	}
 	
 	
@@ -11604,7 +11606,7 @@ sub MSwitch_Checkcond_day($$$$) {
 	{
         if ( $adday == 1 ) { $args++; }
         if ( $args == 8 ) { $args = 1 }
-        $daycond = $daycond . "($day $rzeichen $args) || ";
+        $daycond = $daycond . "($day $rzeichen $args) $logik  ";
     }
     chop $daycond;
     chop $daycond;
