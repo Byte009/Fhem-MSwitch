@@ -1076,6 +1076,12 @@ function activate(state,target,options,copytofield){
 		werte[state]='textField';
 		}	
 	devicecmd = werte[state].split(",");
+	
+	
+	//alert (devicecmd[0]);
+	
+	
+	
 	if (devicecmd[0] == 'noArg'){noarg(target,copytofield);}
 	else if (devicecmd[0] == 'no_Action')
 	{
@@ -1083,6 +1089,9 @@ function activate(state,target,options,copytofield){
 	}
 	
 	else if (devicecmd[0] == 'textfieldLong'){textfieldlong(copytofield,target);}
+	
+	
+	
 	//else if (devicecmd[0] == 'select') {selectfield(werte[state],target,copytofield);}
 //	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);}
 /* 	else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);}
@@ -1093,7 +1102,7 @@ function activate(state,target,options,copytofield){
 	
 	else {textfield(copytofield,target);}
 	
-	if (webwidget == 1 && state != '[FREECMD]' && devicecmd[0] != "noArg" )
+	if (webwidget == 1 && state != '[FREECMD]' && devicecmd[0] != "noArg" && devicecmd[0] != "textField" )
 	{
 
 	var selected =document.getElementById(copytofield).value;
