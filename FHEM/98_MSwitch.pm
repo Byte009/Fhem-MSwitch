@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.45';  				# version
+my $version      = '5.46';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -6428,6 +6428,13 @@ MSwitch_defineWidgets($hash);
         $hidden = 'hidden';
     }
 
+
+
+
+#$hidden = '';
+
+
+
     my $triggerdevices = '';
     my $events         = ReadingsVal( $Name, '.Device_Events', '' );
     my @eventsall      = split( /#\[tr\]/, $events );
@@ -10648,13 +10655,13 @@ sub MSwitch_checkcondition($$$) {
 		
 		$convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
 		
-		#MSwitch_LOG( $name, 6,"treffer -> $treffer");
-		#MSwitch_LOG( $name, 6,"gespeichert -> $setmarray{$aktarg} ");
+		MSwitch_LOG( $name, 6,"treffer -> $treffer");
+		MSwitch_LOG( $name, 6,"gespeichert -> $setmarray{$aktarg} ");
 		
 		$change =~ s/$convertreffer/ $aktarg /ig;
 		
-		#MSwitch_LOG( $name, 6,"nach smlauf -> $change ");
-		#MSwitch_LOG( $name, 6,"##################### ");
+		MSwitch_LOG( $name, 6,"nach smlauf -> $change ");
+		MSwitch_LOG( $name, 6,"##################### ");
 	
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
@@ -10710,7 +10717,7 @@ sub MSwitch_checkcondition($$$) {
 				next;
 			}
 			###########
-			if ( $testarg =~ '\[.*[a-zA-Z]{1}.:.*\]' )  #reading
+			if ( $testarg =~ '\[.*[a-zA-Z_]{1}.:.*\]' )  #reading
 			{
 				MSwitch_LOG( $name, 6,"found setmagig: $arg -> ");
 				$setnewmarray{$key} = MSwitch_Checkcond_state( $arg, $name );
