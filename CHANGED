@@ -1,4 +1,8 @@
 Version
+5.47
+Fix: regex again - '\d+$' -> '^\d+$'
+
+Version
 5.46
 Fix: regex
 
