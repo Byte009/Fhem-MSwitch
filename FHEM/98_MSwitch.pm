@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.46';  				# version
+my $version      = '5.47';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -10605,29 +10605,21 @@ sub MSwitch_checkcondition($$$) {
 	### ersetze setmagic ###
 	
 	my $change = $condition;
-	
 	my $x = 0;
 	
-	
-	
-	
-	
 
+	# perlersetzung
     while ( $change =~ m/\{(.*?)\}/ )    #z.b $WE
     {
-		#MSwitch_LOG( $name, 6,"FOUND PERL ");
-		
+	#MSwitch_LOG( $name, 6,"FOUND PERL ");
 		my $orgstring = $1;
         my $tochange       = "\$field = " . $1;
-		
-		#MSwitch_LOG( $name, 6,"$tochange");
+	#MSwitch_LOG( $name, 6,"$tochange");
         eval($tochange);
-		#MSwitch_LOG( $name, 6,"$field");
-
+	#MSwitch_LOG( $name, 6,"$field");
 	# ersetze alle metazeichen 
 		$orgstring =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
 	#MSwitch_LOG( $name, 6,"ORG: $orgstring");
-
        $change =~ s/\{$orgstring\}/$field/ig;
        $x++;
        last if $x > 10;    #notausstieg
@@ -10635,75 +10627,55 @@ sub MSwitch_checkcondition($$$) {
 	
 	
 	
-	
-
-	
-	
 	$x=0;
 	my %setmarray;
     while ( $change =~ m/(\[[a-zA-Z0-9:\.\|_]+\])/ ) 
 	{
 		my $treffer=$1;
-		
 		my $aktarg = "SETMAGIC_".$x;
 		$setmarray{$aktarg} =$treffer;
 		my $convertreffer=$treffer;
-		
-		#$convertreffer =~ s/\[/\\[/ig;
-		#$convertreffer =~ s/\]/\\]/ig;
-		
-		
+	# ersetze alle metazeichen	
 		$convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
-		
-		MSwitch_LOG( $name, 6,"treffer -> $treffer");
-		MSwitch_LOG( $name, 6,"gespeichert -> $setmarray{$aktarg} ");
-		
+	MSwitch_LOG( $name, 6,"treffer -> $treffer");
+	MSwitch_LOG( $name, 6,"gespeichert -> $setmarray{$aktarg} ");
 		$change =~ s/$convertreffer/ $aktarg /ig;
-		
-		MSwitch_LOG( $name, 6,"nach smlauf -> $change ");
-		MSwitch_LOG( $name, 6,"##################### ");
-	
+	MSwitch_LOG( $name, 6,"nach smlauf -> $change ");
+	MSwitch_LOG( $name, 6,"##################### ");
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
     }
 	
-
-#return "false";
-
-
-	#############
-	#MSwitch_LOG( $name, 6,"nach setmagic -> $change ");
+#############
+#MSwitch_LOG( $name, 6,"nach setmagic -> $change ");
 	
 	my %setnewmarray;
 	my %setnewminhaltarray;
 	
 	foreach my $key ( (keys %setmarray) )
 		{
-			MSwitch_LOG( $name, 6,"key: $key -> ".$setmarray{$key});
+		MSwitch_LOG( $name, 6,"key: $key -> ".$setmarray{$key});
 			my $arg = $setmarray{$key};
 			my $testarg = $setmarray{$key};
 			$testarg =~ s/[0-9]+//gs;
-			
-			MSwitch_LOG( $name, 6,"testarg: $testarg -> ");
-			
-			
+		MSwitch_LOG( $name, 6,"testarg: $testarg -> ");
 			##########
 			if ( $arg =~ '\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.*?):(.*?):(.*?)\]' )  
 			{
-			my $evalstring = "$1('$2','$3','$4')";
-			my $inhalt = eval($evalstring);
+				my $evalstring = "$1('$2','$3','$4')";
+				my $inhalt = eval($evalstring);
 			MSwitch_LOG( $name, 6,"evalstring : $evalstring");
 			MSwitch_LOG( $name, 6,"evalreturn : $inhalt");
-			$setnewmarray{$key} =  $evalstring;
-			$setnewminhaltarray{$key} = $inhalt;
-			next;
+				$setnewmarray{$key} =  $evalstring;
+				$setnewminhaltarray{$key} = $inhalt;
+				next;
 			}
 			###########
 			if ( $testarg =~ '\[.*?:h\]' ) #history
 			{
-				MSwitch_LOG( $name, 6,"found history: $arg -> ");
+			MSwitch_LOG( $name, 6,"found history: $arg -> ");
 				$setnewmarray{$key} = MSwitch_Checkcond_history( $arg, $name );
-				#MSwitch_LOG( $name, 6,"found history return: -$setnewmarray{$key}- ");
+			#MSwitch_LOG( $name, 6,"found history return: -$setnewmarray{$key}- ");
 				if ($setnewmarray{$key} eq "''")
 					{
 						$setnewmarray{$key} = "undef";
@@ -10719,13 +10691,13 @@ sub MSwitch_checkcondition($$$) {
 			###########
 			if ( $testarg =~ '\[.*[a-zA-Z_]{1}.:.*\]' )  #reading
 			{
-				MSwitch_LOG( $name, 6,"found setmagig: $arg -> ");
+			MSwitch_LOG( $name, 6,"found setmagig: $arg -> ");
 				$setnewmarray{$key} = MSwitch_Checkcond_state( $arg, $name );
 				$setnewminhaltarray{$key} = eval ($setnewmarray{$key});
 				next;
 			}
 			
-			#MSwitch_LOG( $name, 6,"found nothing: $arg -> ");
+		#MSwitch_LOG( $name, 6,"found nothing: $arg -> ");
 			$setnewmarray{$key} = $setmarray{$key};
 			$setnewminhaltarray{$key} = $setmarray{$key};
 				
@@ -10746,10 +10718,10 @@ sub MSwitch_checkcondition($$$) {
 			my $aktkey = $key;
 			MSwitch_LOG( $name, 6,"aktkey: $aktkey-> ");
 	
-			if ( $setnewminhaltarray{$key} =~ '\d+$' )
+			if ( $setnewminhaltarray{$key} =~ '^\d+$' )
 				{
-					#MSwitch_LOG( $name, 6,"FOUND DIGIT: $change-> ");
-					#MSwitch_LOG( $name, 6,"DIGIT-> $setnewminhaltarray{$key}");
+				MSwitch_LOG( $name, 6,"FOUND DIGIT: $change-> ");
+				MSwitch_LOG( $name, 6,"DIGIT-> $setnewminhaltarray{$key}");
 					$change =~ s/ $key /$setnewminhaltarray{$key}/g;
 					$change1 =~ s/ $key /$setnewminhaltarray{$key}/g;
 				}
@@ -10762,7 +10734,6 @@ sub MSwitch_checkcondition($$$) {
 				{	
 					$change =~ s/ $key /"$setnewminhaltarray{$key}"/g;
 					$change1 =~ s/ $key /$setnewmarray{$key}/g;
-					
 				}
 			
 			MSwitch_LOG( $name, 6,"change1: $change-> ");
@@ -10846,11 +10817,7 @@ sub MSwitch_checkcondition($$$) {
 	
     MSwitch_LOG( $name, 6, "Bedingungsprüfung (final): $finalstring ");
 	
-	
-	#return "false";
-	
-	
-	
+
 	
 	my $ret;
 		{
