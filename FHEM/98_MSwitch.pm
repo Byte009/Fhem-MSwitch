@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.47';  				# version
+my $version      = '5.48';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -10717,8 +10717,13 @@ sub MSwitch_checkcondition($$$) {
 			
 			my $aktkey = $key;
 			MSwitch_LOG( $name, 6,"aktkey: $aktkey-> ");
+			
+			
+	#my $test = $setnewminhaltarray{$key};
+	#$test =~ s/\.//g;
 	
-			if ( $setnewminhaltarray{$key} =~ '^\d+$' )
+	
+			if ( $setnewminhaltarray{$key} =~ '^[\d\.]+$' )
 				{
 				MSwitch_LOG( $name, 6,"FOUND DIGIT: $change-> ");
 				MSwitch_LOG( $name, 6,"DIGIT-> $setnewminhaltarray{$key}");
@@ -11692,10 +11697,20 @@ sub MSwitch_Createtimer($)
 	$timerexist =1;
 	## timer in felder teilen 
 	my @alltimers = split (/\[NEXTTIMER\]/,$timer);
+	
+	MSwitch_LOG($Name, 6,"alltimers -> @alltimers" );
+	
 	EACHTIMER: foreach my $einzeltimer (@alltimers)
 	{
 ######################## ersetzungen	
 		#ersetze Snippetz
+		
+		
+		
+		MSwitch_LOG($Name, 6,"einzeltimer -> $einzeltimer" );
+		
+		
+		
 		my $x =0;	
 		while ( $einzeltimer =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ )
 		{
@@ -11708,6 +11723,43 @@ sub MSwitch_Createtimer($)
 			$ret =~ s/\n/#[nl]/g;
 			$einzeltimer = $firstpart .$ret . $lastpart;
 		}	
+		
+		
+		
+		# suche nach setmagic	
+	$x = 0;
+    while ( $einzeltimer =~ m/(.*)\[([0-9]?[a-zA-Z\$]{1}.*\:.*?)\](.*)/ )
+	{
+        $x++;    # notausstieg
+        last if $x > 20;    # notausstieg
+		
+		
+		
+		
+		my $firstpart = $1;
+		my $devname = $2;
+		my $lastpart =$3;
+		
+		MSwitch_LOG($Name, 6,"FOUND -> $devname" );
+		
+		$devname =~ s/\$SELF/$Name/g;
+		my ($device,$reading)= split (/:/,$devname);
+        my $setmagic = ReadingsVal( $device, $reading, 'wrongformat' );
+        $einzeltimer = $firstpart  . $setmagic  . $lastpart;
+		
+		MSwitch_LOG($Name, 6, "einzeltimer -> $einzeltimer" );
+		
+    }	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	#ersetze Perl	
 	$x=0;
     while ( $einzeltimer =~ m/(.*)\{(.*)\}(.*)/ ) 
@@ -11733,20 +11785,20 @@ sub MSwitch_Createtimer($)
         }
     }	
 		
-	# suche nach setmagic	
-	$x = 0;
-    while ( $einzeltimer =~ m/(.*)\[([0-9]?[a-zA-Z\$]{1}.*\:.*?)\](.*)/ )
-	{
-        $x++;    # notausstieg
-        last if $x > 20;    # notausstieg
-		my $firstpart = $1;
-		my $devname = $2;
-		my $lastpart =$3;
-		$devname =~ s/\$SELF/$Name/g;
-		my ($device,$reading)= split (/:/,$devname);
-        my $setmagic = ReadingsVal( $device, $reading, 'wrongformat' );
-        $einzeltimer = $firstpart  . $setmagic  . $lastpart;
-    }	
+	# # suche nach setmagic	
+	# $x = 0;
+    # while ( $einzeltimer =~ m/(.*)\[([0-9]?[a-zA-Z\$]{1}.*\:.*?)\](.*)/ )
+	# {
+        # $x++;    # notausstieg
+        # last if $x > 20;    # notausstieg
+		# my $firstpart = $1;
+		# my $devname = $2;
+		# my $lastpart =$3;
+		# $devname =~ s/\$SELF/$Name/g;
+		# my ($device,$reading)= split (/:/,$devname);
+        # my $setmagic = ReadingsVal( $device, $reading, 'wrongformat' );
+        # $einzeltimer = $firstpart  . $setmagic  . $lastpart;
+    # }	
 	
 	
 	
