@@ -1,6 +1,10 @@
 Version
+5.48
+Fix: templateanpassung
+
+Version
 5.47
-Fix: regex again - '\d+$' -> '^\d+$'
+Fix: regex again 
 
 Version
 5.46
