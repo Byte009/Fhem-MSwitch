@@ -1,3 +1,3 @@
 Version
-5.47
-Fix: regex again 
+5.48
+Fix: templateanpassung
