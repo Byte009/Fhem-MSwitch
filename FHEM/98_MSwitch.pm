@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.48';  				# version
+my $version      = '5.49';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -977,49 +977,74 @@ sub MSwitch_LoadHelper($) {
 ############################
 
         setDevAttrList( $Name, $attrresetlist );
-		
-		# suche nach CONFIGDEVICE
-        my @found_devices = devspec2array("TYPE=MSwitch:FILTER=.msconfig=1");
+	
 
-        ##############
-        if ( @found_devices > 0 && $defs{ $found_devices[0] }&& ReadingsVal( $found_devices[0], 'status','settings_nicht_anwenden' ) eq 'settings_anwenden')
-        {
-            my $confighash = $defs{ $found_devices[0] };
-            my $configtype = $confighash->{TYPE};
-            if ( $configtype eq "MSwitch" ) 
-			{
-                my $testreading = $confighash->{READINGS};
-                my @areadings   = ( keys %{$testreading} );
-                foreach my $key (@areadings) 
-				{
-                    next if ( $key !~ m/(^MSwitch_.*|^disabled.*)/ );
-                    next if ReadingsVal( $found_devices[0], $key, 'undef' ) eq "";
-                    my $aktset = ReadingsVal( $found_devices[0], $key, 'undef' );
-                    $attr{$Name}{$key} = "$aktset";
-                }
-            }
-        }
-        else 
-		{
-            #setze alle attrs
-            $attr{$Name}{MSwitch_Eventhistory}        = '0';
-            $attr{$Name}{MSwitch_Safemode}            = $startsafemode;
-            $attr{$Name}{MSwitch_Help}                = '0';
-            $attr{$Name}{MSwitch_Debug}               = '0';
-            $attr{$Name}{MSwitch_Expert}              = '0';
-            $attr{$Name}{MSwitch_Delete_Delays}       = '1';
-            $attr{$Name}{MSwitch_Include_Devicecmds}  = '1';
-            $attr{$Name}{MSwitch_Include_Webcmds}     = '0';
-            $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
-            $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
-            $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
-            $attr{$Name}{MSwitch_Extensions}          = '0';
-            $attr{$Name}{MSwitch_Mode}                = $startmode;
-			$attr{$Name}{MSwitch_generate_Events}     = $MSwitch_generate_Events;
-			
-            fhem("attr $Name room MSwitch_Devices");
-        }
+
+
+
+
+
+
+
+
+
+
+
+	
+		# # suche nach CONFIGDEVICE
+        # my @found_devices = devspec2array("TYPE=MSwitch:FILTER=.msconfig=1");
+
+        # ##############
+        # if ( @found_devices > 0 && $defs{ $found_devices[0] }&& ReadingsVal( $found_devices[0], 'status','settings_nicht_anwenden' ) eq 'settings_anwenden')
+        # {
+            # my $confighash = $defs{ $found_devices[0] };
+            # my $configtype = $confighash->{TYPE};
+            # if ( $configtype eq "MSwitch" ) 
+			# {
+                # my $testreading = $confighash->{READINGS};
+                # my @areadings   = ( keys %{$testreading} );
+                # foreach my $key (@areadings) 
+				# {
+                    # next if ( $key !~ m/(^MSwitch_.*|stateFormat|devStateIcon|icon|room|disable)/ );
+					# #next if ( $key !~ m/(^MSwitch_.*|^disabled.*)/ );
+					
+                    # next if ReadingsVal( $found_devices[0], $key, 'undef' ) eq "";
+                    # my $aktset = ReadingsVal( $found_devices[0], $key, 'undef' );
+                    # $attr{$Name}{$key} = "$aktset";
+                # }
+            # }
+        # }
+        # else 
+		# {
+            # #setze alle attrs
+            # $attr{$Name}{MSwitch_Eventhistory}        = '0';
+            # $attr{$Name}{MSwitch_Safemode}            = $startsafemode;
+            # $attr{$Name}{MSwitch_Help}                = '0';
+            # $attr{$Name}{MSwitch_Debug}               = '0';
+            # $attr{$Name}{MSwitch_Expert}              = '0';
+            # $attr{$Name}{MSwitch_Delete_Delays}       = '1';
+            # $attr{$Name}{MSwitch_Include_Devicecmds}  = '1';
+            # $attr{$Name}{MSwitch_Include_Webcmds}     = '0';
+            # $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
+            # $attr{$Name}{MSwitch_Include_MSwitchcmds} = '0';
+            # $attr{$Name}{MSwitch_Lock_Quickedit}      = '1';
+            # $attr{$Name}{MSwitch_Extensions}          = '0';
+            # $attr{$Name}{MSwitch_Mode}                = $startmode;
+			# $attr{$Name}{MSwitch_generate_Events}     = $MSwitch_generate_Events;
+            # fhem("attr $Name room MSwitch_Devices");
+        # }
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
     }
+	
 
 ################ erste initialisierung eines devices
 
@@ -1167,6 +1192,75 @@ sub MSwitch_Define($$) {
 
     if ( $init_done && !defined( $hash->{OLDDEF} ) )
 	{
+			
+		   my @found_devices = devspec2array("TYPE=MSwitch:FILTER=.msconfig=1");
+
+        ##############
+        if ( @found_devices > 0 && $defs{ $found_devices[0] }&& ReadingsVal( $found_devices[0], 'status','settings_nicht_anwenden' ) eq 'settings_anwenden')
+        {
+            my $confighash = $defs{ $found_devices[0] };
+            my $configtype = $confighash->{TYPE};
+            if ( $configtype eq "MSwitch" ) 
+			{
+                my $testreading = $confighash->{READINGS};
+                my @areadings   = ( keys %{$testreading} );
+                foreach my $key (@areadings) 
+				{
+                    next if ( $key !~ m/(^MSwitch_.*|stateFormat|devStateIcon|icon|room|disable)/ );
+					#next if ( $key !~ m/(^MSwitch_.*|^disabled.*)/ );
+					
+                    next if ReadingsVal( $found_devices[0], $key, 'undef' ) eq "";
+                    my $aktset = ReadingsVal( $found_devices[0], $key, 'undef' );
+                    $attr{$name}{$key} = "$aktset";
+                }
+            }
+        }
+        else 
+		{
+            #setze alle attrs
+            $attr{$name}{MSwitch_Eventhistory}        = '0';
+            $attr{$name}{MSwitch_Safemode}            = $startsafemode;
+            $attr{$name}{MSwitch_Help}                = '0';
+            $attr{$name}{MSwitch_Debug}               = '0';
+            $attr{$name}{MSwitch_Expert}              = '0';
+            $attr{$name}{MSwitch_Delete_Delays}       = '1';
+            $attr{$name}{MSwitch_Include_Devicecmds}  = '1';
+            $attr{$name}{MSwitch_Include_Webcmds}     = '0';
+            $attr{$name}{MSwitch_Include_MSwitchcmds} = '0';
+            $attr{$name}{MSwitch_Include_MSwitchcmds} = '0';
+            $attr{$name}{MSwitch_Lock_Quickedit}      = '1';
+            $attr{$name}{MSwitch_Extensions}          = '0';
+            $attr{$name}{MSwitch_Mode}                = $startmode;
+			$attr{$name}{MSwitch_generate_Events}     = $MSwitch_generate_Events;
+			
+            fhem("attr $name room MSwitch_Devices");
+        }
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
         my $timecond = gettimeofday() + 5;
         InternalTimer( $timecond, "MSwitch_check_init", $hash );
     }
@@ -11764,6 +11858,10 @@ sub MSwitch_Createtimer($)
 	$x=0;
     while ( $einzeltimer =~ m/(.*)\{(.*)\}(.*)/ ) 
 	{
+		
+		MSwitch_LOG($Name, 6, "einzeltimer perl -> $einzeltimer" );	
+		
+		
         $x++;    # notausstieg
         last if $x > 20;    # notausstieg
         if ( defined $2 ) 
@@ -11782,6 +11880,9 @@ sub MSwitch_Createtimer($)
 			if ($part2hh >23 ) {$part2hh = $part2hh -24}
 			$part2 = $part2hh.":".$part2mm;
             $einzeltimer = $part1 . $part2 . $part3;
+			
+			MSwitch_LOG($Name, 6, "einzeltimer nach perl -> $einzeltimer" );	
+			
         }
     }	
 		
