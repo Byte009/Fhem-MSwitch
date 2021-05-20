@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.49';  				# version
+my $version      = '5.50';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -2966,6 +2966,15 @@ if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1
 #################################
 #Systembefehle
 
+
+
+
+
+
+
+
+
+
 if ( $cmd eq 'wizardcont') 				{MSwitch_Set_wizard($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'wizardcont1') 			{MSwitch_Set_wizard1($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'writelog') 				{MSwitch_Set_Writelog($hash, $name, $cmd, @args);return;}
@@ -2973,6 +2982,10 @@ if ( $cmd eq 'timer' ) 					{MSwitch_Set_timer($hash, $name, $cmd, @args);return
 if ( $cmd eq 'showgroup')				{MSwitch_makegroupcmdout( $hash, $args[0]);return;}
 if ( $cmd eq 'undo') 					{MSwitch_Set_Undo($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'savetemplate')			{MSwitch_savetemplate( $hash, $args[0], $args[1] );return;}
+
+if ( $cmd eq 'loadreadings')				{my $ret = MSwitch_reloadreadings( $hash, $args[0] );return $ret;}
+
+
 if ( $cmd eq 'template')				{my $ret = MSwitch_gettemplate( $hash, $args[0] );return $ret;}
 if ( $cmd eq 'reset_Switching_once') 	{MSwitch_Set_switching_once( $hash, $args[0], $args[1] );return;}
 if ( $cmd eq 'groupreload') 			{my $ret = MSwitch_reloaddevices( $hash, $args[0] );return $ret;}
@@ -6076,7 +6089,10 @@ sub MSwitch_fhemwebconf($$$$) {
     $return .="<input type=\"text\" id = \"templatename\" value=\"\"  style=\"background-color:transparent\">";
     $return .="&nbsp;<input type=\"button\" id = \"savetemplata\" value=\"Template lokal speichern\"  style=\"\" onclick=\"javascript: savetemplate()\">";
     $return .="&nbsp;<input type=\"button\" id = \"\" value=\"FreeCmd kodieren\"  style=\"\" onclick=\"javascript: showkode()\">";
-    $return .= "<br>&nbsp;<br>";
+    
+	$return .="&nbsp;<input type=\"button\" id = \"\" value=\"Hilfe\"  style=\"\" onclick=\"javascript: alert(\'Verfügbar ab V5.31\')\">";
+
+	$return .= "<br>&nbsp;<br>";
 	$return .= "<div id='decode' style=\"display:none\">";
     $return .="<textarea id='decode1' style='width: 100%; height: 100px'>### insert code ###</textarea>";
     $return .="<br><input type=\"button\" id = \"\" value=\"kodieren\"  style=\"\" onclick=\"javascript: decode()\">";
@@ -10455,7 +10471,7 @@ sub MSwitch_Exec_Notif($$$$$) {
     my $msg;
     MSwitch_LOG( $name, 6, "Ausführung Befehlsstapel " );
 	
-    if ( AttrVal( $name, 'MSwitch_Switching_once', 0 ) == 1
+    if ( defined $fullstring && AttrVal( $name, 'MSwitch_Switching_once', 0 ) == 1
         && $fullstring eq $hash->{helper}{lastexecute} )
     {
         MSwitch_LOG( $name, 6,"Ausfuehrung Befehlsstapel abgebrochen - Stapel wurde bereits ausgeführt ");
@@ -12889,7 +12905,7 @@ sub MSwitch_Check_Event($$) {
     if ( $eventin eq $hash )
 	{
         my $logout = $hash->{helper}{writelog};
-        $logout =~ s/:/[#dp]/g;
+        #$logout =~ s/:/[#dp]/g;
         my $triggerdevice =ReadingsVal( $Name, '.Trigger_device', 'no_trigger' );
         if ( ReadingsVal( $Name, '.Trigger_device', '' ) eq "all_events" )
 		{
@@ -15335,6 +15351,21 @@ sub MSwitch_reloaddevices($$) {
 	my $newsets = join( "[|]", @devscmd );
 	$string = "$newnames" . "[TRENNER]" . "$newsets";
     return $string;
+}
+
+#########################################
+sub MSwitch_reloadreadings($$) {
+    my ( $hash, $arg1 ) = @_;
+    my $Name = $hash->{NAME};
+	#################
+	#MSwitch_LOG( $Name, 0, "suche readings: arg1 ->  $arg1 L:" . __LINE__ );
+	my $devhash = $defs{$arg1}; #name des devices
+	my $testreading = $devhash ->{READINGS};
+	my @areadings = ( keys %{$testreading} ); # enthält alle readings des devices
+	#MSwitch_LOG( $Name, 0, "gefundene readings: @areadings L:" . __LINE__ );
+	my $readings = join( "[|]", sort @areadings );
+	#####################
+    return $readings;
 }
 
 ###############################################
