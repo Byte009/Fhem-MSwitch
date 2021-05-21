@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V5.3';
+	var version = 'V5.2';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -746,11 +746,6 @@ function setnotify1(name){
 	var cmd = name.substring(first+1,laenge);
 	document.getElementById('comandnotify').value=cmd;
 	var trigger = name.substring(0,first);
-	
-	
-	//alert(name);
-	//alert(trigger);
-	
 	var mapp = trigger.match(/^(\()(.*)(\))/);
 	if (mapp!=null && mapp.length!=0)
 		{	
@@ -766,9 +761,6 @@ function setnotify1(name){
 		}
 	
 	var mapp1 = trigger.match(/(.*):(.*:.*)/);
-	
-	
-	
 	if (mapp1!=null && mapp1.length!=0)
 		{	
 		var tdevice = mapp1[1];
@@ -1279,7 +1271,7 @@ function starttemplate(template){
 function testline(line,newtemplate){
 	var cmdsatz = line.split(">>");
 	if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-	if (cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "MINIMAL" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARREADING" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
+	if (cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "MINIMAL" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
 
 		if (INQ[cmdsatz[0]]== "1")
 		{
@@ -1420,46 +1412,6 @@ if (cmdsatz[0] == "VAREVENT"){
 	}
 }
 
-
-
-
-
-// VAREVENT>>VARNAME>>VARTEXT
-if (cmdsatz[0] == "VARREADING"){
-	var testvar = cmdsatz[1].match(/^\$.*/);
-	inhalt1 = changevar(cmdsatz[2]);
-	//alert(testvar);
-	
-	if (testvar!=null && testvar.length!=0)
-	{
-		var toset = cmdsatz[1];
-		var readingdevice = cmdsatz[2];
-		var text = cmdsatz[3];
-				
-			
-				
-		document.getElementById('bank4').value=toset;	
-		document.getElementById('bank7').value=text;			
-		document.getElementById('bank8').value=newtemplate;	
-				
-		//alert("found reading "+readingdevice);
-		//alert("inhalt1 "+inhalt1);
-				
-		FW_cmd(FW_root+'?cmd=set '+devicename+' loadreadings '+inhalt1+' &XHR=1', function(data){VARREADINGS(data)})
-
-		//eventinputvar(text,toset,newtemplate,typ);
-		return "stop";
-	}
-	else
-	{
-	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
-	}
-}
-
-
-
-
-
 // VARASK>>VARNAME>>VARTEXT
 if (cmdsatz[0] == "VARASK"){
 	var testvar = cmdsatz[1].match(/^\$.*/);
@@ -1558,47 +1510,6 @@ return "go";
 
 // #################
 
-function VARREADINGS(readings,varname,newtemplate){
-	var out ="";
-	
-// alert("rückgabe ok");
- //alert("readings "+readings);
- //alert("varname "+varname);
- //alert("newtemplate "+newtemplate);
-
-	ret="";
-	ret+=document.getElementById('bank7').value;
-	ret=changevar(ret);
-	ret+="<br>&nbsp;<br>";
-	ret+= '<select id =\"readings\" name=\"readings\" >';
-	newreadings = readings.split("\[|\]");
-	ret +='<option value=\"select\">bitte wählen:</option>';
-	for (i = 0; i < newreadings.length; i++) 
-	{
-	ret +='<option value=\''+newreadings[i]+'\'>'+newreadings[i]+'</option>';	
-	}
-	ret +='</select>';
-	ret+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setVARREADINGok(\"\")'>";
-	ret+="<br>&nbsp;<br>&nbsp;<br>";
-	ret+="<input id='newtemplate' type='text' value='"+document.getElementById('bank8').value+"' "+style+">";
-	document.getElementById('importTemplate1').innerHTML = ret;
-	
-return;
-}
-
-function setVARREADINGok(input){
-varname = document.getElementById('bank4').value;
-WIZARDVARS[varname] = document.getElementById('readings').value
-
-newtemplate = document.getElementById('bank8').value;
-//alert("varname "+varname);
-//alert("varnameinhalt "+WIZARDVARS[varname]);
-
-starttemplate(newtemplate);
-return;
-}
-
-
 function setVARDEVICES(text,varname,newtemplate){
 var out ="";
 out+=text;
@@ -1613,13 +1524,6 @@ out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
-
-
-
-
-
-
-
 
 // #################
 function setVAR(text,varname,newtemplate){
@@ -2522,7 +2426,7 @@ function changevar(text){
 		}
 return text;
 }
- 
+
 // ##################################
 
 function setATTRS()
@@ -2556,7 +2460,3 @@ document.getElementById('comand1').value=argument;
 return;
 }
 
-
-function setargument(argument){
-	var help = "";
-}
