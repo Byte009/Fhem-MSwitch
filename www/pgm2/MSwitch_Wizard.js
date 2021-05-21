@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V5.3';
+	var version = 'V5.30';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
