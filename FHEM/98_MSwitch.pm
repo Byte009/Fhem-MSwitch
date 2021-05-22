@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.50';  				# version
+my $version      = '5.51';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -2625,6 +2625,15 @@ sub MSwitch_Set_OnOff($@)
 	my ( $ic,$showevents,$devicemode,$delaymode,$hash, $name, $cmd, @args ) = @_;
 	readingsSingleUpdate( $hash, "state", $cmd, 1 );
 	
+	# my $genevents = 0;
+	# if ( AttrVal( $ownName, "MSwitch_generate_Events", 0 ) eq "1" ) 
+	# {
+		# $genevents = 1;
+	# }
+	
+	
+	
+	
 # test wait attribut
     if ( ReadingsVal( $name, "waiting", '0' ) > time ) 
 	{
@@ -2636,6 +2645,14 @@ sub MSwitch_Set_OnOff($@)
 	{
         # reading löschen
         delete( $hash->{READINGS}{waiting} );
+		
+		readingsSingleUpdate( $hash, "last_ID","ID_0", $showevents );
+		readingsSingleUpdate( $hash, "last_cmd","cmd_1", $showevents ) if $cmd eq "on";
+		readingsSingleUpdate( $hash, "last_cmd","cmd_2", $showevents ) if $cmd eq "off";
+		readingsSingleUpdate( $hash, "last_switch","on", $showevents ) if $cmd eq "on";
+		readingsSingleUpdate( $hash, "last_switch","off", $showevents ) if $cmd eq "off";
+		
+		
     }
 ############################
 	
@@ -2970,7 +2987,7 @@ if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1
 
 
 
-
+ 
 
 
 
@@ -3515,11 +3532,20 @@ sub MSwitch_Cmd(@) {
         $showpool = substr( $showpool, 0, 100 ) . '....';
     }
     readingsSingleUpdate( $hash, "last_exec_cmd", $showpool, $showevents ) if $showpool ne '';
-    if ( AttrVal( $Name, 'MSwitch_Expert', '0' ) eq "1" ) 
-	{
-        readingsSingleUpdate( $hash, "last_cmd",
-        $hash->{helper}{priorityids}{$lastdevice}, 0 ) if defined $lastdevice;
-    }
+	
+	
+	
+	
+	
+    # if ( AttrVal( $Name, 'MSwitch_Expert', '0' ) eq "1" ) 
+	# {
+        # readingsSingleUpdate( $hash, "last_cmd",
+        # $hash->{helper}{priorityids}{$lastdevice}, 0 ) if defined $lastdevice;
+    # }
+
+
+
+
 
     $hash->{helper}{lastexecute} = $fullstring;
     return;
@@ -4997,7 +5023,7 @@ $own_hash->{helper}{statistics}{notifyloop_firsttest_passed}++ if $statistic ==1
       EVENT: foreach my $event (@eventscopy)
 		{
 			
-			
+		readingsSingleUpdate( $own_hash, "last_ID","ID_0", $showevents ) ;
 			
 		$own_hash->{helper}{statistics}{eventloop_incomming}++ if $statistic ==1; #statistik	
 			
@@ -5287,6 +5313,11 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 
 ################ alle events für weitere funktionen speichern
 #############################################################      
+
+
+
+
+
             if ( $event ne '' ) 
 			{
                 ### pruefe Bridge
@@ -5310,6 +5341,13 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 				{
 					
 					
+					
+					
+		#readingsSingleUpdate( $own_hash, "last_cmd","exec cmd1", 1 ) ;
+		#readingsSingleUpdate( $own_hash, "last_state","no switch", 1 ) ;
+		
+		
+					
 					$own_hash->{helper}{statistics}{eventloop_cmd1}++ if $statistic ==1; #statistik	
 
 					
@@ -5325,6 +5363,12 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
             $testvar =MSwitch_checktrigger_new( $own_hash,$triggeroff,'off');
                 if (defined $testvar && $testvar ne 'undef')
 				{
+					
+					
+					
+		#readingsSingleUpdate( $own_hash, "last_cmd","exec cmd2 ", 1 ) ;
+		#readingsSingleUpdate( $own_hash, "last_state","no switch", 1 ) ;
+		
 					$own_hash->{helper}{statistics}{eventloop_cmd2}++ if $statistic ==1; #statistik	
 
                     $set       = $testvar;
@@ -5335,6 +5379,10 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
             }
 
             #test auf zweige cmd1/2 and switch MSwitch on/off ENDE
+			
+			
+			
+			
             #test auf zweige cmd1/2 only
             #ergebnisse werden in  @cmdarray geschrieben
 
@@ -5343,6 +5391,11 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
                 $testvar = MSwitch_checktrigger_new( $own_hash, $triggercmdoff, 'offonly' );
                 if ( defined $testvar && $testvar ne 'undef' )
 				{
+					
+		readingsSingleUpdate( $own_hash, "last_cmd","cmd_2", $showevents ) ;
+		readingsSingleUpdate( $own_hash, "last_switch","no switch", $showevents ) ;	
+		#readingsSingleUpdate( $own_hash, "last_ID","0", $showevents );			
+					
 					$own_hash->{helper}{statistics}{eventloop_cmd4}++ if $statistic ==1; #statistik	
 
                     MSwitch_LOG( $ownName, 6, "Befehl eingefuegt (cmdoff)");
@@ -5357,6 +5410,12 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
                 $testvar = MSwitch_checktrigger_new( $own_hash,$triggercmdon,'ononly');
                 if ( defined $testvar && $testvar ne 'undef' )
 				{
+					
+					
+		readingsSingleUpdate( $own_hash, "last_cmd","cmd_1 ", $showevents ) ;
+		readingsSingleUpdate( $own_hash, "last_switch","no switch", $showevents ) ;
+		#readingsSingleUpdate( $own_hash, "last_ID","0", $showevents ) ;			
+					
 					$own_hash->{helper}{statistics}{eventloop_cmd3}++ if $statistic ==1; #statistik	
 
 
@@ -5789,6 +5848,10 @@ sub MSwitch_checkbridge($$$) {
     MSwitch_LOG( $name, 6, "SUB BRIDGE EVENT: $event L:" . __LINE__ );
     my $bridgemode = ReadingsVal( $name, '.Distributor', '0' );
     my $expertmode = AttrVal( $name, 'MSwitch_Expert', '0' );
+	
+	my $showevents=AttrVal( $name, 'MSwitch_generate_Events', '0' );
+	
+	
 
 	my @bridge;
 	my $zweig;
@@ -5843,7 +5906,18 @@ sub MSwitch_checkbridge($$$) {
 		next if @bridge < 1;
 		$zweig = "on"  if $bridge[0] eq "cmd1";
 		$zweig = "off" if $bridge[0] eq "cmd2";
+		
+		
+		
+		
+		
+		
 		MSwitch_LOG( $name, 6,"ID Bridge gefunden: zweig: $bridge[0] , ID:$bridge[2]  L:" . __LINE__ );
+		
+		
+		readingsSingleUpdate( $hash, "last_ID","ID_".$bridge[2], $showevents );	
+		
+		
 		
 		if ($foundcond eq "1")
 		{
@@ -6072,8 +6146,19 @@ sub MSwitch_fhemwebconf($$$$) {
 	<textarea id='bank6'></textarea>
 	<textarea id='bank7'></textarea>
 	<textarea id='bank8'></textarea>
+	</div>
+
+
+	<div id='speicherbank2' style='display: none;'>
+	Speicherbank2 bank 9-12: 
+	<textarea id='bank9'></textarea>
+	<textarea id='bank10'></textarea>
+	<textarea id='bank11'></textarea>
+	<textarea id='bank12'></textarea>
 	<br>&nbsp;<hr>
 	</div>
+
+
 
 	<table border='0'>
 	<tr>
@@ -10440,10 +10525,10 @@ sub MSwitch_Exec_Notif($$$$$) {
                     push( @execute, $timerset );
                     $timercounter++;
 
-                    if ( $expertmode eq "1" && $device )
-					{
-                        readingsSingleUpdate( $hash, "last_cmd",$hash->{helper}{priorityids}{$device},0 );
-                    }
+                    # if ( $expertmode eq "1" && $device )
+					# {
+                        # readingsSingleUpdate( $hash, "last_cmd",$hash->{helper}{priorityids}{$device},0 );
+                    # }
 
                     if ( $out eq '1' )
 					{
@@ -10462,10 +10547,10 @@ sub MSwitch_Exec_Notif($$$$$) {
         }
     }
 
-    if ( $expertmode eq "1" && $lastdevice ) 
-	{
-        readingsSingleUpdate( $hash, "last_cmd",$hash->{helper}{priorityids}{$lastdevice}, 0 );
-    }
+    # if ( $expertmode eq "1" && $lastdevice ) 
+	# {
+        # readingsSingleUpdate( $hash, "last_cmd",$hash->{helper}{priorityids}{$lastdevice}, 0 );
+    # }
 
     my $fullstring = join( '[|]', @execute );
     my $msg;
@@ -12506,18 +12591,6 @@ sub MSwitch_Execute_Timer($) {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	my $extime = POSIX::strftime( "%H:%M", localtime );
     readingsBeginUpdate($hash);
     readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime ,$showevents);
@@ -12615,6 +12688,15 @@ sub MSwitch_Execute_Timer($) {
 
 
 
+#readingsSingleUpdate( $own_hash, "last_cmd","cmd1 ", $showevents ) ;
+
+#readingsSingleUpdate( $own_hash, "last_switch","no switch", $showevents ) ;
+		
+#readingsSingleUpdate( $own_hash, "last_ID","0", $showevents ) ;			
+					
+
+
+
 
     if ( $param eq '1' )
 	{
@@ -12641,22 +12723,28 @@ sub MSwitch_Execute_Timer($) {
     }
     if ( $param eq '3' )
 	{
+		
+		readingsSingleUpdate( $hash, "last_cmd","cmd_1 ", 0 ) ;
+		
         MSwitch_Exec_Notif( $hash, 'on', 'nocheck', '', 0 );
         return;
     }
     if ( $param eq '4' )
 	{
+		readingsSingleUpdate( $hash, "last_cmd","cmd_2 ", 0 ) ;
+		
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', 0 );
         return;
     }
     if ( $param eq '6' )
 	{
-
+readingsSingleUpdate( $hash, "last_cmd","cmd_1 ", 0 ) ;
         MSwitch_Exec_Notif( $hash, 'on', 'nocheck', '', $execid );
         return;
     }
     if ( $param eq '7' )
 	{
+		readingsSingleUpdate( $hash, "last_cmd","cmd_2 ", 0 ) ;
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', $execid );
         return;
     }
@@ -15362,8 +15450,10 @@ sub MSwitch_reloadreadings($$) {
 	my $devhash = $defs{$arg1}; #name des devices
 	my $testreading = $devhash ->{READINGS};
 	my @areadings = ( keys %{$testreading} ); # enthält alle readings des devices
-	#MSwitch_LOG( $Name, 0, "gefundene readings: @areadings L:" . __LINE__ );
+	MSwitch_LOG( $Name, 0, "gefundene readings: -@areadings- L:" . __LINE__ );
 	my $readings = join( "[|]", sort @areadings );
+	
+	#MSwitch_LOG( $Name, 0, "gefundene readings: -$readings- L:" . __LINE__ );
 	#####################
     return $readings;
 }
