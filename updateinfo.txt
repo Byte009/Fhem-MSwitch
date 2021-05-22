@@ -1,3 +1,3 @@
 Version
-5.50
-Wizard V5.3 add VARREADING
+5.51
+geaenderte readings last_xxx - geaenderte Speicher fuer wizard
