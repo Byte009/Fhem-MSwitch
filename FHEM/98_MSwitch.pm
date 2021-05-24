@@ -1155,6 +1155,25 @@ sub MSwitch_Define($$) {
         $defstring = $defstring . $_ . " ";
     }
 
+# 
+
+
+
+# MSwitch_LOG( $name, 0, "$def" );
+
+# return $def;
+
+ # if ( $defstring =~ m/restoreall/ )
+    # {
+	# return "Restoremode";
+
+	# }
+
+
+
+
+
+
     if ( $a[3] ) {
        # MSwitch_LOG( $name, 5, "template: $a[3]" );
         $template = $a[3];
@@ -1211,6 +1230,9 @@ sub MSwitch_Define($$) {
 					
                     next if ReadingsVal( $found_devices[0], $key, 'undef' ) eq "";
                     my $aktset = ReadingsVal( $found_devices[0], $key, 'undef' );
+					
+					$aktset =~ s/\\{/{/;
+					$aktset =~ s/\\}/}/;
                     $attr{$name}{$key} = "$aktset";
                 }
             }
@@ -5017,13 +5039,13 @@ if ($akttime - ($starttime+60) < 0)
 ## EVENTMAINLOOP	
 ##########################
 
-
+readingsSingleUpdate( $own_hash, "last_ID","ID_0", $showevents ) ;
 $own_hash->{helper}{statistics}{notifyloop_firsttest_passed}++ if $statistic ==1; #statistik
 
       EVENT: foreach my $event (@eventscopy)
 		{
 			
-		readingsSingleUpdate( $own_hash, "last_ID","ID_0", $showevents ) ;
+		
 			
 		$own_hash->{helper}{statistics}{eventloop_incomming}++ if $statistic ==1; #statistik	
 			
@@ -5412,7 +5434,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 				{
 					
 					
-		readingsSingleUpdate( $own_hash, "last_cmd","cmd_1 ", $showevents ) ;
+		readingsSingleUpdate( $own_hash, "last_cmd","cmd_1", $showevents ) ;
 		readingsSingleUpdate( $own_hash, "last_switch","no switch", $showevents ) ;
 		#readingsSingleUpdate( $own_hash, "last_ID","0", $showevents ) ;			
 					
@@ -12724,21 +12746,21 @@ sub MSwitch_Execute_Timer($) {
     if ( $param eq '3' )
 	{
 		
-		readingsSingleUpdate( $hash, "last_cmd","cmd_1 ", 0 ) ;
+		readingsSingleUpdate( $hash, "last_cmd","cmd_1", 0 ) ;
 		
         MSwitch_Exec_Notif( $hash, 'on', 'nocheck', '', 0 );
         return;
     }
     if ( $param eq '4' )
 	{
-		readingsSingleUpdate( $hash, "last_cmd","cmd_2 ", 0 ) ;
+		readingsSingleUpdate( $hash, "last_cmd","cmd_2", 0 ) ;
 		
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', 0 );
         return;
     }
     if ( $param eq '6' )
 	{
-readingsSingleUpdate( $hash, "last_cmd","cmd_1 ", 0 ) ;
+readingsSingleUpdate( $hash, "last_cmd","cmd_1", 0 ) ;
         MSwitch_Exec_Notif( $hash, 'on', 'nocheck', '', $execid );
         return;
     }
@@ -13485,13 +13507,16 @@ sub MSwitch_backup_this($) {
             next if $key eq "last_exec_cmd";
 
             my $tmp = ReadingsVal( $Name, $key, 'undef' );
+			
+			$tmp =~ s/\n/#[nl]/g;
+			
             print BACKUPDATEI "#S $key -> $tmp\n";
         }
         #my %keys;
         foreach my $attrdevice ( keys %{ $attr{$Name} } ) 
         {
             my $inhalt = "#A $attrdevice -> " . AttrVal( $Name, $attrdevice, '' );
-            $inhalt =~ s/\n/#[nla]/g;
+            $inhalt =~ s/\n/#[nl]/g;
             print BACKUPDATEI $inhalt . "\n";
         }
 		close(BACKUPDATEI);
@@ -13511,17 +13536,22 @@ sub MSwitch_backup_all($) {
 		my $devhash = $defs{$testdevice};
 	open( BACKUPDATEI, ">".$backupfile.$testdevice.".".$vupdate.".conf" ); 
         print BACKUPDATEI "#N -> $testdevice\n";
-        foreach my $key (@areadings) {
+        foreach my $key (@areadings) 
+		
+		
+		{
             next if $key eq "last_exec_cmd";
 
             my $tmp = ReadingsVal( $testdevice, $key, 'undef' );
+			$tmp =~ s/\n/#[nl]/g;
+			
             print BACKUPDATEI "#S $key -> $tmp\n";
         }
         #my %keys;
         foreach my $attrdevice ( keys %{ $attr{$testdevice} } ) 
         {
             my $inhalt = "#A $attrdevice -> " . AttrVal( $testdevice, $attrdevice, '' );
-            $inhalt =~ s/\n/#[nla]/g;
+            $inhalt =~ s/\n/#[nl]/g;
             print BACKUPDATEI $inhalt . "\n";
         }
 		$devhash->{Backup_avaible}            = "./".$backupfile.$testdevice.".".$vupdate.".conf";
@@ -13568,15 +13598,24 @@ sub MSwitch_restore_all($) {
 				}
 				else 
 				{
+					
+			
+				
+					
+					
 					$Zeilen = $2;
-					readingsSingleUpdate( $devhash, "$1", $Zeilen, 0 );
+					my $reading = $1;
+				$Zeilen =~ s/#\[nl\]/\n/g;
+					
+					
+					readingsSingleUpdate( $devhash, "$reading", $Zeilen, 0 );
 				}
 			}
 			if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
 			{
 				my $inhalt  = $2;
 				my $aktattr = $1;
-				$inhalt =~ s/#\[nla\]/\n/g;
+				$inhalt =~ s/#\[nl\]/\n/g;
 				$inhalt =~ s/;/;;/g;
 				my $cs = "attr $restore $aktattr $inhalt";
 				my $errors = AnalyzeCommandChain( undef, $cs );
@@ -13615,14 +13654,17 @@ sub MSwitch_restore_this($) {
             else 
 			{
                 $Zeilen1 = $2;
-                readingsSingleUpdate( $hash, "$1", $Zeilen1, 0 );
+				my $reading = $1;
+				$Zeilen1 =~ s/#\[nl\]/\n/g;
+				
+                readingsSingleUpdate( $hash, "$reading", $Zeilen1, 0 );
             }
         }
         if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
         {
             my $inhalt  = $2;
             my $aktattr = $1;
-            $inhalt =~ s/#\[nla\]/\n/g;
+            $inhalt =~ s/#\[nl\]/\n/g;
             $inhalt =~ s/;/;;/g;
             my $cs = "attr $Name $aktattr $inhalt";
             my $errors = AnalyzeCommandChain( undef, $cs );
@@ -15450,7 +15492,7 @@ sub MSwitch_reloadreadings($$) {
 	my $devhash = $defs{$arg1}; #name des devices
 	my $testreading = $devhash ->{READINGS};
 	my @areadings = ( keys %{$testreading} ); # enthält alle readings des devices
-	MSwitch_LOG( $Name, 0, "gefundene readings: -@areadings- L:" . __LINE__ );
+	#MSwitch_LOG( $Name, 0, "gefundene readings: -@areadings- L:" . __LINE__ );
 	my $readings = join( "[|]", sort @areadings );
 	
 	#MSwitch_LOG( $Name, 0, "gefundene readings: -$readings- L:" . __LINE__ );
