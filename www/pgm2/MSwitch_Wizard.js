@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V5.30';
+	var version = 'V5.31';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1276,10 +1276,16 @@ function starttemplate(template){
 }
 
 // #################
+// MAINLOOP
+// #################
+
+
 function testline(line,newtemplate){
+	
+	
 	var cmdsatz = line.split(">>");
 	if (cmdsatz[0] == "" || cmdsatz[0] == " " ){return;}
-	if (cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "MINIMAL" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARREADING" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
+	if (cmdsatz[0] != "IF" && cmdsatz[0] != "INCSELECT" && cmdsatz[0] != "MSwitch_Device_Groups" && cmdsatz[0] != "VARDEC" &&  cmdsatz[0] != "VARINC" && cmdsatz[0] != "DEBUG" && cmdsatz[0] != "MINIMAL" && cmdsatz[0] != "GOTO" && cmdsatz[0] != "TEXT" && cmdsatz[0] != "EXIT" && cmdsatz[0] != "PREASSIGMENT" && cmdsatz[0] != "VAREVENT" &&  cmdsatz[0] != "VARREADING" &&  cmdsatz[0] != "VARSET" && cmdsatz[0] != "VARDEVICES" && cmdsatz[0] != "VARASK" && cmdsatz[0] != "REPEAT" && cmdsatz[0] != "EVENT" && cmdsatz[0] != "ASK" && cmdsatz[0] != "OPT" && cmdsatz[0] != "ATTR" && cmdsatz[0] != "SET" && cmdsatz[0] != "SELECT" && cmdsatz[0] != "INQ"  ){
 
 		if (INQ[cmdsatz[0]]== "1")
 		{
@@ -1289,6 +1295,38 @@ function testline(line,newtemplate){
 		return;
 		}
 }
+
+
+
+
+
+if (cmdsatz[0] == "IF"){	
+bedingung = changevar(cmdsatz[1]);
+document.getElementById('bank10').value=cmdsatz[1];
+document.getElementById('bank11').value ="0";
+var string = "result = 0; if ("+bedingung+"){result = 1};document.getElementById('bank11').value=result;";
+eval(string);
+result = document.getElementById('bank11').value;
+
+if (result == "1")
+{
+	cmdsatz.shift ();
+	cmdsatz.shift ();
+	//alert(cmdsatz[0]);
+}
+else
+{
+return;
+}
+
+}
+
+
+
+
+
+
+
 
 
 if (cmdsatz[0] == "TEXT"){
@@ -2183,6 +2221,15 @@ if (typa == "A" ){
 	configuration =  makedevice(configuration);
 	}
 	
+	// comand_HIDE
+	if (befehl == "HIDE" ){
+	var device =  document.getElementById('bank6').value.split("\n");
+	device[19]="#[NF]"+inhalt;
+	document.getElementById('bank6').value=device.join("\n");
+	configuration =  makedevice(configuration);
+	}
+	
+	
 // comand_ID
 	if (befehl == "ID" ){
 	var device =  document.getElementById('bank6').value.split("\n");
@@ -2191,13 +2238,7 @@ if (typa == "A" ){
 	configuration =  makedevice(configuration);
 	}
 	
-	// comand_HIDE
-	if (befehl == "HIDE" ){
-	var device =  document.getElementById('bank6').value.split("\n");
-	device[19]="#[NF]"+inhalt;
-	document.getElementById('bank6').value=device.join("\n");
-	configuration =  makedevice(configuration);
-	}
+	
 
 // comand_cmd1 und 2
 	if (befehl == "comand_cmd1" || befehl == "comand_cmd2"){
