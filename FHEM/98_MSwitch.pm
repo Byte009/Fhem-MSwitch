@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.51';  				# version
+my $version      = '5.52';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
