@@ -268,14 +268,8 @@ function start1(name){
 		r3 = $('<a href=\"javascript: reset()\">Reset this device ('+name+')</a>');
 		$(r3).appendTo('[class=\"detLink showDSI\"]');
 		document.getElementById('mode').innerHTML += '<br>Wizard Version:'+version+'<br>Info:'+info;
-		
-		
-		
 		document.getElementById('mode').innerHTML += '<small><br>Templatefiles: '+templatefile;
 		document.getElementById('mode').innerHTML += '<small><br>Preconffile: '+preconffile;
-		
-		
-		
 		
 		// fülle configfenster
 
@@ -387,10 +381,8 @@ function saveconfig(name,mode){
 	conf = conf.replace(/;/g,'#c[se]');
 	conf = conf.replace(/ /g,'#c[sp]');
 	conf = changevar(conf);
-	
-	
 	// alert(conf);
-	
+
 	var nm = devicename;
 	var def = nm+' saveconfig '+encodeURIComponent(conf);
 	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
@@ -1297,9 +1289,6 @@ function testline(line,newtemplate){
 }
 
 
-
-
-
 if (cmdsatz[0] == "IF"){	
 bedingung = changevar(cmdsatz[1]);
 document.getElementById('bank10').value=cmdsatz[1];
@@ -1320,12 +1309,6 @@ return;
 }
 
 }
-
-
-
-
-
-
 
 
 
@@ -1475,9 +1458,7 @@ if (cmdsatz[0] == "VARREADING"){
 		var toset = cmdsatz[1];
 		var readingdevice = cmdsatz[2];
 		var text = cmdsatz[3];
-				
 			
-				
 		document.getElementById('bank4').value=toset;	
 		document.getElementById('bank7').value=text;			
 		document.getElementById('bank8').value=newtemplate;	
@@ -1495,10 +1476,6 @@ if (cmdsatz[0] == "VARREADING"){
 	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
 	}
 }
-
-
-
-
 
 // VARASK>>VARNAME>>VARTEXT
 if (cmdsatz[0] == "VARASK"){
@@ -1602,13 +1579,10 @@ function VARREADINGS(readings){
 	var out ="";
 	
 // alert("rückgabe ok");
- //alert("readings "+readings);
- //alert("varname "+varname);
- //alert("newtemplate "+newtemplate);
-
-
+//alert("readings "+readings);
+//alert("varname "+varname);
+//alert("newtemplate "+newtemplate);
 //document.getElementById('bank9').value=readings+'-';
-
  readings = readings.substr(0, readings.length - 1);
 //document.getElementById('bank10').value=readings+'-';
 
@@ -1659,12 +1633,6 @@ out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
-
-
-
-
-
-
 
 
 // #################
@@ -2026,12 +1994,6 @@ out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
 
-//out+="<br>"+text+"<br>";
-//out+="<br>"+toset+"<br>";
-//out+="<br>"+newtemplate+"<br>";
-//out+="<br>"+typ+"<br>";
-
-
 	if (typ =="S")
 	{
 		if(toset == "Device_to_switch")
@@ -2102,6 +2064,7 @@ typa="S";
 	var arg = cmdsatz[3];
 
 	if (befehl == "INFO"){
+	inhalt = changevar(inhalt);
 	document.getElementById('help').innerHTML = inhalt;
 	return;
 	}
@@ -2418,9 +2381,6 @@ function makedevicenew(configuration){
 }
 
 
-
-
-
 function makedevice(configuration){
 	
 	var device=document.getElementById('bank6').value;
@@ -2482,12 +2442,6 @@ function makecmdhashtemp(line){
 	retoption +='</select>';
 	var arraysetskeys = Object.keys(sets);
 	
-	
-	
-	
-	
-	
-	
 	return retoption;
 }
 
@@ -2500,9 +2454,6 @@ function selectcmdoptionstemp(inhalt){
 	
 	document.getElementById('setcmd1temp').innerHTML ='';
 	// wenn undefined textfeld erzeugen
-	
-	
-	
 	///alert(sets[inhalt] );
 	
 	if (sets[inhalt] == 'noArg'){ return;}
