@@ -1,4 +1,8 @@
 Version
+5.54
+Perlwarnungen behoben - attr Inforoom entfernt - Anpassung Configdevice 
+
+Version
 5.53
 Fehler in eventbehandlung und regex behoben - anpassung reading last_cmd - wizard abruf readings - anpassung reading last_cmd - wizard abruf readings
 
