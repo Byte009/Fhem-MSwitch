@@ -757,7 +757,7 @@ In der Grundeinstellung '0' werden für das <u>zeitgesteuerte</u> Schalten keine
 sondern die Prüfung findet nur bei eingehenden Events statt.
 Mit der Einstellung '1' wird diese Überprüfung auch bei zeitgesteuertem Schakten angewendet.
 
-<strong>MSwitch_Inforoom</strong>
+<strong>MSwitch_Inforoom</strong> Ab V5.5 nicht mehr verfuegbar
 Mit diesem Attribut wird die Raumansicht eines mit dem Attribut definierten Raumes verändert.
 
 Dadurch sollen die wichtigsten Informationen aller MSwitch-Devices auf eine Seite dargestellt werden.
