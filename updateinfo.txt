@@ -1,3 +1,3 @@
 Version
-5.54
-Perlwarnungen behoben - attr Inforoom entfernt - Anpassung Configdevice 
+5.55
+Change: Wizard Change : delays
