@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.54';  				# version
+my $version      = '5.55';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -95,7 +95,7 @@ $data{MSwitch}{updateinfolink} = $updateinfolink;
 $data{MSwitch}{version}       = $version;
 $data{MSwitch}{Log}       = "all";
 
-
+ 
 #$updateinfo = get($updateinfolink);
 
 if (1 == 1){
@@ -10068,6 +10068,62 @@ sub MSwitch_Exec_Notif($$$$$) {
         my $key      = $device . "_" . $comand;
         my $timerkey = $device . "_time" . $comand;
 
+
+my ($evtparts1,$evtparts2,$evtparts3) = split(/:/,$event,3);
+my $evtfull=$event;
+#MSwitch_LOG( $name, 0, "$name - eingehend $devicedetails{$timerkey} L:" . __LINE__ );
+	
+	
+	 $devicedetails{$timerkey} =~ s/\$SELF/$name/;
+	
+	
+	$devicedetails{$timerkey} =~ s/\$EVENT/$event/ig;
+	$devicedetails{$timerkey} =~ s/\$EVTFULL/$evtfull/ig;
+	$devicedetails{$timerkey} =~ s/\$EVTPART1/$evtparts1/ig;
+	$devicedetails{$timerkey} =~ s/\$EVTPART2/$evtparts2/ig;
+	$devicedetails{$timerkey} =~ s/\$EVTPART3/$evtparts3/ig;
+	
+	
+	
+	
+	
+	
+	# setmagic ersetzung
+    my $x = 0;
+    while ( $devicedetails{$timerkey} =~m/(.*)\[([a-zA-Z0-9._\$]{1,50})\:([a-zA-Z0-9._\$]{1,50})\](.*)/ )
+    {
+		
+		
+		
+        $x++;    # notausstieg notausstieg
+        last if $x > 20;    # notausstieg notausstieg
+        my $firstpart   = $1;
+        my $lastpart    = $4;
+        my $readingname = $3;
+        my $devname     = $2;
+       
+        my $setmagic = ReadingsVal( $devname, $readingname, 0 );
+        $devicedetails{$timerkey} = $firstpart . $setmagic . $lastpart;
+    }
+	
+	$x = 0;
+	 while ( $devicedetails{$timerkey} =~m/(.*?)(\d{2}:\d{2}:\d{2})(.*)/ )
+    {
+        $x++;    # notausstieg notausstieg
+        last if $x > 20;    # notausstieg notausstieg
+        my $firstpart   = $1;
+        my $lastpart    = $3;
+        my $middle = $2;
+    
+	  my $hdel = ( substr( $middle, 0, 2 ) ) * 3600;
+            my $mdel = ( substr( $middle, 3, 2 ) ) * 60;
+            my $sdel = ( substr( $middle, 6, 2 ) ) * 1;
+			
+			my $code = $hdel + $mdel + $sdel;
+            $devicedetails{$timerkey} = $firstpart . $code . $lastpart;
+
+    }
+	
         if ( $devicedetails{$timerkey} =~ m/{.*}/ )
 		{
 			{
@@ -10076,32 +10132,20 @@ sub MSwitch_Exec_Notif($$$$$) {
 			}
         }
 
-        if ( $devicedetails{$timerkey} =~ m/\[.*:.*\]/ )
-		{
-			$hash->{helper}{aktevent}=$event;
-			{
-			no warnings;
-            $devicedetails{$timerkey} = eval MSwitch_Checkcond_state( $devicedetails{$timerkey}, $name );
-			}
-			delete( $hash->{helper}{aktevent} );
-        }
 
-        if ( $devicedetails{$timerkey} =~ m/[\d]{2}:[\d]{2}:[\d]{2}/ )
-		{
 
-            my $hdel = ( substr( $devicedetails{$timerkey}, 0, 2 ) ) * 3600;
-            my $mdel = ( substr( $devicedetails{$timerkey}, 3, 2 ) ) * 60;
-            my $sdel = ( substr( $devicedetails{$timerkey}, 6, 2 ) ) * 1;
-            $devicedetails{$timerkey} = $hdel + $mdel + $sdel;
-        }
-        elsif ( $devicedetails{$timerkey} =~ m/^\d*\.?\d*$/ )
-		{
-            $devicedetails{$timerkey} = $devicedetails{$timerkey};
-        }
-        else
-		{
-            $devicedetails{$timerkey} = 0;
-        }
+if ($devicedetails{$timerkey} =~ /^-?\d+(?!\.\d+)?$/)
+	{
+		#MSwitch_LOG( $name, 0, "$name -  ZAHL gefunden $devicedetails{$timerkey} L:" . __LINE__ );
+
+	}else 
+	{
+		#MSwitch_LOG( $name, 0, "$name - KEINE ZAHL gefunden $devicedetails{$timerkey} L:" . __LINE__ );
+		$devicedetails{$timerkey}=0;
+		
+	}
+
+     
 
         # teste auf condition
         # antwort $execute 1 oder 0 ;
@@ -10150,6 +10194,11 @@ sub MSwitch_Exec_Notif($$$$$) {
 
             if (   $devicedetails{$timerkey} eq "0" || $devicedetails{$timerkey} eq "" )
             {
+				
+				#MSwitch_LOG( $name, 6,  "timerkey if: $devicedetails{$timerkey}" );
+				
+				
+				
                 # teste auf condition
                 # antwort $execute 1 oder 0 ;
                 $conditionkey = $device . "_condition" . $comand;
@@ -10295,7 +10344,11 @@ sub MSwitch_Exec_Notif($$$$$) {
 
                 ###################################################################################
 
+
+
                 my $timecond     = gettimeofday() + $devicedetails{$timerkey};
+
+				
                 my $delaykey     = $device . "_delayat" . $comand;
                 my $delayinhalt  = $devicedetails{$delaykey};
                 my $delaykey1    = $device . "_delayat" . $comand . "org";
