@@ -2109,7 +2109,8 @@ if (typa == "A" ){
 	
 // comand_READING
 	if (befehl == "READING" ){
-	newattr = "#S "+inhalt+" -> "+arg;
+	var newarg= 	changevar(arg)
+	newattr = "#S "+inhalt+" -> "+newarg;
 	configuration[conflenght] = newattr;
 	}
 	
