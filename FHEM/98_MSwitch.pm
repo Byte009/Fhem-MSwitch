@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '5.55';  				# version
+my $version      = '5.56';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -355,7 +355,8 @@ my $attractivedummy = "  disable:0,1"
 . "  MSwitch_use_WebWidgets:0,1"
 . "  MSwitch_EventMap:textField-long"
 . "  stateFormat:textField-long"
-. "  MSwitch_Eventhistory:0,10"
+. "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
+. "  MSwitch_Eventhistory_to_Reading:0,1"
 . "  MSwitch_Delete_Delays:0,1,2,3"
 . "  MSwitch_Help:0,1"
 . "  MSwitch_Futurelevel:0,1"
@@ -431,6 +432,7 @@ my $attrresetlist =
 . "  MSwitch_ExtraktfromHTTP:textField-long"
 . "  MSwitch_ExtraktHTTPMapping:textField-long"
 . "  MSwitch_Eventhistory:0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200"
+. "  MSwitch_Eventhistory_to_Reading:0,1"
 . "  MSwitch_Switching_once:0,1"
 . "  MSwitch_SysExtension:0,1,2 "
 . "  useSetExtensions:0,1"
@@ -477,6 +479,7 @@ my %sets = (
     "deletesinglelog"   => "noArg",
     "loadHTTP"          => "",
 	"reset_Switching_once"   => "",
+	"alert"   => "",
     "change_renamed"    => ""
 );
 
@@ -493,7 +496,7 @@ sub MSwitch_Initialize($) {
 
     my ($hash) = @_;
     $hash->{SetFn}             = "MSwitch_Set";
-    $hash->{AsyncOutput}       = "MSwitch_AsyncOutput";
+    $hash->{AsyncOutputFn}       = "MSwitch_AsyncOutput";
     $hash->{RenameFn}          = "MSwitch_Rename";
     $hash->{CopyFn}            = "MSwitch_Copy";
     $hash->{GetFn}             = "MSwitch_Get";
@@ -1121,10 +1124,10 @@ sub MSwitch_Define($$) {
     $hash->{MODEL}                         = $startmode . " " . $version;
     $hash->{Support}                       = $support;
 
-    if ( $version ne $data{MSwitch}{Version} ) 
-	{
-        $hash->{Update} = "Modulversion " . $data{MSwitch}{Version} . " verfügbar";
-    }
+   # if ( $version ne $data{MSwitch}{Version} ) 
+	#{
+    #    $hash->{Update} = "Modulversion " . $data{MSwitch}{Version} . " verfügbar";
+    #}
 
     if ( $defstring ne "" and $defstring =~ m/(\(.+?\))/ ) 
 	{
@@ -2038,8 +2041,13 @@ sub MSwitch_Get_Statistik($) {
 
 
 ####################
-sub MSwitch_AsyncOutput ($) {
+sub MSwitch_AsyncOutput(@) {
     my ( $client_hash, $text ) = @_;
+	
+	#Log3("test2",0,"$text CL - ".$client_hash->{CL}  );
+	asyncOutput($client_hash, $text);
+	
+	
     return $text;
 }
 
@@ -2065,7 +2073,30 @@ sub MSwitch_Set_wizard($@)
 		return;	
 	}
 
+sub MSwitch_Set_alert($@)  
+	{
+		my ( $hash, $name, $cmd, @args ) = @_;
 
+		
+		
+		
+		
+		
+		
+		 my $client_hash = $hash->{CL};
+    my $ret         = asyncOutput( $hash->{CL},
+"test ".$hash->{CL}." test" );
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		return;	
+	}
 # setze wizarddaten
 sub MSwitch_Set_wizard1($@)  
 	{
@@ -2862,6 +2893,7 @@ if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1
 
 
 if ( $cmd eq 'wizardcont') 				{MSwitch_Set_wizard($hash, $name, $cmd, @args);return;}
+if ( $cmd eq 'alert') 					{MSwitch_Set_alert($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'wizardcont1') 			{MSwitch_Set_wizard1($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'writelog') 				{MSwitch_Set_Writelog($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'timer' ) 					{MSwitch_Set_timer($hash, $name, $cmd, @args);return;}	
@@ -3185,6 +3217,15 @@ if (!exists( $sets{$cmd} ))
 
 
 my $statistic = "";
+my $alert="";
+
+
+#if ( AttrVal( $name, 'MSwitch_Debug', 0 ) > 0 ) 
+#			{
+#			$alert="alert";
+#			}
+
+
 
 
 		#############################################
@@ -3197,18 +3238,18 @@ my $statistic = "";
 		if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' )
 		{
 		# rückgabe modulmode - no sets
-			return "Unknown argument $cmd, choose one of $dynsetlist $setList $setwidget $statistic";
+			return "Unknown argument $cmd, choose one of $alert $dynsetlist $setList $setwidget $statistic";
 		}
 
 		if ( $devicemode eq "Notify" ) 
 			{
 			# rückgabe für Notifymode	
-				return"Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList $setwidget $statistic ";
+				return"Unknown argument $cmd, choose one of $alert timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP reset_device:noArg active:noArg inactive:noArg del_function_data:noArg del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait reload_timer:noArg del_repeats:noArg change_renamed reset_cmd_count:1,2,all $setList $setwidget $statistic ";
 			}
 			elsif ( $devicemode eq "Toggle" )
 			{
 			# rückgabe für Togglemodemode	
-				return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:this_device,all_devices fakeevent wait reload_timer:noArg del_repeats:noArg change_renamed $setList $setwidget $statistic ";
+				return "Unknown argument $cmd, choose one of $alert timer:on,off $dynsetlist writelog reset_Switching_once:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off del_delays:noArg backup_MSwitch:this_device,all_devices fakeevent wait reload_timer:noArg del_repeats:noArg change_renamed $setList $setwidget $statistic ";
 			}
 		elsif ( $devicemode eq "Dummy" )
 			{
@@ -3221,18 +3262,18 @@ my $statistic = "";
 				{
 					if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
 					{
-						return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:this_device,all_devices $setList $special $setwidget $statistic";
+						return "Unknown argument $cmd, choose one of $alert timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:this_device,all_devices $setList $special $setwidget $statistic";
 					}
 						else 
 					{
-						return "Unknown argument $cmd, choose one of $dynsetlist reset_device:noArg backup_MSwitch:this_device,all_devices $setList $special $setwidget $statistic";
+						return "Unknown argument $cmd, choose one of $alert $dynsetlist reset_device:noArg backup_MSwitch:this_device,all_devices $setList $special $setwidget $statistic";
 					}
 				}
 			}
 			else 
 			{
 			# rückgabe für Fullmode
-					return "Unknown argument $cmd, choose one of timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special $setwidget $statistic";
+					return "Unknown argument $cmd, choose one of $alert timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg reset_device:noArg active:noArg del_function_data:noArg inactive:noArg on off  del_delays backup_MSwitch:this_device,all_devices fakeevent exec_cmd_1 exec_cmd_2 wait del_repeats:noArg reload_timer:noArg change_renamed reset_cmd_count:1,2,all $setList $special $setwidget $statistic";
 			}
 			
 		return;
@@ -5299,10 +5340,40 @@ $own_hash->{helper}{statistics}{eventloop}{unused}{$statevent}++ if $statistic =
                 my @eventfunction;
 				@eventfunction = split( / /, $own_hash->{helper}{eventhistory}{$evreading} ) if exists $own_hash->{helper}{eventhistory}{$evreading};
                 unshift( @eventfunction, $evwert );
+				
+				
+				
+				
+				
+				
                 while ( @eventfunction > $evhistory ) 
 				{
                     pop(@eventfunction);
                 }
+				
+				
+				
+				
+				
+				
+				
+				
+		if ( AttrVal( $ownName, 'MSwitch_Eventhistory_to_Reading', "0" ) == 1 )		
+		{	
+		my $count = 0;
+		readingsBeginUpdate($own_hash);	
+		foreach my $testdevices (@eventfunction) 
+		{
+			my $readname = $evreading."_h".$count;
+			#MSwitch_LOG($ownName,0,"$testdevices");
+			#MSwitch_LOG($ownName,0,"$readname");
+            readingsBulkUpdate( $own_hash, $readname, $testdevices );
+			$count++;
+        }
+        readingsEndUpdate( $own_hash, $showevents );
+				
+		}		
+				
                 my $neweventfunction = join( ' ', @eventfunction );
                 $own_hash->{helper}{eventhistory}{$evreading} =$neweventfunction;
             }
@@ -11487,7 +11558,7 @@ sub MSwitch_Checkcond_time($$) {
 	}
 	else
 	{
-		$return = "($timecond1 <= $timeaktuell && $timeaktuell < $timecond2)";
+		$return = "($timecond1 <= $timeaktuell && $timeaktuell <= $timecond2)";
 	}
 	
     if ( $days ne '' )
