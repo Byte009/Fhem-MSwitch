@@ -1,4 +1,8 @@
 Version
+5.57
+Change: div Fehler behoben
+
+Version
 5.56
 Change: Eventhistory , add ATTR MSwitch_Eventhistory_to_Reading, fix condition Timer
 	
