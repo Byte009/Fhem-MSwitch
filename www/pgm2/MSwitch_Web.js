@@ -18,7 +18,7 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '5.21';
+	var version = '6.0';
 	var info = '';
 	var debug ='off';
 	var datatarget ='undef';
@@ -102,23 +102,108 @@ $('#sel_attr'+devicename).change(function(){
 	text = text.replace(/#\[LINE\]/gi,"<br>");
 	text = text.replace(/#\[A\]/gi,"'");
 	text = text.replace(/#\[DA\]/gi,"\"");
-	var myRegEx = new RegExp('<strong>'+inhalt+'(.*?)</strong>(.*?)(<strong)');  
+	//var myRegEx = new RegExp('<strong>'+inhalt+'[^_](.*?)</strong>(.*?)(<strong)');  
+	var myRegEx = new RegExp('<strong>'+inhalt+'</strong>(.*?)(<strong)');  
+	
+	
 	treffer = text.match(myRegEx);
+	
+	//alert (inhalt);
+	//alert (treffer[1]);
+	
 	if( treffer == null){
 	out = inhalt+" - dieser Hilfetext ist nicht vorhanden";
 	}else{
-	out = treffer[2];	
+	out = treffer[1];	
 	}
 	$( "[name=attrhelp]" ).html(out);
 	return;
 	}); 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function teststart(){
 // alle startfunktionen ausführen 
 // funktion rename aktivieren
 if (debug == 'on'){ alert(devicename+' Debug MSwitchweb an') };
-//alert(RENAME);
 
+
+  ALLDEVICESALIAS.unshift("");
+  
+  // doubletten entfernen
+   const ACTIVEMOD = ALLDEVICESTYPE.filter(function(ele , pos)
+		{
+		return ALLDEVICESTYPE.indexOf(ele) == pos;
+		})  		
+	ACTIVEMOD.unshift(".*");	
+	var selectElement = document.getElementById('modtype');
+	for (var key in ACTIVEMOD) {
+	if (ACTIVEMOD[key] == ""){continue;}	
+	var option = new Option(ACTIVEMOD[key], ACTIVEMOD[key]);
+    selectElement.options[key] = option;
+	}
+		
+
+	var selectElement = document.getElementById('affected_third_devices');
+	for (var key in ALLDEVICESSELECTED) {
+	if (ALLDEVICESSELECTED[key] == ""){continue;}	
+	var option = new Option(ALLDEVICESSELECTED[key], ALLDEVICESSELECTED[key]);
+    selectElement.options[key] = option;
+	}
+
+	var selectElement = document.getElementById('affected_second_devices');
+	for (var key in ALLDEVICES) {
+ 
+	if (ALLDEVICESALIAS[key]!=""){
+	var option = new Option(ALLDEVICES[key]+" (a:"+ALLDEVICESALIAS[key]+")", ALLDEVICES[key]);
+	}
+	else{
+		var option = new Option(ALLDEVICES[key], ALLDEVICES[key]);
+	}
+
+    selectElement.options[key] = option;
+	}
+	var select = document.getElementById('affected_third_devices');	
+	var length = select.options.length;	
+		if (length < 1)
+		{
+			$(affected_third_devices).css("width","175px");	
+		}
+		
+	
+
+//alert(DEVICETOTRIGGERSELECT);
+var selectElement = document.getElementById('trigdevnew');
+	for (var key in ALLDEVICESTOTRIGGER) {
+	if (ALLDEVICESTOTRIGGER[key] == ""){continue;}	
+	var option = new Option(ALLDEVICESTOTRIGGERZUSATZ[key], ALLDEVICESTOTRIGGER[key]);
+    selectElement.options[key] = option;
+	if (ALLDEVICESTOTRIGGER[key] == DEVICETOTRIGGERSELECT){
+	selectElement.options[key].selected = true;}
+	}
+
+
+
+// devicerename
 if (RENAME == 'on'){
 	//alert("RENAME");
 	
@@ -132,14 +217,6 @@ if (RENAME == 'on'){
 }
 
 
-
-// quickedit anpassen
-if (QUICKEDIT == '0'){
-	$("#devices").prop("disabled", false);
-	document.getElementById('aw_great').value='schow greater list';
-	document.getElementById('lockedit').checked = false  ;
-	}
-	
 // definiere hilfe fürbigwindow
 
 	varinf = '<table id="t1" width="100%">';
@@ -154,12 +231,9 @@ if (QUICKEDIT == '0'){
 	varinf = varinf+'</tr>';
 	varinf = varinf+'</table>';
 	
-varinf = varinf+'<table  id="vars" border ="0" width="100%" style="display:none">';
-varinf = varinf+'<tr>';
-varinf = varinf+'<td>';
-	
-	
-	
+	varinf = varinf+'<table  id="vars" border ="0" width="100%" style="display:none">';
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td>';
 	
 	varinf = varinf+'<table border ="1">';
 
@@ -212,19 +286,22 @@ varinf = varinf+'<td>';
 	varinf = varinf+'</tr>';
 	
 	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$timestamp </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>aktuelle Zeit als Zeitstempel (unix)</td>';
+	varinf = varinf+'</tr>';
+	
+	varinf = varinf+'<tr>';
 	varinf = varinf+'<td><small>\$SELF </td>';
 	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
 	varinf = varinf+'<td><small>enthält den eigenen Namen</td>';
 	varinf = varinf+'</tr>';
 	
-	
-	
 	varinf = varinf+'</table>';
 
-varinf = varinf+'</td>';
-varinf = varinf+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
-varinf = varinf+'<td>';
-
+	varinf = varinf+'</td>';
+	varinf = varinf+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
+	varinf = varinf+'<td>';
 
 	varinf = varinf+'<table border ="1">';
 	
@@ -247,7 +324,6 @@ varinf = varinf+'<td>';
 	varinf = varinf+'</tr>';
 	
 	varinf = varinf+'</table>';
-	
 	
 	varinf = varinf+'<br>';
 	
@@ -278,9 +354,9 @@ varinf = varinf+'<td>';
 	varinf = varinf+'</tr>';
 	
 	varinf = varinf+'</table>';
-varinf = varinf+'</td>';
-varinf = varinf+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
-varinf = varinf+'<td>';
+	varinf = varinf+'</td>';
+	varinf = varinf+'<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>';
+	varinf = varinf+'<td>';
 
 	varinf = varinf+'<table border ="1">';
 	
@@ -326,16 +402,13 @@ varinf = varinf+'<td>';
 	varinf = varinf+'<td><small> Zugriff auf Internal</td>';
 	varinf = varinf+'</tr>';	
 	
-	
 	varinf = varinf+'</table>';
-
 
 	varinf = varinf+'</td>';
 	varinf = varinf+'</tr>';
 	varinf = varinf+'</table>';	
 
 
-	
 // devhelp ersetzen
 
 r3 = $('<a href=\"javascript: reset(\'check\')\">Reset this device ('+devicename+')</a>&nbsp;&nbsp;<a href=\"javascript: fullhelp()\">Device specific help</a>');
@@ -449,7 +522,7 @@ if ( DEVICETYP != 'dummy')
 {
 	var triggerdetails = document.getElementById('MSwitchWebTRDT').innerHTML;
 	var saveddevice = TRIGGERDEVICEHTML;
-	var sel = document.getElementById('trigdev');
+	var sel = document.getElementById('trigdevnew');
 	sel.onchange = function() 
 	{
 	trigdev = this.value;
@@ -601,6 +674,12 @@ if (document.getElementById('trigcmdon'))
 
 // next   ##################################################
 	
+	
+	
+	/* 
+	
+	
+	
 	if (HASHINIT != 'define')
 	{
 		
@@ -653,11 +732,12 @@ if (document.getElementById('trigcmdon'))
 				randomdev.forEach (unlock);
 				}
 		}	 
-	}
+	} */
+	
+	
 	
 	// teste auch showids
     var cookie = getCookieValue("Mswitch_ids_"+devicename);
-	
 	if (cookie == ""){
 	}
 	else{
@@ -676,18 +756,7 @@ return;
 
 
 
-
-// function formsubmit(){
-	
-	// alert('test');
-	// return;
-	
-	
-// }
-
-
 function writedebug(line){
-
 	encodedline = decodeURIComponent(line);
 	var old = document.getElementById("log").value;
 	 var textarea = document.getElementById('log');
@@ -808,6 +877,33 @@ $("#helptext").html(text);
 return;
 }
 
+
+
+/* 
+function hilfeconfig(field){
+	if (debug == 'on'){ alert('hilfe') };
+	var text = HELP;
+	text = text.replace(/#\[LINE\]/gi,"<br>");
+	text = text.replace(/#\[A\]/gi,"'");
+	text = text.replace(/#\[DA\]/gi,"\"");
+	var myRegEx = new RegExp('<strong>'+field+'</strong>(.*?)(<strong)');  
+	// <strong>MSwitch_Expert</strong>
+	//alert(myRegEx);
+	//alert(HELP);
+	treffer = text.match(myRegEx);
+	
+	if( treffer == null){
+	out = "dieser Hilfetext ist nicht vorhanden";
+	}else{
+	out = treffer[1];	
+	}
+	var textfinal ="<div style ='font-size: small;'>Hilfe "+field+":<br>"+ out +"</div>";
+	FW_okDialog(textfinal);
+	return;
+	
+	
+} */
+
 function hilfe(field){
 
 	
@@ -817,6 +913,9 @@ function hilfe(field){
 	text = text.replace(/#\[A\]/gi,"'");
 	text = text.replace(/#\[DA\]/gi,"\"");
 	var myRegEx = new RegExp('<-.'+field+'-(.*?)(->)');  
+	// <strong>MSwitch_Expert</strong>
+	//alert(myRegEx);
+	//alert(HELP);
 	treffer = text.match(myRegEx);
 	
 	if( treffer == null){
@@ -952,11 +1051,9 @@ function makewidget(copytofield,target,werte){
 	
 	retoption1 ="<table border ='0'>";
 	retoption1 +="<tr>";
-	
 	retoption1 +="<td>";
 	retoption1 +="<div class='fhemWidget' type='set "+devicename+" wizardcont1 "+copytofield+" ' cmd='' reading='container' dev='' arg='"+werte+"' current='"+selected+"'></div>";
 	retoption1 +="</td>";
-	
 	retoption1 +="</tr>";
 	retoption1 +="</table>";
 
@@ -965,9 +1062,7 @@ function makewidget(copytofield,target,werte){
 	$("#"+target+"").css("display","none");
 
 	var datatarget =target;
-	
 	return;
-	
 }
 
 
@@ -1022,8 +1117,6 @@ function activate(state,target,options,copytofield){
 	debug += 'options: '+options+'<br>';
 	debug += 'copytofield: '+copytofield+'<br>';
 	
-
-	
 	var globaldetails3='undefined';
 	var x = document.getElementsByClassName('devdetails2');
     for (var i = 0; i < x.length; i++) 
@@ -1077,11 +1170,6 @@ function activate(state,target,options,copytofield){
 		}	
 	devicecmd = werte[state].split(",");
 	
-	
-	//alert (devicecmd[0]);
-	
-	
-	
 	if (devicecmd[0] == 'noArg'){noarg(target,copytofield);}
 	else if (devicecmd[0] == 'no_Action')
 	{
@@ -1089,17 +1177,6 @@ function activate(state,target,options,copytofield){
 	}
 	
 	else if (devicecmd[0] == 'textfieldLong'){textfieldlong(copytofield,target);}
-	
-	
-	
-	//else if (devicecmd[0] == 'select') {selectfield(werte[state],target,copytofield);}
-//	else if (devicecmd[0] == 'slider'){textfield(copytofield,target);}
-/* 	else if (devicecmd[0] == 'undefined'){textfield(copytofield,target);}
-	else if (devicecmd[0] == 'textField'){textfield(copytofield,target);}
-	else if (devicecmd[0] == 'colorpicker'){textfield(copytofield,target);}
-	else if (devicecmd[0] == 'RGB'){textfield(copytofield,target);}
-	 */
-	
 	else {textfield(copytofield,target);}
 	
 	if (webwidget == 1 && state != '[FREECMD]' && devicecmd[0] != "noArg" && devicecmd[0] != "textField" )
@@ -1193,109 +1270,7 @@ function testcmd(field,cmdname,opt,eventfield){
 	return;	
 	}
 	
-// ###############################################
-function testcmd_OLD_notinuse(field,devicename,opt){
-	if (debug == 'on'){ alert('testcmd') };
-	comand = $("[name="+field+"]").val();
-	comand=comand.trim();
 
- 	if (comand == 'no_action')
-		{
-		return;
-		}
-		
-	comand1 = $("[name="+opt+"]").val()
-	if (devicename != 'FreeCmd')
-		{
-		comand =comand+" "+comand1;
-		}
-	comand = comand.replace(/$SELF/g, devicename); // !!!!
-	if (devicename != 'FreeCmd')
-		{
-			cmd ='set '+devicename+' '+comand;
-			FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
-			FW_okDialog(EXECCMD+' '+cmd); // !!!
-			FW_errmsg(cmd, 5);
-		} 
-	else
-		{
-			comand = comand.replace(/;;/g,'[DS]');
-			comand = comand.replace(/;/g,';;');
-			comand = comand.replace(/\\[DS\\]/g,';;');
-			var t0 = comand.substr(0, 1);
-			var t1 = comand.substr(comand.length-1,1 );
-			if (t1 == ' ')
-			{
-				var space = '".$NOSPACE."'; // !!!
-				var textfinal = "<div style ='font-size: medium;'>"+space+"</div>";
-				FW_okDialog(textfinal);
-				return;
-			}
-		
-		showcomand = comand;
-			
-		if (t0 == '{' && t1 == '}') 
-			{
-						
-				comand  = comand.substr(1, comand.length-1);
-				erweiterung  = "{my $SELF=\""+mswitchname+"\";;";
-				erweiterung += "my $NAME=\""+"\";;";
-				erweiterung += "my $EVTPART1=\""+"\";;";
-				erweiterung += "my $EVTPART2=\""+"\";;";
-				erweiterung += "my $EVTPART3=\""+"\";;";
-				erweiterung += "my $EVTFULL=\""+"\";;";
-				comand=erweiterung+comand;
-			}
-		else
-			{
-				erweiterung  = "{my $SELF=\""+mswitchname+"\";;";
-				erweiterung += "my $NAME=\""+"\";;";
-				erweiterung += "my $EVTPART1=\""+"\";;";
-				erweiterung += "my $EVTPART2=\""+"\";;";
-				erweiterung += "my $EVTPART3=\""+"\";;";
-				erweiterung += "my $EVTFULL=\""+"\";;";		
-				comand = erweiterung+'fhem("'+comand+'")}';
-			}
-				
-			cmd = comand;
-			FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
-			showcomand = showcomand.replace(/;;/g,';');	
-			FW_okDialog(EXECCMD+' '+showcomand);
-		} 
-	}
-
-
-
-function  switchlock()
-{	
-	if (debug == 'on'){ alert('switchlock') };
-	test = document.getElementById('lockedit').checked ;	
-	if (test)
-		{
-		$("#devices").prop("disabled", 'disabled');
-			if (LANGUAGE == 'DE')
-				{
-				document.getElementById('aw_great').value='Liste editieren';
-				}
-			else
-				{
-				document.getElementById('aw_great').value='edit list';
-				}
-		}
-	else
-		{
-		$("#devices").prop("disabled", false);
-			if (LANGUAGE == 'DE')
-				{
-				document.getElementById('aw_great').value='öffne grosse Liste';
-				}
-			else
-				{
-				document.getElementById('aw_great').value='schow greater list';
-				}
-		}
-}
-	
 
 function closetrigger(){
 	if (debug == 'on'){ alert('closetrigger') }
@@ -1330,7 +1305,11 @@ if (debug == 'on'){ alert('newname') }
 	} 
 	
 
+// sperrt eingabefelder
 function lock(elem, text){
+	
+	return;
+	
 if (debug == 'on'){ alert('lock') }
 	if (document.getElementById(elem)){
 	document.getElementById(elem).style.backgroundColor = "#ADADAD";
@@ -1344,6 +1323,8 @@ if (debug == 'on'){ alert('lock') }
 	}
 
 function unlock(elem, index){
+	
+	return;
 if (debug == 'on'){ alert('unlock') }
 	if (document.getElementById(elem)){
 	document.getElementById(elem).style.backgroundColor = "";
@@ -1391,18 +1372,17 @@ if(typeof type == 'undefined'){
 	type = 0;
 }
 
-//alert(type);	
 	targetval =document.getElementById(targetid).value;
 	targetval = targetval.replace(/\u2424/g,'\n');
 	sel ='<div style="white-space:nowrap;"><br>';
 	sel = sel+'<textarea id="valtrans" cols="130" name="TextArea1" rows="10" onChange="bigwindowformat(\''+targetid+'\',\''+fromsc+'\')">'+targetval+'</textarea>';
 	sel = sel+'</div>';
 	
-
-	if (FUTURELEVEL == "1" && type===1)
+	if (type===1)
 	{
 	sel = sel+varinf;
 	}
+
 
 	FW_okDialog(sel,''); 
 	}	
@@ -1435,32 +1415,13 @@ function bigwindowformat(targetid,fromsc){
  
 }
 
-// Deviceauswahl
-function  deviceselect(){
-if (debug == 'on'){ alert('deviceselect') };
-	sel ='<div style="white-space:nowrap;"><br>';
-	var ausw=document.getElementById('devices');
-	for (i=0; i<ausw.options.length; i++)
-		{
-		var pos=ausw.options[i];
-			if(pos.selected)
-			{
-			sel = sel+'<input id ="Checkbox-'+i+'" checked="checked" name="Checkbox-'+i+'" type="checkbox" value="test" /> '+pos.value+'<br />';
-			}
-			else 
-			{
-			sel = sel+'<input id ="Checkbox-'+i+'" name="Checkbox-'+i+'" type="checkbox" /> '+pos.value+'<br />';
-			}
-		} 
-	sel = sel+'</div>';
-	FW_okDialog(sel,'',removeFn) ; 
-	}
-	
+
+	// gruppen anzeigen
 	function  showgroup(group){
 	cmd ='set '+devicename+' showgroup '+group;
 	FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
 		 return;
-	 }
+	 } 
 	  
 // lösche log
 function deletelog() {
@@ -1510,6 +1471,200 @@ if (debug == 'on'){ alert('reset') };
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	return;
 	}	
+	
+	
+	
+// geräteauswahl
+function selectdevices(){
+	var ausw=document.getElementById('affected_second_devices');
+	for (i=0; i<ausw.options.length; i++)
+		{
+		var pos=ausw.options[i];
+			if(pos.selected)
+			{
+				if (ALLDEVICESSELECTED.includes(pos.value))
+				{
+					continue;
+				}
+				
+				
+				
+				ALLDEVICESSELECTED.unshift(pos.value);
+				
+				
+			}
+			
+			
+		// prüfe auf doubletten
+		const filteredArray = ALLDEVICESSELECTED	
+		var selectElement = document.getElementById('affected_third_devices');
+		for (var key in filteredArray) 
+			{
+				
+				
+				if (filteredArray[key] != ""){
+			var option = new Option(filteredArray[key], filteredArray[key]);
+			selectElement.options[key] = option;
+			
+				}
+			
+			}
+		}		
+		return;
+}
+	
+	
+
+	
+	// geräteauswahl entfernen
+function deletedevices(){
+	
+	var NEWLIST=[];
+	var ausw=document.getElementById('affected_third_devices');
+	for (i=0; i<ausw.options.length; i++)
+		{
+		var pos=ausw.options[i];
+			if(pos.selected)
+			{
+			continue;
+			}
+		NEWLIST.unshift(pos.value);	
+		}
+				
+var select = document.getElementById("affected_third_devices");
+var length = select.options.length;
+for (i = length-1; i >= 0; i--) {
+  select.options[i] = null;
+}
+			
+	
+		var selectElement = document.getElementById('affected_third_devices');
+		for (var key in NEWLIST) 
+			{
+			var option = new Option(NEWLIST[key], NEWLIST[key]);
+			selectElement.options[key] = option;
+			}
+			ALLDEVICESSELECTED=NEWLIST;
+		var length = select.options.length;	
+		if (length < 1){
+		$(affected_third_devices).css("width","175px");	
+		}
+		else{
+			
+			$(affected_third_devices).css("width","");	
+		}
+		return;
+}	
+	
+
+
+function searchdevice(){
+	var value = document.getElementById('searchstring').value;
+	var akttype = document.getElementById('modtype').value;
+	var regex = new RegExp(value, 'gi');
+	var NEWLIST=[];
+	var NEWLISTALIAS=[];
+	var NEWLISTTYPES=[];
+	for (var key in ALLDEVICES)
+	{
+		var testdevice = ALLDEVICES[key]+"(a:"+ALLDEVICESALIAS[key]+")";
+		treffer = testdevice.match(regex);
+		
+		if (treffer === null)
+		{
+		}
+		else
+		{
+			if ( akttype ==".*" || akttype == ALLDEVICESTYPE[key] )
+			{
+				NEWLIST.push(ALLDEVICES[key]);	
+				NEWLISTALIAS.push(ALLDEVICESALIAS[key]);
+				NEWLISTTYPES.push(ALLDEVICESTYPE[key]);
+			}
+		}
+	}
+	
+	
+	var select = document.getElementById("affected_second_devices");
+	var length = select.options.length;
+
+	for (i = length-1; i >= 0; i--) 
+	{
+	  select.options[i] = null;
+	}
+	
+	var selectElement = document.getElementById('affected_second_devices');
+
+	if (value =="" && akttype ==".*")
+	{
+		NEWLIST=ALLDEVICES;
+		NEWLISTALIAS=ALLDEVICESALIAS;
+		}
+	
+	
+	for (var key in NEWLIST)
+	{	
+		if (NEWLIST[key] == ""){continue;}	
+		var option = new Option(NEWLIST[key], NEWLIST[key]);
+		var option = new Option(NEWLIST[key]+" (a:"+NEWLISTALIAS[key]+")", NEWLIST[key]);
+		selectElement.options[key] = option;
+	}
+	return;
+	}
+	
+	
+	
+	
+function searchtriggerdevice(){
+	var value = document.getElementById('searchstringtrigger').value;
+	var selectElement = document.getElementById('trigdevnew');
+	var regex = new RegExp(value, 'gi');
+	var NEWLIST=[];
+	var NEWLISTALIAS=[];
+
+	for (var key in ALLDEVICESTOTRIGGERZUSATZ)
+	{
+		var testdevice = ALLDEVICESTOTRIGGERZUSATZ[key];
+		treffer = testdevice.match(regex);
+		
+		if (treffer === null)
+		{
+		}
+		else
+		{
+				NEWLISTALIAS.push(ALLDEVICESTOTRIGGERZUSATZ[key]);	
+				NEWLIST.push(ALLDEVICESTOTRIGGER[key]);
+			
+		}
+	}
+	
+	var length = selectElement.options.length;
+
+	for (i = length-1; i >= 0; i--) 
+	{
+	  selectElement.options[i] = null;
+	}
+	
+	for (var key in NEWLIST)
+	{	
+		if (NEWLIST[key] == ""){continue;}	
+		var option = new Option(NEWLISTALIAS[key], NEWLIST[key]);
+		selectElement.options[key] = option;
+		
+		if (NEWLIST[key] == DEVICETOTRIGGERSELECT){
+		selectElement.options[key].selected = true;}
+	}
+	
+	if ( NEWLIST.length < 10)
+	{
+		selectElement.size = NEWLIST.length;
+	}
+	else
+	{
+		selectElement.size = "1";
+	}
+	}
+	
 	
 // events from monitor to edit
 function transferevent(){
@@ -1765,12 +1920,55 @@ if (debug == 'on'){ alert('checkcondition') }
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	});	
 	
-// unbekannt
+// geräteauswahl speichern
 	$("#aw_dev").click(function(){
 	if (debug == 'on'){ alert('#aw_dev') };
 	var nm = $(t).attr("nm");
 	devices = $("[name=affected_devices]").val();
+	
+	
+	//alert ("-"+devices+"-");
+	//return;
+	
+	
+	
 	var  def = nm+" devices "+devices+" ";
+	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
+	}); 
+	
+	
+	
+	// geräteauswahl speichern neu
+	$("#aw_new_dev").click(function(){
+	if (debug == 'on'){ alert('#aw_dev') };
+	var nm = $(t).attr("nm");
+	
+	
+	
+	var NEWLIST=[];
+	var ausw=document.getElementById('affected_third_devices');
+	
+	//alert ("-"+ausw.options.length+"-");
+	
+	if (ausw.options.length >  0)
+	{
+	
+	for (i=0; i<ausw.options.length; i++)
+		{
+		var pos=ausw.options[i];
+		
+		if (pos.value !=""){
+		NEWLIST.unshift(pos.value);
+		}
+		
+		}
+	}
+	else{
+		NEWLIST="null";
+	}
+	
+
+	var  def = nm+" devices "+NEWLIST+" ";
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	}); 
 	
@@ -1827,7 +2025,7 @@ if (debug == 'on'){ alert('checkcondition') }
 	$("#aw_trig").click(function(){
 	if (debug == 'on'){ alert('#aw_trig') };	
 	var nm = $(t).attr("nm");
-	trigdev = $("[name=trigdev]").val();
+	trigdev = $("[name=trigdevnew]").val();
 	
 	timeon =  $("[name=timeon]").val();
 	if(typeof(timeon)=="undefined"){timeon="NoTimer"};
