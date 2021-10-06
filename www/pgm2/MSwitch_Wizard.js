@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V6.00';
+	var version = 'V6.01';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -38,7 +38,7 @@
 	var preconfpartsname = new Array;
 	var preconfpartshelp = new Array;
 	var style ="style='display:none'";
-
+//var o =[];
 	var configstart = [
 	'#V Version',
 	'#VS V6.0',
@@ -129,20 +129,80 @@
 	observer = new MutationObserver(function(mutations) {
 	mutations.forEach(function(mutation) {
 	var test = $( "div[informId='"+devicename+"-EVENTCONF']" ).text();
-	test = test.replace(/ /gi,"");
+	
+	
+	
+	
+	if (document.getElementById('bank12').value == "pause")
+	{
+		return;
+	}
+	
+	if (document.getElementById('bank12').value == "clear")
+	{
+		document.getElementById('bank12').value="";
+
+		o=[];
+	}
+	
+	var names = test.split(" ");
+	
+	var i = 0;
+	var len =  names.length;
+for (i; i<len; i++)
+	
+		{
+	var test =  names[i];
+	
+		
+	
+	
+	
+	//test = test.replace(/ /gi,"");
+	
+	
+	//alert(test);
 	document.getElementById('bank6').value=test;
-	if(o[test]){return;}
+	
+	if(o[test]){continue;}
+	
+	
 	var event = test.split(':');
 	var newevent =  event[1]+':'+event[2]
+	
+	
+	//alert("test");
+	//alert( event[0] );
+	document.getElementById('bank7').value=event[0];
+	
+	
+	
+	
+	//if  (event[0] == document.getElementById('bank1').value)
+	//{
+		document.getElementById('bank8').value=event[0];
+		
+	//	return ;
+	//}
+	//else{
+		
+		
+		//alert("found");
+	//}
+	
+	//
+	
+	
+	
 	if ( event[0] != document.getElementById('bank1').value && document.getElementById('bank1').value != "all_events")
 		{
 			document.getElementById('bank4').value=document.getElementById('bank1').value;
 			document.getElementById('bank2').value=event[0];
-			return;
+			continue;
 		}
 	if (logging == 'off')
-		{
-			return;
+		{ 
+			continue;
 		}
 		
 	if ( document.getElementById('bank1').value == "all_events")
@@ -170,7 +230,13 @@
 			var newselect = $('<option value=\"'+a3[i]+'\">'+a3[i]+'</option>');
 			$(newselect).appendTo('#'+monitorid ); 
 			}
-		}  
+		} 
+
+//o=[];
+		}
+
+
+		
   });    
 });
 
@@ -178,12 +244,29 @@
 
 function eventmonitorstop(){
 	if (observer){
+		
+		//alert("monitor stop");
+		
+		
+		FW_cmd(FW_root+'?cmd=set '+devicename+' notifyset no_trigger &XHR=1', function(data){})
+
+		
+		
 		observer.disconnect();
 	}	
 	return;
 }
 
 function eventmonitorstart(){
+			alert("monitor start");
+
+	inhalt1= document.getElementById('bank1').value;
+	
+	
+	//alert("inhalt1");
+	FW_cmd(FW_root+'?cmd=set '+devicename+' notifyset '+inhalt1+' &XHR=1', function(data){})
+//renewdevices(data,newtemplate,newcmd)
+	
 	
 	var newselect = $('<option value="Event wählen">Event wählen:</option>');
 	$(newselect).appendTo('#6step');
@@ -192,16 +275,20 @@ function eventmonitorstart(){
 }
 
 function clearmonitor(){
-	eventmonitorstop();
-	var selectobject = document.getElementById("eventcontrol1");
-for (var i=0; i<10000; i++) {
-        selectobject.remove(i);
+document.getElementById('eventcontrol1').innerHTML=""; 
+document.getElementById('bank12').value="clear";
 }
 
-document.getElementById('eventcontrol1').innerHTML=""; 
-eventmonitorstart();
+function playmonitor(){
+document.getElementById('bank12').value="";
+}
+
+
+function pausemonitor(){
+document.getElementById('bank12').value="pause";
 return;
 }
+
 
 function closeall(){
 		logging ='off';
@@ -255,6 +342,12 @@ function conf(typ,but){
 }	
 	
 function start1(name){
+	
+	
+	eventmonitorstop();
+	
+	
+	
 	    // this code will run after all other $(document).ready() scripts
         // have completely finished, AND all page elements are fully loaded.
 		$( ".makeSelect" ).text( "" );
@@ -1489,6 +1582,13 @@ if (cmdsatz[0] == "VARDEC"){
 }
 
 // VAREVENT>>VARNAME>>VARTEXT
+
+
+
+
+
+
+
 if (cmdsatz[0] == "VAREVENT"){
 	var testvar = cmdsatz[1].match(/^\$.*/);
 	if (testvar!=null && testvar.length!=0)
@@ -1588,11 +1688,13 @@ if (cmdsatz[0] == "VARDEVICES"){
 
 
 var typ="";
-if (cmdsatz[0] == "ATTR"){
+if (cmdsatz[0] == "ATTR")
+{
 	typ="A";
 	cmdsatz.shift(); 
 	}
-	else{
+	else
+	{
 	typ="S";
 	}
 		var befehl = cmdsatz[0];
@@ -1857,16 +1959,27 @@ return;
 function eventinput(text,toset,newtemplate,typ){
 monitorid ="eventcontrol1";
 logging="on";
+
+
+	inhalt1= document.getElementById('bank1').value;
+	
+	
+	//alert(inhalt1);
+	FW_cmd(FW_root+'?cmd=set '+devicename+' notifyset '+inhalt1+' &XHR=1', function(data){})
+
+
+//alert(target);
+//alert(config);
 observer.observe(target, config);
 var out ="";
 out+=text;
 out=changevar(out);
 out+="<br>&nbsp;<br>";
 out+="<select multiple style=\"width: 40em;\" size=\"5\" id =\"eventcontrol1\" onchange=\"javascript: takeselectedmultiple(id,name)\"></select>";
-out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
-out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
+out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: pausemonitor()'>";
+out+="&nbsp;<input type='button' value='>' onclick='javascript: playmonitor()'>";
 out+="&nbsp;<input type='button' value='clear' onclick='javascript: clearmonitor()'>";
-out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
+//out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
 out+="<br>&nbsp;<br><input id='input' type='text' value='"+PREASSIGMENT+"' size='100'>";
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputok(\""+toset+"\",\""+typ+"\")'>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
@@ -1879,6 +1992,15 @@ return;
 function eventinputvar(text,toset,newtemplate,typ){
 monitorid ="eventcontrol1";
 logging="on";
+
+
+inhalt1= document.getElementById('bank1').value;
+	
+	
+	//alert(inhalt1);
+	FW_cmd(FW_root+'?cmd=set '+devicename+' notifyset '+inhalt1+' &XHR=1', function(data){})
+
+
 observer.observe(target, config);
 var out ="";
 out+=text;
@@ -1888,7 +2010,7 @@ out+="<select multiple style=\"width: 40em;\" size=\"5\" id =\"eventcontrol1\" o
 out+="<br>&nbsp;<input type='button' value='||' onclick='javascript: eventmonitorstop()'>";
 out+="&nbsp;<input type='button' value='>' onclick='javascript: eventmonitorstart()'>";
 out+="&nbsp;<input type='button' value='clear' onclick='javascript: clearmonitor()'>";
-out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
+//out+="&nbsp;Filter: <input id='filter' type='text' value='' size='10'>";
 out+="<br>&nbsp;<br><input id='input' type='text' value='"+PREASSIGMENT+"'size='100'>";
 out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: eventinputvarok(\""+toset+"\",\""+typ+"\")'>";
 out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
@@ -1922,10 +2044,10 @@ monitorid ="eventcontrol";
 logging="off";
 eventmonitorstop();
 var event = document.getElementById('input').value.split(":");
-if ( document.getElementById('bank1').value != "all_events")
+/* if ( document.getElementById('bank1').value != "all_events")
 		{	
 		event.shift();
-		}
+		} */
 var befehl = "SET>>"+toset+">>"+event.join(":");
 execcmd(befehl);
 starttemplate(newtemplate);
