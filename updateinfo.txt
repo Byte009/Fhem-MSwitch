@@ -1,3 +1,3 @@
 Version
-6.0
-Change: siehe Forum
+6.1
+Change: Anpassungen und Optimierung des Wizards
