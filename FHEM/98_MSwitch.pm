@@ -64,7 +64,7 @@ my $backupfile 	= "backup/MSwitch/";
 
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.0';  				# version
+my $version      = '6.1';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -2836,6 +2836,15 @@ if ( $cmd eq 'loadreadings')			{my $ret = MSwitch_reloadreadings( $hash, $args[0
 if ( $cmd eq 'template')				{my $ret = MSwitch_gettemplate( $hash, $args[0] );return $ret;}
 if ( $cmd eq 'reset_Switching_once') 	{MSwitch_Set_switching_once( $hash, $args[0], $args[1] );return;}
 if ( $cmd eq 'groupreload') 			{my $ret = MSwitch_reloaddevices( $hash, $args[0] );return $ret;}
+
+
+
+
+if ( $cmd eq 'notifyset') 			{my $ret = MSwitch_notifyset( $hash, $args[0] );return $ret;}
+
+
+
+
 if ( $cmd eq 'whitelist') 				{my $ret = MSwitch_whitelist( $hash, $args[0] );return $ret;}
 if ( $cmd eq 'loadpreconf')				{my $ret = MSwitch_loadpreconf($hash);return $ret;}
 if ( $cmd eq 'loadnotify') 				{my $ret = MSwitch_loadnotify( $hash, $args[0] );return $ret;}
@@ -4382,10 +4391,28 @@ if ( grep( m/EVENT|EVTFULL|writelog|last_exec_cmd|EVTPART.*/, @{$events} ) )
         }
 
         my @eventscopy = ( @{$events} );
-        foreach my $event (@eventscopy) 
-		{
-            readingsSingleUpdate( $own_hash, "EVENTCONF",$devName . ": " . $event, 1 );
-        }
+		my @newarray;
+		
+		foreach my $event (@eventscopy) 
+		 {
+			$event =~ s/ //g;
+			$event = $devName.":".$event;
+			push( @newarray, $event );
+		 }
+		my $eventcopy = join(" ",@newarray);
+		
+		readingsSingleUpdate( $own_hash, "EVENTCONF","$eventcopy", 1 );
+        # foreach my $event (@eventscopy) 
+		# {
+			
+			
+			# #MSwitch_LOG( $ownName,0,"$event ");
+
+            # readingsSingleUpdate( $own_hash, "EVENTCONF",$devName . ": " . $event, 1 );
+			
+			# readingsSingleUpdate( $own_hash, "EVENTCONF",$devName . ": " . $event, 1 );
+			
+        # }
         return;
     }
 # ende wenn wizard aktiv
@@ -5690,7 +5717,11 @@ sub MSwitch_fhemwebconf($$$$) {
     my $Name = $hash->{NAME};
     my @found_devices;
 	
-    delete( $hash->{NOTIFYDEV} );
+    #delete( $hash->{NOTIFYDEV} );
+	
+	$hash->{NOTIFYDEV} = 'no_trigger';
+	
+	
     readingsSingleUpdate( $hash, "EVENTCONF", "start", 1 );
 
     my $preconf1 = '';
@@ -14804,6 +14835,29 @@ sub MSwitch_loadat($$) {
       . "[TRENNER]"
       . $attrigtime;
 
+    return $string;
+}
+##########################################
+
+
+
+sub MSwitch_notifyset($$) {
+    my ( $hash, $arg1 ) = @_;
+    my $Name = $hash->{NAME};
+	my $string = $arg1;
+	#MSwitch_LOG($Name, 0, "lösche notifyhash" );
+
+if ($string eq "all_events"){
+	delete( $hash->{NOTIFYDEV} );
+}
+else{
+	$hash->{NOTIFYDEV} = $string;
+}
+
+
+	
+	#
+	%ntfyHash = ();
     return $string;
 }
 ##########################################
