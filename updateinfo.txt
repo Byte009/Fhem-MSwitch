@@ -1,3 +1,3 @@
 Version
-6.1
-Change: Anpassungen und Optimierung des Wizards
+6.2
+Change: WizardJS,WebJS,MSwitchPM,Datenstruktur,Backub,Restore,Configdevice
