@@ -18,7 +18,7 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '6.0';
+	var version = '6.2';
 	var info = '';
 	var debug ='off';
 	var datatarget ='undef';
