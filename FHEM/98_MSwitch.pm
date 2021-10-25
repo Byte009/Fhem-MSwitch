@@ -12956,11 +12956,21 @@ sub MSwitch_Get_Backup($) {
 	opendir(DIR,"$restoredir") || MSwitch_fileerror($hash);
 	my @files = grep {/MSwitch_Full_.*/} readdir DIR;
 	closedir(DIR);
+	
 	opendir(DIR,"$restoredir") || MSwitch_fileerror($hash);
-	my @files1 = grep {/MSwitch_Device_.*/} readdir DIR;
+	my @files1 = grep {/MSwitch_Save.*/} readdir DIR;
 	closedir(DIR);
+	
+	opendir(DIR,"$restoredir") || MSwitch_fileerror($hash);
+	my @files2 = grep {/MSwitch_Device_.*/} readdir DIR;
+	closedir(DIR);
+	
+	
 	if (@files == 0 && @files1 == 0){ return "leer";}
-	return "@files DEVICES @files1";
+	
+	
+	
+	return "@files @files1 DEVICES @files2";
 }
 ####################################################
 sub MSwitch_fileerror($)
