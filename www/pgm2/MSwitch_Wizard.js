@@ -2615,7 +2615,7 @@ function makecmdhashtemp(line){
 // #################
 
 function selectcmdoptionstemp(inhalt){
-t("erstelle  params ");
+// t("erstelle  params ");
 	
 	document.getElementById('setcmd1temp').innerHTML ='';
 	// wenn undefined textfeld erzeugen
