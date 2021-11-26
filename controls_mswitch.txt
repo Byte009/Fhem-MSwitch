@@ -1,4 +1,4 @@
-UPD 2021-10-24_09:00:00 78206 www/pgm2/MSwitch_Wizard.js
+UPD 2021-11-26_18:00:00 78209 www/pgm2/MSwitch_Wizard.js
 UPD 2021-10-24_09:00:00 56480 www/pgm2/MSwitch_Web.js
 UPD 2021-10-24_09:00:00 62244 www/MSwitch/MSwitch_Help.txt
 UPD 2021-10-24_09:00:00 34760 www/MSwitch/MSwitch_Help_eng.txt
