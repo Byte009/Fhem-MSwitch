@@ -18,7 +18,7 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '6.2';
+	var version = '6.3';
 	var info = '';
 	var debug ='off';
 	var datatarget ='undef';
@@ -373,31 +373,31 @@ if (RENAME == 'on'){
 	varinf = varinf+'</tr>';	
 	
 	varinf = varinf+'<tr>';
-	varinf = varinf+'<td><small>\[ReadingsVal:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>\[ReadingsVal:Device:Reading:Standard\] </td>';
 	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
 	varinf = varinf+'<td><small> Zugriff auf Reading</td>';
 	varinf = varinf+'</tr>';	
 	
 	varinf = varinf+'<tr>';
-	varinf = varinf+'<td><small>\[ReadingsNum:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>\[ReadingsNum:Device:Reading:Standard\] </td>';
 	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
 	varinf = varinf+'<td><small> Zugriff auf Reading (numerisch)</td>';
 	varinf = varinf+'</tr>';	
 	
 	varinf = varinf+'<tr>';
-	varinf = varinf+'<td><small>\[ReadingsAge:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>\[ReadingsAge:Device:Reading:Standard\] </td>';
 	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
 	varinf = varinf+'<td><small> Zugriff auf Readingsalter</td>';
 	varinf = varinf+'</tr>';	
 	
 	varinf = varinf+'<tr>';
-	varinf = varinf+'<td><small>\[AttrVal:Device:Attr:Standart\] </td>';
+	varinf = varinf+'<td><small>\[AttrVal:Device:Attr:Standard\] </td>';
 	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
 	varinf = varinf+'<td><small> Zugriff auf Attribut</td>';
 	varinf = varinf+'</tr>';	
 	
 	varinf = varinf+'<tr>';
-	varinf = varinf+'<td><small>\[InternalVal:Device:Reading:Standart\] </td>';
+	varinf = varinf+'<td><small>\[InternalVal:Device:Reading:Standard\] </td>';
 	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
 	varinf = varinf+'<td><small> Zugriff auf Internal</td>';
 	varinf = varinf+'</tr>';	
@@ -413,6 +413,18 @@ if (RENAME == 'on'){
 
 r3 = $('<a href=\"javascript: reset(\'check\')\">Reset this device ('+devicename+')</a>&nbsp;&nbsp;<a href=\"javascript: fullhelp()\">Device specific help</a>');
 $( "[class=\"detLink devSpecHelp\"]" ).html(r3);
+
+
+
+var html = "<a href=\"javascript: raw()\">Raw definition</a>";
+$( "[class=\"detLink rawDef\"]" ).html(html);
+
+//$( "[class=\"detLink rawDef\"]" ).attr("id", "rawDef");
+//$('.klasse1')
+//$( "[class=\"detLink rawDef\"]" ).attr("id", "testfff");
+//$('#testfff').removeClass('detLink rawDef').addClass('xxx');
+//var test =  document.getElementById('testfff').innerHTML;
+//alert(test);
 
 
 // zufügen des hilfebereichs
@@ -651,7 +663,7 @@ if (document.getElementById('trigcmdon'))
 	
 	$(field).appendTo('#log2');
 
-	// umwandlung des objekts in standartarray
+	// umwandlung des objekts in Standardarray
 	var a3 = Object.keys(o).map(function (k) { return o[k];})
  
 	// array umdrehen
@@ -1302,6 +1314,40 @@ if (debug == 'on'){ alert('newname') }
 	cmd = comand;
 	
 	window.location.href="/fhem?cmd=rename "+devicename+" "+newname+"&detail="+newname+""+CSRF;
+	return;
+	} 
+	
+	
+	
+function rename(device){
+if (debug == 'on'){ alert('rename') }
+
+
+	newname = document.getElementById('ren2_'+device).value;
+	if (devicename == device){return;}
+	if (newname == ''){return;}
+	
+	//alert(newname);
+	//alert(device);
+	//return;
+	
+	
+	//comand = 'rename'+devicename+newname;
+	
+	//cmd = comand;
+	
+	//window.location.href="/fhem?cmd=rename "+device+" "+newname+"&detail="+newname+""+CSRF;
+	
+	
+	//cmd ='set '+alldevices[i]+' '+'change_renamed'+' '+device+' '+newname 
+    //FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
+	
+	conf=device+" "+newname;
+	var nm = $(t).attr("nm");
+	var  def = nm+" change_renamed "+encodeURIComponent(conf);
+	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
+	
+	return;
 	} 
 	
 
@@ -1501,8 +1547,8 @@ function selectdevices(){
 		for (var key in filteredArray) 
 			{
 				
-				
-				if (filteredArray[key] != ""){
+				//alert(key);
+			if (filteredArray[key] != ""){
 			var option = new Option(filteredArray[key], filteredArray[key]);
 			selectElement.options[key] = option;
 			
@@ -2100,4 +2146,53 @@ function readhelp()
 }
 
 
+function raw()
+{
+  if( $("#rawDef").length > 0 ) {
+  $("#rawDef").remove(); 
+  return;
+}
+	
+	//alert("rawxx");
+	//$('body').addClass('js');
+	//  $('.animated').append(html);
+	//$('.menuScrollArea').append('<p>Test</p>');
+	//var $newdiv1 = $( "<div id='object1'>XXXXX</div>" );
+	// $( "body" ).append( $newdiv1);
+	//FW_cmd(FW_root+'?cmd=set '+devicename+' getraw&XHR=1');
+	FW_cmd(FW_root+'?cmd=set '+devicename+' getraw &XHR=1', function(data){raw1(data)});
+	return;
+}
 
+
+function raw1(data)
+{
+	
+	//var html="<div id=\"rawDef\"><textarea id=\"td_rawDef\" rows=\"25\" cols=\"60\" style=\"width:99%; \">"+data+"</textarea><button style=\"display: none;\">Execute commands</button> Dump \"Probably associated with\" too <input type=\"checkbox\"><br><br></div></div>";
+    //$('.animated').append(html);
+	//alert(data);
+	//'<button>Execute commands</button>'+
+    //   ' Dump "Probably associated with" too <input type="checkbox">'+
+	//textAreaStyle ="";
+	
+	var textAreaStyle = typeof AddCodeMirror == 'function'?'opacity:0':'';
+	 $("#content").append('<div id="rawDef">'+
+          '<textarea id="td_rawDef" rows="25" cols="60" style="width:99%; '+
+                textAreaStyle+'"/>'+
+        '<br><br></div>');
+	
+	data='defmod '+devicename+' MSwitch HEX '+data;
+	document.getElementById('td_rawDef').value=data;
+	
+	
+/* 	var einzufuegendesObjekt = document.createElement("a");
+einzufuegendesObjekt.href = "http://www.html-seminar.de";
+einzufuegendesObjekt.innerHTML = "Tutorial für HTML, CSS und JavaScript";
+einzufuegendesObjekt.style.backgroundColor = "#FFFF00";
+document.body.appendChild(einzufuegendesObjekt);
+ */
+
+    $('html, body').animate({ scrollTop: $("#rawDef").offset().top}, 100);
+	
+	return;
+}

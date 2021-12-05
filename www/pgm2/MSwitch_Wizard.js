@@ -13,7 +13,7 @@
       alert(meldung);
     }
  
-	var version = 'V6.2';
+	var version = 'V6.3';
 	var jump="nojump";
 	const Devices = [];
 	const WIZARDVARS = [];
@@ -1471,6 +1471,13 @@ function testline(line,newtemplate){
 }
 
 
+if (cmdsatz[0] == "SET"){
+	
+	//alert(cmdsatz[0]+ " - "+cmdsatz[1]);
+}
+
+// 
+
 if (cmdsatz[0] == "IF"){	
 bedingung = changevar(cmdsatz[1]);
 document.getElementById('bank10').value=cmdsatz[1];
@@ -1488,9 +1495,7 @@ else
 {
 return;
 }
-
 }
-
 
 
 if (cmdsatz[0] == "TEXT"){
@@ -2294,7 +2299,7 @@ if (typa == "A" ){
 	
 	}
 	
-	// Time_cmd1 3
+	// Time_cmd 1 3
 	if (befehl == "Time_cmd1"){
 	inhalt = inhalt.replace(/:/gi,"#[dp]");
 	configuration[15] = "#S .Trigger_time_3 -> "+inhalt;
@@ -2615,7 +2620,7 @@ function makecmdhashtemp(line){
 // #################
 
 function selectcmdoptionstemp(inhalt){
-// t("erstelle  params ");
+ // t("erstelle  params ");
 	
 	document.getElementById('setcmd1temp').innerHTML ='';
 	// wenn undefined textfeld erzeugen
