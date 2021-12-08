@@ -68,7 +68,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.3';  				# version
+my $version      = '6.31';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -4566,6 +4566,15 @@ sub MSwitch_Notify($$) {
     my $statistic=0;
     delete $data{MSwitch}{$ownName}{setdata};
     return if !$devName;
+
+
+#if ($ownName eq "globtest"){
+#		MSwitch_LOG( $ownName, 0,"EVENT: @{$events} " . __LINE__ );
+#
+#
+#}
+
+
 
 if (exists $data{MSwitch}{runningbackup}  &&  $data{MSwitch}{runningbackup} eq "ja"){
 	
@@ -10263,6 +10272,14 @@ treffer='<table>'+treffer+'</table>';
 	if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) 
 	{
 	$modmode = "<table style='visibility:collapse'><tr><td>";
+	
+	#
+	#$modmode.="platzhalter";
+	#$modmode .= "</td></tr></table>";
+	
+	#$modmode = "<table style='display:none'><tr><td>";
+	#	$modmode = "<table width=\"100%\" border =\"1\"><tr><td>";
+		
 	$modmode.="$ret<br>$detailhtml";
 	$modmode .= "</td></tr></table>";
 	}
