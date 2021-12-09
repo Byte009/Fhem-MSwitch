@@ -68,7 +68,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.31';  				# version
+my $version      = '6.32';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -526,7 +526,7 @@ sub MSwitch_Initialize($) {
     $hash->{FW_deviceOverview} = 1;
 	$hash->{FW_addDetailToSummary} = 1;
     $hash->{FW_summaryFn}      = "MSwitch_summary";
-    $hash->{NotifyOrderPrefix} = "45-";
+    $hash->{NotifyOrderPrefix} = "50-";
 	$hash->{DelayedShutdownFn}    = "MSwitch_delayed_Shutdown";
 	$hash->{AttrList} = $attrresetlist;
 }
@@ -4565,16 +4565,18 @@ sub MSwitch_Notify($$) {
     my $events = deviceEvents( $dev_hash, 1 );
     my $statistic=0;
     delete $data{MSwitch}{$ownName}{setdata};
-    return if !$devName;
+   
 
+ # if ($ownName eq "globetest")
+ # {
 
-#if ($ownName eq "globtest"){
-#		MSwitch_LOG( $ownName, 0,"EVENT: @{$events} " . __LINE__ );
-#
-#
-#}
+		 # foreach my $event (@{$events}) 
+		  # {
+		  # MSwitch_LOG( $ownName, 0,"MSWITCH AKTEVENT: $event " . __LINE__ );
+		  # }	
+ # }
 
-
+ return if !$devName;
 
 if (exists $data{MSwitch}{runningbackup}  &&  $data{MSwitch}{runningbackup} eq "ja"){
 	
@@ -6288,7 +6290,7 @@ sub MSwitch_fhemwebFn($$$$) {
 
 
 
-if ($data{MSwitch}{runningbackup} eq "ja"){
+if (exists $data{MSwitch}{runningbackup} && $data{MSwitch}{runningbackup} eq "ja"){
 	
 	$offlinemsg="<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
 					<tr>
@@ -10271,13 +10273,13 @@ treffer='<table>'+treffer+'</table>';
 	my $modmode="";
 	if ( AttrVal( $Name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) 
 	{
-	$modmode = "<table style='visibility:collapse'><tr><td>";
+	#$modmode = "<table style='visibility:collapse'><tr><td>";
 	
 	#
 	#$modmode.="platzhalter";
 	#$modmode .= "</td></tr></table>";
 	
-	#$modmode = "<table style='display:none'><tr><td>";
+	$modmode = "<table style='display:none'><tr><td>";
 	#	$modmode = "<table width=\"100%\" border =\"1\"><tr><td>";
 		
 	$modmode.="$ret<br>$detailhtml";
