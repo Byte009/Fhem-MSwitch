@@ -18,7 +18,7 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '6.3';
+	var version = '6.4';
 	var info = '';
 	var debug ='off';
 	var datatarget ='undef';
@@ -125,24 +125,19 @@ $('#sel_attr'+devicename).change(function(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function teststart(){
 // alle startfunktionen ausführen 
+
+
+// eventmonitor init
+	$( "#log2" ).text( "" );
+	$( "#log1" ).text( "eingehende events:" );
+	$( "#log3" ).text( "" );
+	var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onclick="javascript:transferevent()" ></select>');
+	$(field).appendTo('#log2');
+	
+	events = new Array;
+	
 // funktion rename aktivieren
 if (debug == 'on'){ alert(devicename+' Debug MSwitchweb an') };
 
@@ -426,12 +421,10 @@ $( "[class=\"detLink rawDef\"]" ).html(html);
 //var test =  document.getElementById('testfff').innerHTML;
 //alert(test);
 
-
 // zufügen des hilfebereichs
 r4 = $('<br><div id="helptext">Hilfetext<\div>');
 $(r4).appendTo("#content");
 $("#helptext").css("display","none");
-
 
 
 // EXEC1   ##################################################
@@ -629,124 +622,7 @@ if (document.getElementById('trigcmdon'))
 		}
 	}
 
-// next   ##################################################
-	// eventmonitor
-	var o = new Object();
-	var atriwaaray = new Object();
-	var atriwaaray = { SCRIPTTRIGGERS };
 
-	// init reaktion auf Änderungen der INFORMID
-	$("body").on('DOMSubtreeModified', "div[informId|='"+devicename+"-EVTFULL']", function() {
-	
-	// abbruch wenn checkbox nicht aktiv
-	
-	var check = $("[name=eventmonitor]").prop("checked") ? "1":"0";
-	if (check == 0)
-		{
-		return;
-		}
-
-	// neustes event aus html extrahieren
-	var test = $( "div[informId|='"+devicename+"-EVTFULL']" ).text();
- 
-	// datum entfernen
-	test= test.substring(0, test.length - 19);
-	o[test] = test;
-
-	// löschen der anzeige
-	
-	$( "#log2" ).text( "" );
-	$( "#log1" ).text( "eingehende events:" );
-	$( "#log3" ).text( "" );
-	 
-	var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onchange="javascript:transferevent()" ></select>');
-	
-	$(field).appendTo('#log2');
-
-	// umwandlung des objekts in Standardarray
-	var a3 = Object.keys(o).map(function (k) { return o[k];})
- 
-	// array umdrehen
-	a3.reverse();
-	// aktualisierung der divx max 5
-	var i;
-	for (i = 0; i < 10; i++) 
-		{
-		if (a3[i])
-			{
-			var newselect = $('<option value="'+a3[i]+'">'+a3[i]+'</option>');
-			$(newselect).appendTo('#lf'); 
-			}
-		else{
-			break;
-		}			
-			
-		}  
-});
-
-// next   ##################################################
-	
-	
-	
-	/* 
-	
-	
-	
-	if (HASHINIT != 'define')
-	{
-		
-		for (i=0; i<auswfirst.options.length; i++)
-			{
-			var pos=auswfirst.options[i];
-				if(pos.selected)
-				{
-				globalaffected +=pos.value;
-				}
-			}
-		 var sel1 = document.getElementById('devices');
-			
-			if (UNLOCK == '1')
-			{
-				globallock =' this device is locked !';
-				["aw_dist1","aw_dist2", "aw_dist","aw_dev","aw_det","aw_trig","aw_md","aw_md20","aw_addevent"].forEach (lock,);
-				randomdev.forEach (lock);
-			}
-			
-			if (UNLOCK == '2')
-			{
-				globallock =' only trigger is changeable';
-				[ "aw_dist1","aw_dist2","aw_dist","aw_dev","aw_det","aw_md","aw_md20","aw_addevent"].forEach (lock,);
-				randomdev.forEach (lock);
-			}
-			
-		sel1.onchange = function() 
-		{
-			var actaffected;
-			var auswfirst=document.getElementById('devices');
-			for (i=0; i<auswfirst.options.length; i++)
-				{
-				var pos=auswfirst.options[i];
-				if(pos.selected)
-					{
-					actaffected +=pos.value;
-					}
-				}
-
-			if (actaffected != globalaffected)
-				{
-				globallock =' unsaved affected device';
-				[ "aw_dist1","aw_dist2","aw_dist","aw_det","aw_trig","aw_md","aw_md20","aw_addevent"].forEach (lock,);
-				randomdev.forEach (lock);
-				}
-			else
-				{
-				[ "aw_dist1","aw_dist2","aw_dist","aw_det","aw_trig","aw_md","aw_md20","aw_addevent"].forEach (unlock,);
-				randomdev.forEach (unlock);
-				}
-		}	 
-	} */
-	
-	
 	
 	// teste auch showids
     var cookie = getCookieValue("Mswitch_ids_"+devicename);
@@ -765,6 +641,28 @@ if (document.getElementById('trigcmdon'))
 
 return;
 } // ende startfunktionen
+
+
+
+
+function writeevent(line){
+	
+	encodedline = decodeURIComponent(line);
+	var check = $("[name=eventmonitor]").prop("checked") ? "1":"0";
+	if (check == 0)
+		{
+		return;
+		}
+	index = events.indexOf(encodedline);
+	if (index > -1)
+	{
+		return;
+	}
+	events.push(encodedline);
+	var newselect = $('<option value="'+encodedline+'">'+encodedline+'</option>');
+	$(newselect).appendTo('#lf'); 
+	return;
+}
 
 
 
@@ -890,31 +788,6 @@ return;
 }
 
 
-
-/* 
-function hilfeconfig(field){
-	if (debug == 'on'){ alert('hilfe') };
-	var text = HELP;
-	text = text.replace(/#\[LINE\]/gi,"<br>");
-	text = text.replace(/#\[A\]/gi,"'");
-	text = text.replace(/#\[DA\]/gi,"\"");
-	var myRegEx = new RegExp('<strong>'+field+'</strong>(.*?)(<strong)');  
-	// <strong>MSwitch_Expert</strong>
-	//alert(myRegEx);
-	//alert(HELP);
-	treffer = text.match(myRegEx);
-	
-	if( treffer == null){
-	out = "dieser Hilfetext ist nicht vorhanden";
-	}else{
-	out = treffer[1];	
-	}
-	var textfinal ="<div style ='font-size: small;'>Hilfe "+field+":<br>"+ out +"</div>";
-	FW_okDialog(textfinal);
-	return;
-	
-	
-} */
 
 function hilfe(field){
 
@@ -1878,8 +1751,10 @@ if (debug == 'on'){ alert('checkcondition') }
 		$( "#log2" ).text( "" );
 		$( "#log1" ).text( "eingehende events:" );
 		$( "#log3" ).text( "" );
-		var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  ></select>');
+		var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onchange="javascript:transferevent()"></select>');
 		$(field).appendTo('#log2');
+		events = [];
+		
 		return;
 		}
 	});
