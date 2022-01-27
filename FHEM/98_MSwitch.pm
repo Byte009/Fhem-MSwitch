@@ -68,7 +68,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.4';  				# version
+my $version      = '6.41';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -3790,20 +3790,32 @@ if ( $init_done && $aName eq 'MSwitch_State_Counter' ) {
     if ( $cmd eq 'set' && $aName eq 'MSwitch_Device_Groups' ) 
 	{
         delete $data{MSwitch}{$name}{groups};
+		fhem("deletereading $name MSGroup_.*");
+		
+		
         my @gset = split( /\n/, $aVal );
 
         foreach my $line (@gset) {
             my @lineset = split( /->/, $line );
             $data{MSwitch}{$name}{groups}{ $lineset[0] } = $lineset[1];
             #my @areadings = ( keys %{ $data{MSwitch}{$name}{groups} } );
+			
+			my $gruppenname = "MSGroup_$lineset[0]";
+			
+		    readingsSingleUpdate( $hash, $gruppenname, $lineset[1], 0 );
+	
+			
+			
+			
         }
         return;
     }
 
-    if ( $cmd eq 'del' && $aName eq 'MSwitch_Device_Groups' ) {
-        delete $data{MSwitch}{$name}{groups};
-        return;
-    }
+    # if ( $cmd eq 'del' && $aName eq 'MSwitch_Device_Groups' ) {
+        # delete $data{MSwitch}{$name}{groups};
+		# fhem("deletereading $name MSGroup_.*");
+        # return;
+    # }
 
 
 ## Readings
@@ -4097,7 +4109,6 @@ if ( $init_done && $aName eq 'MSwitch_Mode' ) {
 
 			delete( $hash->{eventsave} );
 			delete( $hash->{NTFY_ORDER} );
-			
 			delete( $hash->{IncommingHandle} );
 			delete( $hash->{READINGS}{EVENT} );
 			delete( $hash->{READINGS}{EVTFULL} );
@@ -4117,12 +4128,9 @@ if ( $init_done && $aName eq 'MSwitch_Mode' ) {
 				setDevAttrList( $name, $attrdummy );
 			}
 			
-			
 			if ($init_done) 
 			{
-			
 					$hash->{NOTIFYDEV} = 'no_trigger';
-				
 			}
 		else
 			{
@@ -4140,7 +4148,6 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 			my $errors = AnalyzeCommandChain( undef, $cs );
 			if ( defined($errors) ) {MSwitch_LOG( $name, 1,"$name MSwitch_Notify: Fehler bei Befehlsausführung $errors -> Comand: $_ ". __LINE__ );}
 			setDevAttrList( $name, $attrresetlist );
-###			readingsSingleUpdate( $hash, "state", "active", 1 );
 			$hash->{MODEL}     = 'Notify' . " " . $version;
 			setDevAttrList( $name, $attrresetlist );
 			if ($init_done) 
@@ -4165,6 +4172,13 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 	if ( $cmd eq 'del' ) 
 	{
 	my $testarg = $aName;
+	if ( $testarg eq 'MSwitch_Device_Groups' )
+		
+		{
+         delete $data{MSwitch}{$name}{groups};
+		 fhem("deletereading $name MSGroup_.*");
+		 return;
+		}
 
 	if ( $testarg eq 'MSwitch_Statistic' ) {
 		  delete( $hash->{helper}{statistics} );
@@ -4182,14 +4196,13 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 			}
 		return;
 		}
-			
-			
+				
 	if ( $testarg eq 'MSwitch_EventMap' )
 		{
 			
 			
-			delete( $hash->{READINGS}{EVENT_ORG} );
-			delete $data{MSwitch}{$name}{Eventmap};
+		delete( $hash->{READINGS}{EVENT_ORG} );
+		delete $data{MSwitch}{$name}{Eventmap};
 		return;
 		}
 			
@@ -4245,7 +4258,6 @@ if ( $aName eq 'MSwitch_Mode' && $aVal eq 'Notify' )
 			return;
         }
     }
-
     return;
 }
 
@@ -14756,6 +14768,7 @@ if (exists $hash->{helper}{aktevent}){
     ###########################################################################
     ## ersetze gruppenname durch devicenamen
     ## test - nur wenn attribut gesetzt noch einfügen
+
     if ( AttrVal( $name, 'MSwitch_Device_Groups', 'undef' ) ne "undef" )
 	{
         my $testgroups = $data{MSwitch}{$name}{groups};
@@ -14764,20 +14777,17 @@ if (exists $hash->{helper}{aktevent}){
         foreach my $testgoup (@msgruppen) 
 		{
             my $x = 0;
-            while ( $todec =~ m/(.*)(.$testgoup.)(.*)/ ) {
+            while ( $todec =~ m/(.*)(\s|")($testgoup)(\s|")(.*)/ ) {
                 $x++;
                 last if $x > 10;
                 $todec =
-                    $1 . " "
-                  . $data{MSwitch}{$name}{groups}{$testgoup} . " "
-                  . $3;
-            }
+                    $1 . $2
+                  . $data{MSwitch}{$name}{groups}{$testgoup} . $4
+                  . $5;
+         		 }		 
         }
     }
-	
-	
-	#MSwitch_LOG($name, 0, "$name : \$todec -> $todec" );	
-	 
+ 
 	if ( $todec =~ m/^\{.*\}$/ ) 
 	{
 	}
@@ -15126,7 +15136,7 @@ sub MSwitch_makegroupcmd($$) {
     my ( $hash, $gruppe ) = @_;
     my $Name = $hash->{NAME};
 
-    delete $data{MSwitch}{gruppentest};
+ #   delete $data{MSwitch}{gruppentest};
 	
     my @inhalt = split( /,/, $data{MSwitch}{$Name}{groups}{$gruppe} );
 
