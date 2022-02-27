@@ -68,7 +68,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.50';  				# version
+my $version      = '6.51';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -16049,17 +16049,24 @@ $format =~ s/ss/$sek/g;
 
 
 
-
+return if ($newtime <0);
 readingsSingleUpdate( $hash, $device,$format , 1 ) ;
 
-return if ($newtime <=0);
+
 
 
 if ($sek > 0){
 	my $istzeit =gettimeofday();
 	my $diff = $istzeit- $oldtime;
 	#MSwitch_LOG( $name, 6, "sollzeit $oldtime - istzeit $istzeit - diff $diff " );
-	my $timecond =  $istzeit + $jump - $diff;
+	
+	#my $timecond =  $istzeit + $jump - $diff;
+	
+	my $timecond =  $istzeit + $jump ;
+	
+	if ($diff>1){$timecond=$timecond- $diff;}
+	
+	
 	my $msg="$name|$timecond|$device";
 	InternalTimer( $timecond, "MSwitch_Countdown", $msg );
 		
