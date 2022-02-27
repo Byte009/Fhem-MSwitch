@@ -220,6 +220,21 @@ Verzögerung mit Bedingungsprüfung sofort:
 Verzögerung mit Bedingungsprüfung vor Ausführung:
  - die ggf. angegebene Bedingung wird nur vor Ausführung geprüft
  
+Das Fekd readingname(ident)steht nur im Expertenmodus zur Verfügung.
+Hiier kann für entprechendes Delay ein Name angelegt werden . Dieser wird bei aktivem Delay
+alsReading genutzt , um verschiedene Informationen zu generieren.
+
+Folgende Readings werden bei Auslösung des Delay angelegt:
+
+lastsetting_delay_cmd - Auslösezweig ( z.B cmd_1 )
+lastsetting_delay_ident - Name des Delays ( entspricht dem angegebenen Namen )
+lastsetting_delay_time - Laufzeit des Delays
+
+In Abhängigkeit mit dem Attribut MSwitch_Delay_Count kann ein Reading angelegt haben , welches in Echtzeit
+die Restlaufzeit des Delays anzeigt.Doeses Reading trägt den Namen des Delays.
+
+Die Ausgabeformatierung kann mit dem Attribut MSwitch_Format_Lastdelay beeinflusst werden.
+ 
 <hr>
 ->
 #################################################################################################
@@ -560,6 +575,49 @@ Umschaltung der Frontendsprache.
 <strong>MSwitch_Comments</strong>
 Schaltet vor jedem Befehlsfeld ein Kommentarfeld frei.
 Diese kann fuer eigene Vermerke etc. genutzt werden.
+
+
+
+<strong>MSwitch_Delay_Count</strong>
+Beeinflusst das Verhalten des Echtzeitcounters bei gesetzten Delays.
+Der angegebene Wert entspricht der Aktualisierungsrate des entsprechenden Readings.
+Bei der Einstellung 0 wird kein Echtzeitcountdown gestartet.
+Diese Einstellung kann das System stark belasten und sollte daher mit Bedacht eingesetzt werden.
+
+Um systembedingte Lasten mit entsprechenden Zeitverschiebungen auszugleichen kann der Counter leicht schwanken.
+
+Die Standarteinstellung bei nicht gesetztem Attribut entspricht einer Aktualisierungsrate von 10 Sekunden.
+
+
+<strong>MSwitch_Comment_to_Room</strong>
+Bei Aktivierung werden Informationen des Comment-Attributes auch in der Raumansicht dargestellt.
+
+<strong>MSwitch_INIT</strong>
+Beeinflusst die Art der Datenspeicherung.
+save - alle relevanten Daten werden in der fhem.save abgelegt (empfohlen)
+cfg - alle Daten werden in der fhem.cfg abgelegt
+
+
+<strong>MSwitch_Format_Lastdelay</strong>
+Beeinflusst das Format der ausgegebenen Delaytimer.
+Folgende Ausdrücke sind verfügbar:
+
+HH - Stunden
+MM - Minuten
+SS - (Rest)Sekunden
+ss - Gesamtsekunden
+
+Die Standartformatierung bei nicht gesetztem Attribut entspricht HH:MM:SS
+
+Mögliche Formatierungen:
+HH MM SS
+ss
+HH:MM:SS
+
+Freitext wie z.B:
+Die Restzeit beträgt ss Sekunden 
+etc. pp.
+
 
 <strong>MSwitch_Read_Log</strong>
 Ermöglicht den Zugriff auf das Logfile als Trigger.
