@@ -1,747 +1,1334 @@
 
-Help frontend 
-################################################## ################################################
+Help Frontend 
+
+#################################################################################################
+<- eventdistributor-
+<hr>
+Provides the possibility to redirect incoming events independently from the individual
+command branches to a command branch identified by an ID.
+This option is intended to execute (additionally) specially defined commands by certain events.
+It is an "expert" function , which is rather unusual for 'normal' operation.
+
+The syntax is given:
+ - incoming event: 
+is the incoming event, which triggers the execution of a command.
+
+ - execute CMD1|2
+specifies the command branch to be executed (cmd1/cmd2)
+
+ - ID x
+specifies the ID of the command to be executed. This can be assigned in the individual command branches.
+
+Events that are redirected by this option will not be handled further, i.e. they will not be considered in the further 'Triggedetails'.
+will not be taken into account.
+
+
+Translated with www.DeepL.com/Translator (free version)
+
+<hr>
+->
+#################################################################################################
 <- cmd2on-
 <hr>
 The event that triggers the corresponding command branch is selected here.
-The event must be inserted manually in advance or can be saved using the integrated event monitor.
+The event must be inserted manually in advance or can be saved via the integrated event monitor.
 
-When triggered appropriately, the state of the device is set to on or off.
+The event consists of 3 parts: Device:Reading:State
+
+When triggered, the state of the Mwitch device is set to on or off.
+
+Optinally a condition can be given. In this case the branch is only executed if the condition is true.
+
+Syntax NAME:READING:STATE[CONDITION]
+
+Wildcard can be used in the conditions :
+
+Example: NAME:pct:.*[*>30] 
+In this case the branch would only be executed if the state of the reading pct > 30.
+
+Translated with www.DeepL.com/Translator (free version)
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- cmd2ononly-
 <hr>
 The event that triggers the corresponding command branch is selected here.
-The event must be inserted manually in advance or can be saved using the integrated event monitor.
+The event must be inserted manually in advance or can be saved via the integrated event monitor.
 
-The state of the device is not changed.
+The event consists of 3 parts: Device:Reading:State
+
+If triggered, only the command branch is executed, the state of the Mswitch is not changed.
+
+Optinally a condition can be given. In this case the branch is only executed if the condition is true.
+
+Syntax NAME:READING:STATE[CONDITION]
+
+Wildcard can be used in the conditions :
+
+Example: NAME:pct:.*[*>30] 
+In this case the branch would only be executed if the state of the reading pct > 30.
+
+Translated with www.DeepL.com/Translator (free version)
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
+<- cmd2off-
+<hr>
+The event that triggers the corresponding command branch is selected here.
+The event must be inserted manually in advance or can be saved via the integrated event monitor.
+
+The event consists of 3 parts: Device:Reading:State
+
+When triggered, the state of the Mwitch device is set to on or off.
+
+Optinally a condition can be given. In this case the branch is only executed if the condition is true.
+
+Syntax NAME:READING:STATE[CONDITION]
+
+Wildcard can be used in the conditions :
+
+Example: NAME:pct:.*[*>30] 
+In this case the branch would only be executed if the state of the reading pct > 30.
+
+<hr>
+->
+#################################################################################################
+<- cmd2offonly-
+<hr>
+The event that triggers the corresponding command branch is selected here.
+The event must be inserted manually in advance or can be saved via the integrated event monitor.
+
+The event consists of 3 parts: Device:Reading:State
+
+If triggered, only the command branch is executed, the state of the Mswitch is not changed.
+
+Optinally a condition can be given. In this case the branch is only executed if the condition is true.
+
+Syntax NAME:READING:STATE[CONDITION]
+
+Wildcard can be used in the conditions :
+
+Example: NAME:pct:.*[*>30] 
+In this case the branch would only be executed if the state of the reading pct > 30.
+<hr>
+->
+#################################################################################################
 <- eventmonitor-
 <hr>
-Shows incoming events <u> after </u> after applying the "Trigger condition" filter.
-Displayed and marked events can be transferred with "Enter event manually" in the field "Enter event manually", edited and from there with
-"Insert event" can be saved for later use.
+Shows incoming events <u>after</u> the application of the "Trigger condition" filter .
+Displayed and marked events can be transferred to the "Enter event manually" field with "Enter event manually", edited and saved from there with
+"Insert Event" for later use.
 <hr> 
 -> 
-################################################## ################################################
+#################################################################################################
 <- repeats-
 <hr>
-Enter command repetitions.
-If the fields are occupied, a command is repeated by specifying "Repeats" with the respective delay "Repeat delay in sec".
+Input of command repeats.
+If the fields are occupied, a command is repeated by the specification "Repeats" with the respective delay "Repeatdelay in sec".
 Both fields can refer to a value with a reading
- - [Device: Reading]
+ - [Device:Reading]
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- execcmd-
 <hr>
 Abort after execution
 
-If this field is activated, the chain of commands will be terminated and the command will be executed 
-no further commands executed (if the condition is specified, only if this is fulfilled.
+If this field is activated, the command chain is aborted after execution of the command and no further commands are executed. 
+no further commands are executed (if a condition is specified, only if this condition is fulfilled).
 
-This function is relevant if several commands are executed, but no further commands are to be executed under certain conditions.
-If necessary, the application should be linked to the "priority" function to ensure the correct order of execution.
-<hr>
+This function is relevant if several commands are executed, but under certain conditions no further commands are to be executed.
+Application should be connected with the "priority" function, if necessary, to ensure the correct order of execution.<hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- saveevent-
 <hr>
-When this option is selected, all incoming events of the selected trigger device are saved permanently
+If this option is selected, all incoming events of the selected trigger device are stored permanently.
 and are available in the selection fields "execute cmd1" and "execute cmd2" as well as in all test fields.
-This selection should be deselected to conserve resources after setting up the MSwitch device,
-because depending on the trigger, considerable amounts of data can be generated and saved.
-
+This selection should be deselected to save resources after setting up the MSwitchdevice,
+because, depending on the trigger, considerable amounts of data may be generated and stored here.
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- addevent-
 <hr>
-Events can be added here manually, which should be available in the selection lists and to which the module reacts.
-A basic distinction must be made whether the device is operated in normal or global mode
+If only one "*" is specified here, the corresponding branch reacts to all incoming events.
+Furthermore the following syntax options are provided :
+device:state:*, device:*:*, *:state:* , etc.
 
-In normal mode, the events consist of 2 parts, the reading and the value, eg "state: on"
+The value can have multiple choices , by the following syntax: "device:state:(on/off)".
+In this case the branch will respond to both on and off values.
 
-If the device is in GLOBAL mode, the events must consist of 3 parts, the device name, the reading and the value, eg "device: state: on".
+Several evebts can be created at the same time, these are to be separated by comma.
 
-If only a "*" is specified here, the corresponding branch reacts to all incoming events.
-The following syntax options are also provided:
-device: state: *, device: *: *, *: state: *, etc.
+Optionally a condition can be passed. For this the condition is to be given to the event in []:
+e.g. PCT:.*[* >50] - Switches only if pct > 50. Here the wildcard specification (.*) in the condition is replaced by the corresponding incoming value.
+a specification of Perlcode is possible by using {} . e.g. [{perlcode} =>< x].
 
-The value can have several options, using the following syntax: "device: state: (on / off)".
-In this case, the branch reacts to both the value on and off.
-
-Several Evebts can be created at the same time, separated by commas.
-
-As of V1.7, the common RegEx formulation can be used here.
+Since V1.7 the common RegEx formulation can be used here.
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- priority-
-<hr>
-priority - selection of the order of the command processing.
-
-An instruction with the number 1 is executed first, the highest number last.
-If several commands have the same number, these commands are executed in the order shown.
 <hr>
 ID - Devices to which an ID is assigned.
 
-These are no longer taken into account in the normal processing of the commands and are therefore not executed.
-If an ID assignment has been made, this command branch can only be set via the cmd set DEVICE ID NR on / off, or 
-via an "Event to ID" (setting via attribute)
+These are no longer considered in the normal processing of commands and are therefore not executed.
+If an ID assignment has been made, this command branch can only be executed via the cmd set DEVICE ID NR on/off , or 
+via an "Event to ID" (setting via attribute) assignment.
 
-This option is only required in exceptional cases if the pipes (cmd1 / cmd2) are not sufficient to perform different actions under different conditions. 
+This option is only needed in exceptional cases, when the pipes (cmd1/cmd2) are not sufficient to perform different actions under different conditions. 
 <hr>
-Display order - selection of the order of the command display
+Display order - selection of command display order
 
-This setting only affects the display in the frontend. The order in which the commands are processed is not affected.
+This setting affects only the display in the frontend. It does not affect the order in which commands are processed.
 <hr>
-Hide ad
+Hide display
 
-The corresponding command is hidden in the frontend. Hidden commands can be displayed again using a button.
-The only purpose of this option is to customize the view.
+Hides the corresponding command in the frontend. Hidden commands can be displayed again by button.
+This option has only the purpose to customize the view.
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- timer-
 Execute commands delayed or at a later time.
 
 The time can be specified in 2 formats:
- - HH: MM: SS or S
+ - HH:MM:SS or S
 
-the information can also be provided by a reference to a reading that contains a time specification in the required format.
- - [NAME: reading]
+the specification can also be made by a reference to a reading containing a time specification in the required format.
+ - [NAME:reading]
  
-More options:
+Other possibilities:
  - [random] - see Fhemwiki
- - {perl} - perlcode - the return value must contain a number (seconds) or a time hh: mm: ss
+ - {perl} - perlcode - the return value must contain a number (seconds) or a time specification hh:mm:ss
  
-Delay with condition check immediately and before execution:
- - The specified condition is checked immediately and again before the command is executed
+delay with condition check immediately and before execution:
+ - the condition, if specified, will be checked immediately and again before executing the command
  
 Delay with condition check immediately:
- - The specified condition is only checked immediately
+ - the condition specified, if any, is checked only immediately
  
 Delay with condition check before execution:
- - The specified condition is only checked before execution
+ - the condition, if specified, is checked only before execution.
+ 
+The fekd readingname(ident)is only available in expert mode.
+Here a name can be created for the corresponding delay. This name will be used as
+to generate different information.
+
+The following readings are created when the delay is triggered:
+
+lastsetting_delay_cmd - Trigger branch ( e.g. cmd_1 )
+lastsetting_delay_ident - name of the delay ( corresponds to the specified name )
+lastsetting_delay_time - Runtime of the delay
+
+In dependence with the attribute MSwitch_Delay_Count a reading can be created, which shows in real time
+Doeses reading carries the name of the delay.
+
+The output formatting can be influenced with the attribute MSwitch_Format_Lastdelay.
  
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- condition-
 <hr>
-Conditions can be specified here, which must be fulfilled in order to execute the switching command.
-These conditions are essentially based on "if" queries.
+Here you can specify conditions that must be met in order to execute the switching command.
+These conditions are mainly based on "if" queries.
 
 Time-dependent conditions:
-Switching command is only given in the specified period
- - [19.10-23: 00]
+Switching command is executed only in specified time period
+ - [19.10-23:00]
  
-Switch reading dependent:
-Switching command is only given if the condition is met.
- - [Device name: Reading] = /> / <X or [Device name: Reading] eq "x"
-In order to receive only the numerical value of a readings, a ": d" must be appended to the expression
- - [Device name: Reading: d]
+Reading dependent switching:
+Switching command only occurs if the condition is fulfilled.
+ - [Device name:Reading] =/>/< X or [Device name:Reading] eq "x".
+ 
+To get only the numeric value of a reading the following formatting must be used:
+ - [ReadingsNum:Devicename:Reading:0]
+where 0 is the return value if no value is defined.
 
 Depending on the attribute setting, historical events can also be accessed here
- - [Device name: Reading: h <x>]
-x determines the position of the historical reading, where 1 stands for the last reading received.
+ - [Devicename:Reading:h<x>]
+x determines the position of the historical reading, where 1 stands for the last received reading.
 
-When querying readings for strings (on, off, etc.), use "=" "eq" instead of "=" and the string must be set to ""!
+When querying readings for strings ( on,off,etc. ) "eq" is to be used instead of "=" and the string must be set in ""!
 
-The combination of several conditions and times is possible with AND or OR:
- - [19.10-23: 00] AND [Device name: Reading] = 10
-both conditions must be met
+The combination of several conditions and times is possible by AND or OR:
+ - [19.10-23:00] AND [Devicename:Reading] = 10
+both conditions must be fulfilled
 
-[19.10-23: 00] OR [Device name: Reading] = 10
+[19.10-23:00] OR [Devicename:Reading] = 10
  - one of the conditions must be met.
 
-sunset conditions are inserted with additional {}:
- - {sunset ()} -23: 00pm.
+sunset - conditions are inserted with additional {}:
+ - [sunset() }-23:00].
 
-If switching should only take place on certain days of the week, a time limit must be made and supplemented with eg | 135.
- - [10: 00-11: 00 | 13]
-would trigger the switching process, for example, only on Mondays and Wednesdays between 10 a.m. and 11 a.m. The days of the week count from 1-7 for Monday-Sunday.
+If you want to switch only on certain days of the week, you have to make a time specification and add e.g. |135.
+ - [10:00-11:00|13]
+would trigger the switching operation e.g. only on Monday and Wednesday between 10 and 11 o'clock. Here the weekdays count from 1-7 for Monday-Sunday.
 
-If the time specified exceeds the daily limit (midnight), the specified days still apply until the end of the specified switching time, i.e. switching would still take place on Wednesday even though Tuesday was set as the daily setting.
+If the time specification exceeds the daily limit (24.00 o'clock), then the specified days still apply to the end of the specified switching time, i.e. it would still take place on Wednesday the switching process, although Tuesday was set as day default.
 
 Available variables and expressions:
 
-- isday (! isday)
-- $ we /! $ we
-- $ month
-- $ year
-- $ month
-- $ EVENT
-- $ EVTFULL
-- $ EVTPART1
-- $ EVTPART2
-- $ SELF
+- isday (!isday)
+- $we / !$we
+- $min
+- $hour
+- $month
+- $year
+- $month
+- $EVENT
+- $EVTFULL
+- $EVTPART1
+- $EVTPART2
+- $EVTPART3
+- $SELF
+- $hms
 
-$ EVENT variable:
-The variable EVENT contains the trigger which triggers, i.e. there can be a reaction directly dependent on the trigger which triggers.
- - [$ EVENT] eq "state: on"
-would only execute the command branch if the trigger was "state: on".
+Depending on the attribute settings, historical events can be accessed:
 
-This is important if the trigger details do not trigger on a specific event,
-but is triggered here by using a wildcard (*) on all events, or on all events of a reading eg (state: *)
+- [EVENT:h(x)]
+- [EVTPART:h(x)]
 
-If the delay function is set, the conditions, depending on the setting,
-delayed or both-and-checked, ie delayed switch-on and switch-off commands are possible which, for example, enable overrun functions or delayed switch-on functions that check themselves.
-eg [if the light in the bathroom is on -> switch on the fan 2 minutes later -> only if the light in the bathroom is still on]
 
-Instead of a delay, a defined switching time can also take place here.
+the variable $hms contains the current system time in the format HH:MM:SS . Here it is to be noted that it 
+is a string which has to be handled accordingly ( eq ) .
+
+$EVENT variable:
+The EVENT variable contains the initiating trigger, i.e. a reaction can occur in direct dependence on the initiating trigger.
+ - [$EVENT] eq "state:on" .
+would only execute the command branch if the triggering trigger was "state:on".
+
+This is important if the trigger details do not already trigger on a specific event,
+but is triggered here by the use of a wildcard (*) on all events, or on all events of a reading e.g. (state:*).
+
+If the delay function is set, the conditions are triggered immediately, depending on the setting,
+delayed or both-as well, i.e. delayed switch-on and switch-off commands are possible, which enable e.g. run-on functions or delayed switch-on functions, which check themselves.
+e.g. [if light in bathroom on -> switch on fan 2 min later -> only if light in bathroom is still on].
+
+Instead of a delay, a fixed switching time can also be made here.
 
 Special functions:
-Trend: Description in the wiki
-Difference: Description in the wiki
-Average description in the wiki
-Increase description in the wiki
+Tendency: description in wiki
+Difference: Description in Wiki
+Average Description in wiki
+Increase Description in wiki
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- onoff-
 <hr>
-Setting the command to be executed for a corresponding triggered event.
+Setting of the command to be executed for a corresponding triggered event.
 
-If additional fields are offered, a value can be transferred, this can also set a reference to a reading of another device.
-eg [Device: Reading].
+With offered additional fields a value can be passed, this can also be a reference to e.g. a reading of another device.
+e.g. [Device:Reading].
 
-There are two options here:
-[Device: Reading: i] - is replaced with the content at the time the command was processed (: i = imidiality)
-[Device: Reading] - replaced with the content at the time the command was executed
-This can - especially - make a difference with delayed commands.
+Two possibilities are given here:
+[Device:Reading:i] - is replaced with the content at the time the command is processed (:i = imidiality)
+[Device:Reading] - is replaced with the content at the time of execution of the command.
+This can make a difference - especially - for delayed commands.
 
-$ NAME is replaced by the name of the triggering device.
+$NAME is replaced with the name of the triggering device.
+$ALIAS is replaced with the alias of the triggering device. If this is not defined, Alias also contains the name of the device.
 
-When using FreeCmd, either pure FhemCode or pure Perlcode can be used.
-Perlcode must begin and end with braces ({PELCODE})
 
-<u> Mixing both codes is not allowed. </u>
+
+When using FreeCmd either pure FhemCode or pure Perlcode can be used here.
+Perl code must start and end with curly brackets ( {PELCODE} )
+
+If the option [FRRECMD] is selected, a complete command can be entered.
+Here you can access known system variables:
+e.g. set DEVICE [FREECMD] pct [$SELF:EVENTPART3]
+
+<u>The mixing of both codes is not allowed.</u>
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- affected-
 <hr>
-Setting the devices that should react to an event or at a specific time.
+Setting the devices to respond to an event or at a specific time.
 
-The selection of FreeCmd enables a device-independent command entry or the entry of pure Perl or Fhem code.
-A multiple selection is possible with "ctrl. Mouse button".
+The selection of FreeCmd allows a device-independent command input or the input of pure Perl or FhemCode.
+A multiple selection is possible with "strg.maustaste".
 
-To prevent accidental deletion of devices, this field is locked in the basic setting and changes can only be made
-via "Edit list". This list can be unlocked by deleting the checkmark next to "Selection field locked".
-The field can be permanently released via the attribute "MSwitch_Lock_Quickedit = 0".
+To avoid accidental deletion of devices this field is locked by default and changes can only be made via
+be made via "Edit list". By deleting the checkmark at "Selection field locked" this list can be unlocked.
+The attribute "MSwitch_Lock_Quickedit = 0" can be used to permanently unlock the field.
 <hr>
 ->
-################################################## ################################################
-<- trigger condition-
+#################################################################################################
+<- triggercondition-
 <hr>
-Conditions can be specified here, which must be fulfilled in addition to the triggering device.
-An entry in this field in the standard settings only refers to triggering by events from other devices.
-If this should also apply to a triggering by time information, it must have the corresponding attribute
-(MSwitch_Condition_Time = 1) can be activated.
+Conditions can be specified here that must be fulfilled in addition to the triggering device.
+In the default settings, an entry in this field only refers to triggering by events of other devices.
+If this should also apply to a triggering by time specifications, this must be specified via the corresponding attribute
+(MSwitch_Condition_Time =1).
 
-Restricted to a certain time (the device is only triggered in the specified period)
- - [19: 10-23: 00]
+Basically the specification '$SELF' is replaced by the name of the own device !
 
-Restriction depending on the content of a reading (Devicec trigger only occurs if the condition is met)
-Watch out ! When querying readings for strings (on, off, etc.), use "=" "eq" instead of "=" and the string must be set to ""!
- - [Device name: Reading] = /> / <X or [Device name: Reading] eq "x"
+Restriction to a certain time (trigger of the device only in specified time period)
+ - [19:10-23:00]
 
-Restriction depending on the content of a reading (occurrence of a certain text, for example) (Devicec is only triggered if the condition is met)
-- "$ EVENT" = ~ m / (state: closed | state: open | state: tilted) /
+Restriction depending on the content of a reading (trigger of the device only if the condition is fulfilled)
+Attention ! When querying readings for strings ( on,off,etc. ) use "eq" instead of "=" and the string must be set in ""!
+ - [Devicename:Reading] =/>/< X or [Devicename:Reading] eq "x".
 
-The combination of several conditions and times is possible with AND or OR.
- - [19.10-23: 00] AND [Devicename: Reading] = 10 - both conditions must be fulfilled
- - [19.10-23: 00] OR [Devicename: Reading] = 10 - one of the conditions must be fulfilled.
+Restriction depending on the content of a reading (occurrence of a certain text e.g.) (trigger of the devicec is only done if the condition is fulfilled)
+- $EVENT =~ m/(state:closed|state:open|state:tilted)/
+with this expression e.g. a prefiltering of incoming events can be made. I.e. only events that match this expression will be processed.
+will be processed. This is helpful for more advanced functions such as with historical events. In the "normal use" this field must not be occupied.
+
+The combination of several conditions and times is possible by AND or OR.
+ - [19.10-23:00] AND [Devicename:Reading] = 10 - both conditions must be met
+ - [19.10-23:00] OR [Devicename:Reading] = 10 - one of the conditions must be met.
 
 sunset
- - Conditions are inserted with additional {} eg: [{sunset ()} -23: 00].
+ - Conditions are inserted with additional {} e.g. : [{ sunset() }-23:00].
 
-Variable $ we:
-The global variable $ we can be used and must be set in {}.
+following additional variables can be used:
 
- - {! $ we} only triggers the switching process on working days
- - {$ we} only triggers the switching process on weekends and public holidays
+- isday / !isday | the expression can be entered alone in the condition field , formatting is done automatically
+- $we / !$we | the expression can be entered alone in the condition field , formatting is automatic
+
+- year | must be used in context e.g. $year == 2020 , further formatting is done automatically
+- $month | must be used in context e.g. $day == 1 , further formatting will be done automatically
+- $day | must be used in context e.g. $month == 1 , further formatting is automatic
+- $min | must be used in context e.g. $min == 1 , further formatting will be done automatically
+- $hour | must be used in context e.g. $hour == 1 , further formatting is done automatically
+
+Analog [YEAR] [MONTH] [DAY] [MIN] [HOUR] can be used here.
+
+Access to further function data:
+
+[AttrVal:DEVICENAME:ATTRIBUTNAME:UNDEF]
+[InternalVal:DEVICENAME:INTERNAL:UNDEF]
+[ReadingsAge:DEVICENAME:READINGNAME:UNDEF]
+[ReadingsNum:DEVICENAME:DEVICEREADING:UNDEF]
+[ReadingsVal:DEVICENAME:DEVICEREADING:UNDEF]
+
+These expressions must be invented in context, e.g. [AttrVal:DEVICENAME:ATTRIBUTNAME:UNDEF] = 1,[AttrVal:DEVICENAME:ATTRIBUTNAME:UNDEF] eq "test" etc.
+
+furthermore various devicedates can be accessed:
+
+[EVT_CMD1_COUNT]
+[EVT_CMD2_COUNT]
+[DIFFDIRECTION]
+[DIFFERENCE]
+[TENDENCY]
+[INCREASE]
+[AVERAGE]
+[SEQUENCE_Number]
+[SEQUENCE]
 
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 <- trigger-
 <hr>
 Trigger is the triggering device whose events are reacted to.
 As soon as a device is selected here, further options are offered.
 
-If you want to trigger on several e-devices at the same time, this is also possible.
+If several eDevices are to be triggered simultaneously, this is also possible.
 
-To do this, the "MSwitch_Expert" attribute must be set to 1 and "GLOBAL" selected.
-(This should only be used in a very targeted way, since it will react to EVERY event first)
+For this the attribute "MSwitch_Expert" must be set to 1 and "GLOBAL" must be selected.
+(This should be used only very selectively, since then first on EVERY event is reacted).
 
 <hr>
 
-In addition, the Mswitch can also be triggered based on times.
+In addition, the Mswitch can also be triggered based on time specifications .
  
-The following options are available:
+The following options are available for this:
 
 1. switch MSwitch on + execute 'cmd1' at
-- The complete device is switched to "on". The branch "cmd1" is executed.
+ - the complete device is switched to "on". The branch "cmd1" is executed.
 
 2. switch MSwitch off + execute 'cmd2' at
-- The complete device is switched to "off". The branch "cmd2" is executed.
+ - the complete device will be switched to "off". The branch "cmd2" is executed.
 
 3. execute 'cmd1' only at
- - the "cmd1" branch is executed
+ - the "cmd1" branch will be executed
 
 4. execute 'cmd2' only at
- - the "cmd2" branch is executed
+ - it will execute the "cmd2" branch
 
-The syntax for times must be as follows:
-[HOURS: MINUTES | DAYS | IDx, y]
+The syntax for time specifications must be as follows:
+A new line must be used for each time.
 
-Days are counted from 1-7, where 1 is Monday, 7 is Sunday.
+1. switching times:
+<strong>
+REPEAT=00:02*04:10-06:30
+RANDOM=20:00-21:00
+TIME=17:00
+</strong>
+REPEAT: 
+Wiederholt einen Schaltvorgang alle x Stunden/Minuten im eingestellten Zeitfenster
 
-Entering the ID is optional.
-If an ID is specified, only 'cmds' with an assigned ID are executed (only available in expert mode).
-If no ID is specified, only all 'cmds' to which no ID is assigned are executed.
-This option is only possible in the fields "execute cmd1 only at:" and "execute cmd2 only at:".
+RANDOM:
+Schaltet zu einem zufälligen Zeitpounkt innerhalb des eingestellten Zeitfensters
 
-The variable $ we can be used instead of the day.
-[HOURS: MINUTES | $ we] - switching only on weekends.
-[HOURS: MINUTES |! $ We] - switching operation only on working days.
+TIME:
+Schaltet zu angegebenem Zeitpunkt
 
-Several time constraints can be strung together.
-[17: 00 | 1] [18: 30 | 23] would trigger the trigger on Monday at 5:00 p.m. and on Tuesday, Wednesday at 6:30 p.m.
+Pro Zeile kann nur eine dieser Angaben genutzt werden , bei mehreren Angaben wird nur die erste ausgew4rtet.
+Zusätzlich kann jede Zeile durch Bedingungen ergänzt werden, mehrere Bedingungen sind durch | zu trennen.:
 
-Sunset times can be integrated using the following sytax: eg:
-[{sunset ()}], [{sunrise (+1800)}].
+TIME=17:00|Bedingung=X|Bedingung2=X
 
-Simultaneous use for triggers by time information and triggers by device events is possible.
+Zu beachten ist , das jede angegebene Bedingung zutreffen muss, um den Timer auszuführen.
 
-Special formats:
-[? 20: 00-21: 00 | 5] - Random switching between 8pm and 9pm on Friday
-[00: 02 * 04: 10-06: 30] - switching process every 2 minutes between 4.10 a.m. and 6.30 a.m.
+Folgende Bedingungen stehen zur Verfügung:
+
+ID=x,y
+Es werden nur Befehlszweige mit der entsprechenden ID ausgeführt
+
+WDAY=1,2,3,4,5,6,7
+Befehle werden nur an angegebenen Wochentagen ausgeführt, wobei die 1 für Montag steht.
+
+WEEKEND=0,1
+Befehle werden nur an Wochenenden/Wochentagen (0/1) ausgeführt. Herebay holiday dates are taken into account
+
+WEEK=10,11
+Commands are executed only in the specified calendar weeks
+
+CMONTH=1,2,3,4,5,6,7,8,9,10,11,12
+Commands are executed only in specified calendar months
+
+CDAY=1,2,3,lastday (1-31,lastday)
+Commands are executed only on specified calendar days.
+The lastday option executes the switching operation on the last day of a month.
+
+DATE=10.10.2020
+Commands will be executed only on specified date 
+Here parts of the specification can contain wildcards:
+e.g. DATE=01.01.* ( switches in every year on the first of December )
+
+All time specifications can be replaced by perl code by using {} , the return must be a valid time format
+(HH:MM or HH:MM:SS )
+e.g. TIME =[sunset()}
+
+With all timer settings it is to be noted that the conditions are evaluated in principle only at 2 points in time:
+1. at the time of the change of the settings
+2. every day 0m 00:00:01
+
+This means that the conditions must also apply at these times so that the corresponding timers are set.
+
+Active timers can be displayed with get DEVICE attive_timer show.
+A reload (recalculation) of the timers can be executed with 2 possibilities:
+1. via Fhemweb -> get DEVICE attive_timer show
+
 
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 
-
-
-Help attributes
-################################################## ################################################
+Help Attribute
+#################################################################################################
 <- attr-
+
 <hr>
-<strong> MSwitch_Language: EN, DE </strong>
-Switching the front-end language.
+<strong>MSwitch_Device_Groups</strong>
+Allows the creation of device groups.
+These groups are then available for selection in the Affected Devices, 
+whereby there only commands are offered, which have ALL devices in the group in common.
+If the required command is not listed, [FREECMD] can be used as an alternative.
 
-<strong> MSwitch_Comments: 0.1 </strong>
+The format is:
+GROUP NAME-&gt;devicename,decicename ....
+GROUP NAME1-&gt;devicename1,decicename2 ....
+
+several groups are to be separated by line break. 
+RegEx can be used instead of the devicenames.
+
+<strong>MSwitch_ExtractHTTPMapping</strong>
+Allows customization of readings generated by 'loadHTTP' and attribute 'MSwitch_ExtractfromHTTP'
+and provides the ability to make substitutions.
+
+Format: reading content->new content
+e.g.: °C-&gt; centigrade
+
+replaces every occurrence of '°C' with ' degrees Celsius' and is required for example for a voice output by Amazon Echo.
+
+Regex can be used in the part to be replaced. Multiple replacements must be separated by line breaks.
+
+<strong>MSwitch_ExtractfromHTTP</strong>
+This attribute controls the generation of readings from a loaded HTML file.
+Each specified line creates a reading from the file (if any)
+
+Format: Readingname->RegEx
+
+If multiple dates are found with the given regex , they will all be found in this reading ,
+separated by comma, output. In this case, additional readings are created, each containing one of the data records found.
+These readings are automatically numbered: Readingname_01,Readingname_01,Readingname_01 ...
+
+<strong>MSwitch_Language</strong>
+Switching the frontend language.
+
+<strong>MSwitch_Comments</strong>
 Unlocks a comment field in front of each command field.
+This can be used for your own notes etc.
 
-<strong> MSwitch_Read_Log: 0.1 </strong>
+
+<strong>MSwitch_Delay_Count</strong>
+Influences the behavior of the real-time counter when delays are set.
+The specified value corresponds to the update rate of the corresponding reading.
+When set to 0, no real-time countdown is started.
+This setting can put a heavy load on the system and should therefore be used with caution.
+
+In order to compensate for system-related loads with corresponding time shifts, the counter can fluctuate slightly.
+
+The default setting when the attribute is not set corresponds to an update rate of 10 seconds.
+
+
+<strong>MSwitch_Comment_to_Room</strong>
+When activated, information from the comment attribute is also displayed in the room view.
+
+<strong>MSwitch_INIT</strong>
+Affects the type of data storage.
+save - all relevant data is stored in fhem.save (recommended)
+cfg - all data is stored in fhem.cfg
+
+
+<strong>MSwitch_Format_Lastdelay</strong>
+Affects the format of the output delay timers.
+The following expressions are available:
+
+HH - hours
+MM - minutes
+SS - (remaining) seconds
+ss - total seconds
+
+The default formatting when the attribute is not set is HH:MM:SS
+
+Possible formatting:
+HHMM SS
+ss
+HH:MM:SS
+
+Free text such as:
+The remaining time is ss seconds
+etc. pp.
+
+
+<strong>MSwitch_Read_Log</strong>
 Allows access to the log file as a trigger.
 
 If the attribute is activated, the selection of the trigger device contains the option 'LOGFILE'.
 
-With this selection, all log entries are recognized and converted into an internal event to which you can respond.
+With this selection, all log entries are recognized and converted into an internal event that can be acted upon.
 
-If the attribute <u> and </u> of the selection 'GLOBAL' in the 'Trigger_Device' is activated, all events and all log entries are reacted to.
+If the <u>and</u> attribute is activated in the 'GLOBAL' selection in the 'Trigger_Device', all events and all log entries are reacted to.
 
-With activated attribute <u> and </u> the selection of a certain device in the 'Trigger_Device' is applied to all events
+With activated attribute <u>and</u> the selection of a specific device in the 'Trigger_Device' is applied to all events
 and reacts to all log entries of the selected device.
 
 The device name in the log entry is a condition for the function.
 
-<strong> MSwitch_Hidecmds </strong>
+<strong>MSwitch_Hidecmds</strong>
 Command branches with a specific ID can be hidden in the frontend
 
-<strong> MSwitch_Help: 0.1 </strong>
-Switches the help buttons on or off in the frontend
+<strong>MSwitch_Help</strong>
+Switches the help buttons/functions in the frontend on or off
 
-<strong> MSwitch_Debug: 0,1,2,3,4 </strong>
+<strong>MSwitch_Debug</strong>
 Advanced troubleshooting options
-0 - switched off
-1 - Switches fields for testing the condition strings on
+0 - Disabled
+1 - Turns on fields for testing condition strings
 2 - All outgoing commands are only simulated and not executed. The content of the log file is displayed directly in the device
-3 - There is a log in a separate file. This is displayed directly in the device.
+3 - Logging takes place in a separate file. This is displayed directly in the device.
 4 - extended debug for developers with changing functions
 
-<strong> MSwitch_Expert: 0.1 </strong>
+<strong>MSwitch_Expert</strong>
 advanced mode
 The select field 'GLOBAL' appears in the list of possible triggers.
-This enables a trigger to be set on all events and not just on individual devices.
-The triggering events can be selected in a further field.
-The fields 'Repeats' and 'Repeat delay in s' are available.
+This allows a trigger to be set on all events and not just on individual devices.
+A further selection of the triggering events can be made in another field.
+The fields 'Repeats' and 'Repeatdelay in s' are available.
 This causes the set command to be repeated n times with a delay of x seconds.
-The selection field 'priority' appears with every 'affectes device'.
-The order of command processing can be influenced in this way.
+The selection field 'priority' appears for each 'affects device'.
+In this way, the order in which commands are processed can be influenced.
 
-<strong> MSwitch_Delete_Delays: 0.1 </strong>
-Option '1' deletes all pending delays when another suitable event occurs.
-With the option '0' already set delays from a previously triggered event are retained and are executed.
-Recommended setting: 1 
+<strong>MSwitch_Delete_Delays</strong>
+Option '1' causes all pending delays (delays) to be deleted when a suitable event occurs again.
+Only the delays created in the cmd branch that is re-executed will be deleted.
 
-<strong> MSwitch_Include_Devicecmds: 0.1 </strong>
-Does the inclusion of all devices when queried with 'set DEVICE?' provide their own command set in the 'Affected Devices' selection list.
-With option '0' these devices are no longer offered in the list.
-Recommended setting: 1 
+Option '2' causes all delays that were created due to the incoming event to be deleted. All events with the
+initiating trigger marked. If this trigger occurs again, all associated delays are deleted.
 
-<strong> MSwitch_Include_Webcmds: 0.1 </strong>
-Causes all devices to be included in the 'Affected Devices' selection list that have their own command set in the Webcmd attribute.
+Option '3' ... follows
+Option '4' ... follows
+
+With the '0' option, delays that have already been set from a previously triggered event are retained and executed.
+
+Recommended setting: 1
+
+<strong>MSwitch_Include_Devicecmds</strong>
+Causes the inclusion of all devices that are queried with 'set DEVICE ?' supply your own command set in the 'Affected Devices' selection list.
+With option '0', these devices are no longer offered in the list.
+Recommended setting: 1
+
+<strong>MSwitch_Include_Webcmds</strong>
+Causes all devices to be included in the 'Affected Devices' selection list that have their own command set stored in the Webcmd attribute.
 The 'commands' stored in Webcmd are offered in the selection fields.
-If option '0' is set, these devices are no longer offered, unless they deliver with 'set DEVICE?' its own instruction set.
+If option '0' is set, these devices are no longer offered unless they return with 'set DEVICE ?' own instruction set.
 Recommended setting: 0
 Use as needed
 
-<strong> MSwitch_generate_Events: 0.1 </strong>
-With setting '1' reduces the events generated by the MSwitch devices to a required minimum.
+<strong>MSwitch_generate_Events</strong>
+When set to '1', reduces the events generated by the MSwitch device to a required minimum.
 Especially recommended when using 'MSwitch_Read_Log'.
 
-<strong> MSwitch_Include_MSwitchcmds: 0.1 </strong>
-Causes all devices to be included in the 'Affected Devices' selection list that have their own command set in the MSwitchcmds attribute.
+<strong>MSwitch_Include_MSwitchcmds</strong>
+Causes all devices to be included in the 'Affected Devices' selection list that have their own command set stored in the MSwitchcmds attribute.
 The 'commands' stored in MSwitchcmds are offered in the selection fields.
-If option '0' is set, these devices will no longer be offered unless they also have their own command set with 'set DEVICE?' deliver.
+If the option '0' is set, these devices are no longer offered unless they also have their own command set with 'set DEVICE ?' deliver.
 Recommended setting: 0
-Use as needed. 
+Use as needed.
 
-<strong> MSwitch_Activate_MSwitchcmds: 0.1 </strong>
-Adds the 'MSwitchcmd' attribute to each existing device. 
+<strong>MSwitch_Activate_MSwitchcmds</strong>
+Adds the 'MSwitchcmd' attribute to each existing device.
 
-<strong> MSwitch_Lock_Quickedit: 0.1 </strong>
-Default for the selection list 'Affected Devices'.
-With option '1' it is locked by default and can only be changed using an additional button to avoid accidental changes.
-Selecting an option without pressing the <Ctrl> key deletes all options that have already been set.
-Recommended setting: 1 
+<strong>MSwitch_Lock_Quickedit</strong>
+Default setting for the 'Affected Devices' selection list.
+With option '1', this is locked by default and can only be changed using an additional button to avoid accidental changes.
+Selecting an option without pressing the <Ctrl> key causes all options already set to be deleted.
+Recommended setting: 1
 
-<strong> MSwitch_Ignore_Types </strong>
-Contains a space-separated list of device types that cannot be switched or cannot be switched.
-They are then not shown in the selection lists in order to keep the selection lists clear.
+<strong>MSwitch_Ignore_Types</strong>
+Contains a space-separated list of device types that are not or cannot be switched.
+They are then not displayed in the selection lists in order to keep the selection lists clear.
 
 Default: notify allowed at watchdog doif fhem2fhem telnet FileLog readingsGroup FHEMWEB autocreate eventtypes readingsproxy svg cul.
 
-It is also possible to specify this in Devspec format.
-If a devspec is specified instead of the device type, eg "TYPE = watchdog", please note
-that all devices are included in the ignore list that <u> NOT </u> correspond to devspec.
-Furthermore, the devspec must be put in quotation marks!
+Specification in devspec format is also possible here.
+If a devspec, e.g. "TYPE=watchdog" is specified instead of the device type, it should be noted that
+that all devices that <u>NOT</u> match the devspec are included in the ignore list.
+Furthermore, the devspec must be placed in quotation marks!
 
-<strong> MSwitch_DeleteCMDs: manually, automatic, nosave </strong>
-for the frontend all command options of all devices are preloaded in order to be able to offer them.
-This process, especially in large installations, can delay the loading process of the front end.
-In order to avoid this effect, various options can be selected here.
+<strong>MSwitch_DeleteCMDs</strong>
+for the frontend, all command options of all devices are preloaded in order to be able to offer them.
+This process can, especially in large installations, lead to the loading process of the frontend being delayed.
+To avoid this effect, various options can be selected here.
 
  - manually
-When the frontend is called, all information is loaded and saved once. When called again, these will be offered
-If devices are changed, this list must be updated manually; the corresponding button is offered.
+When calling up the frontend, all information is loaded and saved once. When called up again, these are offered
+When changing devices, this list must be updated manually, the corresponding button is offered.
 
  - automatic
-When the frontend is called, all information is loaded and saved for 10 minutes. When called again, these will be offered.
-After 10 minutes, this data is deleted and regenerated if necessary - again for 10 minutes 
-A button for manual data renewal is offered.
+When calling up the frontend, all information is loaded and saved for 10 minutes. When called up again, these are offered.
+After 10 minutes, this data is deleted and regenerated if necessary - again for 10 minutes
+A button for manual renewal of the data is offered.
 
- - nosave
-The required data is generated each time the frontend is called. 
-If there is a noticeable, annoying delay in the page load, another option is useful.
+ - no save
+The required data is regenerated each time the frontend is called.
+If there is a noticeable, annoying delay in page loading, another option makes sense.
 
-<strong> MSwitch_Mode: Full, Notify, Toggle, Dummy </strong>
+<strong>MSwitch_Mode</strong>
 Switches the module between customized web interface modes.
 
  - Notify
 The device cannot be switched manually.
 There are only two executable branches "execute 'cmd1' commands" and "execute 'cmd2' commands".
-The status of the device is not shown as 'on' or 'off', but only as 'active'
-This mode is similar to a FHEM Notify.
+The status of the device is not displayed as 'on' or 'off', but only as 'active'
+This mode is similar to an FHEM notify.
 
  - Full
 All functions are available.
 
  - Toggle
 Very simplified fashion. Different branches are not available.
-Here the device can be switched manually and is 'switched over' for each defined event, correspondingly defined commands for 'cmd1' or 'cmd2' are executed.
+Here the device can be switched manually and is 'switched' with each defined event, correspondingly defined commands for 'cmd1' or 'cmd2' are executed.
 
- - dummy
-The 'dummy' mode is a restricted mode.
-This offers the functionality of a dummy combined with the functionality of a notification and can thus replace the combination of dummy notify used with a device.
-The dummy mode can only be activated in a newly created empty MSwitch and cannot be exited!
-As soon as a created MSwitch has been changed (modify trigger etc.), switch options are no longer available. 
 
-<strong> MSwitch_Extensions: 0.1 </strong>
+ - Dummy
+The 'Dummy' mode is a restricted mode.
+This offers the functionality of a dummy combined with the functionality of a notify and can thus replace the popular combination of dummy notify with a device.
+The dummy mode can only be activated in a newly created empty MSwitch and cannot be exited again!
+Once a created MSwitch has been modified (modify trigger etc.), switching options are no longer available.
+
+<strong>MSwitch_Extensions</strong>
 An additional switching option 'MSwitchToggle' is offered in the devices.
-This can be used if devices to be switched do not offer a toggle function from the start.
-Here it is not only possible to 'toggle' between 2 states, but basically here between x states
+This can be used if connecting devices do not offer a toggle function by default.
+Here it is not only possible to 'toggle' between 2 states, but basically between x states
 be 'toggled'.
 
 The syntax must be as follows:
-[command1, command2, commandx] :( optional) [search pattern1, search pattern2, search patternx] :( optional) [reading]
+(optional):[separator][command1,command2,commandx]:(optional)[pattern1,pattern2,patternx]:(optional)[reading]
 
-[command1, command2, commandx]
+[Delimiter]
+- since the commands to be sent in the list are separated by ',' in the default setting and it can happen
+Since the sent commands must also contain a comma, the separator can be changed with this option.
+Only a single character may be used as a separator, e.g. [|].
+The subsequent command and reading lists must then also be separated by this character ([command1|command2|commandx]).
+
+[command1,command2,commandx]
  - the commands that are 'switched through' in the order of each activation
 
-[search pattern1, search pattern 2, search pattern x]
- - maps the associated status of a reading, if different from the command set and the switching does not affect the state of a device (setlist)
+[pattern1,pattern2,patternx]
+ - shows the associated status of a reading, if different from the set command and switching does not affect the state of a device (setlist)
 
 [reading]
  - Name of the reading whose status is affected.
+ - Special case: If the corresponding device does not have a reading, which represents the current (required) status, the control can be completed
+ take place via the MSwitch. To do this, 'MSwitch_self' must be specified as reading. In this case, an MSwitch-specific reading 'last_toggle_state' is accessed.
 
-the following information would suffice for simple toggling between on and off
+The following information would suffice for simple toggling between on and off
 [on, off]
 
-<strong> MSwitch_Safemode: 0.1 </strong>
-Offers some protection against incorrect configurations and resulting endless loops.
-If the attribute '1' is activated, the module ends an endless loop of a device.
-In this case, a log entry is made and the device is set to 'Disabled' using the attribute.
+<strong>MSwitch_Safemode</strong>
+Offers a certain protection against incorrect configurations and the resulting endless loops.
+If the attribute '1' is activated, the module ends endless loops of a device.
+In this case, a log entry is made and the device is set to 'Disabled' via an attribute.
 A last event is generated that can be reacted to 2018-05-31 09:39:21 MSwitch <NAME> Safemode: on
-A corresponding message is displayed in the web interface for the affected device.
+A corresponding message appears in the web interface for the affected device.
 This attribute is not set in the basic configuration.
-However, it is advisable to activate this at least initially for new or complicated devices. 
+However, it is advisable to activate this at least initially for new or complicated devices.
 
-<strong> MSwitch_Wait </strong>
-If the attribute is set, the MSwitch device does not take any for the set period after executing a command branch
-no more commands and ignores further event incoming events. 
+<strong>MSwitch_Wait</strong>
+If the attribute is set, the MSwitch device does not take any for the set period of time after executing a command branch
+ Accepts more commands and ignores further incoming events.
 
-<strong> MSwitch_Condition_Time: 0.1 </strong>
-In the basic setting '0' no defined conditions are checked in the 'Trigger condition' field for the <u> time-controlled </u> switching,
+
+<strong>MSwitch_Event_Wait</strong>
+Blocking times can be set for various incoming trigger events after an incoming event.
+These times are handled for each incoming event.
+
+If a defined event occurs, this (only this) event is blocked for the specified period of time in seconds and no longer triggers a switching process.
+
+Format:
+Event1->seconds
+Event2->seconds2
+
+multiple entries must be separated by a newline.
+
+<strong>MSwitch_Condition_Time</strong>
+In the basic setting '0', no defined conditions are checked in the 'Trigger condition' field for <u>timed</u> switching,
 the check only takes place for incoming events.
-With the setting '1', this check is also used for time-controlled chatting.
+With the setting '1' this check is also used for time-controlled switching.
 
-<strong> MSwitch_Inforoom </strong>
-With this attribute, the room view of a room defined with the attribute is changed.
+<strong>MSwitch_SysExtension</strong>
+Scope of functions currently not described here.
+This can be requested in the forum.
 
-This is to show the most important information of all MSwitch devices on one page.
-For use, all MSwitch devices should (additionally) be sorted into a room and this room should be set in the attribute. 
+<strong>MSwitch_use_WebWidgets</strong>
+Enables widget view in command settings settings.
+
+
+<strong>MSwitch_State_Counter</strong>
+Activates the readings last_ON_OFF_switch,off_time and on_time.
+The accumulated time of the respective mswitch status and the time stamp of the last switchover are logged in these.
+
+Setting 24 hours:
+the data is always reset at midnight
+
+Setting manually:
+The reset to 0 must be done manually
+
+<strong>MSwitch_Inforoom</strong> No longer available from V5.5
+This attribute is used to change the room view of a room defined with the attribute.
+
+This should show the most important information of all MSwitch devices on one page.
+For use, all MSwitch devices should (additionally) be sorted into a room and this room should be set in the attribute.
 
 The following information is provided:
 
- - Info button shows the text of the attribute 'comment' saved in the device
- - Device and events that trigger the device
- - Times at which different branches of the device are executed
- - Devices that are switched by the MSwitch device
- - State of the device
- 
-Important: Changing this attribute always changes this attribute in all MSwitch devices:
-It only has to be set or deleted in one device to capture all devices
+  - Info button shows the text of the attribute 'comment' stored in the device
+  - Device and events that trigger the device
+  - Times at which different branches of the device are executed
+  - Devices that are switched by the MSwitch device
+  - State of the device
 
-<strong> MSwitch_Startdelay: 0,10,20,30,60,90,120 </strong>
+Important: A change of this attribute always causes a change of this attribute in all MSwitch devices:
+It only has to be set or deleted in one device in order to record all devices
+
+<strong>MSwitch_Startdelay</strong>
 Determines the delay time of the MSwitch after FHEM start in seconds.
-The device does not react to events during this period.
-The default here is ten seconds.
+During this period, the device does not react to events.
+
 If the attribute is undefined, a value of 10 seconds is assumed here.
 
-<strong> MSwitch_Selftrigger_always: 0.1 </strong>
-Activating this attribute '1' means that all SET actions of the device trigger an internal event without affecting the FHEM system,
+<strong>MSwitch_Selftrigger_always</strong>
+Activating this attribute '1' causes all SET actions of the device to trigger an internal event without affecting the FHEM system,
 to which the device itself reacts.
 This option can be activated in addition to an existing trigger.
-Occurring evaluable internal events always have the following format:
- - MSwitch_Self: action: worth
- - MSwitch_Self: pct: 100
+Internal events that can be evaluated always have the following format:
+ - MSwitch_Self:action:value
+ - MSwitch_Self:pct:100
 Only internal events for set actions that are stored in the setlist attribute are triggered.
-The 'wait' command / attribute has no effect on these internal events. 
+The 'wait' command/attribute has no effect on these internal events.
 
-<strong> MSwitch_Event_Id_Distributor </strong>
-Offers the possibility of incoming events regardless of the individual
-Redirect command branches to a command branch identified by an ID.
+
+<strong>MSwitch_Eventhistory_to_Reading</strong>
+incoming events are saved chronologically as a reading ( with the appendix _hx ).<br>
+The number of readings is determined by MSwitch_Eventhistory<br>
+These can be accessed in conditions : [$SELF:reading:hx]<br>
+with the following syntax, all specified readings must meet this condition :<br>[$SELF:reading_h0::5] (the last 5 readings entered)
+
+<strong>MSwitch_Eventhistory_timestamp_to_Reading</strong>
+the timestamp of incoming events are saved chronologically as a reading ( with the appendix _hx_time ).<br>
+These can be accessed in conditions : [$SELF:reading:hx_time]<br>
+with the following syntax, all specified readings must meet this condition :<br>[$SELF:reading_h0::5_time] (the last 5 readings entered)
+
+<strong>MSwitch_Eventhistory</strong>
+If the attribute is activated, the last X incoming events are saved. The last received event always has the number 0.
+These "old" events can be accessed in the condition fields.
+Format for access in condition fields:
+ - [EVENT:hx] - x is the number of the event here
+ - [EVTPART1:hx] - x is the number of the event here
+ - [EVTPART2:hx] - x is the number of the event here
+ - [EVTPART3:hx] - x is the number of the event here
+
+<strong>MSwitch_Snippet</strong>
+
+Serves to store frequently used code or condition parts, etc.
+Data can be saved in the following format:
+
+[Snippet:1]
+text or code or condition
+
+[snippet:2]
+text or code or condition
+
+This information can be retrieved in any part of the device with [Snippet:x].
+ 
+<strong>MSwitch_Module_Mode</strong>
+Affects the frontend display. Editor windows are no longer displayed and only readings are displayed which
+have been defined in the readingslist attribute itself.
+
+<strong>MSwitch_ExtractHTTP_max</strong>
+
+Determines the maximum number of readings extracted from an imported file.
+
+<strong>MSwitch_Event_Id_Distributor</strong>
+Old attribute no longer available since version 6.
+
+Provides the ability to receive incoming events independently of each
+Redirect instruction branches to an instruction branch identified by an ID.
 
 The syntax must be as follows:
-state: on => cmd1 ID 1
-state: off => cmd2 ID 2.3
+state:on=>cmd1 ID 1
+state:off=>cmd2 ID 2.3
 
-state: on would lead to the execution of the command branch with ID 1, in this branch cmd1 would be executed
-state: off would lead to the execution of the command branches with the ID 2 and 3, in these branches cmd2 would be executed
+state:on would result in execution of the command branch with ID 1, cmd1 would be executed in this branch
+state:off would result in execution of command branches with ID 2 and 3, cmd2 would be executed in these branches
 
-Several entries are to be written in a separate line, the last entry is to be ended with a line break.
+Multiple entries must each be written on a separate line, the last entry must end with a line break.
 
-<strong> MSwitch_Sequence: </strong>
-A switching sequence can be specified by one or more search patterns of incoming events separated by '/' which are to be recognized.
+<strong>MSwitch_sequence</strong>
+A switching sequence can be specified by one or more '/' separated search patterns of incoming events to be recognized.
 The specification must have the following syntax:
 
- - Device1: reading1: event1 Device1: reading1: event1-2 Device1: reading1: event1-3 / .... / ....
+ - Device1:reading1:event1 Device1:reading1:event1-2 Device1:reading1:event1-3/..../....
 
-Example: Dummy: state: on Dummy: state: off Dummy: state: on
+Example: dummy:state:on dummy:state:off dummy:state:on
 
 If the device recognizes this search pattern in the switching processes of the device (dummy), the reading "SEQUENCE" is set to "match",
-reading "SEQUENCE_NUMBER" on the number of the found sequence if there are several search patterns.
+the reading "SEQUENCE_NUMBER" to the number of the sequence found if there are multiple search patterns.
 Both readings can be queried in the "Conditions" of a switching command.
 
-<strong> Maximum time in seconds to complete a sequence </strong>
-Is directly related to MSwitch_Sesequence.
+<strong>MSwitch_Sequence_time</strong>
+Maximum time in seconds to fully execute a sequence.
+Is directly related to MSwitch_Sequence.
 
-Specifies the time in which all events of a sequence must arrive in order to set this sequence as recognized.
-if 5 seconds are accepted here, then all events for sequence recognition must arrive within this period
+Indicates the time in which all events of a sequence must arrive in order to set this sequence as recognized.
+if 5 seconds are assumed here, all searched events for sequence recognition must arrive within this period
 to set the sequence as recognized.
 
-<strong> MSwitch_Random_Time </strong>
-Format: HH: MM: SS-HH: MM: SS
+<strong>MSwitch_RandomTime</strong>
+Format: HH:MM:SS-HH:MM:SS
 If activated, a random time is generated before each execution of a delayed command (delay),
 which is within the time period specified here. This random number can be accessed in the delays,
-by specifying '[random]' instead of a direct time.
-If the attribute is not set, the specification of '[random]' always results in '00: 00: 00 ' 
+by specifying '[random]' instead of a direct time specification.
+If the attribute is not set, specifying '[random]' always results in '00:00:00'
 
-<strong> MSwitch_Random_Number </strong>
+<strong>MSwitch_RandomNumber</strong>
 Format: X
-When activating this attribute with any integer, the device creates the two readings 'RandomNr' and 'RandomNr1' and with values ​​between zero and n.
-RandomNr is regenerated each time a command is executed, even for different devices in one run.
+If this attribute is activated with any whole number, the device creates the two readings 'RandomNr' and 'RandomNr1' with values ​​between zero and n.
+RandomNr is regenerated before each execution of a command, even for different devices in one run.
 RandomNr1 remains constant after initialization.
-If this reading is accessed in a condition with, for example, '[$ NAME: ReadingNr1] = 1', the command is only executed if ReadingNr1 = 1.
-The command is therefore only executed with a probability of one to n.
+If this reading is accessed in a condition with e.g. '[$NAME:ReadingNr1] = 1', the command will only be executed if ReadingNr1 = 1.
+The command is thus only executed with a probability of one in n.
 
-<strong> MSwitch_Reset_EVT_CMD1 (CMD2) _COUNT </strong>
+<strong>MSwitch_Reset_EVT_CMD1(CMD2)_COUNT</strong>
 If this attribute is activated, the reading 'EVT_CMD1_COUNT' or 'EVT_CMD2_COUNT' is available in the readings.
-This can be used in the conditions, for example to only execute a command every xth occurrence of a triggering event.
-Each time a valid event arrives, the counters are increased by 1 (for the respective branch).
+This can be used in the conditions, e.g. to only execute a command every xth arrival of a triggering event.
+Each time a valid event arrives, the counters are increased by 1 (for the relevant branch).
 If the value '0' is entered here, the counter is increased continuously (endlessly).
 If a value greater than 0 is entered, the counter is automatically reset to zero when this value is reached.
-When this attribute is deleted, the corresponding readings are also deleted. 
+By deleting this attribute, the corresponding readings are also deleted.
 
-<strong> MSwitch_Trigger_Filter </strong>
-Contains a comma-separated list of events that are ignored and unsaved if they are received.
+<strong>MSwitch_Trigger_Filter</strong>
+Contains a comma-separated list of events that will be disregarded and unsaved if received.
 Wildcards like '*' can be specified.
 Recommended setting: none
 
-<strong> MSwitch_Eventhistory: 0,1,2,3,4,5,10,20,30,40,50,60,70,80,90,100,150,200 </strong>
-If the attribute is activated, the last X incoming events are saved. The last event received always has the number 0.
-These "old" events can be accessed in the condition fields.
-Format for access in condition fields:
- - [DEVICE: READING: hx] - x is the number of the event here
 
-<strong> MSwitch_setList </strong>
-this can be used in addition to the set list or on its own. Here you can dynamically assign a setList.
+  
+<strong>MSwitch_setList</strong>
+this can be booked in addition to the set list or on its own. Here it is possible to dynamically assign a setList.
 
-Version 1
- - [TYPE = dummy]: on, off
-make all dummies available via dropdown list,
-for each of these dummies an identical reading is created, which has the switching options on and off.
+version 1
+ - [TYPE=dummy]:on,off dropdown list on and off
+ - [TYPE=dummy]:slider,1,1,100 slider
+ - [TYPE=dummy]:noArg no option
+ - [TYPE=dummy]:Arg free option field
+ Etc. ..
  
-Version 2
- - status: [TYPE = dummy]
- creates the entry status in the dropdown list with all ddummys available as a selection option. 
- here the attribute 'readinglist' must also be assigned 'status', otherwise the state will be assigned the selection.
+makes all dummies available via dropdown list,
+an identical reading is created for each of these dummies, which can contain the created switching option
+ 
+version 2
+ - status:[TYPE=dummy]
+ creates the entry status in the drop-down list with all ddummys available as a selection option.
+ here the 'readinglist' attribute must also be assigned 'status', otherwise the state is assigned the selection.
+
+<strong>MSwitch_Switching_once</strong>
+If this attribute is activated (1), command chains will NOT be executed if they correspond to the last executed command chain.
+This can (should) be used in particular for temperature monitoring or the like.
+This chain lock is cleared by executing a DIFFERENT chain and setting it according to that new chain.
+
+Alternatively, this lock can be cleared with the "set DEVICE reset_Switching_once" command.
+
+This avoids the repeated switching of a device if the triggers are cyclically transmitting sensors or the like.
+
+The default setting when the attribute is not set is 0 .
+
+
+<strong>MSwitch_Reset_EVT_CMD1_COUNT</strong>
+If the attribute is set, the reading EVT_CMD1_COUNT is created.
+Each time the trigger for switching channel 1 (Cmd1) arrives, this reading is incremented by 1.
+When the attribute value is reached, it is automatically set to 0.
+
+This reading can be referred to in Conditions ec. be accessed.
+
+<strong>MSwitch_Reset_EVT_CMD2_COUNT</strong>
+If the attribute is set, the reading EVT_CMD2_COUNT is created.
+Each time the trigger for switching channel 2 (Cmd2) arrives, this reading is incremented by 1.
+When the attribute value is reached, it is automatically set to 0.
+
+This reading can be referred to in Conditions ec. be accessed.
+<strong></strong>
 <hr>
 ->
-################################################## ################################################
+#################################################################################################
 Help Get
-################################################## ################################################
+#################################################################################################
 <- get-
-The offered Get commands may depend on the basic configuration,
-dH not all commands are offered in every mode.
+Offered get commands may depend on the basic configuration,
+i.e. not all commands are offered in every mode.
 <hr>
-<strong>get DEVICE active_timer show, delete </strong>
- - Show
+
+<strong>get DEVICE sysextension</strong>
+
+Integration of HTM/Java code
+
+A freely selectable code can be specified here, which is displayed (executed) in the device and possibly in the detail view.
+Depending on availability, MSwitch widgets can be used here.
+
+<strong>get DEVICE active_timer show,delete</strong>
+ - shows
 Shows all pending (set) timers of the device that result from time-dependent or delayed switching commands.
 
  - Delete
-Deletes all pending (set) timers of the device that result from time-dependent or delayed switching commands.
+Deletes all pending (set) device timers resulting from time-dependent or delayed switching commands.
 Switching commands based on purely time-dependent information are recalculated and set.
 
-<strong>get DEVICE config </strong>
+<strong>get DEVICE HTTPresponse</strong>
 
-Displays the configuration file of the MSwitch device; this can be edited in the window.
-This should only be done by experienced users!
-Normally, the device should only be configured via the web interface and incorrect configuration can lead to a FHEM crash. 
+Shows the content of an HTML file previously loaded with 'loadHTTP'.
 
+<strong>get DEVICE config</strong>
 
-<strong>get DEVICE support_info </strong>
+Shows the configuration file of the MSwitchdevice. Since version 6 it is no longer possible to change this file.<br>
+This file can be used, for example, to import it again using the wizard.
+
+<strong>get DEVICE support_info</strong>
 
 Opens a window with a formatted view of all device settings.
-This should always be posted with support inquiries. 
+This should always be posted with support requests.
 
-<strong>get DEVICE restore_MSwitch_Data this_device | all_devices </strong>
+<strong>get DEVICE restore_MSwitch_Data this_device|all_devices</strong>
  - this_device
-Restores the device data from the backup file if it is found in the backup file (the name of the device is searched for here).
+Restores the data of the device from the backup file if it is found in the backup file (the name of the device is searched for here).
 
  - all_devices
-Restores the data of all MSwitch devices if they are available in the backup file. This action can take some time and is therefore carried out in the background (non-blocking).
+Restores the data of all MSwitch devices if they are present in the backup file. This action can take some time and is therefore carried out in the background (non-blocking).
 A notification will be sent after completion.
 
 The devices are functional after a restore.
-We recommend restarting FHEM .. 
+A restart of FHEM is recommended.
 
-
-<strong>get DEVICE event log sequence-formatted, timeline, clear </strong>
+<strong>get DEVICE event log sequence formatted,timeline,clear</strong>
  - timeline
-Shows all (historical) received events (depending on the corresponding attribute setting) in the received order
+Shows all (historical) incoming events (depending on the corresponding attribute setting) in the order in which they were received
 
  - sequence formatted
-Shows all incoming events pre-formatted for a sequence query
+Shows all incoming events preformatted for a sequence query
 
  - clear
-Deletes the list of incoming events
+Clears the list of incoming events
 
-<strong> </strong>
+<strong>get DEVICE statistics</strong>
+
+Shows the statistical data of the device.
+Diese Funktion steht nur bei gesetztem Attribut MSwitch_Statistic zur verfügung.
+
+<strong></strong>
 <hr>
 ->
 
-################################################## ################################################
-Help set
-################################################## ################################################
-<- set-
-Set commands offered may depend on the basic configuration,
-dH not all commands are offered in every mode.
+#################################################################################################
+Help Set
+#################################################################################################
+<-set-
+Offered set commands may depend on the basic configuration,
+i.e. not all commands are offered in every mode.
 <hr>
-<strong>set DEVICE wizard </strong>
+<strong>set DEVICE wizard</strong>
 Switches the device to wizard mode.
-In this mode, at's, notifys and preconfigured devices can be imported.
+In this mode at's, notifys and pre-configured devices can be imported.
 Devices can also be created using a wizard.
-This set is only available for newly created and unchanged devices. 
+This set is only available for newly created and unchanged devices.
 
-<strong>set DEVICE reset_device </strong>
-Deletes all data of an MSwitch device and puts it in the state as if it had been created.
+
+<strong>set DEVICE loadHTTP</strong>
+
+Loads the content of an HTML page. This can be used to extract readings from it.
+Further processing can be influenced with the attributes 'MSwitch_ExtractfromHTTP' and 'MSwitch_ExtractHTTPMapping'.
+The entire content of the read data can be displayed with 'get HTTPresponse'.
+
+Format:
+   loadHTTP http://www.myhost.com/directory/
+   loadHTTP https://www.myhost.com/
+   loadHTTP http://www.myhost.com:8080/
+   loadHTTP http://user:password@www.myhost.com/
+
+<strong>set DEVICE reset_device</strong>
+Deletes all data of an MSwitch device and puts it in the state as if it were newly created.
 Warning: this action cannot be undone.
 
-<strong>set DEVICE reload_timer </strong>
+
+<strong>set DEVICE del_function_data</strong>
+Clears all data and readings resulting from functions.
+
+<strong>set DEVICE reload_timer</strong>
 All pending timers (from time-controlled switching) are deleted and then recalculated.
 
-<strong>set DEVICE del_delays </strong>
-Deletes all pending commands that result from time-delayed switching
+<strong>set DEVICE del_delays</strong>
+Format: set DEVICE del_delays <INDICATOR>
 
-<strong>set DEVICE on | off [parameter] </strong>
-Sets the device to the 'on' status. All commands of the 'on / off branches' are executed.
-Optionally, a further parameter can be passed to the 'on' and 'off' commands.
-This is stored in the Reading 'Parameter' and can be accessed immediately in 'Freecmds' or 'Conditions'. 
+Clears all pending commands resulting from time-delayed switching.
+INDICATOR is optional.
+The triggering event of a delayed command can be specified here, then only delays are deleted,
+resulting from this event.
+The indicator can be viewed with get device active_timer show when there are delayed commands.
 
-<strong>set DEVICE off [parameter] </strong>
-Sets the device to the 'off' status. All commands of the 'on / off branches' are executed.
-Optionally, a further parameter can be passed to the 'on' and 'off' commands.
-This is stored in the Reading 'Parameter' and can be accessed immediately in 'Freecmds' or 'Conditions'. 
+<strong>set DEVICE on|off [parameter]</strong>
+Sets the device to the 'on' status. All commands of the 'on/off branches' are executed.
+Optionally, another parameter can be passed to the commands 'on' and 'off'.
+This is stored in the 'Parameter' reading and can be accessed immediately in 'Freecmds' or 'Conditions'.
 
+<strong>set DEVICE off [parameter]</strong>
+Sets the device to the 'off' status. All commands of the 'on/off branches' are executed.
+Optionally, another parameter can be passed to the commands 'on' and 'off'.
+This is stored in the 'Parameter' reading and can be accessed immediately in 'Freecmds' or 'Conditions'.
 
-<strong>set DEVICE active </strong>
-Sets the MSwitch device to the 'active' status. 
+<strong>set DEVICE active</strong>
+Sets the MSwitch device to the 'active' status.
 
-<strong>set DEVICE inactive </strong>
-Sets the device to the 'inactive' status. No more commands are executed.
-This status corresponds to the 'disable' attribute, but is not linked to the red question mark (fhem save).
+<strong>set DEVICE inactive</strong>
+Sets the device to the 'inactive' status. No more commands will be executed.
+This status corresponds to the 'disable' attribute, but is not associated with the red question mark (fhem save).
 
-<strong>set DEVICE change_renamed oldname newname </strong>
+<strong>set DEVICE change_renamed oldname newname</strong>
+Format: set DEVICE change_renamed oldname newname<br><br>
 If device names have changed in the executing part (affected devices, conditions, etc.),
 the MSwitch can be adjusted with this command without having to adjust all settings manually.
+All device names are adjusted, including any conditions, etc.
 
-<strong>set DEVICE exec_cmd_1 ID [ID] </strong>
+<strong>set DEVICE exec_cmd_1 ID [ID]</strong>
 Causes the corresponding command branch 1 to be executed immediately.
-If an ID is specified, only the commands with the corresponding ID are executed. 
+If an ID is specified, only the commands with the corresponding ID are executed.
+  
+<strong>set DEVICE exec_cmd_2 ID [ID]</strong>
+Causes immediate execution of the corresponding command branch 2.
+If an ID is specified, only the commands with the corresponding ID are executed.
 
-<strong>set DEVICE exec_cmd_2 ID [ID] </strong>
-Causes the corresponding command branch 2 to be executed immediately.
-If an ID is specified, only the commands with the corresponding ID are executed. 
+<strong>set DEVICE backup_MSwitch</strong>
+Creates a backup file of either this or all Mswitches.
+If necessary, this data can be restored for one or all MSwitch devices at the same time.
+The files are in the /opt/fhem/backup/MSwitch directory.
 
-<strong>set DEVICE backup_MSwitch </strong>
-Creates a backup file of all MSwitch devices under ./fhem/MSwitch_backup.cfg.
-If necessary, data from this file can be restored (produced) for individual or all MSwitch devices at the same time. 
+<strong>set DEVICE reset_cmd_count: 1|2</strong>
+Clears the corresponding EVT_CMD_COUNT - Reading; corresponds to a reset to '0'.
 
-<strong>set DEVICE reset_cmd_count: 1 | 2 </strong>
-Deletes the corresponding EVT_CMD_COUNT - Reading; corresponds to a reset to '0'.
-
-<strong>set DEVICE fakeevent [device]: reading: arg </strong>
-Example: fakeevent state: on
+<strong>set DEVICE fakeevent [device]:reading:arg</strong>
+Example: fake event testdevice.state:on
 
 The MSwitch device reacts as if the triggering device had actually generated the event instead of the internal "fakes command" without this event.
 
-<strong>set DEVICE del_repeats </strong>
+<strong>set DEVICE reset_status_counter</strong>
+resets the readings off_time,on_time and last_ON_OFF_switch
+
+<strong>set DEVICE writelog</strong>
+Format: set DEVICE writelog LOGLEVEL TEXT<br>
+Writes an entry to the current log file.
+
+<strong>set DEVICE del_repeats</strong>
 Deletes all command repetitions that result from command branches and were defined there.
 
-<strong>set DEVICE wait ss </strong>
-Causes the Mswitch to respond to no events for the specified period in seconds (ss)
+<strong>set DEVICE wait ss</strong>
+Causes the mswitch to not respond to any events for the specified amount of time in seconds (ss).
 
-<strong> </strong>
+<strong>set DEVICE reset_Switching_once</strong>
+Clears a command chain lock set by the attribute "MSwitch_Switching_once = 1".
+
+<strong>MSwitch_Func_AVG</strong>
+Activation of the integrated averaging.
+In this function, readings can be created that contain the average value of incoming readings.
+To do this, the relevant readings must already be defined as triggers in one of the command branches.
+
+If a command branch reacts to the reading DEVICE:pct:.*, for example, this function can be activated for the reading pct.
+
+The syntax must be as follows:
+pct->2->AVG_pct
+&lt;reading&gt; -> &lt;number of values&gt; -> &lt;name of the reading to be created&gt;
+
+pct-> reading for which to calculate the average
+2 -> number of readings received that should be used for the calculation
+AVG_pct -> is the name of the new reading to be created
+
+multiple calculations must be separated by ",".
+
+This created reading can be reacted to directly in conditions etc. -> [$SELF:AVG_pct]
+A fhem restart causes all 'historical' data to be deleted. As long as there is less data than required, we are the one
+Mean formed only from the available data.
+
+<strong>MSwitch_Func_DIFF</strong>
+Activation of the integrated averaging.
+In this function, readings can be created that contain the difference value of incoming readings.
+To do this, the relevant readings must already be defined as triggers in one of the command branches.
+
+If a command branch reacts to the reading DEVICE:pct:.*, for example, this function can be activated for the reading pct.
+
+The syntax must be as follows:
+pct->1->DIFF_pct
+&lt;reading&gt; -> &lt;position of comparison value&gt; -> &lt;name of the reading to be created&gt;
+
+pct-> reading for which to calculate the average
+1 -> number of the comparative reading (1=last, 2=last but one 3= .... )
+DIFF_pct -> is the name of the new reading to be created
+
+This created reading can be reacted to directly in conditions etc. -> [$SELF:DIFF_pct]
+A fhem restart causes all 'historical' data to be deleted. Therefore, the reading is only updated if the corresponding
+required comparison value already exists.
+
+<strong>MSwitch_Func_TEND</strong>
+Activation of the integrated averaging.
+
+In this function, readings can be created that show the trend value of incoming readings.
+To do this, the relevant readings must already be defined as triggers in one of the command branches.
+
+Function description:
+
+This can be used to determine the tendency of a reading.
+2 pairs of values ​​are formed. These are defined by the first numeric specification in the attribute:
+
+a 1 means that the current and the previous value are compared
+a 2 means that the intersection of the last 2 values ​​are compared with the intersection of the previous 2 values
+Etc.
+
+a difference results from this comparison, and this difference is greater than the second numerical specification in the attribute
+then reading "(NAME)_pct_change" takes the value "changed", otherwise "not_changed".
+In this case, all other readings are updated (including the direction of the new trend).
+
+The third numeric (0/1) specification in the attribute can be used to specify whether all incoming values ​​should also be compared.
+This means that all calculated values ​​(maximum and minimum values) are saved. In addition to the comparison explained above (if this has not yet triggered a switching process), it is checked
+whether the comparison between the current reading and a stored maximum or minimum value exceeds the switching threshold.
+If this is the case, the trend reversal is also displayed.
+
+All readings can be accessed directly in the conidions etc. [$SELF:reading].
+
+The syntax must be as follows:
+pct->1->2->TEND_pct->1
+&lt;reading&gt; -> &lt;Number of values ​​for pairing&gt; -> &lt;Switching threshold for trend reversal&gt; -> &lt;(optinal 0.1) Inclusion of the overall history&gt;
+
+By activating this function, various readings are created:
+
+- (NAME)_pct_change<small>
+Takes the values ​​"changed" or "no_change" . The value "changed" is only accepted if the currently incoming reading
+triggers a reversal of Tendez (reversal of direction AND switching threshold exceeded).
+</small>
+- (NAME)_pct_direction_real<small>
+Takes the value "up" or "down". This corresponds to the real value of the trend of the current reading.
+</small>
+- (NAME)_pct_direction_tendency<small>
+Takes the value "up" or "down". This does not have to correspond to the real value, but depends on the pair formation and the threshold value.
+</small>
+- (NAME)_pct_direction_value<small>
+Takes the calculated difference value between the current and the previous value (or pairs of values) of the monitored reading
+</small>
+
+<strong>MSwitch_Readings</strong>
+MSwitch_Readings are analogous to Fhem Userreadings both in function and in format.
+The major difference is that, in contrast to the user readings, these readings are set directly upon receipt of an event and/or switching process - before the switching commands are executed.
+There is thus the possibility of installing and using this MSwitch_Reading at any point in the executing command part (commands, conditions, etc.).
+
+In the MSwitch_Readings there is access to system variables ($NAME,$EVENT, etc.) to a known extent.
+
+<strong>MSwitch_EventMap</strong>
+MSwitch_EventMap is almost analogous to the FhemAttribute Eventmap in both function and format.
+The major difference is that this event map only applies to incoming events. All outgoing events and/or status messages
+remain unaffected by this.
+A third specification is also possible, this determines the event part for which the mapping is to be used.
+this can be:
+
+EVENT - Apply all event parts
+EVTPART1(2)(3) - Apply to specified event part
+the third field remains empty is also applied to the entire event.
+
+Warning : with this procedure, each event part is ALWAYS processed separately, it is not possible to change a complete event.
+
+EVENT FULL
+
+With this option, the incoming event is viewed as a whole and can be edited as a whole.
+
+If only empty fields remain after the mapping, then these are replaced by 'undef'.
+
+Format : /REGEX:REPLACED_BY:EVENT/
+
+The first character found in the specification serves as a separator for multiple mappings, in this case the "/".
+Several pieces of information must be given accordingly as follows:
+
+/REGEX:REPLACED_BY:EVENT/REGEX1:REPLACED_BY1:EVENT/ ....
+
+Another reading (EVENT_ORG) is created. This always contains the original incoming event.
+An event is not triggered by this reading, but it is available in the current run.
+
+If this function is activated, all internal actions (conditions, commands, etc.) must be based on this mapped event.
+
+<strong>MSwitch_Statistic</strong>
+If the attribute is activated, various statistical data of the device are saved temporarily and can be evaluated.
+This can be used to significantly reduce the system load, e.g. by adjusting the "Event-on-..." attributes of the triggering device and/or
+Delimitation of the trigger etc.
+
+
+This data can be displayed with get DEVICE statistics.
+
+However, it should be noted that this statistical function itself triggers an increased system load and also requires increased memory.
+
+The statistics data are not retained when the fhem is restarted.
+
+<strong>MSwitch_SysExtension</strong>
+
+Allows the integration of HTML/Java code.
+Depending on the setting, this code is displayed both in the room view and in the detail view.
+
+MSwitch widgets can be created here (depending on availability).
+
+Option 1 - view only in detail view
+Option 2 - View in room view and detail view
+
+
 <hr>
 ->
