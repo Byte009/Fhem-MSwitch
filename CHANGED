@@ -1,4 +1,8 @@
 Version
+6.53
+Change: Fix Perlwarning, Cleanup, change cmd get
+
+Version
 6.52
 Change: Delays,Counter,Bugfixes
 
