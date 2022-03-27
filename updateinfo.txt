@@ -1,3 +1,3 @@
 Version
-6.52
-Change: Delays,Counter,Bugfixes
+6.53
+Change: Fix Perlwarning, Cleanup, change cmd get
