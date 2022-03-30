@@ -6501,6 +6501,7 @@ sub MSwitch_fhemwebFn($$$$) {
 			foreach (@slist) 
 			{	
 					my ($sname,$sargs) =split (/:/,$_,2);
+					next if (!defined $sname);
 					$data{MSwitch}{$Name}{setlist}{$sname}=$sargs;
 			}
 			my $count =0;
