@@ -648,14 +648,20 @@ Erweiterte Optionen zur Fehlersuche
 4 - erweitertes Debug für Entwickler mit wechselnden Funktionen
 
 <strong>MSwitch_Expert</strong>
-erweiterter Modus
-In der Liste der möglichen Trigger erscheint das Selectfeld 'GLOBAL'.
-Dieses ermöglicht das Setzen eines Triggers auf alle Events und damit nicht nur auf einzelne Devices.
-In einem weiteren Feld kann eine weitere Selektion der triggernden Events erfolgen.
-Die Felder 'Repeats' und 'Repeatdelay in s' stehen zur Verfügung.
-Dies bewirkt eine n-fache Wiederholung des gesetzten Befehls mit x Sekunden Verzögerung.
-Das Auswahlfeld 'priority' erscheint bei jedem 'affectes device'.
-So kann die Reihenfolge der Befehlsabarbeitung beeinflusst werden.
+Expertenmodus
+
+bei aktivierem Attribut werden erweiterte Optionen des Devices freigeschaltet, die in einem
+Standartdevice eher selten benoetigt werden.
+
+Dazu gehoert:
+
+- Dynamische Setlisten ( ohne Attributaenderung)
+- GLOBALES triggern ( ermoeglicht Triggern in einem Mswitch auf mehrere Devices moeglich )
+- Befehlswiederholungen mit Intervallangabe
+- Ausfuehren von Befehlen in definierter Reihenfolge ( prioritaet )
+- mehr als 2 Befehlszweige , gesteuert ueber eine Eventbridge mit ID-zuordnung
+- integrierte Echtzeitcounter fuer Delays
+
 
 <strong>MSwitch_Delete_Delays</strong>
 Option '1' bewirkt das Löschen aller anstehende Delays (Verögerungen) bei dem Auftreten eines erneuten passenden Events.
