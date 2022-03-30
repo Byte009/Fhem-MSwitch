@@ -11,7 +11,7 @@
 #
 #################################################################
 # bv
-#
+#l
 # Todo's:  
 #          	CommandSet() statt fhem()
 #          	del_repeats mehrfach - in sub auslager
@@ -68,7 +68,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.53';  				# version
+my $version      = '6.54';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -3139,21 +3139,56 @@ if ( $cmd eq "del_trigger" )
 		return;
 	}
 	
-	if ( $cmd eq "DynSetList" )
-	{
+##	
 	
+if ( $cmd eq "Dynsetlist" || $cmd eq "Dynsetlist_clear" )
+	{
 		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'DynSetList', '' ));
 		my @setter = split( / /, @lastsetlist );
-
 		foreach my $test (@lastsetlist) 
 		{
-		
 			my @gefischt = grep( /$test/, @setter  ); 
 			fhem("deletereading $name $test") if @gefischt < 1;
 		}
-		
-		readingsSingleUpdate( $hash, $cmd, "@args", 1 );
+		readingsSingleUpdate( $hash, $cmd, "@args", 1 ) if ( $cmd eq "Dynsetlist" );
+		fhem("deletereading $name DynSetList")  if ( $cmd eq "Dynsetlist_clear" );
+		return;
 	}
+	
+##	
+
+if ( $cmd eq "Dynsetlist_add" )
+	{
+		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'DynSetList', '' ));
+		my %newlist;
+		foreach my $test (@lastsetlist) 
+		{
+			$newlist{$test} = ReadingsVal( $name, $test, '' )
+		}
+		$newlist{$args[0]} = '';
+		my @artest = (keys %newlist);	
+		readingsSingleUpdate( $hash, 'DynSetList', "@artest", 1 );
+		return;
+	}
+	
+##	
+
+if ( $cmd eq "Dynsetlist_delete" )
+	{
+		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'DynSetList', '' ));
+		my %newlist;
+		foreach my $test (@lastsetlist) 
+		{
+			$newlist{$test} = ReadingsVal( $name, $test, '' ) if ($test ne $args[0]);
+		}
+		my @artest = (keys %newlist);	
+		readingsSingleUpdate( $hash, 'DynSetList', "@artest", 1 );
+		fhem("deletereading $name $args[0]") ;
+		return;
+	}
+	
+##
+	
 
 ##########################
 # einlesen der genutzten Mswitch_widgets
@@ -3279,9 +3314,9 @@ my $dynsetlist1 ="";
 my $dynsetentry="";
 
 # funktion nicht aktiv 
-if ( AttrVal( $name, 'MSwitch_Expert', "0" ) eq '2'  )
+if ( AttrVal( $name, 'MSwitch_Expert', "0" ) eq '1'  )
 {
-$dynsetentry ="DynSetList:textField-long DynSetList_clear:noArg DynSetList_add DynSetList_delete ";
+$dynsetentry ="Dynsetlist:textField-long Dynsetlist_clear:noArg Dynsetlist_add Dynsetlist_delete ";
 $dynsetlist1 =ReadingsVal( $name, 'DynSetList', '' );
 $dynsetlist1 =~ s/\n/ /g;
 ############################
@@ -3931,15 +3966,86 @@ if ( $init_done && $aName eq 'MSwitch_State_Counter' ) {
         foreach my $line (@gset)
 		{
             my @lineset = split( /->/, $line );
+			
+			
+			my @testwild = split ( /:/,$lineset[0]);
+			
+			MSwitch_LOG($name,6,"ATTR $testwild[2]");
+			
+			if ( $testwild[2] =~ m/^\.\*..*/s ) 
+			{
+				MSwitch_LOG($name,6,"found wildkard $testwild[2]");
+				
+				
+				# teile lineset
+				my @linesetparts = split( /:/, $lineset[0] );
+				
+				my $linepart=$linesetparts[0].":".$linesetparts[1];
+				
+				
+				
+				$testwild[2] =~ s/\.\*//g;
+				#$testwild[2] =~ s/\*//g;
+				$testwild[2] =~ s/\[//g;
+				$testwild[2] =~ s/]//g;
+				
+				
+				MSwitch_LOG($name,6,"ATTR setze: $linepart-$testwild[2]  -> $lineset[1]");
+				
+				
+				$data{MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2] } = $lineset[1];
+				
+				
+				
+				MSwitch_LOG($name,6,"ATTR adresse: {MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2]}");
+				MSwitch_LOG($name,6,"ATTR gelesen: ".$data{MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2] });
+
+				
+				
+				next;
+			}
+			
+			
+			
+			
+			MSwitch_LOG($name,6,"ATTR setze: $lineset[0]  -> $lineset[1]");
             $data{MSwitch}{$name}{eventwait}{ $lineset[0] } = $lineset[1];
         }
         return;
     }
 
+
+
+
+
+
+		#MSwitch_LOG($ownName,6,"eventsollwaitwild $eventsollwaitwild");
+
+
+
+
+
+
+
     if ( $cmd eq 'del' && $aName eq 'MSwitch_Event_Wait' ) {
         delete $data{MSwitch}{$name}{eventwait};
         return;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## SysExtension
  if ( $cmd eq 'set' && $aName eq 'MSwitch_SysExtension' ) 
@@ -5058,7 +5164,100 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 #### checke eventwait:
 # nur wenn attribut gesetzt
 
-		my $eventsollwait =$data{MSwitch}{$ownName}{eventwait}{ $eventcopy};
+		
+		
+	#################	
+		
+		#check last eventpart
+		
+		
+		
+		
+		
+		#########################
+		
+		foreach my $line (keys %{$data{MSwitch}{$ownName}{eventwait}})
+		{
+		MSwitch_LOG($ownName,6,"Key $line");
+		}
+		##################################################
+		
+		my $checklast = $eventteile[0].":".$eventteile[1].":.*";
+		MSwitch_LOG($ownName,6,"checklast $checklast");
+		my $eventsollwaitwild =$data{MSwitch}{$ownName}{eventwait}{$checklast};	
+		
+		if (defined $eventsollwaitwild && $eventsollwaitwild ne "")
+		{ 
+		MSwitch_LOG($ownName,6,"eventsollwaitwild $eventsollwaitwild");
+			my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$checklast};
+			if ($lastincomming eq "")
+			{
+				$lastincomming = 0 ;
+			}
+		
+		my $newdiff =  $lastincomming+$eventsollwaitwild-time;
+			if ($newdiff > 0)
+			{
+				my $lasttime= time+$eventsollwaitwild - $lastincomming ;
+				MSwitch_LOG($ownName,6,"Event $checklast wird noch $newdiff sekunden blockiert");
+				next EVENT;
+			}
+			else
+			{
+				$data{MSwitch}{$ownName}{inputeventwait}{$checklast} = time;
+			}
+		}
+		
+		
+		
+		
+##########################
+		
+	#	check last eventpart mit bedingung
+		$checklast = $eventteile[0].":".$eventteile[1];
+		MSwitch_LOG($ownName,6,"LESEVERSUCH: {MSwitch}{$ownName}{eventwaitwild}{$checklast}");
+		#{$checklast} 
+		foreach my $line (keys %{ $data{MSwitch}{$ownName}{eventwaitwild}{$checklast}})
+		{
+		MSwitch_LOG($ownName,6,"Key $line -> ".$data{MSwitch}{$ownName}{eventwaitwild}{$checklast}{$line});
+		my $eventsollwaitwildcond =$data{MSwitch}{$ownName}{eventwaitwild}{$checklast}{$line};	
+		my $condition = $line;
+		$condition =~ s/\*/$eventteile[2]/g;
+		MSwitch_LOG($ownName,6,"condition $condition ");
+        my $result = eval ($condition);
+		
+		MSwitch_LOG($ownName,6,"result $result ");
+		if ($result)
+		{
+			MSwitch_LOG($ownName,6,"CONDITION ok ");
+			### bedingung erfüllt
+			my $ersatzevent = $checklast.":".$line;
+			MSwitch_LOG($ownName,6,"ersatzevent $ersatzevent ");
+			my $lastincomming = $data{MSwitch}{$ownName}{inputeventwaitwild}{$ersatzevent};
+			#MSwitch_LOG($ownName,6,"lastincomming $lastincomming ");
+			if ($lastincomming eq "")
+			{
+				$lastincomming = 0 ;
+			}
+			my $newdiff =  $lastincomming+$eventsollwaitwildcond-time;
+			
+			if ($newdiff > 0)
+			{
+				my $lasttime= time+$eventsollwaitwildcond - $lastincomming ;
+				MSwitch_LOG($ownName,6,"Event $eventcopy wird noch $newdiff sekunden blockiert");
+				next EVENT;
+			}
+			else{
+				$data{MSwitch}{$ownName}{inputeventwaitwild}{$ersatzevent} = time;
+			}
+			
+			### bedingung erfüllt ende
+		}
+		}
+			
+	################	
+		# check full event 
+		my $eventsollwait =$data{MSwitch}{$ownName}{eventwait}{$eventcopy};
 		if (defined $eventsollwait && $eventsollwait ne "")
 		{ 
 			my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$eventcopy};
@@ -10127,6 +10326,14 @@ sub MSwitch_Exec_Notif($$$$$) {
 	MSwitch_LOG( $name, 6,"### SUB_Exec_Notif ###");
 	MSwitch_LOG( $name, 6,"it event : $event");
 	
+	
+	#MSwitch_LOG( $name, 7, "lastcmd " .$data{MSwitch}{$name}{setdata}{last_cmd}  );
+		
+my $field;
+	
+	  return "" if ( IsDisabled($name) ); 
+	
+	
     my $protokoll = '';
     my $satz;
 
@@ -10144,7 +10351,11 @@ sub MSwitch_Exec_Notif($$$$$) {
     my $ekey = '';
     my $out  = '0';
 	
-    return "" if ( IsDisabled($name) ); 
+  
+	
+	
+	my $format = AttrVal( $name, 'MSwitch_Format_Lastdelay', "HH:MM:SS" );
+	my $jump = AttrVal( $name, "MSwitch_Delay_Count", 10 );	
 
     if ( $delaymode eq '2' ) 
 	{
@@ -10239,7 +10450,9 @@ sub MSwitch_Exec_Notif($$$$$) {
 		}else 
 		{
 			MSwitch_LOG( $name, 6, "$name - KEINE ZAHL gefunden $devicedetails{$timerkey} L:" . __LINE__ );
-			$devicedetails{$timerkey}=0;
+
+
+		$devicedetails{$timerkey}=0;
 			
 		}
 
@@ -10452,6 +10665,8 @@ sub MSwitch_Exec_Notif($$$$$) {
                         $conditionkey = "nocheck";
                     }
 
+
+
                     $cs =~ s/,/##/g;
 					$cs =~ s/\n/#[MSNL]/g;
                     my $msg2 =
@@ -10472,8 +10687,13 @@ my $savename = "not_defined";
 
 		if (   $expertmode eq '1' )
 		{
-			my $format = AttrVal( $name, 'MSwitch_Format_Lastdelay', "HH:MM:SS" );
-			my $jump = AttrVal( $name, "MSwitch_Delay_Count", 10 );	
+			
+			
+		
+			
+			
+			# my $format = AttrVal( $name, 'MSwitch_Format_Lastdelay', "HH:MM:SS" );
+			# my $jump = AttrVal( $name, "MSwitch_Delay_Count", 10 );	
 			
 			my $sek=$devicedetails{$timerkey};
 			my $h=int($sek/3600); 
@@ -10489,14 +10709,30 @@ my $savename = "not_defined";
 			$format =~ s/SS/$sekunden/g;	
 			$format =~ s/ss/$sek/g;	
 
-			my $field;
+			#my $field;
+
+
+
+#MSwitch_LOG( $name, 7,  "setze Verzögerung $timecond" );
+
+
+#MSwitch_LOG( $name, 7,  "last cmd: ".$data{MSwitch}{$name}{setdata}{last_cmd} );
 
 			if (exists $data{MSwitch}{$name}{setdata}{last_cmd} && $data{MSwitch}{$name}{setdata}{last_cmd} eq "cmd_1"){$field="_countdownon";}
 			if (exists $data{MSwitch}{$name}{setdata}{last_cmd} && $data{MSwitch}{$name}{setdata}{last_cmd} eq "cmd_2"){$field="_countdownoff";}
-
+ 	
+	#MSwitch_LOG( $name, 7,  "field: ".$field );
+	 
+	
+	
+	
 			if (defined $devicedetails{ $device.$field } && $devicedetails{ $device.$field } ne "")
 				{
-										
+					
+
+
+
+					
 					my $counternumber = 0;
 					$savename = $devicedetails{ $device.$field }."_".$counternumber;	
 					
@@ -10520,6 +10756,10 @@ my $savename = "not_defined";
 					
 					if ( !exists $hash->{helper}{countdownstatus} ){$hash->{helper}{countdownstatus} = "inaktiv";}
 					
+					
+#MSwitch_LOG( $name, 7, " --------- aktivstatus von $savename : ".$hash->{helper}{countdownstatus});
+				
+					
 					if ( $hash->{helper}{countdownstatus} eq "aktiv" )
 						{
 							# hole zeit der nächsten ausführung
@@ -10527,7 +10767,15 @@ my $savename = "not_defined";
 							my $akttime=gettimeofday();
 							my $nextjump = int ($nexttime-$akttime);
 							my $diff = $jump-$nextjump;
-							$hash->{helper}{countdown}{$savename}=$sek+$diff;
+							
+							my $ctime=$sek+$diff;
+							$hash->{helper}{countdown}{$savename}=$ctime;
+							
+# MSwitch_LOG( $name, 7, " --------- Gesetzt aus aktiv: ".$savename."_". $ctime);
+	
+							
+							
+							
 						}
 				
 					if ($hash->{helper}{countdownstatus} ne "aktiv")
@@ -10537,7 +10785,10 @@ my $savename = "not_defined";
 						my $timecond = gettimeofday() + $jump;
 						my $msg="$name|$timecond";
 						$hash->{helper}{countdownnexttime}=$timecond;
+						
 						InternalTimer( $timecond, "MSwitch_Countdown_new", $msg );
+						
+# MSwitch_LOG( $name, 7, " --------- Gesetzt aus nicht aktiv: ".$savename."_". $timecond);
 							
 						}	
 					}	
@@ -14133,7 +14384,7 @@ sub MSwitch_EventBulk($$$$) {
     my ( $hash, $event, $update, $from ) = @_;
 	# übergabe event ist altbestand / löschen
     my $name = $hash->{NAME};
-	if (AttrVal( $name, 'MSwitch_Debug', '0' ) ne "0" ){$update=1;};
+	#if (AttrVal( $name, 'MSwitch_Debug', '0' ) ne "0" ){$update=1;};
 	if (AttrVal( $name, 'MSwitch_generate_Events', '0' ) ne "0" ){$update=1;};
 
 
@@ -14153,6 +14404,10 @@ sub MSwitch_EventBulk($$$$) {
 			$Eventupdate=0;
 		}
 
+
+
+
+
 	my  $encoded = urlEncode($evtfull);
 	FW_directNotify( "FILTER=$name","#FHEMWEB:WEB", "writeevent('$encoded')", "");
 
@@ -14162,7 +14417,11 @@ sub MSwitch_EventBulk($$$$) {
 	readingsBulkUpdate( $hash, "EVTPART1",$evtparts1);
 	readingsBulkUpdate( $hash, "EVTPART2", $evtparts2);
 	readingsBulkUpdate( $hash, "EVTPART3", $evtparts3 );
+	
 	readingsEndUpdate($hash, $update);
+	
+	#MSwitch_LOG( $name, 7,  "update $update" );
+	
     return;
 }
 ##########################################################
@@ -14330,6 +14589,20 @@ sub MSwitch_debug2($$) {
 sub MSwitch_LOG($$$) {
     my ( $name, $level, $cs ) = @_;
     my $hash = $defs{$name};
+my $showlevel=6;
+
+#  ändern des loglevels per cmd
+# {$data{MSwitch}{perlteste}{loglevel}=7}
+
+
+
+if (exists $data{MSwitch}{perlteste}{loglevel})
+	{
+		
+		$showlevel=$data{MSwitch}{perlteste}{loglevel};
+	}
+
+
 
 my $logname = $data{MSwitch}{Log} ;
 if ($logname eq "all"){ $logname =$name;}
@@ -14340,13 +14613,13 @@ if ($logname ne $name)
 
     if 
 	((AttrVal( $name, 'MSwitch_Debug', "0" ) eq '2'|| AttrVal( $name, 'MSwitch_Debug', "0" ) eq '3'
-        ) && ( $level eq "6" ))
+        ) && ( $level eq $showlevel ))
     {
         MSwitch_debug2( $hash, $cs );
-		return if $level eq "6";
+		return if $level eq $showlevel;
     }
 	
-    $level = 5 if $level eq "6";
+    $level = 5 if $level eq $showlevel;
     my %UMLAUTE = (
         'Ä' => 'Ae',
         'Ö' => 'Oe',
@@ -15273,6 +15546,11 @@ sub MSwitch_Countdown_new(@)
 	my $hash = $defs{$name};
 	my $jump = AttrVal( $name, "MSwitch_Delay_Count", 10 );	
     my $fulltime =0; 
+	
+	# MSwitch_LOG( $name, 7, " --------- incomming oldtime: ".$oldtime);
+
+	
+	
 	readingsBeginUpdate($hash);
 	foreach my $countdown ( keys %{$hash->{helper}{countdown}} )
 		{		 		
