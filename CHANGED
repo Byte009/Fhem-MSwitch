@@ -1,6 +1,6 @@
 Version
 6.55
-Change: bugfix Dynsetlist
+Change: bugfix Dynsetlist, fix perlwarning configdevice
 
 Version
 6.54
