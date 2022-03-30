@@ -807,7 +807,13 @@ Format:
 Event1->sekunden
 Event2->sekunden2
 
+Anstatt eines Wertes im Event koennen an letzter Stelle auch Wildcards genutzt werden, auch in Verknuepfung mit einer Bedingung:
+
+DEVICE:READING:.*->10   blockiert alle Events (DEVICE:READING:WERT) für 10 Sekunden
+DEVICE:READING:.*[*>30]->10  blockier alle Events (DEVICE:READING:WERT) , wenn der WERT > 30 ist fuer 10 Sekunden
+ 
 mehrere Angaben sind durch Newline zu trennen.
+
 
 <strong>MSwitch_Condition_Time</strong>
 In der Grundeinstellung '0' werden für das <u>zeitgesteuerte</u> Schalten keine definierten Conditionen im Feld 'Trigger condition' überprüft,
