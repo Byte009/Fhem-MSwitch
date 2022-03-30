@@ -68,7 +68,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.54';  				# version
+my $version      = '6.55';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -3143,7 +3143,7 @@ if ( $cmd eq "del_trigger" )
 	
 if ( $cmd eq "Dynsetlist" || $cmd eq "Dynsetlist_clear" )
 	{
-		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'DynSetList', '' ));
+		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'Dynsetlist', '' ));
 		my @setter = split( / /, @lastsetlist );
 		foreach my $test (@lastsetlist) 
 		{
@@ -3151,7 +3151,7 @@ if ( $cmd eq "Dynsetlist" || $cmd eq "Dynsetlist_clear" )
 			fhem("deletereading $name $test") if @gefischt < 1;
 		}
 		readingsSingleUpdate( $hash, $cmd, "@args", 1 ) if ( $cmd eq "Dynsetlist" );
-		fhem("deletereading $name DynSetList")  if ( $cmd eq "Dynsetlist_clear" );
+		fhem("deletereading $name Dynsetlist")  if ( $cmd eq "Dynsetlist_clear" );
 		return;
 	}
 	
@@ -3159,7 +3159,7 @@ if ( $cmd eq "Dynsetlist" || $cmd eq "Dynsetlist_clear" )
 
 if ( $cmd eq "Dynsetlist_add" )
 	{
-		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'DynSetList', '' ));
+		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'Dynsetlist', '' ));
 		my %newlist;
 		foreach my $test (@lastsetlist) 
 		{
@@ -3167,7 +3167,7 @@ if ( $cmd eq "Dynsetlist_add" )
 		}
 		$newlist{$args[0]} = '';
 		my @artest = (keys %newlist);	
-		readingsSingleUpdate( $hash, 'DynSetList', "@artest", 1 );
+		readingsSingleUpdate( $hash, 'Dynsetlist', "@artest", 1 );
 		return;
 	}
 	
@@ -3175,14 +3175,14 @@ if ( $cmd eq "Dynsetlist_add" )
 
 if ( $cmd eq "Dynsetlist_delete" )
 	{
-		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'DynSetList', '' ));
+		my @lastsetlist  = split (/ /,ReadingsVal( $name, 'Dynsetlist', '' ));
 		my %newlist;
 		foreach my $test (@lastsetlist) 
 		{
 			$newlist{$test} = ReadingsVal( $name, $test, '' ) if ($test ne $args[0]);
 		}
 		my @artest = (keys %newlist);	
-		readingsSingleUpdate( $hash, 'DynSetList', "@artest", 1 );
+		readingsSingleUpdate( $hash, 'Dynsetlist', "@artest", 1 );
 		fhem("deletereading $name $args[0]") ;
 		return;
 	}
@@ -3306,7 +3306,7 @@ if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" and $cmd ne "?" )
 #dynsetlist enlesen
 # setlist einlesen
 
-
+#MSwitch_LOG($name,6,"SETLIST EINLESEN");
 if ( !defined $args[0] ) { $args[0] = ''; }
 my $setList = AttrVal( $name, "setList", " " );
 $setList =~ s/\n/ /g;
@@ -3317,12 +3317,14 @@ my $dynsetentry="";
 if ( AttrVal( $name, 'MSwitch_Expert', "0" ) eq '1'  )
 {
 $dynsetentry ="Dynsetlist:textField-long Dynsetlist_clear:noArg Dynsetlist_add Dynsetlist_delete ";
-$dynsetlist1 =ReadingsVal( $name, 'DynSetList', '' );
+$dynsetlist1 =ReadingsVal( $name, 'Dynsetlist', '' );
 $dynsetlist1 =~ s/\n/ /g;
 ############################
 
 	if ($dynsetlist1 ne "")
 	{
+		
+		#MSwitch_LOG($name,6,"SETLIST EINLESEN $dynsetlist1 $cmd");
 		my @dynsetlisttest = split( / /, $dynsetlist1 );
 		if ( $cmd ne "?")
 		{
@@ -3330,7 +3332,7 @@ $dynsetlist1 =~ s/\n/ /g;
 		#MSwitch_LOG($name,6,"TESTING $cmd   -  @testarray");
 			if (@testarray > 0)
 			  {
-				# MSwitch_LOG($name,6,"TESTING $cmd   -  @dynsetlisttest");
+				 #MSwitch_LOG($name,6,"TESTING $cmd   -  @dynsetlisttest");
 				readingsSingleUpdate( $hash, $cmd, "@args", 1 );
 				return;
 			  }
@@ -5171,7 +5173,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 		#check last eventpart
 		
 		
-		
+		my $lastincomming="";
 		
 		
 		#########################
@@ -5189,7 +5191,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 		if (defined $eventsollwaitwild && $eventsollwaitwild ne "")
 		{ 
 		MSwitch_LOG($ownName,6,"eventsollwaitwild $eventsollwaitwild");
-			my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$checklast};
+			$lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$checklast};
 			if ($lastincomming eq "")
 			{
 				$lastincomming = 0 ;
@@ -5233,7 +5235,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 			### bedingung erfüllt
 			my $ersatzevent = $checklast.":".$line;
 			MSwitch_LOG($ownName,6,"ersatzevent $ersatzevent ");
-			my $lastincomming = $data{MSwitch}{$ownName}{inputeventwaitwild}{$ersatzevent};
+			$lastincomming = $data{MSwitch}{$ownName}{inputeventwaitwild}{$ersatzevent};
 			#MSwitch_LOG($ownName,6,"lastincomming $lastincomming ");
 			if ($lastincomming eq "")
 			{
@@ -5260,7 +5262,7 @@ $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic
 		my $eventsollwait =$data{MSwitch}{$ownName}{eventwait}{$eventcopy};
 		if (defined $eventsollwait && $eventsollwait ne "")
 		{ 
-			my $lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$eventcopy};
+			$lastincomming = $data{MSwitch}{$ownName}{inputeventwait}{$eventcopy};
 			if ($lastincomming eq "")
 			{
 				$lastincomming = 0 ;
@@ -10329,7 +10331,7 @@ sub MSwitch_Exec_Notif($$$$$) {
 	
 	#MSwitch_LOG( $name, 7, "lastcmd " .$data{MSwitch}{$name}{setdata}{last_cmd}  );
 		
-my $field;
+my $field="";
 	
 	  return "" if ( IsDisabled($name) ); 
 	
