@@ -335,7 +335,7 @@ my $attrdummy ="  disable:0,1"
 . "  MSwitch_Safemode:0,1,2"
 . "  MSwitch_Readings:textField-long"
 . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
-. "  MSwitch_Selftrigger_always:0,1"
+. "  MSwitch_Selftrigger_always:0,1,2"
 . "  MSwitch_Statistic:0,1"
 . "  MSwitch_generate_Events:0,1"
 . "  useSetExtensions:0,1"
@@ -374,7 +374,7 @@ my $attractivedummy = "  disable:0,1"
 . "  MSwitch_Statistic:0,1"
 . "  MSwitch_DeleteCMDs:manually,automatic,nosave"
 . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
-. "  MSwitch_Selftrigger_always:0,1"
+. "  MSwitch_Selftrigger_always:0,1,2"
 . "  useSetExtensions:0,1"
 . "  MSwitch_Snippet:textField-long "
 . "  MSwitch_setList:textField-long "
@@ -423,7 +423,7 @@ my $attrresetlist =
 . "  MSwitch_Modul_Mode:0,1"
 . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
 . "  MSwitch_Condition_Time:0,1"
-. "  MSwitch_Selftrigger_always:0,1"
+. "  MSwitch_Selftrigger_always:0,1,2"
 . "  MSwitch_Futurelevel:0,1"
 . "  MSwitch_RandomTime"
 . "  MSwitch_RandomNumber"
@@ -1843,7 +1843,7 @@ if ( AttrVal( $name, 'MSwitch_Statistic', "0" ) == 1 )
 
     if ( AttrVal( $name, 'MSwitch_Mode', 'Notify' ) eq "Dummy" ) 
 	{
-        if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" ) 
+        if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) > 0 ) 
 		{
             return "Unknown argument $opt, choose one of HTTPresponse:noArg Eventlog:timeline,clear config:noArg support_info:noArg restore_MSwitch_Data:noArg active_timer:show,delete $extension $statistic";
         }
@@ -2645,8 +2645,13 @@ sub MSwitch_Set_OnOff($@)
 	delete $hash->{helper}{aktevent};
 	
 	MSwitch_Readings($hash,$name);
-    if ( $devicemode eq "Dummy" && AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "0" )
+    if ( $devicemode eq "Dummy" && AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) == 0 )
         {
+			
+			
+#MSwitch_LOG( $name, 6,"dummyfound set data".__LINE__);
+		
+			
 			MSwitch_setdata($hash,$name);
             return;
         }
@@ -2981,7 +2986,8 @@ sub MSwitch_Set($@) {
 if ( $cmd ne "?" && $cmd ne "clearlog" && $cmd ne "writelog") 
 	{
 		MSwitch_LOG( $name, 6,"\n### SUB_Set ###");
-        MSwitch_LOG( $name, 6,"eingehender Setbefehl: $cmd @args ");
+        MSwitch_LOG( $name, 6,"-> eingehender Setbefehl: $cmd  ");
+ MSwitch_LOG( $name, 6,"-> eingehender Argumente: @args ");
 
     }
 
@@ -3011,6 +3017,10 @@ if ( AttrVal( $name, 'MSwitch_RandomNumber', '' ) ne '' ) {MSwitch_Createnumber1
 
 #################################
 #Systembefehle
+
+
+#MSwitch_LOG( $name, 6,"Line $cmd".__LINE__);
+
 
 
 if ( $cmd eq 'wizardcont') 				{MSwitch_Set_wizard($hash, $name, $cmd, @args);return;}
@@ -3054,7 +3064,13 @@ if ( $cmd eq "set_trigger") 			{MSwitch_Set_SetTrigger($hash, $name, $cmd, @args
 if ( $cmd eq "trigger" ) 				{MSwitch_Set_SetTrigger1($hash, $name, $cmd, @args);return;}
 if ( $cmd eq "devices" ) 				{MSwitch_Set_Devices($hash, $name, $cmd, @args);return;}
 if ( $cmd eq "details" ) 				{MSwitch_Set_Details($hash, $name, $cmd, @args);return;}
+
+
 if ( $cmd eq "off" || $cmd eq "on" ) 	{MSwitch_Set_OnOff($ic,$showevents,$devicemode,$delaymode,$hash, $name, $cmd, @args);return;}
+
+
+
+
 if ( $cmd eq 'reset_cmd_count' ) 		{MSwitch_Set_ResetCmdCount($hash, $name, $cmd, @args);return;}
 if ( $cmd eq 'reset_status_counter' ) 	{MSwitch_DeleteStatusReset($hash);return;}
 
@@ -3189,6 +3205,14 @@ if ( $cmd eq "Dynsetlist_delete" )
 	
 ##
 	
+	
+	
+	
+#MSwitch_LOG( $name, 6,"Line $cmd".__LINE__);
+
+	
+	
+	
 
 ##########################
 # einlesen der genutzten Mswitch_widgets
@@ -3210,6 +3234,18 @@ if ( AttrVal( $name, 'MSwitch_SysExtension', "0" ) ne "0")
             }
 	chop $setwidget;
     }
+
+
+
+	
+
+
+
+
+
+
+
+
 
 ########################
 # einlesen MSwitch dyn setlist
@@ -3268,43 +3304,21 @@ if ( $mswitchsetlist ne "undef" )
 
     }
 
-my %setlist;
 
 ###########################
-# nur bei funktionen in setlist !!!!
-if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" and $cmd ne "?" )
-    {
 
-        my $atts = AttrVal( $name, 'setList', "" );
-        my @testarray = split( " ", $atts );
-        
-        foreach (@testarray)
-		{
-            my ( $arg1, $arg2 ) = split( ":", $_ ,2);
-            if ( !defined $arg2 or $arg2 eq "" ) { $arg2 = "noArg" }
-            $setlist{$arg1} = $arg2;
-        }
 
-        foreach (@arraydynsetlist)
-		{
-            my ( $arg1, $arg2 ) = split( ":", $_ ,2 );
-            if ( !defined $arg2 or $arg2 eq "" ) { $arg2 = "noArg" }
-            $setlist{$arg1} = $arg2;
-        }
-		
-		if (defined $setlist{$cmd})
-		{
-				if (defined $args[0] || $args[0] ne "")
-				{
-				$hash->{helper}{restartseltrigger}	="MSwitch_Self:" . $cmd . ":" . "@args";
-				MSwitch_Restartselftrigger($hash);	
-				}
-		}
 
-    }
-###########################
+
+#	MSwitch_LOG( $name, 6,"Line $cmd".__LINE__);
+
+
+
 #dynsetlist enlesen
 # setlist einlesen
+
+my $returnblank ="";
+
 
 #MSwitch_LOG($name,6,"SETLIST EINLESEN");
 if ( !defined $args[0] ) { $args[0] = ''; }
@@ -3334,12 +3348,77 @@ $dynsetlist1 =~ s/\n/ /g;
 			  {
 				 #MSwitch_LOG($name,6,"TESTING $cmd   -  @dynsetlisttest");
 				readingsSingleUpdate( $hash, $cmd, "@args", 1 );
-				return;
+				
+				$returnblank ="return";
+				
+				#return;
 			  }
 		}
 	$setList =$setList." ".	$dynsetlist1;
 	}
 }
+
+###############
+my %setlist;
+
+
+#		MSwitch_LOG( $name, 6,"BEFORE TEST !  $cmd");
+
+
+
+###########################
+# nur bei funktionen in setlist !!!!
+if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) > 0 and $cmd ne "?" )
+    {
+
+		MSwitch_LOG( $name, 6,"Active Selftrigger !");
+
+        #my $atts = AttrVal( $name, 'setList', "" );
+		
+		
+		my $atts = $setList;
+		
+        my @testarray = split( " ", $atts );
+        
+        foreach (@testarray)
+		{
+            my ( $arg1, $arg2 ) = split( ":", $_ ,2);
+            if ( !defined $arg2 or $arg2 eq "" ) { $arg2 = "noArg" }
+            $setlist{$arg1} = $arg2;
+        }
+
+        foreach (@arraydynsetlist)
+		{
+            my ( $arg1, $arg2 ) = split( ":", $_ ,2 );
+            if ( !defined $arg2 or $arg2 eq "" ) { $arg2 = "noArg" }
+            $setlist{$arg1} = $arg2;
+        }
+		
+		if (defined $setlist{$cmd})
+		{
+				if (defined $args[0] || $args[0] ne "")
+				{
+				$hash->{helper}{restartseltrigger}	="MSwitch_Self:" . $cmd . ":" . "@args";
+				MSwitch_Restartselftrigger($hash);	
+				
+				$returnblank ="return";
+				}
+		}
+
+    }
+
+
+
+
+
+
+#	MSwitch_LOG( $name, 6,"Line ".__LINE__);
+
+
+
+
+
+
 
 #########################
 
@@ -3347,7 +3426,12 @@ if (!exists( $sets{$cmd} ))
 	{
         my @cList;
         # Overwrite %sets with setList
-        my $atts = AttrVal( $name, 'setList', "" );
+       # my $atts = AttrVal( $name, 'setList', "" );
+		
+
+		my $atts = $setList;
+	
+		
         my @testarray = split( " ", $atts );
         foreach (@testarray) 
 		{
@@ -3369,7 +3453,7 @@ if (!exists( $sets{$cmd} ))
                 push( @cList, $k );
             }
         }    # end foreach
-# unbekannt
+# unbekannt 
         if ( ReadingsVal( $name, '.change', '' ) ne '' )
 		{
             return "Unknown argument $cmd, choose one of " if ( $name eq "test" );
@@ -3432,6 +3516,12 @@ if (!exists( $sets{$cmd} ))
 			delete( $hash->{IncommingHandle} );
 			}
 
+
+
+ if ($returnblank eq "return"){return;}
+
+
+
 my $statistic = "";
 my $alert="";
 
@@ -3467,7 +3557,7 @@ my $alert="";
 				}
 				else 
 				{
-					if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) eq "1" )
+					if ( AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) > 0 )
 					{
 						return "Unknown argument $cmd, choose one of $dynsetlist1 $dynsetentry $alert timer:on,off $dynsetlist writelog reset_Switching_once:noArg loadHTTP del_repeats:noArg del_delays exec_cmd_1 exec_cmd_2 reset_device:noArg wait backup_MSwitch:noArg reset_status_counter:noArg $setList $special $setwidget $statistic";
 					}
@@ -3972,11 +4062,11 @@ if ( $init_done && $aName eq 'MSwitch_State_Counter' ) {
 			
 			my @testwild = split ( /:/,$lineset[0]);
 			
-			MSwitch_LOG($name,6,"ATTR $testwild[2]");
+			#MSwitch_LOG($name,6,"ATTR $testwild[2]");
 			
 			if ( $testwild[2] =~ m/^\.\*..*/s ) 
 			{
-				MSwitch_LOG($name,6,"found wildkard $testwild[2]");
+				#MSwitch_LOG($name,6,"found wildkard $testwild[2]");
 				
 				
 				# teile lineset
@@ -3991,26 +4081,19 @@ if ( $init_done && $aName eq 'MSwitch_State_Counter' ) {
 				$testwild[2] =~ s/\[//g;
 				$testwild[2] =~ s/]//g;
 				
-				
-				MSwitch_LOG($name,6,"ATTR setze: $linepart-$testwild[2]  -> $lineset[1]");
-				
-				
+				#MSwitch_LOG($name,6,"ATTR setze: $linepart-$testwild[2]  -> $lineset[1]");
+			
 				$data{MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2] } = $lineset[1];
-				
-				
-				
-				MSwitch_LOG($name,6,"ATTR adresse: {MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2]}");
-				MSwitch_LOG($name,6,"ATTR gelesen: ".$data{MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2] });
+				#MSwitch_LOG($name,6,"ATTR adresse: {MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2]}");
+				#MSwitch_LOG($name,6,"ATTR gelesen: ".$data{MSwitch}{$name}{eventwaitwild}{ $linepart}{ $testwild[2] });
 
-				
-				
 				next;
 			}
 			
 			
 			
 			
-			MSwitch_LOG($name,6,"ATTR setze: $lineset[0]  -> $lineset[1]");
+			#MSwitch_LOG($name,6,"ATTR setze: $lineset[0]  -> $lineset[1]");
             $data{MSwitch}{$name}{eventwait}{ $lineset[0] } = $lineset[1];
         }
         return;
@@ -4280,7 +4363,7 @@ if ( $init_done && $aName eq 'MSwitch_Mode' ) {
 			delete( $hash->{READINGS}{last_exec_cmd} );
 			delete( $hash->{READINGS}{last_cmd} );
 			delete( $hash->{READINGS}{MSwitch_generate_Events} );
-			if ( AttrVal( $name, 'MSwitch_Selftrigger_always', '' ) eq "1" )
+			if ( AttrVal( $name, 'MSwitch_Selftrigger_always', 0 ) > 0 )
 			{
 				setDevAttrList( $name, $attractivedummy );
 			}
@@ -4668,9 +4751,17 @@ sub MSwitch_setdata(@) {
 	my ( $hash, $name) = @_;
 	my $setdatahash = $data{MSwitch}{$name}{setdata};
 	my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
+
+	#MSwitch_LOG( $name, 6,"running setdata".__LINE__);
+
+
 	readingsBeginUpdate($hash);
     foreach my $key ( keys %{$setdatahash} )
 	{	
+	
+	#MSwitch_LOG( $name, 6,"key $key".__LINE__);
+
+	
     readingsBulkUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key}  );
 	}
 	readingsEndUpdate( $hash, $showevents );
@@ -4689,9 +4780,23 @@ sub MSwitch_Notify($$) {
 	my $devType = $dev_hash->{TYPE};
     my $events = deviceEvents( $dev_hash, 1 );
     my $statistic=0;
-    delete $data{MSwitch}{$ownName}{setdata};
+    
    
 	return if !$devName;
+	
+	
+	
+#	foreach my $event ( @{$events} )
+#		 {
+#	
+#	MSwitch_LOG( $ownName, 6," ------------------ EVENT von $devName".__LINE__);
+#	
+#		 }
+	
+	
+delete $data{MSwitch}{$ownName}{setdata};
+
+
 
 if (exists $data{MSwitch}{runningbackup}  &&  $data{MSwitch}{runningbackup} eq "ja"){
 	
@@ -4737,6 +4842,14 @@ if ( grep( m/EVENT|EVTFULL|writelog|last_exec_cmd|EVTPART.*/, @{$events} ) )
 		
 		foreach my $event (@eventscopy) 
 		 {
+			 
+			 
+			#MSwitch_LOG( $ownName, 6," ------------------ EVENT $event".__LINE__);
+	 
+			 
+			 
+			 
+			  
 			$event =~ s/ //g;
 			$event = $devName.":".$event;
 			push( @newarray, $event );
@@ -4857,18 +4970,30 @@ if ( ReadingsVal( $ownName, '.msconfig', 0 ) eq "1" )
 # nur abfragen für eigenes Notify ENDE
 #########################################
 
+
+
+
+
+
+
+
+
 # Return without any further action if the module is disabled
-	 return "" if ( IsDisabled($ownName) );
+	return "" if ( IsDisabled($ownName) );
 	
     if ($init_done != 1)
 	{
 	return 	;
 	}
 
+
+
+
+
 $own_hash->{helper}{statistics}{starttime}=time if !exists $own_hash->{helper}{statistics}{starttime};
 
 # abbruch wenn selbsttrigger nicht aktiv 
-    if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) ne "1" ) 
+    if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) == 0 ) 
 	{
 		#abbruch wenn kein trigger angegeben
         return if ( ReadingsVal( $ownName, ".Trigger_device", "no_trigger" ) eq 'no_trigger' );
@@ -5036,7 +5161,7 @@ $own_hash->{helper}{statistics}{notifyloop_firsttest_passed}++ if $statistic ==1
         if ( $event =~ m/^.*:.\{.*\}?/ )
 		{
 			$own_hash->{helper}{statistics}{eventloop_jason_blocked}++ if $statistic ==1; #statistik
-                MSwitch_LOG( $ownName, 2, "$ownName:    found jason -> $event  " );
+                MSwitch_LOG( $ownName, 4, "$ownName:    found jason -> $event  " );
                 next EVENT;
         }
 
@@ -5081,7 +5206,7 @@ if (exists $own_hash->{helper}{testevent_device})
 ##################################################################
 ### doppelte eigentriggerung vermeiden 
 
-if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" ) 
+if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) > 0) 
 {
 		my $testevent = $eventcopy;
 		my @eventtestteile   = split( /:/, $testevent );
@@ -5139,9 +5264,25 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
 # Teste auf einhaltung Triggercondition für ausführung zweig 1 und zweig 2
 # kann ggf an den anfang der routine gesetzt werden ? test erforderlich
         
-    
-		if ( $triggercondition ne '' ) 
+		
+# ignoriere condition wenn seftrigger und modus == 2
+
+my $ignore ="docondition";
+
+	 	if (exists $own_hash->{helper}{selftriggermode} && $own_hash->{helper}{selftriggermode} == 2)
 			{
+				
+			$ignore="ignorecondition";	
+				
+				
+			}
+    
+		if ( $triggercondition ne '' && $ignore eq "docondition" ) 
+			{
+				
+				
+				
+				
 			$triggercondition =~ s/#\[dp\]/:/g;
 			$triggercondition =~ s/#\[pt\]/./g;
 			$triggercondition =~ s/#\[ti\]/~/g;
@@ -5152,6 +5293,9 @@ delete( $own_hash->{helper}{history} ) ; # lösche historyberechnung verschieben
 				{
                     next EVENT;
                 }
+				
+				
+				
             }
 		
 $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++ if $statistic ==1; #statistik	
@@ -5652,7 +5796,7 @@ if (    $check == '1' )
         my $selftrigger = "";
         $events      = '';
         my $eventhash   = $own_hash->{helper}{events}{$devName};
-        if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) eq "1" )
+        if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) > 0 )
 		{
             $eventhash = $own_hash->{helper}{events}{MSwitch_Self};
             foreach my $name ( keys %{$eventhash} )
@@ -6904,6 +7048,9 @@ sub MSwitch_fhemwebFn($$$$) {
 	my @devicestotrigger;
 	my @devicestotriggerzusatz;
 	my $devicetotriggerselect="no_trigger";
+	
+	
+	
 	push(@devicestotrigger,"no_trigger");
 	push (@devicestotriggerzusatz,"no_trigger");
 
@@ -7036,7 +7183,7 @@ sub MSwitch_fhemwebFn($$$$) {
     my $notype = AttrVal( $Name, 'MSwitch_Ignore_Types', "" );
 
     if (   AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Dummy"
-        && AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "0" )
+        && AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) == 0 )
     {
         $notype = ".*";
     }
@@ -7531,7 +7678,7 @@ MS-HELPdelay
     }
 
 ######################################class='block wide'
-    if (  $devicemode eq "Dummy"  && $selftrigger eq "0" )
+    if (  $devicemode eq "Dummy"  && $selftrigger == 0 )
     {
         $affecteddevices[0] = 'no_device';
     }
@@ -9151,7 +9298,7 @@ end:textersetzung:eng
         $eventhtml =~ s/$wert1/$wert2/g;
     }
 
-    if ( $triggerdevice  ne 'no_trigger' || $selftrigger eq "1" || ( $selftrigger eq "1" && $devicemode eq "Dummy")){
+    if ( $triggerdevice  ne 'no_trigger' || $selftrigger > 0 || ( $selftrigger > 0 && $devicemode eq "Dummy")){
         $ret .="<div id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='0' style='border-spacing:0px;'>" . $eventhtml. "</div>";
 
    }
@@ -9165,7 +9312,7 @@ end:textersetzung:eng
     my $dist = '';
 
     if (
-        $expertmode eq "1" && ( $triggerdevice  ne 'no_trigger' || $selftrigger eq "1" || ( $selftrigger eq "1" && $devicemode eq "Dummy"))
+        $expertmode eq "1" && ( $triggerdevice  ne 'no_trigger' || $selftrigger > 0 || ( $selftrigger > 0 && $devicemode eq "Dummy"))
       )
     {
 
@@ -9410,22 +9557,22 @@ end:textersetzung:eng
 
     #my $selftrigger       = "";
     my $showtriggerdevice = $Triggerdevice;
-    if (   AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1"
+    if (   AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) > 0
         && ReadingsVal( $Name, '.Trigger_device', 'no_trigger' ) ne
         'no_trigger' )
     {
-        $selftrigger       = "1";
+        $selftrigger       = 1;
         $showtriggerdevice = $showtriggerdevice . " (or MSwitch_Self)";
     }
-    elsif (AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) eq "1"
+    elsif (AttrVal( $Name, "MSwitch_Selftrigger_always", 0 ) > 0
         && ReadingsVal( $Name, '.Trigger_device', 'no_trigger' ) eq
         'no_trigger' )
     {
-        $selftrigger       = "1";
+        $selftrigger       = 1;
         $showtriggerdevice = "MSwitch_Self:";
     }
 	
-    if (( $triggerdevice ne 'no_trigger')|| ($devicemode eq 'Dummy'  && $selftrigger eq "1" ))
+    if (( $triggerdevice ne 'no_trigger')|| ($devicemode eq 'Dummy'  && $selftrigger > 0 ))
     {
         $MSTRIGGER = "Trigger " . $showtriggerdevice . "";
         $MSCMDONTRIGGER =
@@ -9562,7 +9709,7 @@ end:textersetzung:eng
     #auswfirst  MSwitch_Selftrigger_always
     my $style = "";
     if (AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Dummy"
-        && AttrVal( $Name, 'MSwitch_Selftrigger_always', '0' ) ne "1" )
+        && AttrVal( $Name, 'MSwitch_Selftrigger_always', 0 ) == 0 )
     {
         $style = " style ='visibility: collapse' ";
     }
@@ -14085,12 +14232,24 @@ sub MSwitch_repeat($) {
 ####################
 
 sub MSwitch_RestartselftriggerTimer(@) {
+	
+	
+	
 	my ($hash)=@_;
 	my $Name = $hash->{NAME};
+	return "" if ( IsDisabled($Name) );
+	
 	my $selftrigger = $hash->{helper}{restartseltrigger};
 	delete( $hash->{helper}{restartseltrigger} );
 	MSwitch_LOG( $Name, 6,"starte checkevent   L:". __LINE__ );
+	
+	
+	$hash->{helper}{selftriggermode}= AttrVal( $Name, 'MSwitch_Selftrigger_always', 0 );
+	
 	MSwitch_Check_Event( $hash, $selftrigger );
+	
+	delete( $hash->{helper}{selftriggermode} );
+	
 	return;
 }
 
@@ -14545,8 +14704,16 @@ sub MSwitch_setbridge($$) {
    if (!defined $bridge)
    {
 	 MSwitch_LOG( $name, 6, "Abbruch: MSwitch_setbridge - undefined var bridge" . __LINE__ );  
-	   return;
+	  # return;
+	  
+	 $bridge="" 
    }
+	
+	
+	MSwitch_LOG( $name, 6, "SETBRIDGE" . __LINE__ );  
+	
+	
+	
 	
     $bridge =~ s/\[NL\]/\n/g;
     $bridge =~ s/\[SP\]/ /g;
