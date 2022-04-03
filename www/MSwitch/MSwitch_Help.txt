@@ -867,14 +867,24 @@ In diesem Zeitraum reagiert das Device nicht auf Events.
 Bei undefiniertem Attribut wird hier ein Wert von 10 Sekunden angenommen.
 
 <strong>MSwitch_Selftrigger_always</strong>
-Die Aktivierung dieses Attributes '1' bewirkt, dass alle SET Aktionen des Devices einen internen Event ohne Auswirkungen auf das FHEM-System auslösen,
+Die Aktivierung dieses Attributes '1' oder '2' bewirkt, dass alle SET Aktionen des Devices einen internen Event ohne Auswirkungen auf das FHEM-System auslösen,
 auf die das Device selber reagiert.
+
 Diese Option kann zusätzlich zu einem vorhandenen Trigger aktiviert werden.
 Auftretende auswertbare interne Events haben immer folgendes Format:
  - MSwitch_Self:aktion:wert
  - MSwitch_Self:pct:100
-Es werden nur interne Events für set-Aktionen ausgelöst, die im Attribut setlist hinterlegt sind.
+ 
+Es werden nur interne Events für set-Aktionen ausgelöst, die im Attribut 'setlist', oder
+in der Dynsetlist hinterlegt sind
+
 Der 'wait' Befehl/Attribut hat keine wirkung auf diese internen Events. 
+
+Einstellung 0 : keine Selbsttriggerung (Standart)
+Einstellung 1 : Selbsttriggerung aktiv , Ausloesebedingung in den Einstellungen Ausloesendes Geraet und/oder Zeit wird geprueft
+Einstellung 2 : Selbsttriggerung aktiv , Ausloesebedingung in den Einstellungen Ausloesendes Geraet und/oder Zeit wird ignoriert
+
+
 
 <strong>MSwitch_Eventhistory_to_Reading</strong>
 eingehende Events werden chronologisch als Reading gespeichert ( mit dem Anhang _hx ).<br>
@@ -1103,6 +1113,28 @@ Help Set
 Angebotene Set-Befehle sind unter Umständen von der Grundkonfiguration abhängig,
 d.H nicht in jedem Mode werden alle Befehle angeboten.
 <hr>
+<strong>set DEVICE Dynsetlist</strong>
+
+Ermoeglicht das dynamische Einfuegen von Readings.
+Das Format entspricht hierbe dem des Attributes setlist.
+
+Entsprechende Readings werden automatisch verfuegbar gemacht. 
+Bei jedem neuen setzen dieses Option werden alle angegebenen Readings geloescht und neu angelegt.
+
+<strong>set DEVICE Dynsetlist_clear</strong>
+
+Loescht den Eintrag Dynsetlist und entfernt alle dort vorhandenen Readins aus dem Device.
+
+<strong>set DEVICE Dynsetlist_add</strong>
+
+Fuegt bestehender Dynsetlist ein Reading hinzu.
+Bestehende Readings der Dynsetlist bleiben hiervon unberuehrt.
+
+<strong>set DEVICE Dynsetlist_delete</strong>
+
+Loescht ein Reading aus bestehender Dynsetlist..
+Weitere bestehende Readings der Dynsetlist bleiben hiervon unberuehrt
+
 <strong>set DEVICE wizard</strong>
 Schaltet das Device in den Wizardmode.
 In diesem Mode können at's, notifys undvorkonfigurierte Devices importiert werden.
