@@ -131,10 +131,10 @@ function teststart(){
 
 // eventmonitor init
 	$( "#log2" ).text( "" );
-	$( "#log1" ).text( "eingehende events:" );
+	$( "#log1" ).text( "" );
 	$( "#log3" ).text( "" );
-	var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onclick="javascript:transferevent()" ></select>');
-	$(field).appendTo('#log2');
+	//var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onclick="javascript:transferevent()" ></select>');
+	//$(field).appendTo('#log2');
 	
 	events = new Array;
 	
@@ -1754,7 +1754,14 @@ if (debug == 'on'){ alert('checkcondition') }
 		var field = $('<br><select style="width: 30em;" size="5" id ="lf" multiple="multiple" name="lf" size="6"  onchange="javascript:transferevent()"></select>');
 		$(field).appendTo('#log2');
 		events = [];
-		
+		return;
+		}
+		else{
+			
+		$( "#log2" ).text( "" );
+		$( "#log1" ).text( "" );
+		$( "#log3" ).text( "" );	
+			events = [];
 		return;
 		}
 	});
