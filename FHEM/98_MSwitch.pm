@@ -7595,7 +7595,7 @@ MS-NAMESATZ
 	
 	<td align='right' nowrap>
 	<input id='MS-AKTDEVICE-BUTTON' text1='close action' text2='edit action' name='MS-AKTDEVICE-BUTTON' type='button' value='edit action' onclick='javascript: showedit(\"MS-AKTDEVICE\") '>
-	<input id='' name='' type='button' value='Info' onclick='javascript: Fullinfo(\"MS-AKTDEVICE\") '>
+	<input id='' name='' type='button' value='Info' onclick='javascript: Fullinf(\"MS-AKTDEVICE\") '>
 
 	MS-ACTIONSATZ&nbsp;&nbsp;&nbsp;
 	</td>
