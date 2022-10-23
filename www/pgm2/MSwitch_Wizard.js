@@ -576,6 +576,23 @@ function devicelistmultiple(id,name){
 	return ret;	
 }
 
+
+
+
+function devicelistone(id,name){
+	ret="";
+	ret = '<select style="width: 50em;" size="10" id =\"'+id+'\" name=\"'+name+'\" onchange=\"javascript: takeselected(id,name)\">';
+	count =0;
+	for (i=count; i<len; i++)
+		{
+		ret +='<option value='+devices[i]+'>'+devices[i]+'</option>';
+		}
+	ret +='</select>';
+	return ret;	
+}
+
+
+
 /// #######################
 
 function takeselected(id,name){
@@ -1701,6 +1718,22 @@ if (cmdsatz[0] == "VARDEVICES"){
 } 
 
 
+if (cmdsatz[0] == "VARDEVICE"){
+	var testvar = cmdsatz[1].match(/^\$.*/);
+	if (testvar!=null && testvar.length!=0)
+	{
+		text = cmdsatz[2];
+		varname = cmdsatz[1];
+		setVARDEVICE(text,varname,newtemplate);
+		return "stop";
+	}
+		else{
+	alert("ERROR: Variablen müssen mit einem einleitenden $ deklariert werden .");
+	}
+} 
+
+
+
 var typ="";
 if (cmdsatz[0] == "ATTR")
 {
@@ -1802,6 +1835,24 @@ out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
 document.getElementById('importTemplate1').innerHTML = out;
 return;
 }
+
+
+function setVARDEVICE(text,varname,newtemplate){
+var out ="";
+out+=text;
+out=changevar(out);
+out+="<br>&nbsp;<br>";
+selectlist = devicelistone('selectlist','name')
+out+=selectlist;
+out+="<br>&nbsp;<br><input id='input' type='text' value='"+PREASSIGMENT+"' size='100'>";
+out+="<br>&nbsp;<br><input type='button' value='weiter' onclick='javascript: setVARok(\""+varname+"\")'>";
+out+="<br>&nbsp;<br>&nbsp;<br>";
+out+="<input id='newtemplate' type='text' value='"+newtemplate+"' "+style+">";
+document.getElementById('importTemplate1').innerHTML = out;
+return;
+}
+
+
 
 
 // #################

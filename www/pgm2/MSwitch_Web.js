@@ -18,7 +18,7 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '6.4';
+	var version = '6.6';
 	var info = '';
 	var debug ='off';
 	var datatarget ='undef';
@@ -1992,11 +1992,11 @@ if (debug == 'on'){ alert('checkcondition') }
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	});
 	
-$("#undo").click(function(){
-var nm = $(t).attr("nm");
-var  def = nm+" undo ";
-location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
-});
+	$("#undo").click(function(){
+	var nm = $(t).attr("nm");
+	var  def = nm+" undo ";
+	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
+	});
 
 function checklines(name)
 {
@@ -2007,7 +2007,7 @@ function checklines(name)
 	while (pos !== -1) {
 	zeilen++;
 	pos = text.indexOf("\n", pos + 1);
- } 
+	} 
 	checkfield = name;
 	if (zeilen < 10){
 	zeilen = 10;
@@ -2030,10 +2030,10 @@ function readhelp()
 
 function raw()
 {
-  if( $("#rawDef").length > 0 ) {
-  $("#rawDef").remove(); 
-  return;
-}
+	if( $("#rawDef").length > 0 ) {
+	$("#rawDef").remove(); 
+	return;
+	}
 	
 	//alert("rawxx");
 	//$('body').addClass('js');
@@ -2066,7 +2066,6 @@ function raw1(data)
 	data='defmod '+devicename+' MSwitch HEX '+data;
 	document.getElementById('td_rawDef').value=data;
 	
-	
 /* 	var einzufuegendesObjekt = document.createElement("a");
 einzufuegendesObjekt.href = "http://www.html-seminar.de";
 einzufuegendesObjekt.innerHTML = "Tutorial für HTML, CSS und JavaScript";
@@ -2075,6 +2074,147 @@ document.body.appendChild(einzufuegendesObjekt);
  */
 
     $('html, body').animate({ scrollTop: $("#rawDef").offset().top}, 100);
-	
 	return;
+}
+
+
+function showedit(data)
+{
+	field=data+"-EDIT";
+	field1=data+"-PLAIN";
+	field2=data+"-BUTTON";
+	field3=data+"-SAVE";
+
+	if( $("#"+field3).val() =="empty" ) {
+	inhalt = generatesaved(data);
+	$("#"+field3).val(inhalt);
+	}
+
+	$("[name="+field+"]").css("display","");
+	$("[name="+field1+"]").css("display","none");
+	
+	
+	newname  = $("#"+field2).attr('text1');
+	//alert(newname);
+	document.getElementById(field2).value=newname;
+	
+	
+	
+	
+	check = "javascript: hideedit(\""+data+"\") ";
+	$("[name="+field2+"]").attr('onClick', check);
+	field10=data+"-SAVE-BUTTON";
+	$("#"+field10).css("display","none");
+	return;
+
+}
+
+function hideedit(data)
+{
+	field=data+"-EDIT";
+	field1=data+"-PLAIN";
+	field2=data+"-BUTTON";
+	field3=data+"_plain1";
+	field6=data+"_plain2";
+
+	$("[name="+field+"]").css("display","none");
+	$("[name="+field1+"]").css("display","block");
+	
+	
+	//document.getElementById(field2).value="edit action";
+	
+		newname  = $("#"+field2).attr('text2');
+	//alert(newname);
+	document.getElementById(field2).value=newname;
+	
+	
+	check = "javascript: showedit(\""+data+"\") ";
+	$("[name="+field2+"]").attr('onClick', check);
+	field4=data+"_on";
+	inhalt1 = "CMD1: "+$('#'+field4+'').val();
+	field5="cmdonopt"+data+"1";
+    inhalt2 = $('#'+field5+'').val();
+	newinhalt = inhalt1+" "+inhalt2;
+	$("#"+field3+"").text(newinhalt);
+	field4=data+"_off";
+	inhalt1 = "CMD2: "+$('#'+field4+'').val();
+	field5="cmdoffopt"+data+"1";
+    inhalt2 = $('#'+field5+'').val();
+	newinhalt = inhalt1+" "+inhalt2;
+	$("#"+field6+"").text(newinhalt);
+    var inhalt = generatesaved(data);
+	var testfeld=data+"-SAVE";
+	var testinhalt =$("#"+testfeld).val();
+	if( testinhalt != inhalt ) {
+	field10=data+"-SAVE-BUTTON";
+	$("#"+field10).css("display","block");
+	}
+	return;
+	
+}
+
+
+function FullInfo(data)
+{
+condon=$("#conditionon"+data+"").val();
+condoff=$("#conditionoff"+data+"").val();
+cmd1=$("#"+data+"_plain1").text();
+cmd2=$("#"+data+"_plain2").text();
+onatdelay1=$("[name=onatdelay"+data+"] option:selected").text();
+onatdelay2=$("#timeseton"+data).val();
+offatdelay1=$("[name=offatdelay"+data+"] option:selected").text();
+offatdelay2=$("#timesetoff"+data).val();
+repeatcount=$("[name=repeatcount"+data+"]").val();
+repeattime=$("[name=repeattime"+data+"]").val();
+
+text="<table width='100%' border='0'>";
+text="<tr>";
+text+="<td>Cmd1:&nbsp;</td>";
+text+="<td>"+cmd1+"</td>";
+text+="</tr>"
+text+="<td>Cmd2:&nbsp;</td>";
+text+="<td>"+cmd2+"</td>";
+text+="</tr>"
+text+="<td>Condition1:&nbsp;</td>";
+text+="<td>"+condon+"</td>";
+text+="</tr>";
+text+="<td>Condition2:&nbsp;</td>";
+text+="<td>"+condoff+"</td>";
+text+="</tr>";
+text+="<td>delay1:&nbsp;</td>";
+text+="<td>"+onatdelay1+" "+onatdelay2+"</td>";
+text+="</tr>";
+text+="<td>delay2:&nbsp;</td>";
+text+="<td>"+offatdelay1+" "+offatdelay2+"</td>";
+text+="</tr>";
+text+="<td>repeats:&nbsp;</td>";
+text+="<td>"+repeatcount+"</td>";
+text+="</tr>";
+text+="<td>repeats sec:&nbsp;</td>";
+text+="<td>"+repeattime+"</td>";
+text+="</tr>";
+text+="</table>";
+FW_okDialog(text);
+return;	
+}
+
+function generatesaved(data)
+{
+	
+condon=$("#conditionon"+data+"").val();
+condoff=$("#conditionoff"+data+"").val();
+cmd1=$("#"+data+"_plain1").text();
+cmd2=$("#"+data+"_plain2").text();
+showreihe=$("[name=showreihe"+data+"] option:selected").text();
+idreihe=$("[name=idreihe"+data+"] option:selected").text();
+prioreihe=$("[name=reihe"+data+"] option:selected").text();
+onatdelay1=$("[name=onatdelay"+data+"] option:selected").text();
+onatdelay2=$("#timeseton"+data).val();
+offatdelay1=$("[name=offatdelay"+data+"] option:selected").text();
+offatdelay2=$("#timesetoff"+data).val();
+repeatcount=$("[name=repeatcount"+data+"]").val();
+repeattime=$("[name=repeattime"+data+"]").val();
+data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+condon+condoff+cmd1+cmd2+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
+return data1;
+
 }
