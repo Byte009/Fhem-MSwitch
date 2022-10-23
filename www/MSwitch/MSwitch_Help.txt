@@ -1076,13 +1076,11 @@ Diese Datei kann z.B genutz werden , um Sie über den Wizard wieder einzuspielen
 Öffnet ein Fenster mit einer formatierten Ansicht aller Einstellungen des Devices.
 Bei Supportanfragen sollte dieses immer mit geposted werden. 
 
-<strong>get DEVICE restore_MSwitch_Data this_device|all_devices</strong>
- - this_device
-Stellt die Daten des Devices aus der Backupdatei wieder her, sofern diese in der Backupdatei gefunden werden (gesucht wird hier nach dem Namen des Devices).
+<strong>get DEVICE restore_MSwitch_Data</strong>
 
- - all_devices
-Stellt die Daten aller MSwitch Devices wieder her, sofern diese in der Backupdatei vorhanden sind. Diese Aktion kann einige Zeit in Anspruch nehmen und wird daher im Hintergrund (nonblocking) ausgeführt.
-Nach Beendigung erfolgt eine Benachrichtigung.
+Stellt die Daten des Devices aus einem vorherigen 
+ - set DEVIVE backup_MSwitch - 
+wieder her, sofern diese in der Backupdatei gefunden werden (gesucht wird hier nach dem Namen des Devices).
 
 Die Devices sind nach einem Restore funktionsfähig.
 Empfohlen wird ein Neustart von FHEM.. 
