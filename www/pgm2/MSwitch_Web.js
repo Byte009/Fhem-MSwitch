@@ -2154,7 +2154,7 @@ function hideedit(data)
 }
 
 
-function FullInfo(data)
+function Fullinf(data)
 {
 condon=$("#conditionon"+data+"").val();
 condoff=$("#conditionoff"+data+"").val();
