@@ -7594,6 +7594,14 @@ MS-NAMESATZ
 </td>
 	
 	<td align='right' nowrap>
+	
+	<!--
+		<input type='button' value='test' onclick='javascript: testfeld(\"MS-AKTDEVICE\") '>
+
+	--> 
+	
+	
+	
 	<input id='MS-AKTDEVICE-BUTTON' text1='close action' text2='edit action' name='MS-AKTDEVICE-BUTTON' type='button' value='edit action' onclick='javascript: showedit(\"MS-AKTDEVICE\") '>
 	<input id='' name='' type='button' value='Info' onclick='javascript: Fullinf(\"MS-AKTDEVICE\") '>
 
@@ -7626,6 +7634,10 @@ MS-NAMESATZ
 	<tr>
 	<td colspan='3'>MS-COMMENTset</td>
 	</tr>
+
+
+<!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx -->
+
 
 
 
