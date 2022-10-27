@@ -52,6 +52,7 @@ use Color;
    
 
 my @msw;
+my $codelenght =100; # abbruch der ansicht ( schnellansicht ) nach x zeichen 
 my $anzahlmswitch =0;
 my $shutdowned = 0;
 my $foundcfgs = 0;
@@ -68,7 +69,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.60';  				# version
+my $version      = '6.61';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -7515,6 +7516,7 @@ MS-cellhigh=30;
 -->
 <!-- 
 start:textersetzung:ger
+long code - press info for more details->lange Codezeile - Info für mehr Details
 action unsaved - save all actions->Aktion nicht gespeichert - Alle Aktionen speichern
 info->Info
 edit action->bearbeiten
@@ -8165,22 +8167,20 @@ MS-NAMESATZ
             }
 
 
-#$SET1PLAIN=$savedetails{ $aktdevice . '_onarg' };
-#$SET1PLAIN.=$savedetails{ $aktdevice . '_offarg' };
 #   $aktdevice
 
-$SET1PLAIN="<table border=0>";
 
-#$SET1PLAIN.="<tr><td>".$aktdevice."</td></tr>";
-
-
-$SET1PLAIN.="<tr><td id='".$_."_plain1'>CMD1: ".$savedetails{ $aktdevice . '_on' }." ".$savedetails{ $aktdevice . '_onarg' }."</td></tr>";
-$SET1PLAIN.="<tr><td id='".$_."_plain2'>CMD2: ".$savedetails{ $aktdevice . '_off' }." ".$savedetails{ $aktdevice . '_offarg' }."</td></tr>";
-$SET1PLAIN.="</table>";
 
 
 
             if ( $devicenamet ne 'FreeCmd' ) {
+				
+				
+				
+				$SET1PLAIN="<table border=0>";
+$SET1PLAIN.="<tr><td id='".$_."_plain1'>CMD1: ".$savedetails{ $aktdevice . '_on' }." ".$savedetails{ $aktdevice . '_onarg' }."</td></tr>";
+$SET1PLAIN.="<tr><td id='".$_."_plain2'>CMD2: ".$savedetails{ $aktdevice . '_off' }." ".$savedetails{ $aktdevice . '_offarg' }."</td></tr>";
+$SET1PLAIN.="</table>";
 
                 # nicht freecmd
                 $SET1  = "<table width='100%' border ='0'><tr>
@@ -8223,6 +8223,27 @@ $SET1PLAIN.="</table>";
             }
             else {
                 # freecmd
+				$SET1PLAIN="<table border=0>";
+				my $onlenght =  length $savedetails{ $aktdevice . '_onarg' };
+				my $offlenght =  length $savedetails{ $aktdevice . '_offarg' };
+				if ($onlenght > $codelenght)
+				{
+				$SET1PLAIN.="<tr><td cut ='".$codelenght."' text='CMD1: long code - press info for more details' id='".$_."_plain1'>CMD1: long code - press info for more details</td></tr>";
+				}
+				else{
+					$SET1PLAIN.="<tr><td cut ='".$codelenght."' text='CMD1: long code - press info for more details' id='".$_."_plain1'>CMD1: ".$savedetails{ $aktdevice . '_on' }." ".$savedetails{ $aktdevice . '_onarg' }."</td></tr>";
+				}
+				if ($offlenght > $codelenght)
+				{
+				$SET1PLAIN.="<tr><td cut ='".$codelenght."' text='CMD1: long code - press info for more details' id='".$_."_plain1'>CMD2: long code - press info for more details</td></tr>";
+				}
+				else{
+					$SET1PLAIN.="<tr><td cut ='".$codelenght."' text='CMD1: long code - press info for more details' id='".$_."_plain2'>CMD2: ".$savedetails{ $aktdevice . '_off' }." ".$savedetails{ $aktdevice . '_offarg' }."</td></tr>";
+				}
+$SET1PLAIN.="</table>";
+
+
+
                 $savedetails{ $aktdevice . '_onarg' } =~ s/'/&#039/g;
                 $SET1 ="<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdonopt' style=\"width:97%;\" "
                   . $_. "1' name='cmdonopt". $nopoint . "'>" . $savedetails{ $aktdevice . '_onarg' } . "</textarea>";
