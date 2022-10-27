@@ -2150,15 +2150,30 @@ if( result == null )
 	{
 		cmdonopt=$("[name=cmdonopt"+data+"]").val();	
 		cmdoffopt=$("[name=cmdoffopt"+data+"]").val();
-		$("#"+field3+"").text("CMD1: cmd "+cmdonopt);
-		$("#"+field6+"").text("CMD2: cmd "+cmdoffopt);
+		textbreak = $("#"+field3+"").attr('cut');
+
+		if ( cmdonopt.length > textbreak)
+		{
+			$("#"+field3+"").text(""+$("#"+field3+"").attr('text'));
+		}
+		else{
+			$("#"+field3+"").text("CMD1: cmd "+cmdonopt);
+		}
+		
+		if ( cmdoffopt.length > textbreak)
+		{
+			$("#"+field6+"").text(""+$("#"+field3+"").attr('text'));
+		}
+		else{
+			$("#"+field6+"").text("CMD2: cmd "+cmdoffopt);
+		}
 	}
-	
 	
 	var inhalt = generatesaved(data);
 	var testfeld=data+"-SAVE";
 	var testinhalt =$("#"+testfeld).val();
-
+//testinhalt = testinhalt.replace(/[^0-9a-zA-Z]/g, "");
+//FW_okDialog(testinhalt+'<br>&nbsp;<br>'+inhalt);
 	if( testinhalt != inhalt ) {
 	field10=data+"-SAVE-BUTTON";
 	$("#"+field10).css("display","block");
@@ -2196,9 +2211,6 @@ condoff=$("#conditionoff"+data+"").val();
 		condon=$("[name=cmdonopt"+data+"]").val();	
 		condoff=$("[name=cmdoffopt"+data+"]").val();
 	}
-
-
-
 
 
 text="<table width='100%' border='0'>";
@@ -2254,6 +2266,9 @@ if( result == null )
 	repeatcount=$("[name=repeatcount"+data+"]").val();
 	repeattime=$("[name=repeattime"+data+"]").val();
 	//cmdonopt=$("[name=cmdonopt"+data+"]").text();
+	
+	
+	
 	data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+condon+condoff+cmd1+cmd2+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
 	}
 	else
@@ -2273,6 +2288,7 @@ if( result == null )
 	data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+cmdonopt+cmdoffopt+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
 	
 	}
+	data1 = data1.replace(/[^0-9a-zA-Z]/g, "");
 return data1;
 
 }
