@@ -943,16 +943,23 @@ state:off würde zur Ausführung der Befehlszweige mit der ID 2 und 3 führen, i
 Mehrere Angaben sind jeweils in eine seperate Zeile zu schreiben , die letzte Angabe ist mit einem Zeilenumbruch zu beenden.
 
 <strong>MSwitch_Sequenz</strong>
-Eine Schaltsequenz kann durch ein oder mehrere durch '/' getrennte Suchmuster von eingehenden Events angegeben werden die Erkannt werden sollen.
+Eine Schaltsequenz kann durch ein oder mehrere durch ' /' (Leerzeichen beachten) getrennte Suchmuster von eingehenden Events angegeben werden die Erkannt werden sollen.
 Die Angabe muss folgende Syntax haben:
 
- - Device1:reading1:event1 Device1:reading1:event1-2 Device1:reading1:event1-3/..../....
+ - Device1:reading1:event1 Device1:reading1:event1-2 Device1:reading1:event1-3 /.... /....
 
 Beispiel: Dummy:state:on Dummy:state:off Dummy:state:on
 
 Erkennt das Device dieses Suchmuster in den Schaltvorgängen des Devices (Dummy), wird das Reading "SEQUENCE" auf "match" gesetzt,
 das Reading "SEQUENCE_NUMBER" auf die Nummer der gefundenen Sequenz, wenn es mehrere Suchmuster gibt.
 Beide Readings können in den "Conditions" eines Schaltbefehles abgefragt werden.
+
+
+Hierzu muss der gewaehlte Cmd-Zweig durch setzen eines Triggers ausgefuehrt werden .
+In diesem Fall kann der Zweig durch jedes Event angesprochen werden ( Trigger: .* ) , alternativ
+steht als Trigger der Ausdruck 'match-sequenz' bei der Triggerauswahl zur Verfuegung, sobald dieses Attribut gesetzt ist.
+
+
 
 <strong>MSwitch_Sequenz_time</strong>
 Maximalzeit in Sekunden, um eine Sequenz vollständig auszuführen.
