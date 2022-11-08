@@ -69,7 +69,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.61';  				# version
+my $version      = '6.62';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -5134,8 +5134,20 @@ if ($akttime - ($starttime+60) < 0)
 
 #### alte sequenzen löschen
 	my $sequenzarrayfull = AttrVal( $ownName, 'MSwitch_Sequenz', 'undef' );
+	
+	
+	
 	my @sequenzall = split( /\//, $sequenzarrayfull );
+	
+	
+	
+	
+	
+	
+	
 	my @sequenzarrayfull = split( / /, $sequenzarrayfull );
+	
+	
 	$sequenzarrayfull =~ s/\// /g;
 	my @sequenzarray;
 
@@ -5147,6 +5159,11 @@ if ($akttime - ($starttime+60) < 0)
 		
 		foreach my $sequenz (@sequenzall)
 			{
+				
+				#MSwitch_LOG( $ownName, 6, "############### " );
+				#MSwitch_LOG( $ownName, 6,  "sequenz-> $sequenz  " );
+				
+				#MSwitch_LOG( $ownName, 6, "##############" );
 				$x++;
 				if ( $sequenz ne "undef" ) {
 					@sequenzarray = split( / /, $sequenz );
@@ -6926,9 +6943,29 @@ sub MSwitch_fhemwebFn($$$$) {
 
     my @eventsallnew;
     for my $name ( sort keys %korrekt ) {
-        push( @eventsallnew, $name );
+        push( @eventsallnew, $name ) if ($name ne "match_sequenz");
     }
+	
+	
+	if (AttrVal( $Name, 'MSwitch_Sequenz', '0' ) ne "0" )
+	
+	{
+	push @eventsallnew,'match_sequenz';
+	
+	}
+	
+	
+	
+	
+	
     @eventsall = @eventsallnew;
+	
+	
+	
+	
+	
+	
+	
     if ( AttrVal( $Name, 'MSwitch_Mode', 'Notify' ) eq "Notify" ) {
         $triggeroff = "";
         $triggeron  = "";
@@ -6955,15 +6992,20 @@ sub MSwitch_fhemwebFn($$$$) {
     my $to             = '';
     my $toc            = '';
 	
-  LOOP12: foreach (@eventsall) {
+	
+	
+#	MSwitch_LOG("test",0,"@eventsall");
+	
+	
+  LOOP12: foreach (@eventsall) 
+  {
         $alltriggers .= "<option value=\"$_\">" . $_ . "</option>";
         $scripttriggers .= "\"$_\": 1 ,";
 
-        if ( $_ eq 'no_trigger' ) {
-            next LOOP12;
-        }
+        if ( $_ eq 'no_trigger' ) { next LOOP12; }
 
-        if ( $triggeron eq $_ ) {
+        if ( $triggeron eq $_ ) 
+		{
             $optionon =
                 $optionon
               . "<option selected=\"selected\" value=\'$_\'>"
@@ -6971,11 +7013,13 @@ sub MSwitch_fhemwebFn($$$$) {
               . "</option>";
             $to = '1';
         }
-        else {
+        else 
+		{
             $optionon .= "<option value=\'$_\'>" . $_ . "</option>";
         }
 
-        if ( $triggercmdon eq $_ ) {
+        if ( $triggercmdon eq $_ ) 
+		{
             $optioncmdon =
                 $optioncmdon
               . "<option selected=\"selected\" value=\'$_\'>"
@@ -6983,53 +7027,92 @@ sub MSwitch_fhemwebFn($$$$) {
               . "</option>";
             $toc = '1';
         }
-        else {
+        else 
+		{
             $optioncmdon .= "<option value=\'$_\'>" . $_ . "</option>";
         }
 
 
-#####################
     }
+
+
 
     # selectfield aller verfuegbaren events erstellen
+	
+	
+	
+	
+	
+
     my @alloptions = @eventsall;
+	
     push @alloptions, $triggeron, $triggeroff, $triggercmdoff, $triggercmdon;
+	
     my %seen;
     @alloptions = grep { !$seen{$_}++ } @alloptions;
-    foreach my $op (@alloptions) {
-        $op =~ s/\s+$//;
-        $optiongeneral .= "<option value=\'$op\'>" . $op . "</option>";
-    }
+	
+     foreach my $op (@alloptions) {
+         $op =~ s/\s+$//;
+         $optiongeneral .= "<option value=\'$op\'>" . $op . "</option>";
+     }
 
     chop($scripttriggers);
+	
+	
+	
+	
+	
+		
 
     if ( $to eq '1' ) {
-        $optionon =
-          "<option value=\"no_trigger\">no_trigger</option>" . $optionon;
+        $optionon ="<option value=\"no_trigger\">no_trigger</option>".$optionon;
     }
     else {
-        $optionon =
-"<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>"
-          . $optionon;
+        $optionon ="<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>".$optionon;
     }
 
+
+
     if ( $toc eq '1' ) {
-        $optioncmdon =
-          "<option value=\"no_trigger\">no_trigger</option>" . $optioncmdon;
+        $optioncmdon ="<option value=\"no_trigger\">no_trigger</option>".$optioncmdon;
     }
     else {
-        $optioncmdon =
-"<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>"
-          . $optioncmdon;
+        $optioncmdon ="<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>".$optioncmdon;
     }
+	
+	
+	
+#############################################
+
+
+
+
+
+	
 
     my $optioncmdoff = '';
     my $optionoff    = '';
     $to  = '';
     $toc = '';
+my $seqmatchoff ='';
+my $seqmatchcmdoff ='';
+
+
+
+
+
+
+
 
   LOOP14: foreach (@eventsall) {
         if ( $_ eq 'no_trigger' ) { next LOOP14 }
+	
+		
+		
+		
+		
+		
+		
         if ( $triggeroff eq $_ ) {
             $optionoff = $optionoff
               . "<option selected=\"selected\" value=\'$_\'>$_</option>";
@@ -7048,6 +7131,13 @@ sub MSwitch_fhemwebFn($$$$) {
             $optioncmdoff = $optioncmdoff . "<option value=\'$_\'>$_</option>";
         }
     }
+
+
+
+#$optionoff ="<option value=\"match_sequenz\">match_sequenz</option>".$optionoff;
+#$optioncmdoff ="<option value=\"match_sequenz\">match_sequenz</option>".$optioncmdoff;
+		
+	
 
     if ( $to eq '1' ) {
         $optionoff =
@@ -7068,6 +7158,13 @@ sub MSwitch_fhemwebFn($$$$) {
 "<option selected=\"selected\" value=\"no_trigger\">no_trigger</option>"
           . $optioncmdoff;
     }
+
+
+
+
+
+
+
 
     $optionon =~ s/\[bs\]/|/g;
     $optionoff =~ s/\[bs\]/|/g;
@@ -7543,6 +7640,8 @@ modify Actions->Befehle speichern
 device actions sortby:->Sortierung:
 add action->zusaetzliche Aktion
 delete action->loesche Aktion
+edit all->alle bearbeiten
+close all->alle minimieren
 priority:->Prioritaet:
 displaysequence:->Anzeigereihenfolge:
 hide display->Anzeige verbergen
@@ -7584,6 +7683,8 @@ MS-DEVICEID
 <!--MS-AKTDEVICE-EDIT  name='MS-AKTDEVICE-EDIT' id='MS-AKTDEVICE-EDIT'  -->
 
 <!-- start htmlcode -->
+
+
 <!--start devices -->
 
 
@@ -7622,7 +7723,7 @@ MS-NAMESATZ
 	</tr>
 	
 	<tr name='MS-AKTDEVICE-PLAIN'>
-	<td width='100%' colspan='2' >MS-SET1PLAIN</td>
+	<td width='100%' colspan='2' nowrap >MS-SET1PLAIN</td>
 	
 	<td align='right'>
 	</td>
@@ -7844,6 +7945,7 @@ MS-NAMESATZ
     }
     my $sortierung = "";
     my $modify     = "";
+	my $saveline ="";
     my $IDsatz     = "";
     my $NAMEsatz   = "";
 	my $PNAMEsatz   = "";
@@ -7930,7 +8032,7 @@ MS-NAMESATZ
         }
 #################################
 
-        $modify =
+        $saveline =
 			"<table width = '100%' border='0' class='block wide' id='MSwitchDetails' cellpadding='4' style='border-spacing:0px;' nm='MSwitch'>
 			<tr class='even'><td>
 			<input type='button'
@@ -8777,18 +8879,27 @@ $MSTEST2 = "<input name='info' name='TestCMD". $_. "' id='TestCMD". $_
             $modify =
 			"<table width = '100%' border='0' class='block wide' name ='noshowtask' id='MSwitchDetails' cellpadding='4' style='border-spacing:0px;' nm='MSwitch'>
 			<tr class='even' ><td><br>
-			Hidden command branches are available (<span id='anzid'>$noshow</span>)
-			<input type='button' id='aw_show' value='show hidden cmds' >
-			
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<input type='button' value='edit all' onclick='javascript: editall() '>
+			&nbsp;
+			<input type='button' value='close all' onclick='javascript: closeall() '>
+			&nbsp;
+		
+			<input type='button' id='aw_show' value='show hidden cmds ($noshow)' >
+			&nbsp;
 			<input type='button' id='aw_showid' value='show IDs' >
-			<input type='text' id='aw_showid1' size=\"20\" value='' >
-			
+			&nbsp;
+			<input type='text' id='aw_showid1' size=\"8\" value='' >
 			
 			<br>&nbsp;
-			</td></tr></table><br>
-			" . $modify;
-        $detailhtml .= $modify;
+			</td></tr>
+			</table><br>
+			";
+			
+			
+			
+   #     $detailhtml .= $modify;
+    $detailhtml = $modify . $detailhtml . $saveline;
+   
     }
    #textersetzung
                foreach (@translate) {
@@ -13122,6 +13233,15 @@ sub MSwitch_checktrigger_new(@) {
 	my $eventcopy		=$own_hash->{helper}{evtparts}{evtfull};
 
 	return if !defined $eventcopy;
+	
+	
+	
+MSwitch_LOG( $ownName, 6,"#### MSwitch_checktrigger_new  #### L:" . __LINE__ );
+
+
+
+
+
 	my @eventsplit   	= split( /:/, $eventcopy ,$own_hash->{helper}{evtparts}{parts});
 
 	my @triggerarray =split (/:/,$triggerfield);
@@ -13146,7 +13266,23 @@ sub MSwitch_checktrigger_new(@) {
     my $triggeroff    = ReadingsVal( $ownName, '.Trigger_off',     '' );
     my $triggercmdon  = ReadingsVal( $ownName, '.Trigger_cmd_on',  '' );
     my $triggercmdoff = ReadingsVal( $ownName, '.Trigger_cmd_off', '' );
+	
+	my $sequenzstate = ReadingsVal( $ownName, "SEQUENCE", '');
     my $answer        = "";
+	
+	
+	
+	
+	
+# trigger ist sequenzmatch
+		if  ($triggerfield eq "match_sequenz")
+		{	
+			if  ($sequenzstate eq "match")
+			{
+				return $zweig;
+			}
+		}
+	
 	
 ########## teste zusatzbedingung #################
 # trigger enthält bedingung
