@@ -18,7 +18,7 @@
 	// var templatesel ='" . $hash->{helper}{template} . "';
 // ###############################################
 
-	var version = '6.6';
+	var version = '6.62';
 	var info = '';
 	var debug ='off';
 	var datatarget ='undef';
@@ -406,20 +406,31 @@ if (RENAME == 'on'){
 
 // devhelp ersetzen
 
-r3 = $('<a href=\"javascript: reset(\'check\')\">Reset this device ('+devicename+')</a>&nbsp;&nbsp;<a href=\"javascript: fullhelp()\">Device specific help</a>');
-$( "[class=\"detLink devSpecHelp\"]" ).html(r3);
+
+$.each( $(".detLink"), function (test) {
+	var htmlString = $( this ).html();
+	if (htmlString == '<a href="#">Help for MSwitch</a>'){
+	$( this ).html( '<a href=\"javascript: fullhelp()\">Help for MSwitch</a>' );
+  }
+    if (htmlString == '<a href="#">Copy for forum.fhem.de</a>'){
+    $( this ).html( '<a href=\"javascript: forum()\">Copy for forum.fhem.de</a>' );
+  }
+});
 
 
+// &nbsp;<a href=\"javascript: raw()\">Raw definition</a>
+// <a href=\"javascript: reset(\'check\')\">Reset this device ('+devicename+')</a>&nbsp;&nbsp;
 
-var html = "<a href=\"javascript: raw()\">Raw definition</a>";
-$( "[class=\"detLink rawDef\"]" ).html(html);
+var $el = $("#moreCmds");
+$el.empty();
+// dropdown neu anlegen
+$el.append($("<option></option>").attr("new-cmd", "...").text("..."));
+$el.append($("<option></option>").attr("new-cmd", "rawDef").text("Raw definition"));
+$el.append($("<option></option>").attr("new-cmd", "reset").text("Reset device"));
+$el.append($("<option></option>").attr("data-cmd", "style iconFor "+devicename).text("Select icon"));
+$el.append($("<option></option>").attr("data-cmd", "style showDSI "+devicename).text("Extend devStateIcon"));
+$el.append($("<option></option>").attr("data-cmd", "delete "+devicename).text("Delete "+devicename));
 
-//$( "[class=\"detLink rawDef\"]" ).attr("id", "rawDef");
-//$('.klasse1')
-//$( "[class=\"detLink rawDef\"]" ).attr("id", "testfff");
-//$('#testfff').removeClass('detLink rawDef').addClass('xxx');
-//var test =  document.getElementById('testfff').innerHTML;
-//alert(test);
 
 // zufügen des hilfebereichs
 r4 = $('<br><div id="helptext">Hilfetext<\div>');
@@ -1934,6 +1945,33 @@ if (debug == 'on'){ alert('checkcondition') }
 	$("#anzid").html(allcmds);
 	});
 	
+	
+	
+	// Helpauslöser
+	
+	
+	$("#detLink select#moreCmds").change(function(){
+   //doDetCmd($(this).find("option:selected").attr("data-cmd"));
+   
+   var sel = $(this).find("option:selected").attr("new-cmd");
+   
+   
+   execbottomline(sel);
+   return;
+  });
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 //unbekannt	
 	$("#aw_addevent").click(function(){
 	if (debug == 'on'){ alert('#aw_addevent') };
@@ -2080,6 +2118,7 @@ document.body.appendChild(einzufuegendesObjekt);
 
 function showedit(data)
 {
+	//alert(data);
 	field=data+"-EDIT";
 	field1=data+"-PLAIN";
 	field2=data+"-BUTTON";
@@ -2091,6 +2130,9 @@ function showedit(data)
 	}
 
 	$("[name="+field+"]").css("display","");
+	
+	
+	
 	$("[name="+field1+"]").css("display","none");
 	
 	
@@ -2178,8 +2220,7 @@ if( result == null )
 	field10=data+"-SAVE-BUTTON";
 	$("#"+field10).css("display","block");
 	}
-
-	return;
+return;
 }
 
 
@@ -2196,8 +2237,6 @@ offatdelay2=$("#timesetoff"+data).val();
 repeatcount=$("[name=repeatcount"+data+"]").val();
 repeattime=$("[name=repeattime"+data+"]").val();
 
-
-
 devicetypetest = $("[name=devicename"+data+"]").val();
 let result = devicetypetest.match(/FreeCmd-AbsCmd.*/ig);
 
@@ -2211,7 +2250,6 @@ condoff=$("#conditionoff"+data+"").val();
 		condon=$("[name=cmdonopt"+data+"]").val();	
 		condoff=$("[name=cmdoffopt"+data+"]").val();
 	}
-
 
 text="<table width='100%' border='0'>";
 text="<tr>";
@@ -2251,7 +2289,6 @@ devicetypetest = $("[name=devicename"+data+"]").val();
 let result = devicetypetest.match(/FreeCmd-AbsCmd.*/ig);
 if( result == null ) 
 	{
-
 	condon=$("#conditionon"+data+"").val();
 	condoff=$("#conditionoff"+data+"").val();
 	cmd1=$("#"+data+"_plain1").text();
@@ -2266,14 +2303,10 @@ if( result == null )
 	repeatcount=$("[name=repeatcount"+data+"]").val();
 	repeattime=$("[name=repeattime"+data+"]").val();
 	//cmdonopt=$("[name=cmdonopt"+data+"]").text();
-	
-	
-	
 	data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+condon+condoff+cmd1+cmd2+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
 	}
 	else
 	{
-		
 	cmdonopt=$("[name=cmdonopt"+data+"]").val();
 	cmdoffopt=$("[name=cmdoffopt"+data+"]").val();
 	showreihe=$("[name=showreihe"+data+"] option:selected").text();
@@ -2286,30 +2319,68 @@ if( result == null )
 	repeatcount=$("[name=repeatcount"+data+"]").val();
 	repeattime=$("[name=repeattime"+data+"]").val();
 	data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+cmdonopt+cmdoffopt+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
-	
 	}
 	data1 = data1.replace(/[^0-9a-zA-Z]/g, "");
 return data1;
-
 }
 
 
 function testfeld(data)
 {
-	
 	alert($("[name=cmdonopt"+data+"]").val());	
-	
-	
-	
 	$("[name=cmdonopt"+data+"]").val("changed");
-	
-	
-	
-	
-	
-	
-
-	
 	
 return;	
 }
+
+
+function editall()
+{
+ $.each( $("[name$='-AbsCmd1-BUTTON']"), function (key) {
+  var feld = this.id;
+  feld = feld.replace(/-BUTTON/g, "");
+  showedit(feld);
+  return;
+  
+});
+return;
+}
+
+function closeall()
+{
+ $.each( $("[name$='-AbsCmd1-BUTTON']"), function (key) {
+  var feld = this.id;
+  var tfeld = feld.replace(/-BUTTON/g, "");
+  var field1=tfeld+"-PLAIN";
+  var css =$("[name="+field1+"]").css('display');
+  if (css == 'none'){
+  hideedit(tfeld);
+  }
+  return;
+});
+return;
+}
+
+
+function forum()
+{
+	cmd ='get '+devicename+' support_info ';
+	FW_cmd(FW_root+'?cmd='+encodeURIComponent(cmd)+'&XHR=1');
+	return;
+}
+
+
+function execbottomline(data)
+{
+ if (data == 'rawDef'){
+	 raw();
+	$('#moreCmds option').removeAttr('selected');
+ }
+  if (data == 'reset'){
+	 reset('check')
+	$('#moreCmds option').removeAttr('selected');
+ }
+}
+
+
+
