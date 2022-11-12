@@ -69,7 +69,7 @@ my $backupfile 	= "restoreDir/MSwitch/";
 my $restoredir 	= "restoreDir/MSwitch/";
 my $support = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';     				# off/on
-my $version      = '6.62';  				# version
+my $version      = '6.63';  				# version
 my $wizard       = 'on';     				# on/off   - not in use
 my $importnotify = 'on';     				# on/off   - not in use
 my $importat     = 'on';     				# on/off   - not in use
@@ -2619,7 +2619,7 @@ sub MSwitch_Set_OnOff($@)
 	my ( $ic,$showevents,$devicemode,$delaymode,$hash, $name, $cmd, @args ) = @_;
 	my $oldstate = ReadingsVal( $name, "state", 'undef' );
 	
-	readingsSingleUpdate( $hash, "state", $cmd, 1 );
+	
 	
 # test wait attribut
     if ( ReadingsVal( $name, "waiting", '0' ) > time ) 
@@ -2639,6 +2639,10 @@ sub MSwitch_Set_OnOff($@)
 		$data{MSwitch}{$name}{setdata}{last_switch}="off" if $cmd eq "off";
 
     } 
+	
+	readingsSingleUpdate( $hash, "state", $cmd, 1 );
+	
+	
 ############################
 	
 	MSwitch_Safemode($hash);
