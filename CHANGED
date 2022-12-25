@@ -1,4 +1,8 @@
 Version
+6.7
+Change: add dynamic trigger , fix some bugs
+
+Version
 6.63
 Change: change cmd wait ( wait now disable on off switch)
 
