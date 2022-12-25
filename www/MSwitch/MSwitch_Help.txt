@@ -24,6 +24,20 @@ keine Berücksichtigung.
 
 <hr>
 ->
+
+
+
+#################################################################################################
+<- whitelist-
+<hr>
+Bei der Triggereinstellung GLOBAL kann hier eine Einschränkun der Trigger vorgenommen werden.
+Dieses hat direkten Einfluss auf die NOTIFYDEF.
+
+Hier kann durch ein Verweis auf ein READING entsprechende Einschränkung vorgenommen werden ( [$SELF:READING] ).
+Das Reading muss ein Reading des eigenen Devices sein , damit die NOTIFYDEF bei Änderung des Readings automatisch aktualisiert wird.
+<hr>
+->
+
 #################################################################################################
 <- cmd2on-
 <hr>
@@ -293,6 +307,7 @@ Verfügbare Variablen und Ausdrücke:
 - $EVTPART3
 - $SELF
 - $hms
+- $ARG
 
 Je nach Attributeinstellunge kann auf historische Events zugegriffen werden:
 
@@ -510,6 +525,11 @@ DATE=10.10.2020
 Befehle werden nur zu angegebenem Datum ausgeführt 
 Hierbei können Teile der Angabe Wildcarts enthalten :
 z.B DATE=01.01.* ( schaltet in jedem Jahr am ersten Dezember )
+
+ARG=text,zahl etc.
+das uebergebene Argument steht bei der ausfuzehrung des entsprechenden Timers in den Bedingungen und Befehlen als $ARG zur verfuegung.
+
+
 
 Alle Zeitangaben können durch einsatz von {} durch Perlcode ersetzt werden , hierbei muss es sich bei der Rückgabe um ein gültiges Zeitformat handeln
 (HH:MM oder HH:MM:SS )
