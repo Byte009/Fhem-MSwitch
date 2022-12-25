@@ -292,6 +292,12 @@ if (RENAME == 'on'){
 	varinf = varinf+'<td><small>enthält den eigenen Namen</td>';
 	varinf = varinf+'</tr>';
 	
+	varinf = varinf+'<tr>';
+	varinf = varinf+'<td><small>\$ARG </td>';
+	varinf = varinf+'<td><small>&nbsp;-&nbsp;</td>';
+	varinf = varinf+'<td><small>enthält ein uebergebenes Argument (ARG) aus Timern</td>';
+	varinf = varinf+'</tr>';
+	
 	varinf = varinf+'</table>';
 
 	varinf = varinf+'</td>';
@@ -2336,7 +2342,7 @@ return;
 
 function editall()
 {
- $.each( $("[name$='-AbsCmd1-BUTTON']"), function (key) {
+ $.each( $("[name$='-BUTTON']"), function (key) {
   var feld = this.id;
   feld = feld.replace(/-BUTTON/g, "");
   showedit(feld);
@@ -2348,7 +2354,7 @@ return;
 
 function closeall()
 {
- $.each( $("[name$='-AbsCmd1-BUTTON']"), function (key) {
+ $.each( $("[name$='-BUTTON']"), function (key) {
   var feld = this.id;
   var tfeld = feld.replace(/-BUTTON/g, "");
   var field1=tfeld+"-PLAIN";
