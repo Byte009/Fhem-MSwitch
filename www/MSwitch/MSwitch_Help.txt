@@ -1233,7 +1233,9 @@ Bei Angabe einer ID werden nur die Befehle mit der entsprechenden ID ausgeführt
 <strong>set DEVICE backup_MSwitch</strong>
 Erstellt eine Backup-Datei wahlweise dieses oder aller Mswitches.
 Diese Daten können im Bedarfsfall für einzelne oder gleichzeitig alle MSwitch Devices wieder zurückgespieltb werden.
-Die Dateien liegen im Verzeichniss /opt/fhem/backup/MSwitch. 
+In der Grundkonfiguration liegen die Daten im Verzeichniss /opt/fhem/restoreDir/MSwitch. 
+Sollte im globaldevice das ATTR 'backupdir' gesetzt sein, dann werden die Daten in entsprechendem 
+in diesem Verzeichniss gespeichert. 
 
 <strong>set DEVICE reset_cmd_count: 1|2</strong>
 Löscht das entsprechende EVT_CMD_COUNT - Reading; entspricht damit einer Rückstellung auf '0'. 
