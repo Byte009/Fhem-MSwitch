@@ -66,11 +66,16 @@ my $templatefile =
 my $widgetfile   = "www/MSwitch/MSwitch_widgets.txt";
 my $helpfile     = "www/MSwitch/MSwitch_Help.txt";
 my $helpfileeng  = "www/MSwitch/MSwitch_Help_eng.txt";
-my $backupfile   = "restoreDir/MSwitch/";
+
+my $backupfile= "restoreDir/MSwitch/";
 my $restoredir   = "restoreDir/MSwitch/";
+
+my $backupfilen= "restoreDir";
+my $restoredirn= "restoreDir";
+
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.7';                               # version
+my $version      = '6.71';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -349,6 +354,7 @@ my $attrdummy =
   . "  MSwitch_Selftrigger_always:0,1,2"
   . "  MSwitch_Statistic:0,1"
   . "  MSwitch_generate_Events:0,1"
+  . "  MSwitch_generate_Events_selected:textField-long"
   . "  useSetExtensions:0,1"
   . "  setList:textField-long "
   . "  MSwitch_Comment_to_Room:0,1"
@@ -368,6 +374,7 @@ my $attractivedummy =
   . "  MSwitch_Expert:0,1"
   . "  MSwitch_Modul_Mode:0,1"
   . "  MSwitch_generate_Events:0,1"
+  . "  MSwitch_generate_Events_selected:textField-long"
   . "  MSwitch_Readings:textField-long"
   . "  MSwitch_use_WebWidgets:0,1"
   . "  MSwitch_EventMap:textField-long"
@@ -424,6 +431,7 @@ my $attrresetlist =
   . "  MSwitch_Include_Devicecmds:0,1"
   . "  MSwitch_Comment_to_Room:0,1"
   . "  MSwitch_generate_Events:0,1"
+  . "  MSwitch_generate_Events_selected:textField-long"
   . "  MSwitch_Include_Webcmds:0,1"
   . "  MSwitch_Include_MSwitchcmds:0,1"
   . "  MSwitch_Activate_MSwitchcmds:0,1"
@@ -490,28 +498,6 @@ my %setsnotify = (
     "reset_status_counter" => "noArg"
 );
 
-my %setsnotify = (
-    "timer"                => "on,off",
-    "writelog"             => "",
-    "reset_Switching_once" => "",
-    "loadHTTP"             => "",
-    "reset_device"         => "noArg",
-    "active"               => "noArg",
-    "inactive"             => "noArg",
-    "del_function_data"    => "noArg",
-    "del_history_data"     => "noArg",
-    "del_delays"           => "",
-    "backup_MSwitch"       => "noArg",
-    "fakeevent"            => "noArg",
-    "exec_cmd_1"           => "noArg",
-    "exec_cmd_2"           => "noArg",
-    "wait"                 => "",
-    "reload_timer"         => "noArg",
-    "del_repeats"          => "noArg",
-    "change_renamed"       => "",
-    "reset_cmd_count"      => "",
-    "reset_status_counter" => "noArg"
-);
 
 my %setstoggle = (
     "timer"                => "on,off",
@@ -586,6 +572,15 @@ my %gets = (
     "deletesinglelog"      => "noArg",
     "config"               => "noArg"
 );
+
+
+
+# my %readings={
+	# "last_ID"  => 1,
+	# "last_cmd"  => 1,
+	# "last_switch"  => 1
+# };
+
 
 ####################
 
@@ -2572,7 +2567,7 @@ sub MSwitch_Set_SetTrigger($@) {
 
     # bulk
 
-    ##### MSwitch_LOG( $name, 6,"settrigger".__LINE__);
+    MSwitch_LOG( $name, 6,"settrigger".__LINE__);
 
     readingsSingleUpdate( $hash, ".Trigger_condition", $args[6], 0 );
     readingsSingleUpdate( $hash, ".Trigger_time_1",    '',       0 );
@@ -2620,11 +2615,13 @@ sub MSwitch_Set_SetTrigger($@) {
             if ( ReadingsVal( $name, '.Trigger_Whitelist', '' ) ne '' ) {
                 my $argument = ReadingsVal( $name, '.Trigger_Whitelist', '' );
 
-                if ( $argument =~ m/\[(.*)\:(.*)\]/ ) {
-                    ##### MSwitch_LOG( $name, 6,"Whitelist :   found setmagic".__LINE__);
+
+               while ( $argument =~ m/\[(.*)\:(.*)\]/ ) {
+                   # MSwitch_LOG( $name, 6,"Whitelist :   found setmagic".__LINE__);
                     $argument = MSwitch_check_setmagic_i( $hash, $argument );
-                    ##### MSwitch_LOG( $name, 6,"Whitelist :   new -> $argument".__LINE__);
+                   # MSwitch_LOG( $name, 6,"Whitelist :   new -> $argument".__LINE__);
                 }
+
 
                 $hash->{NOTIFYDEV} = $argument;
             }
@@ -3126,6 +3123,19 @@ sub MSwitch_Set($@) {
         MSwitch_LOG( $name, 6,"\n ".localtime."\n---------- Moduleinstieg > SUB SET ----------\n- eingehender Setbefehl: $cmd \n- eingehende Argumente: @args   ");
     }
 
+
+
+
+
+
+    # if ( $cmd ne "?" && $cmd ne "clearlog" && $cmd ne "writelog" ) {
+        # MSwitch_LOG( $name, 0,"\n ".localtime."\n---------- Moduleinstieg > SUB SET ----------\n- eingehender Setbefehl: $cmd \n- eingehende Argumente: @args   ");
+    # }
+	
+	
+	
+	
+	
     my $ic = 'leer';
     $ic = $hash->{IncommingHandle} if ( $hash->{IncommingHandle} );
 
@@ -4282,7 +4292,17 @@ sub MSwitch_Attr(@) {
 
 ## Debug
     if ( defined $aVal && $aName eq 'MSwitch_Debug' && $aVal eq '0' ) {
-        unlink("./log/MSwitch_debug_$name.log");
+		 my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
+
+		
+		
+        unlink($pfad."/MSwitch_debug_$name.log");
+		
+		
+		#MSwitch_LOG( $name, 6,"unlinked");
+		
+		
+		
     }
 
     if ( defined $aVal
@@ -8852,7 +8872,11 @@ MS-NAMESATZ
     # debugmode
     if ( $debugmode eq '2' || $debugmode eq '3' ) {
         my $Zeilen = ("");
-        open( BACKUPDATEI, "./log/MSwitch_debug_$Name.log" );
+		 my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
+
+		
+		  open( BACKUPDATEI,  $pfad."/MSwitch_debug_$Name.log" );
+        #open( BACKUPDATEI, "./log/MSwitch_debug_$Name.log" );
         while (<BACKUPDATEI>) {
             $Zeilen = $Zeilen . $_;
         }
@@ -11381,36 +11405,10 @@ sub MSwitch_checkcondition($$$) {
     my $futurelevel  = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
     my $answer;
 
-
-
-
-
-
-
     MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_checkcondition ----------");
-
-
-
-
-
-
-
-
-
-
-
     # abbruch bei leerer condition
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
-
-
-
-
-
-
-
-
-
 
 
     ############# prüfe klammerfehler
@@ -11450,7 +11448,7 @@ sub MSwitch_checkcondition($$$) {
     my ( $tday, $tmonth, $tdate, $tn, $time1 ) = split( / /, $timestamp );
     my ( $HH, $MM, $SS ) = split( /:/, $tn );
 
-    my $timestamp = timelocal( $SS, $MM, $HH, $tdate, $tmonth, $time1 );
+    $timestamp = timelocal( $SS, $MM, $HH, $tdate, $tmonth, $time1 );
 
     ##############################
 
@@ -12063,7 +12061,7 @@ sub MSwitch_Createtimer($) {
     my $we           = AnalyzeCommand( 0, '{return $we}' );
     my $aktuellezeit = gettimeofday();
     my $timerexist   = 0;
-
+	my $showevents  = AttrVal( $Name, "MSwitch_generate_Events", 0 );
     my @nexttimer;
     MSwitch_Clear_timer($hash);
     delete( $hash->{helper}{wrongtimespec} );
@@ -12120,7 +12118,7 @@ sub MSwitch_Createtimer($) {
       EACHTIMER: foreach my $einzeltimer (@alltimers) {
 ######################## ersetzungen
             #ersetze Snippetz
-            ##### MSwitch_LOG($Name, 6,"einzeltimer -> $einzeltimer" );
+            #MSwitch_LOG($Name, 0,"einzeltimer -> $einzeltimer" );
             my $x = 0;
             while ( $einzeltimer =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ ) {
                 $x++;    # notausstieg notausstieg
@@ -12156,7 +12154,7 @@ sub MSwitch_Createtimer($) {
             #ersetze Perl
             $x = 0;
             while ( $einzeltimer =~ m/(.*)\{(.*)\}(.*)/ ) {
-                ##### MSwitch_LOG($Name, 4, "einzeltimer perl $Name -> $einzeltimer" );
+              #  MSwitch_LOG($Name,0, "einzeltimer perl $Name -> $einzeltimer" );
                 $x++;    # notausstieg
                 last if $x > 20;    # notausstieg
                 if ( defined $2 ) {
@@ -12181,7 +12179,7 @@ sub MSwitch_Createtimer($) {
                     if ( $part2hh > 23 ) { $part2hh = $part2hh - 24 }
                     $part2       = $part2hh . ":" . $part2mm;
                     $einzeltimer = $part1 . $part2 . $part3;
-                    ##### MSwitch_LOG($Name, 6, "einzeltimer nach perl -> $einzeltimer" );
+                 #  MSwitch_LOG($Name, 0, "einzeltimer nach perl -> $einzeltimer" );
                 }
             }
 
@@ -12511,7 +12509,7 @@ sub MSwitch_Createtimer($) {
     if ( $timerexist == 0 ) {
 
         MSwitch_CreateStatusReset( $Name, $hash, $date, $aktmonth, $aktyear );
-        readingsSingleUpdate( $hash, "Next_Timer", "no_timer", 0 );
+        readingsSingleUpdate( $hash, "Next_Timer", "no_timer", $showevents  );
         return;
     }
 
@@ -12520,21 +12518,21 @@ sub MSwitch_Createtimer($) {
     if ( defined $nexttimer[0] ) {
         my $nexttime = FmtDateTime( $nexttimer[0] );
         my @nt = split / /, $nexttime;
-        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", 1 )
+        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", $showevents  )
           if scalar(@nexttimer) == 0;
-        readingsSingleUpdate( $hash, "Next_Timer", $nt[1], 1 )
+        readingsSingleUpdate( $hash, "Next_Timer", $nt[1], $showevents  )
           if scalar(@nexttimer) > 0;
 
         my $timehash = $hash->{helper}{timer};
         my $timername = ( my @timerkeys = ( sort keys %{$timehash} ) )[0];
 
         my @arg = split( /-/, $hash->{helper}{timer}{$timername} );
-        readingsSingleUpdate( $hash, "Next_Timer_ARG", $arg[2], 1 )
+        readingsSingleUpdate( $hash, "Next_Timer_ARG", $arg[2], $showevents  )
           if scalar(@nexttimer) > 0;
 
     }
     else {
-        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", 1 );
+        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", $showevents  );
     }
 
     # berechne zeit bis 23,59 und setze timer auf create timer
@@ -13521,9 +13519,18 @@ sub MSwitch_restore_this($$) {
         $data{MSwitch}{$Name}{backupdatei} = "";
     }
 
+
+	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+$pfad.="/MSwitch/";
+
+
+		MSwitch_LOG( $Name, 0, "PFAD  >" . $pfad . "MSwitch_Save.txt" );
+
+
+
     if ( $arg eq "backupfile" ) {
         open( BACKUPDATEI,
-            "<" . $restoredir . "MSwitch_Device_" . $Name . ".txt" )
+            "<" . $pfad . "MSwitch_Device_" . $Name . ".txt" )
           || return "no Backupfile found!\n";
         while (<BACKUPDATEI>) {
             $Zeilen = $Zeilen . $_;
@@ -13698,8 +13705,22 @@ sub MSwitch_backup_this($$) {
     }
 #############
     # modus backup
-    mkdir( $restoredir, 0777 );
-    open( BACKUPDATEI, ">" . $restoredir . "MSwitch_Device_" . $Name . ".txt" );
+	
+
+my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+$pfad.="/MSwitch/";
+
+
+if(-d $pfad) {  
+               # nichtvorhanden  
+        }  
+        else {  
+             mkdir($pfad ,0777);
+        }
+		
+		
+   # mkdir( $restoredir, 0777 );
+    open( BACKUPDATEI, ">" . $pfad . "MSwitch_Device_" . $Name . ".txt" );
     print BACKUPDATEI "$BD";
     close(BACKUPDATEI);
     return "ready";
@@ -13711,19 +13732,24 @@ sub MSwitch_backup_this($$) {
 sub MSwitch_Get_Backup($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
-    opendir( DIR, "$restoredir" ) || MSwitch_fileerror($hash);
+	
+	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+	$pfad.="/MSwitch/";
+	
+    opendir( DIR, "$pfad" ) || MSwitch_fileerror($hash);
     my @files = grep { /MSwitch_Full_.*/ } readdir DIR;
     closedir(DIR);
 
-    opendir( DIR, "$restoredir" ) || MSwitch_fileerror($hash);
+    opendir( DIR, "$pfad" ) || MSwitch_fileerror($hash);
     my @files1 = grep { /MSwitch_Save.*/ } readdir DIR;
     closedir(DIR);
 
-    opendir( DIR, "$restoredir" ) || MSwitch_fileerror($hash);
+    opendir( DIR, "$pfad" ) || MSwitch_fileerror($hash);
     my @files2 = grep { /MSwitch_Device_.*/ } readdir DIR;
     closedir(DIR);
 
-    if ( @files == 0 && @files1 == 0 ) { return "leer"; }
+    if ( @files == 0 && @files1 == 0 && @files2 == 0 ) { return "leer"; }
+	
     return "@files @files1 DEVICES @files2";
 }
 ####################################################
@@ -13761,26 +13787,38 @@ sub MSwitch_FullBackup(@) {
 
     my $ans = @time;
     if ( $ans == 6 ) {
-        $newtime = $time[3] . "." . $time[1] . "." . $time[5] . "_" . $time[4];
+        $newtime = $time[3] . "" . $time[1] . "" . $time[5] . "_" . $time[4];
     }
 
     else {
-        $newtime = $time[2] . "." . $time[1] . "." . $time[4] . "_" . $time[3];
+        $newtime = $time[2] . "" . $time[1] . "" . $time[4] . "_" . $time[3];
     }
 
     my %MONATE = (
-        'Oct' => '10',
-        'Nov' => '11'
+	'Jan' => '01',
+	'Feb' => '02',
+	'Mar' => '03',
+	'May' => '04',
+	'Jun' => '05',
+	'Jul' => '06',
+	'Aug' => '07',
+	'Sep' => '08',
+	'Dec' => '09',
+	'Dec' => '12',
+    'Oct' => '10',
+    'Nov' => '11'
     );
     my $MONKEYS = join( "|", keys(%MONATE) );
     FW_directNotify( "FILTER=$Name", "#FHEMWEB:WEB",
         "information('- $newtime')", "" );
 
     $newtime =~ s/($MONKEYS)/$MONATE{$1}/g;
+	
+	$newtime =~ s/://g;
 
     #return;
 
-    mkdir( $restoredir, 0777 );
+   # mkdir( $restoredir, 0777 );
 
     $BD .= "#T -> Fullrestore\n";
     foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
@@ -13834,19 +13872,54 @@ sub MSwitch_FullBackup(@) {
     ($BD) =~ s/(.|\n)/sprintf("%02lx ", ord $1)/eg;
     $BD =~ s/ //g;
 
+
+
+
+#my $backupfile   = "restoreDir/MSwitch/";
+#my $restoredir   = "restoreDir/MSwitch/";
+# MSwitch_LOG( $name, 6,"-> UNLINK");
+# open( BACKUPDATEI, ">./log/MSwitch_debug_$name.log" );
+# open( BACKUPDATEI,  ">".$pfad."/MSwitch_debug_$name.log" );
+##  /opt/fhem/USBSTICK/Backups_Fhem
+# mkdir( $restoredir, 0777 );
+
+
+
+my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+$pfad.="/MSwitch/";
+
+if(-d $pfad) {  
+               # nichtvorhanden  
+        }  
+        else {  
+             mkdir($pfad ,0777);
+        }
+
+
     if ( $arg eq "save" ) {
-        open( BACKUPDATEI, ">" . $restoredir . "MSwitch_Save.txt" );
+        open( BACKUPDATEI, ">" . $pfad . "MSwitch_Save.txt" );
+		
+		#MSwitch_LOG( $Name, 0, ">" . $pfad . "MSwitch_Save.txt" );
+
+
+
         print BACKUPDATEI "$BD";
         close(BACKUPDATEI);
         MSwitch_LOG( $Name, 1,
                 "$Name delayed Shutdown: "
-              . $restoredir
+              . $pfad
               . "MSwitch_Save.txt wurde geschrieben" );
         return;
     }
     else {
-        open( BACKUPDATEI,
-            ">" . $restoredir . "MSwitch_Full_" . $newtime . ".txt" );
+		
+		#$newtime = "test";
+        open( BACKUPDATEI, ">" . $pfad . "MSwitch_Full_" . $newtime . ".txt" );
+		
+		
+		 # MSwitch_LOG( $Name, 0, ">" . $pfad . "MSwitch_Full_" . $newtime . ".txt" );
+		
+		
         print BACKUPDATEI "$BD";
         close(BACKUPDATEI);
 
@@ -13861,8 +13934,8 @@ sub MSwitch_FullBackup(@) {
         FW_directNotify(
             "FILTER=$Name",
             "#FHEMWEB:WEB",
-            "information('Backupdatei fhem/"
-              . $restoredir
+            "information('Backupdatei "
+              . $pfad
               . "MSwitch_Full_$newtime wurde geschrieben.')",
             ""
         );
@@ -13885,7 +13958,17 @@ sub MSwitch_Get_Backup_inhalt(@) {
     my $Name   = $hash->{NAME};
     my $string = $arg1;
     my $Zeilen = "";
-    open( BACKUPDATEI, "<./" . $restoredir . $string )
+	
+	
+	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+$pfad.="/MSwitch/";
+
+	
+		#	MSwitch_LOG( $Name, 0, "<" . $pfad . $string );
+
+	
+    open( BACKUPDATEI, "<" . $pfad . $string )
+   # open( BACKUPDATEI, "<./" . $pfad . $string )
       || return "no Backupfile found!\n";
     while (<BACKUPDATEI>) {
         $Zeilen = $Zeilen . $_;
@@ -13895,6 +13978,27 @@ sub MSwitch_Get_Backup_inhalt(@) {
 }
 
 ####################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 sub MSwitch_fullrestorelocal(@) {
     my ( $hash, $arg1 ) = @_;
@@ -13908,7 +14012,14 @@ sub MSwitch_fullrestorelocal(@) {
             "FILTER=$Name",                                   "#FHEMWEB:WEB",
             "information('Datei wird auf Server angelegt.')", ""
         );
-        open( BACKUPDATEI, ">" . $restoredir . "MSwitch_Local_Backup.txt" );
+		
+		
+my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+$pfad.="/MSwitch/";
+		
+		
+		
+        open( BACKUPDATEI, ">" . $pfad . "MSwitch_Local_Backup.txt" );
         print BACKUPDATEI $data{MSwitch}{localbackup};
         close(BACKUPDATEI);
         $data{MSwitch}{localbackup} = "";
@@ -13929,7 +14040,17 @@ sub MSwitch_fullrestore(@) {
     my @devicenames;
     my $encoded;
     my $mode = "";
-    open( BACKUPDATEI, "<./" . $restoredir . $string )
+	
+	
+	
+	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+$pfad.="/MSwitch/";
+
+	
+		
+
+	
+    open( BACKUPDATEI, "<" . $pfad . $string )
       || return "no Backupfile found!\n";
 
     while (<BACKUPDATEI>) {
@@ -13937,6 +14058,11 @@ sub MSwitch_fullrestore(@) {
     }
     close(BACKUPDATEI);
     ($Zeilen) =~ s/([a-fA-F0-9]{2})?/chr(hex $1)/eg;
+
+
+
+#MSwitch_LOG( $Name, 0, "$Zeilen" );
+
 
     $data{MSwitch}{$Name}{backupdatei} = $Zeilen;
     my @found = split( /\n/, $Zeilen );
@@ -15025,7 +15151,11 @@ sub MSwitch_set_dev($) {
 sub MSwitch_clearlog($) {
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
-    open( BACKUPDATEI, ">./log/MSwitch_debug_$name.log" );
+	my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
+
+# MSwitch_LOG( $name, 6,"-> UNLINK");
+# open( BACKUPDATEI, ">./log/MSwitch_debug_$name.log" );
+  open( BACKUPDATEI,  ">".$pfad."/MSwitch_debug_$name.log" );
     print BACKUPDATEI "Starte Log\n";    #
     close(BACKUPDATEI);
     return;
@@ -15066,8 +15196,14 @@ sub MSwitch_debug2($$) {
     my $name = $hash->{NAME};
     return if $cs eq '';
 
-    open( my $fh, ">>", "./log/MSwitch_debug_$name.log" );
 
+
+ my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
+
+
+
+  #  open( my $fh, ">>", "./log/MSwitch_debug_$name.log" );
+open( my $fh, ">>", $pfad."/MSwitch_debug_$name.log" );
 	  print $fh  "$cs\n";
 	  
 	  
@@ -15090,28 +15226,47 @@ sub MSwitch_LOG($$$) {
     my $hash      = $defs{$name};
     my $showlevel = 6;
 
+#return if $name ne "FhemBackup";
+
+
+
     if ( exists $data{MSwitch}{perlteste}{loglevel} ) {
 
         $showlevel = $data{MSwitch}{perlteste}{loglevel};
     }
 
+
+
+
     my $logname = $data{MSwitch}{Log};
     if ( $logname eq "all" ) { $logname = $name; }
-    if ( $logname ne $name ) {
+	
+	
+
+	
+	
+	
+   if ( $logname ne $name ) {
         return;
     }
 
-    if (
-        (
-               AttrVal( $name, 'MSwitch_Debug', "0" ) eq '2'
-            || AttrVal( $name, 'MSwitch_Debug', "0" ) eq '3'
-        )
-        && ( $level eq $showlevel )
-      )
+
+#Log3( $name, 0, "1   $name - $level - $cs" );
+#Log3( $name, 0, "1   $name - $showlevel - $level" );
+
+
+
+    if ((AttrVal( $name, 'MSwitch_Debug', "0" ) eq '2' || AttrVal( $name, 'MSwitch_Debug', "0" ) eq '3')&& ( $level eq $showlevel ) )
     {
         MSwitch_debug2( $hash, $cs );
         return if $level eq $showlevel;
     }
+
+
+
+#Log3( $name, 0, "2   $name - $level - $cs" );
+
+
 
     $level = 5 if $level eq $showlevel;
     my %UMLAUTE = (
@@ -15123,6 +15278,13 @@ sub MSwitch_LOG($$$) {
         'ü' => 'ue'
     );
     my $UMLKEYS = join( "|", keys(%UMLAUTE) );
+
+
+
+
+#Log3( $name, 0, "3   $name - $level - $cs" );
+
+
 
     Log3( $name, $level, $cs );
     return;
@@ -15453,7 +15615,14 @@ sub MSwitch_check_setmagic_i($$) {
 
     # setmagic ersetzung
 
-    $msg =~ s/\$SELF/$name/;
+MSwitch_LOG( $name, 6,"msgstart :   $msg".__LINE__);
+
+
+    $msg =~ s/\$SELF/$name/g;
+
+
+
+MSwitch_LOG( $name, 6,"msg0 :   $msg".__LINE__);
 
     my $x = 0;
     while ( $msg =~ m/(.*)\[(.*)\:(.*)\:i\](.*)/ ) {
@@ -15461,6 +15630,8 @@ sub MSwitch_check_setmagic_i($$) {
         last if $x > 20;    # notausstieg notausstieg
         my $setmagic = ReadingsVal( $2, $3, 0 );
         $msg = $1 . $setmagic . $4;
+		
+		
     }
     $x = 0;
     while ( $msg =~ m/(.*)\[(.*)\:(.*)\:d\:i\](.*)/ ) {
@@ -15468,12 +15639,24 @@ sub MSwitch_check_setmagic_i($$) {
         last if $x > 20;    # notausstieg notausstieg
         my $setmagic = ReadingsNum( $2, $3, 0 );
         $msg = $1 . $setmagic . $4;
+		
     }
 
-    if ( $msg =~ m/\[(.*)\:(.*)\]/ ) {
 
-        my $setmagic = ReadingsVal( $1, $2, 0 );
-        $msg = $setmagic;
+
+
+ $x = 0;
+  # while ( $msg =~ m/\[(.*)\:(.*)\]/ ) {
+while ( $msg =~ m/(.*)\[(.*)\:(.*)\](.*)/ ){
+        $x++;               # notausstieg notausstieg
+        last if $x > 20;    # notausstieg notausstieg
+		#MSwitch_LOG( $name, 6,"1 :   $2".__LINE__);
+		#MSwitch_LOG( $name, 6,"2 :   $3".__LINE__);
+       # my $setmagic = ReadingsVal( $1, $2, 0 );
+	   my $setmagic = ReadingsVal( $2, $3, 0 );
+        #$msg = $setmagic;
+		 $msg = $1 . $setmagic . $4;
+		MSwitch_LOG( $name, 6,"msg2 :   $msg".__LINE__);
     }
 
     return $msg;
