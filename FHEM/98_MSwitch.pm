@@ -58,7 +58,7 @@ my $err           = "";
 my $updateinfo    = "";  # wird mit info zu neuen versionen besetzt
 my $generalinfo   = "";  # wird mit aktuellen informationen besetzt
 my $updateinfolink =
-"https://raw.githubusercontent.com/Byte009/FHEM-MSwitch/master/updateinfo.txt";
+"https://raw.githubusercontent.com/Byte009/FHEM-MSwitch/master/updatenfo.txt";
 my $preconffile =
 "https://raw.githubusercontent.com/Byte009/MSwitch_Addons/master/MSwitch_Preconf.conf";
 my $templatefile =
@@ -75,7 +75,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.71';                               # version
+my $version      = '6.72';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -6635,21 +6635,21 @@ sub MSwitch_fhemwebFn($$$$) {
         ###############################
 
         my $limit = undef;
-        if ( $system =~ m/\[Limit:(.*?)\]/s ) {
+        # if ( $system =~ m/\[Limit:(.*?)\]/s ) {
 
-            my $argumente;
-            my $orgwidget = $1;
-            my @args = ( split /:/, $1 );
+            # my $argumente;
+            # my $orgwidget = $1;
+            # my @args = ( split /:/, $1 );
 			
-			#MSwitch_LOG( $Name, 0,"args ".@args);
-			#MSwitch_LOG( $Name, 0,"args @args");
+			# #MSwitch_LOG( $Name, 0,"args ".@args);
+			# #MSwitch_LOG( $Name, 0,"args @args");
 			
-            if ( @args == 1 ) {
+            # if ( @args == 1 ) {
 				
-                $limit = $args[0];
-                $system =~ s/\[Limit:$orgwidget\]//g;
-            }
-        }
+                # $limit = $args[0];
+                # $system =~ s/\[Limit:$orgwidget\]//g;
+            # }
+        # }
 		
 		#$limit=3;
 
