@@ -2,4 +2,4 @@ UPD 2022-12-25_08:00:00 79495 www/pgm2/MSwitch_Wizard.js
 UPD 2022-12-25_08:00:00 64703 www/pgm2/MSwitch_Web.js
 UPD 2022-12-30_06:00:00 66626 www/MSwitch/MSwitch_Help.txt
 UPD 2022-12-25_08:00:00 58453 www/MSwitch/MSwitch_Help_eng.txt
-UPD 2022-01-07_06:00:00 564197 FHEM/98_MSwitch.pm
+UPD 2022-01-07_07:00:00 564197 FHEM/98_MSwitch.pm
