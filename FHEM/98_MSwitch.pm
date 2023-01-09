@@ -78,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.72';                               # version
+my $version      = '6.73';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -2227,9 +2227,14 @@ sub MSwitch_Set_wizard1($@) {
 #timer on/off
 sub MSwitch_Set_timer($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
-    my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
+   # my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
     #if ( AttrVal( $name, 'MSwitch_Debug', '0' ) ne "0" ) { $showevents = 1 }
 	my $showevents = MSwitch_checkselectedevent( $hash, "timer" );
+	
+	
+	
+	#MSwitch_LOG( $name, 6, "singleupdate $name $showevents L:" . __LINE__ );
+	
     readingsSingleUpdate( $hash, "timer", $args[0], $showevents );
     if ( $args[0] eq "on" ) {
         MSwitch_Clear_timer($hash);
@@ -16750,9 +16755,12 @@ return 1 if $showevents == 1;
 
 if ( exists  $hash->{helper}{selectedevents}{$tocheck} ){
 $showevents = $hash->{helper}{selectedevents}{$tocheck} == 1? 1:0 ;
+
+#MSwitch_LOG( $name, 6, "---> test $tocheck $showevents L:" . __LINE__ );
+
 }
 
-return ;
+return $showevents ;
 }
 
 
