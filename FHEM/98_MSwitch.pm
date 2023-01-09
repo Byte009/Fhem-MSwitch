@@ -78,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.73';                               # version
+my $version      = '6.72';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -3750,8 +3750,8 @@ sub MSwitch_Set($@) {
 
         my $statistic = "";
         my $alert     = "";
-        #my $zusatz ="$dynsetlist1 $dynsetentry $alert $dynsetlist $setList $setwidget $statistic";
-        my $zusatz ="$dynsetlist1 $dynsetentry $alert $dynsetlist $setwidget $statistic";
+        my $zusatz ="$dynsetlist1 $dynsetentry $alert $dynsetlist $setList $setwidget $statistic";
+        #my $zusatz ="$dynsetlist1 $dynsetentry $alert $dynsetlist $setwidget $statistic";
 
 
         if ( exists $hash->{helper}{config}
@@ -3803,8 +3803,8 @@ sub MSwitch_Set($@) {
 				
 			MSwitch_LOG( $name, 6, "$setline " . $setList. " $zusatz");
 
-			#return "Unknown argument $cmd, choose one of $setline" . " " . " $zusatz";
-            return "Unknown argument $cmd, choose one of $setline " . $setList. " $zusatz";
+			return "Unknown argument $cmd, choose one of $setline" . " " . " $zusatz";
+            #return "Unknown argument $cmd, choose one of $setline " . $setList. " $zusatz";
 
             }
         }
