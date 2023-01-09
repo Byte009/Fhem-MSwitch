@@ -49,6 +49,9 @@ use JSON;
 use HttpUtils;
 use Color; 
 
+
+
+
 my @msw;
 my $codelenght    = 100; # abbruch der ansicht ( schnellansicht ) nach x zeichen
 my $anzahlmswitch = 0;
@@ -75,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.73';                               # version
+my $version      = '6.72';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
