@@ -30,11 +30,33 @@ keine Berücksichtigung.
 #################################################################################################
 <- whitelist-
 <hr>
-Bei der Triggereinstellung GLOBAL kann hier eine Einschränkun der Trigger vorgenommen werden.
+
+Bei der Triggereinstellung GLOBAL kann hier eine Einschraenkun der Trigger vorgenommen werden.
 Dieses hat direkten Einfluss auf die NOTIFYDEF.
 
-Hier kann durch ein Verweis auf ein READING entsprechende Einschränkung vorgenommen werden ( [$SELF:READING] ).
-Das Reading muss ein Reading des eigenen Devices sein , damit die NOTIFYDEF bei Änderung des Readings automatisch aktualisiert wird.
+Die Geräte können in folgenden Formen hinterlegt werden:
+- Gerätenamen, getrennt mit "|" 
+Beispiel: Gerät1|Gerät2|Gerät3
+
+- Regex und Devspec
+Beispiel: Alle Geräte die im Namen Rollo behinahlten
+Rollo
+Beispiel2: Alle geräte vom Typ echodevice mit deaktiviertem Mute
+TYPE=echodevice:FILTER=mute=off
+
+- Als Reading
+Hier können $SELF Readings hinterlegt werden. Diese müssen über entsprechende setList Einträge angegeben werden oder direkt über setreading.
+Beispiel für einen möglichen setList-Eintrag:
+thermometer:textField
+Dies würde das Reading thermometer mit entsprechendem Text füllen. Damit ist es möglich gewisse Geräte einfach via Reading zu ersetzen. 
+Das Format sieht wie folgt aus:
+[$SELF:READING]
+Um das Beispiel auf zu greifen:
+[$SELF:thermometer]
+
+Hinweise: Das Reading muss ein Reading des eigenen Devices sein, damit die NOTIFYDEF bei Aenderung des Readings automatisch aktualisiert wird.
+Es können auch mehrere Readings angegeben werden. Die Liste dieser muss durch Kommata getrennt werden
+
 <hr>
 ->
 
