@@ -105,7 +105,7 @@ my @doignore =
   qw(notify allowed at watchdog doif fhem2fhem telnet FileLog readingsGroup FHEMWEB autocreate eventtypes readingsproxy SVG cul);
 my $startmode               = "Notify";    # Startmodus des Devices nach Define
 my $wizardreset             = 3600;        #Timeout für Wizzard
-my $MSwitch_generate_Events = "0";
+my $MSwitch_generate_Events = "1";
 my $statistic;
 my $debugging    = "0";
 my $configdevice = "";
