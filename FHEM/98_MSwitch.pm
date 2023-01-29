@@ -78,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.74';                               # version
+my $version      = '6.75';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -105,7 +105,7 @@ my @doignore =
   qw(notify allowed at watchdog doif fhem2fhem telnet FileLog readingsGroup FHEMWEB autocreate eventtypes readingsproxy SVG cul);
 my $startmode               = "Notify";    # Startmodus des Devices nach Define
 my $wizardreset             = 3600;        #Timeout für Wizzard
-my $MSwitch_generate_Events = "1";
+my $MSwitch_generate_Events = "0";
 my $statistic;
 my $debugging    = "0";
 my $configdevice = "";
@@ -3981,22 +3981,45 @@ sub MSwitch_toggle($$) {
 
 MSwitch_LOG( $Name, 6,"\n---------- SUB TOGGLE ----------\n- ausführung Toggle");
 
+
+MSwitch_LOG( $Name, 6,"-> cmds $cmds ");
+
+
     $cmds =~ s/#\[SR\]/|/g;
     $cmds =~ m/(set) (.*)( )MSwitchtoggle (.*)/;
 
     my $devicename = $2;
     my $newcomand  = $1 . " " . $2 . " ";
 
+
+MSwitch_LOG( $Name, 6,"-> cmds $cmds ");
+MSwitch_LOG( $Name, 6,"-> devicename $devicename ");
+
+
+
+
+MSwitch_LOG( $Name, 6,"-> s4 $4 ");
+
     if ( $2 eq "MSwitch_Self" ) {
         $newcomand  = $1 . " " . $Name . " ";
         $devicename = $Name;
     }
 
+
+MSwitch_LOG( $Name, 6,"-> newcomand $newcomand ");
+
+
     my @togglepart = split( /:/, $4 );
     my $trenner = ",";
 
-    if ( $togglepart[0] =~ m/^\[(.)\]/ ) {
-        if ( $togglepart[0] =~ m/^\[\|\]/ ) {
+MSwitch_LOG( $Name, 6,"-> trenner $trenner ");
+MSwitch_LOG( $Name, 6,"-> togglepart @togglepart ");
+
+    if ( $togglepart[0] =~ m/^\[(.)\]/ ) 
+	{
+		MSwitch_LOG( $Name, 6,"-> Option 1 ");
+        if ( $togglepart[0] =~ m/^\[\|\]/ ) 
+		{
             $togglepart[0] = "\\|";
         }
         $trenner = $togglepart[0];
@@ -4005,24 +4028,36 @@ MSwitch_LOG( $Name, 6,"\n---------- SUB TOGGLE ----------\n- ausführung Toggle"
         shift @togglepart;
     }
 
-    if ( $togglepart[0] ) {
+    if ( $togglepart[0] ) 
+	{
+		MSwitch_LOG( $Name, 6,"-> Option 2 ");
         $togglepart[0] =~ s/\[//g;
         $togglepart[0] =~ s/\]//g;
         @cmds = split( /$trenner/, $togglepart[0] );
         $anzcmds = @cmds;
     }
 
-    if ( $togglepart[1] ) {
+    if ( $togglepart[1] )
+	{
+		MSwitch_LOG( $Name, 6,"-> Option 3 ");
+
         $togglepart[1] =~ s/\[//g;
         $togglepart[1] =~ s/\]//g;
         @muster = split( /$trenner/, $togglepart[1] );
         $anzmuster = @cmds;
     }
-    else {
+    else 
+	{
+	MSwitch_LOG( $Name, 6,"-> Option 4 ");
+
         @muster    = @cmds;
         $anzmuster = $anzcmds;
     }
+	
+	
     if ( $togglepart[2] ) {
+			MSwitch_LOG( $Name, 6,"-> Option 5 ");
+	
         $togglepart[2] =~ s/\[//g;
         $togglepart[2] =~ s/\]//g;
         $reading = $togglepart[2];
@@ -4031,13 +4066,22 @@ MSwitch_LOG( $Name, 6,"\n---------- SUB TOGGLE ----------\n- ausführung Toggle"
 
     my $aktstate;
 
-    if ( $reading eq "MSwitch_Self" or $reading eq "MSwitch_self" ) {
-        $aktstate = ReadingsVal( $Name, 'last_toggle_state', 'undef' );
-
+    if ( $reading eq "MSwitch_Self" or $reading eq "MSwitch_self" ) 
+	{
+       $aktstate = ReadingsVal( $Name, 'last_toggle_state', 'undef' );
        MSwitch_LOG( $Name, 6, "-> aktueller state des devices: $aktstate L:" . __LINE__ );
     }
     else {
-        $aktstate = ReadingsVal( $devicename, $reading, 'undef' );
+		
+		
+		
+		
+       $aktstate = ReadingsVal( $devicename, $reading, 'undef' );
+	   
+	MSwitch_LOG( $Name, 6, "-> reading $reading L:" . __LINE__ );
+	MSwitch_LOG( $Name, 6, "-> devicename $devicename L:" . __LINE__ );
+	   
+	   
        MSwitch_LOG( $Name, 6, "-> aktueller state des devices: $aktstate L:" . __LINE__ );
     }
 
@@ -4937,11 +4981,22 @@ sub MSwitch_setdata(@) {
     my ( $hash, $name ) = @_;
     my $setdatahash = $data{MSwitch}{$name}{setdata};
     my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
-    readingsBeginUpdate($hash);
+	
+	
+	
+   # readingsBeginUpdate($hash);
     foreach my $key ( keys %{$setdatahash} ) {
-        readingsBulkUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,1);
+	
+		$showevents = MSwitch_checkselectedevent( $hash, $key, );
+       # readingsBulkUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,$showevents);
+		
+		
+		readingsSingleUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,$showevents);
+
+		
+		
     }
-    readingsEndUpdate( $hash, $showevents );
+   # readingsEndUpdate( $hash, 1 );
     delete $data{MSwitch}{$name}{setdata};
     return;
 }
@@ -6192,6 +6247,12 @@ sub MSwitch_checkbridge($$$) {
         $foundcond      = "0";
         $eventbedingung = "";
 
+MSwitch_LOG( $name, 6,"-> Zusatzbedingung gefunden: $a " );
+
+$a = MSwitch_check_setmagic_i( $hash, $a );
+
+
+
         if ( $a =~ m/(.*)\[(.*)\]/ ) {
 
             $foundcond      = "1";
@@ -6200,6 +6261,12 @@ sub MSwitch_checkbridge($$$) {
             MSwitch_LOG( $name, 6,"-> Zusatzbedingung gefunden: $a " );
             $a = $eventpart;
         }
+
+
+
+  MSwitch_LOG( $name, 6,"-> Zusatzbedingung gefunden: $a " );
+#return;
+
 
         my $re = qr/$a/;
         MSwitch_LOG( $name, 6, "$re - $event L:" . __LINE__ );
@@ -7675,7 +7742,7 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
 
 
         if ( $extensions eq '1' ) {
-            $errors .= ' ' . 'MSwitchtoggle';
+            $errors .= ' ' . 'MSwitchtoggle:textfieldLong';
         }
 
         $errors .= ' ' . '[FREECMD]:textfieldLong';
@@ -11487,14 +11554,24 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                                 last if $counternumber > 20;    # notausstieg
                             }
 
-                            readingsBeginUpdate($hash);
-                            readingsBulkUpdate( $hash, "lastsetting_delay_ident", $savename,1 );
-                            readingsBulkUpdate( $hash, "lastsetting_delay_cmd",$data{MSwitch}{$name}{setdata}{last_cmd},1 );
-                            readingsBulkUpdate( $hash, "lastsetting_delay_time", $format,1 );
+                           # readingsBeginUpdate($hash);
+							
+						$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_ident" );
+
+							
+                            #readingsBulkUpdate( $hash, "lastsetting_delay_ident", $savename,$showevents );
+							readingsSingleUpdate( $hash, "lastsetting_delay_ident", $savename,$showevents );
+
+							$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_cmd" );
+                            readingsSingleUpdate( $hash, "lastsetting_delay_cmd",$data{MSwitch}{$name}{setdata}{last_cmd},$showevents );
+							$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_time" );
+                            readingsSingleUpdate( $hash, "lastsetting_delay_time", $format,$showevents );
 
                             if ( $jump > 0 ) {
                                 $hash->{helper}{countdown}{$savename} = $sek;
-                                readingsBulkUpdate( $hash, $savename, $format,1 );
+								
+								$showevents = MSwitch_checkselectedevent( $hash, $savename );
+                                readingsSingleUpdate( $hash, $savename, $format,$showevents );
 
                                 if ( !exists $hash->{helper}{countdownstatus} )
                                 {
@@ -11533,7 +11610,7 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
 
                                 }
                             }
-                            readingsEndUpdate( $hash, 1 );
+                           # readingsEndUpdate( $hash, 1 );
                         }
 
                     }
@@ -13050,13 +13127,34 @@ sub MSwitch_Execute_Timer($) {
     }
 
     my $extime = POSIX::strftime( "%H:%M", localtime );
-    readingsBeginUpdate($hash);
-    readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
-    readingsBulkUpdate( $hash, "EVTFULL",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
-    readingsBulkUpdate( $hash, "EVTPART1", $Name, $showevents );
-    readingsBulkUpdate( $hash, "EVTPART2", "execute_timer_P" . $param, $showevents );
-    readingsBulkUpdate( $hash, "EVTPART3", $extime, $showevents );
-    readingsEndUpdate( $hash, 0 );
+    # readingsBeginUpdate($hash);
+	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
+    # readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
+	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
+    # readingsBulkUpdate( $hash, "EVTFULL",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
+	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
+    # readingsBulkUpdate( $hash, "EVTPART1", $Name, $showevents );
+	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
+    # readingsBulkUpdate( $hash, "EVTPART2", "execute_timer_P" . $param, $showevents );
+	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
+    # readingsBulkUpdate( $hash, "EVTPART3", $extime, $showevents );
+    # readingsEndUpdate( $hash, $showevents );
+
+$showevents = MSwitch_checkselectedevent( $hash, "EVENT" );
+readingsSingleUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
+
+$showevents = MSwitch_checkselectedevent( $hash, "EVTFULL" );
+readingsSingleUpdate( $hash, "EVTFULL",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
+
+$showevents = MSwitch_checkselectedevent( $hash, "EVTPART1" );
+readingsSingleUpdate( $hash, "EVTPART1", $Name, $showevents );
+
+$showevents = MSwitch_checkselectedevent( $hash, "EVTPART2" );
+readingsSingleUpdate( $hash, "EVTPART2", "execute_timer_P" . $param, $showevents );
+
+$showevents = MSwitch_checkselectedevent( $hash, "EVTPART3" );
+readingsSingleUpdate( $hash, "EVTPART3", $extime, $showevents );
+
 
     $hash->{helper}{evtparts}{evtfull} =
       $Name . ":execute_timer_P" . $param . ":" . $extime;
@@ -13296,11 +13394,12 @@ sub MSwitch_Debug($) {
     my $debug3 = ReadingsVal( $Name, '.Device_Events',           0 );
     $debug2 =~ s/:/ /ig;
     $debug3 =~ s/,/, /ig;
-    readingsBeginUpdate($hash);
-    readingsBulkUpdate( $hash, "Device_Affected",         $debug1 );
-    readingsBulkUpdate( $hash, "Device_Affected_Details", $debug2 );
-    readingsBulkUpdate( $hash, "Device_Events",           $debug3 );
-    readingsEndUpdate( $hash, 0 );
+   # readingsBeginUpdate($hash);
+  #  readingsBulkUpdate( $hash, "Device_Affected",         $debug1 );
+   # readingsBulkUpdate( $hash, "Device_Affected_Details", $debug2 );
+   # readingsBulkUpdate( $hash, "Device_Events",           $debug3 );
+   # readingsEndUpdate( $hash, 0 );
+   return;
 }
 ###################################
 sub MSwitch_Delete_Delay($$) {
@@ -15410,6 +15509,7 @@ sub MSwitch_EventBulk($$$$) {
     my $evtparts2   = $hash->{helper}{evtparts}{evtpart2};
     my $evtparts3   = $hash->{helper}{evtparts}{evtpart3};
     my $Eventupdate = 1;
+	my $showevents;
     my $diff        = int(time) - $fhem_started;
     if ( $diff < 60 || $init_done != 1 ) {
         $update      = 0;
@@ -15420,13 +15520,25 @@ sub MSwitch_EventBulk($$$$) {
     FW_directNotify( "FILTER=$name", "#FHEMWEB:WEB", "writeevent('$encoded')",
         "" );
 
-    readingsBeginUpdate($hash);
-    readingsBulkUpdate( $hash, "EVTFULL",  $evtfull,1 );
-    readingsBulkUpdate( $hash, "EVENT",    $event ,1);
-    readingsBulkUpdate( $hash, "EVTPART1", $evtparts1,1 );
-    readingsBulkUpdate( $hash, "EVTPART2", $evtparts2 ,1);
-    readingsBulkUpdate( $hash, "EVTPART3", $evtparts3 ,1);
-    readingsEndUpdate( $hash, $update );
+    #readingsBeginUpdate($hash);
+	
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTFULL" );
+    readingsSingleUpdate( $hash, "EVTFULL",  $evtfull,$showevents );
+	
+	$showevents = MSwitch_checkselectedevent( $hash, "EVENT" );	
+    readingsSingleUpdate( $hash, "EVENT",    $event ,$showevents);
+	
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART1" );	
+    readingsSingleUpdate( $hash, "EVTPART1", $evtparts1,$showevents );
+	
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART2" );	
+    readingsSingleUpdate( $hash, "EVTPART2", $evtparts2 ,$showevents);
+	
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART3" );	
+    readingsSingleUpdate( $hash, "EVTPART3", $evtparts3 ,$showevents);
+	
+	
+    #readingsEndUpdate( $hash, 1 );
     return;
 }
 ##########################################################
@@ -15968,7 +16080,7 @@ MSwitch_LOG( $name, 6,"-> setmagic found: $msg L:".__LINE__);
 
 
     $msg =~ s/\$SELF/$name/g;
-
+my $org = $msg;
 
 
 #MSwitch_LOG( $name, 6,"msg0 :   $msg".__LINE__);
@@ -15996,7 +16108,9 @@ MSwitch_LOG( $name, 6,"-> setmagic found: $msg L:".__LINE__);
 
  $x = 0;
 #  while ( $msg =~ m/\[(.*)\:(.*)\]/ ) {
-  while ( $msg =~ m/(.*)\[(.*)\:(.*)?\](.*)/ ){
+	
+  while ( $msg =~ m/(.*)\[(.*)\:(.*?)\](.*)/ ){
+	    
         $x++;               # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
 		#MSwitch_LOG( $name, 6,"1 :   $1   ".__LINE__);
@@ -16005,6 +16119,10 @@ MSwitch_LOG( $name, 6,"-> setmagic found: $msg L:".__LINE__);
 		#MSwitch_LOG( $name, 6,"4 :   $4   ".__LINE__);
        # my $setmagic = ReadingsVal( $1, $2, 0 );
 	   my $setmagic = ReadingsVal( $2, $3, 'undef' );
+	   
+	   
+	   
+	   
 	   MSwitch_LOG( $name, 6,"-> setmagic Inhalt ReadingsVal( '$2', '$3', 'undef' ): $setmagic L:".__LINE__);
 	   
         $msg = $setmagic;
