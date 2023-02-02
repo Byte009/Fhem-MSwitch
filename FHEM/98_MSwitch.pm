@@ -491,8 +491,8 @@ my %setsnotify = (
     "del_delays"           => "",
     "backup_MSwitch"       => "noArg",
     "fakeevent"            => "noArg",
-    "exec_cmd_1"           => "noArg",
-    "exec_cmd_2"           => "noArg",
+    "exec_cmd_1"           => "",
+    "exec_cmd_2"           => "",
     "wait"                 => "",
     "reload_timer"         => "noArg",
     "del_repeats"          => "noArg",
@@ -542,8 +542,8 @@ my %setsfull = (
     "reset_status_counter" => "noArg",
     "loadHTTP"             => "",
     "del_history_data"     => "noArg",
-    "exec_cmd_1"           => "noArg",
-    "exec_cmd_2"           => "noArg",
+    "exec_cmd_1"           => "",
+    "exec_cmd_2"           => "",
     "reset_cmd_count"      => ""
 );
 
@@ -558,8 +558,8 @@ my %setsdummywithst = (
     "del_repeats"          => "noArg",
     "reset_status_counter" => "noArg",
     "loadHTTP"             => "",
-    "exec_cmd_1"           => "noArg",
-    "exec_cmd_2"           => "noArg"
+    "exec_cmd_1"           => "",
+    "exec_cmd_2"           => ""
 );
 
 my %setsdummywithoutst = (
