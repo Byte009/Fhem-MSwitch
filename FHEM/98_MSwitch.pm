@@ -15803,6 +15803,13 @@ MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_dec ----------\n- $todec >");
 
     my $alias = AttrVal( $evtparts1, 'alias', $evtparts1 );
 
+
+
+
+
+
+
+
     if ( $todec =~ m/^(\{)(.*)(\})/s ) {
 
         # ersetzung für perlcode
@@ -15829,12 +15836,7 @@ MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_dec ----------\n- $todec >");
     # ersetzung für beide codes
     # setmagic ersetzung
 	
-	
-	
 	$todec = MSwitch_check_setmagic_i($hash,$todec);
-	
-	
-	
 	
 	MSwitch_LOG( $name, 6,"setmagic ------- $todec >");
 	
@@ -16094,7 +16096,13 @@ sub MSwitch_check_setmagic_i($$) {
 
 MSwitch_LOG( $name, 6,"-> setmagic found: $msg L:".__LINE__);
 
+# my $self schützen
+$msg =~ s/my \$SELF/MYSELF/g;
+
 $msg =~ s/\$SELF/$name/g;
+
+# my $self schützen wiederherstellen
+$msg =~ s/MYSELF/my \$SELF/g;
 
 MSwitch_LOG( $name, 6,"-> FutureLevel ->  $futurelevel L:".__LINE__);
 
