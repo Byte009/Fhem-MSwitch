@@ -78,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.75';                               # version
+my $version      = '6.76';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -338,6 +338,9 @@ sub MSwitch_Get_Backup_inhalt(@);
 
 ##############################
 
+
+
+my $FLevel="6.75,6.76";
 my $attrdummy =
     "  disable:0,1"
   . "  MSwitch_Language:EN,DE"
@@ -350,7 +353,7 @@ my $attrdummy =
   . "  MSwitch_Expert:0,1"
   . "  MSwitch_Help:0,1"
   . "  disabledForIntervals"
-  . "  MSwitch_Futurelevel:0,1"
+  . "  MSwitch_Futurelevel:".$FLevel
   . "  MSwitch_Safemode:0,1,2"
   . "  MSwitch_Readings:textField-long"
   . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
@@ -389,7 +392,7 @@ my $attractivedummy =
   . "  MSwitch_Delete_Delays:0,1,2,3"
   . "  MSwitch_Help:0,1"
   . "  MSwitch_Comment_to_Room:0,1"
-  . "  MSwitch_Futurelevel:0,1"
+  . "  MSwitch_Futurelevel:".$FLevel
   . "  MSwitch_Ignore_Types:textField-long "
   . "  MSwitch_Extensions:0,1"
   . "  MSwitch_Safemode:0,1,2"
@@ -447,7 +450,7 @@ my $attrresetlist =
   . "  MSwitch_Mode:Full,Notify,Toggle,Dummy"
   . "  MSwitch_Condition_Time:0,1"
   . "  MSwitch_Selftrigger_always:0,1,2"
-  . "  MSwitch_Futurelevel:0,1"
+  . "  MSwitch_Futurelevel:".$FLevel
   . "  MSwitch_RandomTime"
   . "  MSwitch_RandomNumber"
   . "  MSwitch_Safemode:0,1,2"
@@ -6762,7 +6765,7 @@ sub MSwitch_fhemwebFn($$$$) {
 
         ###############################
 
-        my $limit = undef;
+        #my $limit = undef;
         # if ( $system =~ m/\[Limit:(.*?)\]/s ) {
 
             # my $argumente;
@@ -6794,16 +6797,16 @@ sub MSwitch_fhemwebFn($$$$) {
                     my $current = ReadingsVal( $Name, $reading, 'undef' );
                     my $widget  = "";
 
-                    if ( $limit ne undef ) {
-                        $current = sprintf( "%." . $limit . "f", $current );
+                    # if ( $limit ne undef ) {
+                        # $current = sprintf( "%." . $limit . "f", $current );
+
+                        # $widget ="<span class=\"dval\" informid=\"$Name-$reading\">$current</span>";
+
+                    # }
+                    # else {
 
                         $widget ="<span class=\"dval\" informid=\"$Name-$reading\">$current</span>";
-
-                    }
-                    else {
-
-                        $widget ="<span class=\"dval\" informid=\"$Name-$reading\">$current</span>";
-                    }
+                    #}
 
                     $system =~ s/\[Reading:$orgwidget\]/$widget/g;
                 }
@@ -6912,7 +6915,7 @@ $data{MSwitch}{mssetlist}{$tsetreading} = $testreadingarg;
                 $system =~ s/\[Widget:$orgwidget\]/$widget/g;
 				
 				
-				MSwitch_LOG( $Name, 0,"$widget"); 
+				#MSwitch_LOG( $Name, 0,"$widget"); 
 				
             }
         }
@@ -11117,6 +11120,8 @@ sub MSwitch_Exec_Notif($$$$$) {
     my $field = "";
     return "" if ( IsDisabled($name) );
 	
+	#ACHTUNG
+	if (!defined $event ) { $event = "";}
 MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $event\n-> comand: $comand");
 
     my $protokoll = '';
@@ -13081,7 +13086,7 @@ sub MSwitch_Execute_Timer($) {
 
     my @arg = split( /-/, $hash->{helper}{timer}{ $timecond . "-" . $param } );
 
-    MSwitch_LOG( $Name, 6,"-> ausführung Timer arg $arg[2] L:" . __LINE__ );
+    MSwitch_LOG( $Name, 6,"-> ausführung Timer arg $arg[2] L:" . __LINE__ ) if (defined $arg[2]);
     $hash->{helper}{timerarag} = $arg[2];
 
     if ( defined $hash->{helper}{wrongtimespec}
@@ -14001,7 +14006,7 @@ sub MSwitch_restore_this($$) {
 $pfad.="/MSwitch/";
 
 
-		MSwitch_LOG( $Name, 0, "PFAD  >" . $pfad . "MSwitch_Save.txt" );
+	#	MSwitch_LOG( $Name, 0, "PFAD  >" . $pfad . "MSwitch_Save.txt" );
 
 
 
@@ -15779,6 +15784,10 @@ MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_dec ----------\n- $todec >");
         $event   = $hash->{helper}{aktevent};
     }
 
+#ACHTUNG
+    if (!defined $event ) { $event = "";}
+	
+	
     my @eventteile = split( /:/, $event, 3 );
 
 #next EVENT if @eventteile > 3;	# keine 4 stelligen events zulassen
@@ -15821,22 +15830,28 @@ MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_dec ----------\n- $todec >");
     # setmagic ersetzung
 	
 	
-	#MSwitch_LOG( $name, 6,"------- $todec >");
 	
-    my $x = 0;
-    while ( $todec =~
-        m/(.*)\[([a-zA-Z0-9._\$]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/ )
-    {
-        $x++;    # notausstieg notausstieg
-        last if $x > 20;    # notausstieg notausstieg
-        my $firstpart   = $1;
-        my $lastpart    = $4;
-        my $readingname = $3;
-        my $devname     = $2;
-        $devname =~ s/\$SELF/$name/;
-        my $setmagic = ReadingsVal( $devname, $readingname, 0 );
-        $todec = $firstpart . $setmagic . $lastpart;
-    }
+	$todec = MSwitch_check_setmagic_i($hash,$todec);
+	
+	
+	
+	
+	MSwitch_LOG( $name, 6,"setmagic ------- $todec >");
+	
+    # my $x = 0;
+    # while ( $todec =~
+        # m/(.*)\[([a-zA-Z0-9._\$]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/ )
+    # {
+        # $x++;    # notausstieg notausstieg
+        # last if $x > 20;    # notausstieg notausstieg
+        # my $firstpart   = $1;
+        # my $lastpart    = $4;
+        # my $readingname = $3;
+        # my $devname     = $2;
+        # $devname =~ s/\$SELF/$name/;
+        # my $setmagic = ReadingsVal( $devname, $readingname, 0 );
+        # $todec = $firstpart . $setmagic . $lastpart;
+    # }
 
 #MSwitch_LOG( $name, 6,"------- $todec >");
 
@@ -16073,18 +16088,86 @@ sub MSwitch_makefreecmd($$) {
 sub MSwitch_check_setmagic_i($$) {
     my ( $hash, $msg ) = @_;
     my $name = $hash->{NAME};
+    my $futurelevel  = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
 
     # setmagic ersetzung
 
 MSwitch_LOG( $name, 6,"-> setmagic found: $msg L:".__LINE__);
 
+$msg =~ s/\$SELF/$name/g;
 
-    $msg =~ s/\$SELF/$name/g;
+MSwitch_LOG( $name, 6,"-> FutureLevel ->  $futurelevel L:".__LINE__);
+
+##### newversion
+if ( $futurelevel > 6.75 ) {
 my $org = $msg;
+MSwitch_LOG( $name, 6,"-> execute new SetMagic L:".__LINE__);
+while ( $org =~ m/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/ ) {
+	
+my $all = $1;
+my $praefix = $2;
+my $targdevice = $3;
+my $targreadname = $4;
+my $suffix = $5;
+my $zielhash = $defs{$3};
+my $val;
 
 
-#MSwitch_LOG( $name, 6,"msg0 :   $msg".__LINE__);
 
+MSwitch_LOG( $name, 6,"all :   $all ".__LINE__);
+MSwitch_LOG( $name, 6,"praefix :   $praefix ".__LINE__) if (defined $praefix) ;
+MSwitch_LOG( $name, 6,"targdevice :   $targdevice ".__LINE__);
+MSwitch_LOG( $name, 6,"targreadname :   $targreadname ".__LINE__);
+MSwitch_LOG( $name, 6,"suffix :   $suffix ".__LINE__) if (defined $suffix) ;
+MSwitch_LOG( $name, 6,"zielhash :   $zielhash ".__LINE__);
+
+ if(!$praefix || $praefix eq "r:") 
+	{
+      my $r = $zielhash->{READINGS};
+	  
+      if($suffix && ($suffix eq ":t" || $suffix eq ":sec")) 
+	  {
+        #return $all if (!$r || !$r->{$n});
+        $val = $r->{$targreadname}{TIME};
+        $val = int(gettimeofday()) - time_str2num($val) if($suffix eq ":sec");
+   
+      }
+	  else
+	  {
+      $val = $r->{$targreadname}{VAL} ;
+	  }
+    }
+ 
+$val = $hash->{$targreadname}  if (defined $praefix && $praefix eq "i:");
+$val = $attr{$targdevice}{$targreadname} if ((defined $praefix && $praefix eq "a:") && $attr{$targdevice});
+    
+if($suffix && $suffix =~ /:d|:r|:i/ && $val =~ /(-?\d+(\.\d+)?)/) 
+	{
+      $val = $1;
+      $val = int($val)                         if($suffix eq ":i" );
+      $val = round($val, defined($1) ? $1 : 1) if($suffix =~ /^:r(\d)?/);
+      $val = round($val, $1)                   if($suffix =~ /^:d(\d)/); #100753
+    }
+		
+$val ="undef"if ($val eq "");
+
+MSwitch_LOG( $name, 6,"val :   $val ".__LINE__);
+MSwitch_LOG( $name, 6,"org :   $org ".__LINE__);
+
+$org =~s/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/$val/eg;
+
+MSwitch_LOG( $name, 6,"org :   $org ".__LINE__);
+
+}
+$msg=$org;
+MSwitch_LOG( $name, 6,"-> setmagic Gesamtstring: $msg L:".__LINE__);
+return $msg;
+	}
+
+
+
+
+MSwitch_LOG( $name, 6,"-> execute old SetMagic L:".__LINE__);
     my $x = 0;
     while ( $msg =~ m/(.*)\[(.*)\:(.*)\:i\](.*)/ ) {
         $x++;    # notausstieg notausstieg
@@ -16626,6 +16709,7 @@ sub MSwitch_PerformHttpRequest($$) {
                         $arg =~ s/$org/$ers/g;
                     }
                     else {
+						$ers ="";
                         $arg =~ s/$org/$ers/g;
                     }
                 }
