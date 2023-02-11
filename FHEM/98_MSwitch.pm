@@ -78,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '6.76';                               # version
+my $version      = '6.77';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -340,7 +340,7 @@ sub MSwitch_Get_Backup_inhalt(@);
 
 
 
-my $FLevel="6.75,6.76";
+my $FLevel="6.75,6.76,6.77";
 my $attrdummy =
     "  disable:0,1"
   . "  MSwitch_Language:EN,DE"
@@ -16091,137 +16091,61 @@ sub MSwitch_check_setmagic_i($$) {
     my ( $hash, $msg ) = @_;
     my $name = $hash->{NAME};
     my $futurelevel  = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
-
+	my $incomming = $msg;
     # setmagic ersetzung
 
-MSwitch_LOG( $name, 6,"-> setmagic found: $msg L:".__LINE__);
+MSwitch_LOG( $name, 6,"----------  SUB MSwitch_check_setmagic_i ----------".__LINE__);
 
-# my $self schützen
-$msg =~ s/my \$SELF/MYSELF/g;
-
-$msg =~ s/\$SELF/$name/g;
-
-# my $self schützen wiederherstellen
-$msg =~ s/MYSELF/my \$SELF/g;
-
-MSwitch_LOG( $name, 6,"-> FutureLevel ->  $futurelevel L:".__LINE__);
-
-##### newversion
-if ( $futurelevel > 6.75 ) {
 my $org = $msg;
-MSwitch_LOG( $name, 6,"-> execute new SetMagic L:".__LINE__);
+
+my $x = 0;
 while ( $org =~ m/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/ ) {
 	
-my $all = $1;
-my $praefix = $2;
-my $targdevice = $3;
-my $targreadname = $4;
-my $suffix = $5;
-my $zielhash = $defs{$3};
-my $val;
+	$x++;    # notausstieg notausstieg
+    last if $x > 20;    # notausstieg notausstieg
+			
+	my $all = $1;
+	my $praefix = $2;
+	my $targdevice = $3;
+	my $targreadname = $4;
+	my $suffix = $5;
+	my $zielhash = $defs{$3};
+	my $val;
 
-
-
-MSwitch_LOG( $name, 6,"all :   $all ".__LINE__);
-MSwitch_LOG( $name, 6,"praefix :   $praefix ".__LINE__) if (defined $praefix) ;
-MSwitch_LOG( $name, 6,"targdevice :   $targdevice ".__LINE__);
-MSwitch_LOG( $name, 6,"targreadname :   $targreadname ".__LINE__);
-MSwitch_LOG( $name, 6,"suffix :   $suffix ".__LINE__) if (defined $suffix) ;
-MSwitch_LOG( $name, 6,"zielhash :   $zielhash ".__LINE__);
-
- if(!$praefix || $praefix eq "r:") 
-	{
-      my $r = $zielhash->{READINGS};
-	  
-      if($suffix && ($suffix eq ":t" || $suffix eq ":sec")) 
-	  {
-        #return $all if (!$r || !$r->{$n});
-        $val = $r->{$targreadname}{TIME};
-        $val = int(gettimeofday()) - time_str2num($val) if($suffix eq ":sec");
-   
-      }
-	  else
-	  {
-      $val = $r->{$targreadname}{VAL} ;
-	  }
-    }
- 
-$val = $hash->{$targreadname}  if (defined $praefix && $praefix eq "i:");
-$val = $attr{$targdevice}{$targreadname} if ((defined $praefix && $praefix eq "a:") && $attr{$targdevice});
-    
-if($suffix && $suffix =~ /:d|:r|:i/ && $val =~ /(-?\d+(\.\d+)?)/) 
-	{
-      $val = $1;
-      $val = int($val)                         if($suffix eq ":i" );
-      $val = round($val, defined($1) ? $1 : 1) if($suffix =~ /^:r(\d)?/);
-      $val = round($val, $1)                   if($suffix =~ /^:d(\d)/); #100753
-    }
+	 if(!$praefix || $praefix eq "r:") 
+		{
+		  my $r = $zielhash->{READINGS};
+		  
+		  if($suffix && ($suffix eq ":t" || $suffix eq ":sec")) 
+		  {
+			#return $all if (!$r || !$r->{$n});
+			$val = $r->{$targreadname}{TIME};
+			$val = int(gettimeofday()) - time_str2num($val) if($suffix eq ":sec");
+		  }
+		  else
+		  {
+		  $val = $r->{$targreadname}{VAL} ;
+		  }
+		}
+	 
+	$val = $hash->{$targreadname}  if (defined $praefix && $praefix eq "i:");
+	$val = $attr{$targdevice}{$targreadname} if ((defined $praefix && $praefix eq "a:") && $attr{$targdevice});
 		
-$val ="undef"if ($val eq "");
-
-MSwitch_LOG( $name, 6,"val :   $val ".__LINE__);
-MSwitch_LOG( $name, 6,"org :   $org ".__LINE__);
-
-$org =~s/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/$val/eg;
-
-MSwitch_LOG( $name, 6,"org :   $org ".__LINE__);
-
-}
-$msg=$org;
-MSwitch_LOG( $name, 6,"-> setmagic Gesamtstring: $msg L:".__LINE__);
-return $msg;
+	if($suffix && $suffix =~ /:d|:r|:i/ && $val =~ /(-?\d+(\.\d+)?)/) 
+		{
+		  $val = $1;
+		  $val = int($val)                         if($suffix eq ":i" );
+		  $val = round($val, defined($1) ? $1 : 1) if($suffix =~ /^:r(\d)?/);
+		  $val = round($val, $1)                   if($suffix =~ /^:d(\d)/); #100753
+		}
+			
+	$val ="undef" if ($val eq "");
+	$val =~ s/\$SELF/$name/g;
+	$org =~s/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/$val/;
 	}
 
-
-
-
-MSwitch_LOG( $name, 6,"-> execute old SetMagic L:".__LINE__);
-    my $x = 0;
-    while ( $msg =~ m/(.*)\[(.*)\:(.*)\:i\](.*)/ ) {
-        $x++;    # notausstieg notausstieg
-        last if $x > 20;    # notausstieg notausstieg
-        my $setmagic = ReadingsVal( $2, $3, 0 );
-        $msg = $1 . $setmagic . $4;
-		
-		
-    }
-    $x = 0;
-    while ( $msg =~ m/(.*)\[(.*)\:(.*)\:d\:i\](.*)/ ) {
-        $x++;               # notausstieg notausstieg
-        last if $x > 20;    # notausstieg notausstieg
-        my $setmagic = ReadingsNum( $2, $3, 0 );
-        $msg = $1 . $setmagic . $4;
-		
-    }
-
-
-
-
- $x = 0;
-#  while ( $msg =~ m/\[(.*)\:(.*)\]/ ) {
-	
-  while ( $msg =~ m/(.*)\[(.*)\:(.*?)\](.*)/ ){
-	    
-        $x++;               # notausstieg notausstieg
-        last if $x > 20;    # notausstieg notausstieg
-		#MSwitch_LOG( $name, 6,"1 :   $1   ".__LINE__);
-		#MSwitch_LOG( $name, 6,"2 :   $2   ".__LINE__);
-		#MSwitch_LOG( $name, 6,"3 :   $3   ".__LINE__);
-		#MSwitch_LOG( $name, 6,"4 :   $4   ".__LINE__);
-       # my $setmagic = ReadingsVal( $1, $2, 0 );
-	   my $setmagic = ReadingsVal( $2, $3, 'undef' );
-	   
-	   
-	   
-	   
-	   MSwitch_LOG( $name, 6,"-> setmagic Inhalt ReadingsVal( '$2', '$3', 'undef' ): $setmagic L:".__LINE__);
-	   
-        $msg = $setmagic;
-		 $msg = $1 . $setmagic . $4;
-		
-    }
-MSwitch_LOG( $name, 6,"-> setmagic Gesamtstring: $msg L:".__LINE__);
-    return $msg;
+MSwitch_LOG( $name, 6,"-> return: $org".__LINE__);
+return $org;
 }
 
 #################################
