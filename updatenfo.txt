@@ -1,3 +1,3 @@
 Version
-6.76
-Change: Change Sub SetMagic
+6.77
+Change: Bugfix SetMagic - neue SetMagic aktiviert (unabhaengig vom FutureLevel)
