@@ -1,4 +1,8 @@
 Version
+7.00
+Change: add attr MSwitch_CMD_processing , new configdevice
+
+Version
 6.77
 Change: Bugfix SetMagic - neue SetMagic aktiviert (unabhaengig vom FutureLevel)
 
