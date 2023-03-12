@@ -1039,8 +1039,58 @@ Beinhaltet eine kommagetrennte Liste von Events, die im Falle ihres Eingangs unb
 Wildcards wie '*' können angegeben werden.
 Empfohlene Einstellung: keine
 
+<strong>MSwitch_CMD_processing</strong>
 
-  
+dieses Attribut beeinflusst das Verhalten des Devices beim abarbeiten von Befehlen im Zusammenhang mit SetMagic ausdrücken. Hauptsächlich relevant bei der Ausführung von FreeCmds , die mehrere Befehle enthalten !
+
+block ( bisheriges verhalten ) :
+vor ausführung eines Befehls werden ALLE vorkommenden SetMagics entsprechend ausgewertet und gesetzt 
+
+line:
+Befehle werden vor ausführung in einzelne Zeilen getrennt . Jede Zeile wird vor Ausführung einzeln auf SetMagic getestet und entsprechend ersetzt.
+
+dieses Hat bei Freecmds gravierende auswirkungen:
+
+Linemode Freecmd:
+
+Wert 4 ist 1 :
+
+Befehlskette :
+set testdev Wert4 5;
+set $SELF Wert4 {[$SELF:Wert4] + 1};
+set $SELF Wert4 {[$SELF:Wert4] + 20};
+
+Ergebniss :
+set testdev Wert4 5;
+set $SELF Wert4 {[$SELF:Wert4] + 1};       Setmagic = 5
+set $SELF Wert4 {[$SELF:Wert4] + 20};     Setmagic = 6
+Ergebniss : 26
+
+
+Blockmode Freecmd:
+
+Wert 4 ist 1:
+
+Befehlskette :
+set testdev Wert4 5;
+set $SELF Wert4 {[$SELF:Wert4] + 1};
+set $SELF Wert4 {[$SELF:Wert4] + 20};
+
+Ergebniss :
+set testdev Wert4 5;
+set $SELF Wert4 {[$SELF:Wert4] + 1};       Setmagic = 1
+set $SELF Wert4 {[$SELF:Wert4] + 20};     Setmagic = 1
+Ergebniss : 21
+
+
+
+
+Dieser Mode sollte nur im Bedarfsfall gesetzt werden,
+wenn aufeinander aufbauende Befehlsketten in einem Freecmd bearbeitet werden
+Bei ausführung von Freecmds im Perlmode bleibt diese Einstellung unberücksichtigt und wird als Block bearbeitet.
+Hier kann bei entsprechendem Bedarf auf direkte Fhembefehle ( Readingsval etc. ) zurückgegriffen werden
+
+
 <strong>MSwitch_setList</strong>
 dieses kann zusätzlich zur Setlist oder alleinstehend belegt werden. Hier besteht die Möglichkeit eine setList dynamisch zu belegen.
 
