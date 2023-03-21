@@ -78,7 +78,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.00';                               # version
+my $version      = '7.01';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -15646,6 +15646,7 @@ sub MSwitch_Restartcmdnew($) {
 				if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" )
 							{			
 									MSwitch_LOG( $name, 6,"execute command BLOCKMODE-> $cs " . __LINE__ ."\n");	
+									$cs = MSwitch_dec( $hash, $cs );
 									$errors = AnalyzeCommandChain( undef, $cs );
 									$msg=$cs;
 							}	
