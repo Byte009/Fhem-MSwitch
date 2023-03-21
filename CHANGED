@@ -1,4 +1,8 @@
 Version
+7.01
+Change: bugfix delayed cmds
+
+Version
 7.00
 Change: add attr MSwitch_CMD_processing , new configdevice
 
