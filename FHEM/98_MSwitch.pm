@@ -50,8 +50,6 @@ use HttpUtils;
 use Color; 
 
 
-
-
 my @msw;
 my $codelenght    = 100; # abbruch der ansicht ( schnellansicht ) nach x zeichen
 my $anzahlmswitch = 0;
@@ -78,7 +76,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.01';                               # version
+my $version      = '7.02';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -2707,6 +2705,11 @@ sub MSwitch_Set_SetTrigger($@) {
     # bulk
 
     MSwitch_LOG( $name, 6,"settrigger".__LINE__);
+	#MSwitch_LOG( $name, 6,"@args".__LINE__);
+	
+	#return;
+	
+	
 	
 	readingsBeginUpdate($hash);
     readingsBulkUpdate( $hash, ".Trigger_condition", $args[6], 0 );
@@ -2744,7 +2747,10 @@ readingsEndUpdate( $hash, 0 );
     }
     else {
 
-        ##### MSwitch_LOG( $name, 6,"Whitelist :   $args[7]".__LINE__);
+        MSwitch_LOG( $name, 6,"Whitelist :   $args[7]".__LINE__);
+
+
+
 
         readingsSingleUpdate( $hash, ".Trigger_Whitelist", $args[7], 0 );
     }
@@ -2762,13 +2768,16 @@ readingsEndUpdate( $hash, 0 );
             if ( ReadingsVal( $name, '.Trigger_Whitelist', '' ) ne '' ) {
                 my $argument = ReadingsVal( $name, '.Trigger_Whitelist', '' );
 
+my $resc=0;
 
+$argument =~ s/\$SELF/$name/g;
                while ( $argument =~ m/\[(.*)\:(.*)\]/ ) {
-                   # MSwitch_LOG( $name, 6,"Whitelist :   found setmagic".__LINE__);
+				   $resc++;
+				   last if $resc > 10;
+                    MSwitch_LOG( $name, 6," -- $resc -- Whitelist :   found setmagic".__LINE__);
                     $argument = MSwitch_check_setmagic_i( $hash, $argument );
-                   # MSwitch_LOG( $name, 6,"Whitelist :   new -> $argument".__LINE__);
+                    MSwitch_LOG( $name, 6,"Whitelist :   new -> $argument".__LINE__);
                 }
-
 
                 $hash->{NOTIFYDEV} = $argument;
             }
@@ -5362,8 +5371,7 @@ if ( $mswait =~ m/\[(.*)\:(.*)\]/ )
 
 
 
-    MSwitch_LOG( $ownName, 6,"\n ".localtime."\n\n---------- Moduleinstieg > SUB Notify ----------");
-
+    
 
 
 
@@ -5669,7 +5677,7 @@ if ( $mswait =~ m/\[(.*)\:(.*)\]/ )
 
 
 MSwitch_LOG( $ownName, 6, "-> eingehendes Event: $eventcopy  L:" . __LINE__ );
-
+MSwitch_LOG( $ownName, 6, "#########################################################  L:" . __LINE__ );
 
 
         $own_hash->{helper}{statistics}{eventloop_firstcondition_passed}++
@@ -5777,22 +5785,68 @@ MSwitch_LOG( $ownName, 6, "-> eingehendes Event: $eventcopy  L:" . __LINE__ );
         my $x    = 0;
         my $zeit = time;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       SEQ: foreach my $sequenz (@sequenzall) {
             $x++;
-            if ( $sequenz ne "undef" ) {
-                foreach my $test (@sequenzarrayfull) {
-                    if ( $eventcopy =~ /$test/ ) {
+			
+			
+			
+#MSwitch_LOG($ownName,6,"Sequenz -> $sequenz");
+
+			
+			
+            if ( $sequenz ne "undef" ) 
+			{
+                foreach my $test (@sequenzarrayfull) 
+				{
+					
+					MSwitch_LOG($ownName,6,"test -> $test");
+					
+                    if ( $eventcopy =~ /$test/ ) 
+					{
                         $own_hash->{helper}{sequenz}{$x}{$zeit} = $eventcopy;
                     }
                 }
 
+
+
                 my $seqhash    = $own_hash->{helper}{sequenz}{$x};
                 my $aktsequenz = "";
-                foreach my $seq ( sort keys %{$seqhash} ) {
+                foreach my $seq ( sort keys %{$seqhash} )
+				{
+					MSwitch_LOG($ownName,6,"seq -> $seq");
+					
                     $aktsequenz .= $own_hash->{helper}{sequenz}{$x}{$seq} . " ";
+					
+					MSwitch_LOG($ownName,6,"aktsequenz -> $aktsequenz");
+
                 }
 
-                if ( $aktsequenz =~ /$sequenz/ ) {
+
+					MSwitch_LOG($ownName,6,"aktsequenzready -> $aktsequenz");
+
+
+                if ( $aktsequenz =~ /$sequenz/ ) 
+				{
+					
+					
+					MSwitch_LOG($ownName,6,"FOUND SEQUENZ -> $aktsequenz - $sequenz");
+					MSwitch_LOG($ownName,6,"----------------------------------------\n");
+					
                     delete( $own_hash->{helper}{sequenz}{$x} );
 					$showevents = MSwitch_checkselectedevent( $own_hash, "SEQUENCE" );
                     readingsSingleUpdate( $own_hash, "SEQUENCE", 'match', $showevents );
@@ -5800,7 +5854,8 @@ MSwitch_LOG( $ownName, 6, "-> eingehendes Event: $eventcopy  L:" . __LINE__ );
                     readingsSingleUpdate( $own_hash, "SEQUENCE_Number", $x, $showevents );
                     last SEQ;
                 }
-                else {
+                else 
+				{
                     if ( ReadingsVal( $ownName, "SEQUENCE", 'undef' ) eq
                         "match" )
                     {
@@ -11909,7 +11964,7 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
 
 
  # if ( $device =~ m/{.*}/ ) {
-		MSwitch_LOG( $name, 6,"TESTE AUF KODIERUNG !! ...... " . __LINE__ ); 
+		#MSwitch_LOG( $name, 6,"TESTE AUF KODIERUNG !! ...... " . __LINE__ ); 
 	
 	 # perlcodiert
            if ( $device =~ m/^\{/ ) 
@@ -12051,7 +12106,7 @@ sub MSwitch_checkcondition($$$) {
     my $futurelevel  = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
     my $answer;
 
-    MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_checkcondition ----------");
+   # MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_checkcondition ----------");
     # abbruch bei leerer condition
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
@@ -12419,8 +12474,8 @@ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/
     $finalstring2 = "if (" . $change . ")";
     $finalstring1 = "if (" . $change1 . ") ";
 
-    MSwitch_LOG( $name, 6, "-> Bedingungscondition (final): $condition !");
-    MSwitch_LOG( $name, 6, "-> Bedingungsprüfung (final): $finalstring !");
+  #  MSwitch_LOG( $name, 6, "-> Bedingungscondition (final): $condition !");
+  #  MSwitch_LOG( $name, 6, "-> Bedingungsprüfung (final): $finalstring !");
 
     my $ret;
     {
@@ -12448,7 +12503,7 @@ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/
     }
 
     if ( $ret ne "true" ) {
-        MSwitch_LOG( $name, 6, "-> Befehlsabbruch - Bedingung nicht erfüllt " );
+       # MSwitch_LOG( $name, 6, "-> Befehlsabbruch - Bedingung nicht erfüllt " );
     }
 	else{
 		MSwitch_LOG( $name, 6, "-> Bedingung erfüllt " );
@@ -12456,7 +12511,7 @@ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/
     $hash->{helper}{conditioncheck}  = $finalstring2;
     $hash->{helper}{conditioncheck1} = $finalstring1;
     
-	MSwitch_LOG( $name, 6, "----- end checkcondition -----\n " );
+	#MSwitch_LOG( $name, 6, "----- end checkcondition -----\n " );
     return $ret;
 }
 
@@ -16435,6 +16490,10 @@ my $org = $msg;
 
 my $x = 0;
 while ( $org =~ m/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/ ) {
+	
+	
+	MSwitch_LOG( $name, 6,"FOUND".__LINE__);
+	
 	
 	$x++;    # notausstieg notausstieg
     last if $x > 20;    # notausstieg notausstieg
