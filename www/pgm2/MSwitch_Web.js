@@ -739,17 +739,19 @@ function savedistributor(){
 			aktid=  $("#ideventID"+i).val();
 			newidfile +=aktline+"=>cmd"+aktcmd+"[SP]ID[SP]"+aktid+"[NL]";		
 		}
-
-	 FW_cmd(FW_root+'?cmd=set '+devicename+' setbridge '+newidfile+'&XHR=1');
+[ "aw_md","aw_trig","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
+	randomdev.forEach (unlock);
+	
+	 //FW_cmd(FW_root+'?cmd=set '+devicename+' setbridge '+newidfile+'&XHR=1');
 	 
 	//alert("save");
 	reload();
-	//var nm = $(t).attr("nm");
-	//var  def = nm+" setbridge "+encodeURIComponent(newidfile);
+	 var nm = $(t).attr("nm");
+	var def = nm + " setbridge "+newidfile;
+		
+		
+		location = location.pathname + "?detail=" + devicename + "&cmd=set " + addcsrf(def);
 	
-	//[ "aw_md","aw_trig","aw_md20","aw_addevent","aw_dev"].forEach (unlock,);
-	//randomdev.forEach (unlock);
-	return;
 }
 
 
