@@ -702,6 +702,8 @@ function writedebug(line){
 function deletedistributor(line){
 	//alert(line);
 	if (debug == 'on'){ alert('deletedistributor') };
+	
+	document.getElementById('aw_dist1').style.display='none';
 	document.getElementById('line1-'+line).innerHTML = '';
 	document.getElementById('line2-'+line).innerHTML = '';
 	checkdistricode()
@@ -710,6 +712,10 @@ function deletedistributor(line){
 
 function adddistributor(){
 	if (debug == 'on'){ alert('adddistributor') };	//alert('line');
+	
+	
+	document.getElementById('aw_dist1').style.display='none';
+	
 	var add = $( "#rawcode" ).html();
 	add = add.replace(/LINENUMBER/gi,DISTRIBUTLINES);
 	add = add.replace(/line1-/gi,"line1-"+DISTRIBUTLINES);
@@ -745,7 +751,7 @@ function savedistributor(){
 	 //FW_cmd(FW_root+'?cmd=set '+devicename+' setbridge '+newidfile+'&XHR=1');
 	 
 	//alert("save");
-	reload();
+	// reload();
 	 var nm = $(t).attr("nm");
 	var def = nm + " setbridge "+newidfile;
 		
