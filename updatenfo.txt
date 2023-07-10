@@ -1,3 +1,3 @@
 Version
-7.04
-Change: some fixes
+7.05
+Change: change MSwitch_Web.js
