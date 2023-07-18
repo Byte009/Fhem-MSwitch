@@ -885,22 +885,60 @@ um 0 Uhr erfolgt immer ein Reset der Daten
 Einstellung manuell:
 Die Rückstellung auf 0 muss manuell erfolgen
 
-<strong>MSwitch_Inforoom</strong> Ab V5.5 nicht mehr verfuegbar
-Mit diesem Attribut wird die Raumansicht eines mit dem Attribut definierten Raumes verändert.
+Einstellung after_switch:
+Die Rückstellung auf 0 erfolgt NACH jedem Umschaltvorgang aber erst nach Abarbeitung der Befehlsketten.
+Somit stehen die Daten bei Ausführung zur Verfügung.
+d.H bei abarbeitung des ON-Zweiges ist die vorherige OFF-Zeit verfügbar ( und umgekehrt )
 
-Dadurch sollen die wichtigsten Informationen aller MSwitch-Devices auf eine Seite dargestellt werden.
-Zur Nutzung sollten alle MSwitch-Devices (zusätzlich) in einen Raum sortiert werden und dieser Raum im Attribut eingestellt werden. 
 
-Es werden folgende Informationen bereitgestellt:
 
-  - Infobutton zeigt den im Device gespeicherten Textes des Attributes 'comment'
-  - Device und Events, die das Device triggern
-  - Zeiten, zu denen verschiedene Zweige des Devices ausgeführt werden
-  - Devices, die durch das MSwitch Device geschaltet werden
-  - State des Devices
-	
-Wichtig: Eine Änderung dieses Attributes bewirkt immer eine Änderung dieses Attributes in allen MSwitch devices:
-Es muss nur in einem Device gesetzt oder gelöscht werden um alle Devices zu erfassen
+
+
+<strong>MSwitch_lastState</strong> 
+Speichert den Readingsinhalt von angegebenen Devices !!!Vor!!! Ausführung eines der zwei Hauptbefehlszweige des Mswitches ( on/off ).
+Mit dem Befehl  restore_lastStates cmd1(cmd2) können alle Devices mit einem Befehl wieder in dieses Zustand versetzt werden.
+
+
+Gespeichert werden diese Inhalte in Readings innerhalb des Mswitches nach folgendem Muster:
+
+lastState_DEVICENAME_READINGSNAME:X
+X steht für den Inhalt des Readings in entsprechendem Device.
+
+
+Format:
+
+x:devicename:devicereading:(optional mapping)
+
+Mehrere Geräte sind durch KOMMA zu trennen.
+
+x = Zweig vor dessen Ausführung gespeichert werden soll ( 1-on / 2-off)
+devicename = Name des Devices
+readingname = Reading das abgefragt werden soll
+
+optional mappinging:
+ - zur Erklätung
+ Die Wiederherstellung eines Zustandes wird nach folgendem Muster gesetzt:
+ set DEVICENAME lastState_DEVICENAME_READINGSNAME x;
+ 
+ Es kann aber vorkommen , das der Setbefehl so nicht möglich ist , da sich das Reading welches einen Zustand abbildet nicht über den gleichen Befehl setzen lässt.
+ In diesem Fall kann das optionale Mapping genutz werden.
+ 
+ Als Beispiel nenne ich das abzufragende Reading , welches einen Gerätestatus darstellt "all_on". Dieses kann den Status 0 oder 1 annehmen . 
+ Um dieses Zustand zu ändern werden aber die Befehle "set Device on oder off" benötigt.
+ 
+ somit muss ein mapping gesetzt werden nach folgendem Schema:
+ /Readingszustand->Befehl/Readingszustand1->Befehl1/
+
+ für obiges Beispiel bedeutes das:
+ /1->on/0->off/
+ 
+Eine weitere Besonderheit ist das Reading "state" . Falls dieses Reading abgeragt wird , wird state in der Befehlsausführung zur Wiederherstellung im Grunde einfach weggelassen .
+Aus "set DEVICENAME state on" wird "set DEVICENAME on".
+
+
+
+
+
 
 <strong>MSwitch_Startdelay</strong>
 Bestimmt die Verzögerungszeit des MSwitches nach FHEM-Start in Sekunden.
@@ -1210,6 +1248,12 @@ Help Set
 Angebotene Set-Befehle sind unter Umständen von der Grundkonfiguration abhängig,
 d.H nicht in jedem Mode werden alle Befehle angeboten.
 <hr>
+
+
+<strong>set DEVICE restore_lastStates</strong>
+
+ - siehe ATTR MSwitch_lastState -
+
 <strong>set DEVICE Dynsetlist</strong>
 
 Ermoeglicht das dynamische Einfuegen von Readings.
