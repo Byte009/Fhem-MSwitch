@@ -76,7 +76,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.05';                               # version
+my $version      = '7.1';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -336,8 +336,6 @@ sub MSwitch_Get_Backup_inhalt(@);
 
 ##############################
 
-
-
 my $FLevel="6.75,6.76,6.77";
 my $attrdummy =
     "  disable:0,1"
@@ -347,7 +345,7 @@ my $attrdummy =
   . "  MSwitch_Delay_Count:0,1,5,10,30,60"
   . "  MSwitch_INIT:save,cfg"
   . "  MSwitch_Debug:0,1"
-  . "  MSwitch_State_Counter:off,24_Hours,manuell"
+  . "  MSwitch_State_Counter:off,24_Hours,manuell,after_switch"
   . "  MSwitch_use_WebWidgets:0,1"
   . "  MSwitch_Expert:0,1"
   . "  MSwitch_Help:0,1"
@@ -365,6 +363,7 @@ my $attrdummy =
   . "  MSwitch_Comment_to_Room:0,1"
   . "  readingList:textField-long "
   . "  MSwitch_SysExtension:0,1,2 "
+  . "  MSwitch_lastState:textField-long"
   . "  useSetExtensions:0,1";
 
 my $attractivedummy =
@@ -374,7 +373,7 @@ my $attractivedummy =
   . "  MSwitch_Delay_Count:0,1,5,10,30,60"
   . "  MSwitch_Language:EN,DE"
   . "  MSwitch_INIT:save,cfg"
-  . "  MSwitch_State_Counter:off,24_Hours,manuell"
+  . "  MSwitch_State_Counter:off,24_Hours,manuell,after_switch"
   . "  MSwitch_Debug:0,1,2,3,4"
   . "  disabledForIntervals"
   . "  MSwitch_Expert:0,1"
@@ -411,6 +410,7 @@ my $attractivedummy =
   . "  MSwitch_ExtraktHTTP_max"
   . "  MSwitch_Switching_once:0,1 "
   . "  MSwitch_SysExtension:0,1,2 "
+  . "  MSwitch_lastState:textField-long"
   . "  useSetExtensions:0,1"
   . $readingFnAttributes;
 
@@ -421,7 +421,7 @@ my $attrresetlist =
   . "  MSwitch_Format_Lastdelay"
   . "  MSwitch_Delay_Count:0,1,5,10,30,60"
   . "  MSwitch_use_WebWidgets:0,1"
-  . "  MSwitch_State_Counter:off,24_Hours,manuell"
+  . "  MSwitch_State_Counter:off,24_Hours,manuell,after_switch"
   . "  MSwitch_Language:EN,DE"
   . "  MSwitch_INIT:save,cfg"
   . "  stateFormat:textField-long"
@@ -477,9 +477,10 @@ my $attrresetlist =
   . "  MSwitch_Eventhistory_realtime_to_Reading:0,1"
   . "  MSwitch_Switching_once:0,1"
   . "  MSwitch_SysExtension:0,1,2 "
+  . "  MSwitch_lastState:textField-long"
   . "  useSetExtensions:0,1"
   . $readingFnAttributes;
-
+ 
 #################
 my %sets;
 my %setsnotify = (
@@ -586,14 +587,6 @@ my %gets = (
 	"reload_Assoziations"      => "noArg",
     "config"               => "noArg"
 );
-
-
-
-# my %readings={
-	# "last_ID"  => 1,
-	# "last_cmd"  => 1,
-	# "last_switch"  => 1
-# };
 
 
 ####################
@@ -764,10 +757,7 @@ sub MSwitch_Copy ($) {
     }
     foreach my $key (@areadings) {
         my $tmp = ReadingsVal( $old_name, $key, 'undef' );
-		
-		
-		MSwitch_LOG( $new_name, 0, "Copy-cmd setreading " . $new_name . " " . $key . " " . $tmp );
-		
+		MSwitch_LOG( $new_name, 3, "Copy-cmd setreading " . $new_name . " " . $key . " " . $tmp );
         fhem( "setreading " . $new_name . " " . $key . " " . $tmp );
     }
     MSwitch_LoadHelper($hash);
@@ -1034,9 +1024,6 @@ sub MSwitch_LoadHelper($) {
     my ($hash) = @_;
     my $Name = $hash->{NAME};
 
-    ##### MSwitch_LOG( $Name, 0,"->$Name Loadhelper  ");
-    ##### MSwitch_LOG( $Name, 0,"->$Name notdef start:".$hash->{NOTIFYDEV} );
-
     if ( exists $data{MSwitch}{runningbackup}
         && $data{MSwitch}{runningbackup} eq "ja" )
     {
@@ -1064,8 +1051,6 @@ sub MSwitch_LoadHelper($) {
             $ctrigg = '';
         }
         if ( defined $devhash ) {
-            ##### MSwitch_LOG( $Name, 0,"->$Name cdev $cdev  ");
-
             $hash->{NOTIFYDEV} = $cdev; # stand auf global ... änderung auf ...
             if ( defined $cdev && $cdev ne '' ) {
                 readingsSingleUpdate( $hash, ".Trigger_device", $cdev, 0 );
@@ -1119,7 +1104,6 @@ sub MSwitch_LoadHelper($) {
         readingsBulkUpdate( $hash, ".First_init",      'done' );
         readingsBulkUpdate( $hash, ".V_Check",         $vupdate );
         readingsEndUpdate( $hash, 0 );
-
         $hash->{NOTIFYDEV} = 'no_trigger';
 
         # setze ignoreliste
@@ -1188,8 +1172,6 @@ sub MSwitch_LoadHelper($) {
     if ( AttrVal( $Name, 'MSwitch_Mode', "" ) eq 'Dummy' ) {
         $hash->{NOTIFYDEV} = 'no_trigger';
     }
-
-    ##### MSwitch_LOG( $Name, 0,"->$Name end notdef:".$hash->{NOTIFYDEV} );
     return;
 }
 
@@ -1204,7 +1186,6 @@ sub MSwitch_DefineHEX($$$) {
     MSwitch_check_init($hash);
     readingsDelete( $hash, '.Trigger_log' );
 	my $showevents = MSwitch_checkselectedevent( $hash, "waiting" );
-
     readingsSingleUpdate( $hash, "waiting", ( time + 10 ), $showevents );
     MSwitch_defineWidgets($hash);    #Neustart aller genutzten widgets
     MSwitch_Createtimer($hash);      #Neustart aller timer
@@ -1330,7 +1311,7 @@ sub MSwitch_Make_Undo($) {
     $data{MSwitch}{$hash}{undotime} = time;
     return;
 }
-#######################
+#####################################
 sub MSwitch_Get($$@) {
     my ( $hash, $name, $opt, @args ) = @_;
     my $ret;
@@ -1339,14 +1320,7 @@ sub MSwitch_Get($$@) {
     }
     return "\"get $name\" needs at least one argument" unless ( defined($opt) );
 
-
-#MSwitch_LOG( $name, 6,"-> OPT  $opt");
-
-
-
-
-
-####################
+#####################################
     my $KLAMMERFEHLER;
     my $CONDTRUE;
     my $CONDTRUE1;
@@ -1427,12 +1401,7 @@ sub MSwitch_Get($$@) {
             $hash->{helper}{aktevent} = $incommingevent;
         }
 
-my $typcmd;
-
-
-
-
-
+		my $typcmd;
 
         if ( $typ ne "FreeCmd" ) 
 		{
@@ -1443,10 +1412,7 @@ my $typcmd;
             my $exec = "set " . $args[0] . " " . $cs;
             $exec = MSwitch_dec( $hash, $exec );
             my $errorout = "<small>$WARNINGS:<br>";
-			
             my $errors = AnalyzeCommandChain( undef, $exec );
-			
-			
             if ( defined($errors) and $errors ne "OK" ) 
 			{
                 $errorout .= $errors;
@@ -1462,28 +1428,20 @@ my $typcmd;
         else 
 		{
             my $cs = $args[1];
-			
-			
-			
 	MSwitch_LOG( $name, 6,"----- CS> $cs " . __LINE__ );		
 
-			
             if ( $cs =~ m/^(\{)(.*)(\})/s )
 			{
 
 
-MSwitch_LOG( $name, 6,"PERLMODE" . __LINE__ );
+	MSwitch_LOG( $name, 6,"PERLMODE" . __LINE__ );
                 #perlmod
                 $cs =~ s/#\[sp\]/ /g;
                 $cs =~ s/#\[se\]/;/g;
                 $cs =~ s/#\[nl\]//g;
-				
-				
                 $cs = MSwitch_dec( $hash, $cs );
                 $cs = MSwitch_makefreecmd( $hash, $cs );
-				
-				
-				
+
                 my $errorout = "<small>$WARNINGS:<br>";
                 my $errors   = eval($cs);
                 if ( defined($errors) and $errors ne "OK" ) {
@@ -1503,56 +1461,35 @@ MSwitch_LOG( $name, 6,"PERLMODE" . __LINE__ );
             else 
 			{
                 #fhemmode
-				
-				
 				MSwitch_LOG( $name, 6,"FHEMMODE" . __LINE__ );
-				
-				
-				
                 $cs =~ s/#\[sp\]/ /g;
                 $cs =~ s/#\[se\]/;/g;
                 $cs =~ s/#\[nl\]//g;
-              
                 my $exec     = $cs;
                 my $errorout = "<small>$WARNINGS:<br>";
-
-
-
-my $errors;
-			my $newexec;	
+				my $errors;
+				my $newexec;	
 					
 			if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" )
 			{
-
-$typcmd= "MSwitch_CMD_processing -> block";
-  $exec = MSwitch_dec( $hash, $cs );
-
+				$typcmd= "MSwitch_CMD_processing -> block";
+				$exec = MSwitch_dec( $hash, $cs );
                 $errors = AnalyzeCommandChain( undef, $exec );
 				$newexec.=$exec;
-				
 			}
 
-if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" )
-			{
-				
-				
-				
-				$typcmd= "MSwitch_CMD_processing -> line";
-				my @lines = split( /;/, $exec );	
-				#MSwitch_LOG( $name, 6,"LINES-> @lines " . __LINE__ );		
-				 foreach my $einzelline (@lines) 
-				 {
-					#MSwitch_LOG( $name, 6,"LINE -> $einzelline " . __LINE__ );		
-					$einzelline = MSwitch_dec( $hash, $einzelline );
-					$errors.= AnalyzeCommandChain( undef, $einzelline );
-					$newexec.=$einzelline.";";
-					
-				 }
-				
-			}
+				if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" )
+							{
+								$typcmd= "MSwitch_CMD_processing -> line";
+								my @lines = split( /;/, $exec );	
+								 foreach my $einzelline (@lines) 
+								 {
+									$einzelline = MSwitch_dec( $hash, $einzelline );
+									$errors.= AnalyzeCommandChain( undef, $einzelline );
+									$newexec.=$einzelline.";";
+								 }
+							}
 
-			
-				
                 if ( defined($errors) and $errors ne "OK" ) 
 				{
                     $errorout .= $errors;
@@ -1564,23 +1501,11 @@ if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" )
                 $newexec =~ s/;/;<br>/g;
                 $newexec =~ s/^{/{<br>/g;
                 $newexec =~ s/}$/}<br>/g;
-                return
-"<small>$EXECUTEDCMD (Fhemmode):<br>$typcmd</small><br><br>$newexec<br><br>$errorout";
+                return "<small>$EXECUTEDCMD (Fhemmode):<br>$typcmd</small><br><br>$newexec<br><br>$errorout";
             }
         }
         return;
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
 ####################
@@ -1677,8 +1602,6 @@ if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" )
               $eventteile[1] . ":" . $eventteile[2];
         }
 
-        ##### MSwitch_LOG( $name, 6, "aufruf condcheck ############# " . __LINE__ );
-
         my $ret1 = MSwitch_checkcondition( $condstring, $name, $eventstring );
         my $condstring1 = $hash->{helper}{conditioncheck};
         my $condstring2 = $hash->{helper}{conditioncheck1};
@@ -1687,10 +1610,8 @@ if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" )
 
         $condstring1 =~ s/</\&lt\;/g;
         $condstring1 =~ s/>/\&gt\;/g;
-
         $condstring2 =~ s/</\&lt\;/g;
         $condstring2 =~ s/>/\&gt\;/g;
-
         $errorstring =~ s/</\&lt\;/g;
         $errorstring =~ s/>/\&gt\;/g;
 
@@ -1809,7 +1730,6 @@ m/(.*)(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)(.*?\))(.*)/
 
         if ( $errorstring ne '' ) {
             ( $err1, $err2 ) = split( /near /, $errorstring );
-            ##### MSwitch_LOG("test",1,$errorstring);
             chop $err2;
             chop $err2;
             $err2 = substr( $err2, 1 );
@@ -1829,8 +1749,7 @@ m/(.*)(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)(.*?\))(.*)/
           . "</textarea>";
 
         if (
-            length($inhalt) <
-            1 )    # wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
+            length($inhalt) < 1 )    # wenn ein Fehler bei der HTTP Abfrage aufgetreten ist
         {
             return "<html>Keine Daten vorhanden</html>";
         }
@@ -2012,13 +1931,9 @@ m/(.*)(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal)(.*?\))(.*)/
 
 ### modulmode - no sets
 
-
-
     if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
         return "Unknown argument $opt, choose one of config:noArg support_info:noArg active_timer:show sysextension:noArg $statistic";
     }
-
-
 
 #######
 
@@ -2049,15 +1964,11 @@ sub MSwitch_Get_Statistik($) {
     my ($hash) = @_;
     my $re = "";
     if ( !exists $hash->{helper}{statistics}{starttime} ) {
-
         return "noch keine Daten aufgezeichnet!";
-
     }
 
     if ( !exists $hash->{helper}{statistics} ) {
-
         return "noch keine Daten aufgezeichnet!";
-
     }
 
     my $starttime = $hash->{helper}{statistics}{starttime};
@@ -2338,19 +2249,11 @@ sub MSwitch_Set_wizard1($@) {
 #timer on/off
 sub MSwitch_Set_timer($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
-   # my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
-    #if ( AttrVal( $name, 'MSwitch_Debug', '0' ) ne "0" ) { $showevents = 1 }
 	my $showevents = MSwitch_checkselectedevent( $hash, "timer" );
-	
-	
-	
-	#MSwitch_LOG( $name, 6, "singleupdate $name $showevents L:" . __LINE__ );
-	
     readingsSingleUpdate( $hash, "timer", $args[0], $showevents );
     if ( $args[0] eq "on" ) {
         MSwitch_Clear_timer($hash);
         MSwitch_Createtimer($hash);
-        ##### MSwitch_LOG( $name, 6, "Timer neu berechnet L:" . __LINE__ );
     }
     if ( $args[0] eq "off" ) {
         MSwitch_Clear_timer($hash);
@@ -2377,7 +2280,6 @@ sub MSwitch_Set_ResetCmdCount($@) {
 		$showevents = MSwitch_checkselectedevent( $hash, "EVT_CMD2_COUNT" );
         readingsSingleUpdate( $hash, "EVT_CMD2_COUNT", 0, $showevents );
     }
-    ##### MSwitch_LOG( $name, 6, "Counter resettet L:" . __LINE__ );
     return;
 }
 
@@ -2387,7 +2289,6 @@ sub MSwitch_Set_ReloadTimer($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     MSwitch_Clear_timer($hash);
     MSwitch_Createtimer($hash);
-    ##### MSwitch_LOG( $name, 6, "Timer neu berechnet L:" . __LINE__ );
     return;
 }
 
@@ -2451,7 +2352,6 @@ sub MSwitch_Set_ExecCmd($@) {
     }
     if ( $args[0] ne 'ID' || $args[0] ne '' ) {
         if ( $args[1] !~ m/\d/ ) {
-            ##### MSwitch_LOG( $name, 1,"error at id call $args[1]: format must be exec_cmd_1 <ID x,z,y>");
             return;
         }
     }
@@ -2507,11 +2407,7 @@ sub MSwitch_Set_Undo($) {
     my ( $hash, $name, $cmd, @args ) = @_;
     my $Name    = $hash->{NAME};
     my $aktname = $Name;
-
-    # return;
-
     my %keys;
-
     my $testreading = $hash->{READINGS};
     my @areadings   = ( keys %{$testreading} );
     foreach my $key (@areadings) {
@@ -2571,7 +2467,6 @@ sub MSwitch_Set_DelRepeats($@) {
         RemoveInternalTimer($key);
     }
     delete( $hash->{helper}{repeats} );
-    ##### MSwitch_LOG( $name, 6, "Repeats gelöscht L:" . __LINE__ );
     return;
 }
 
@@ -2584,8 +2479,6 @@ sub MSwitch_Set_DelDelays($@) {
     else {
         MSwitch_Delete_specific_Delay( $hash, $name, $args[0] );
     }
-
-    ##### MSwitch_LOG( $name, 6, "Delays gelöscht L:" . __LINE__ );
     return;
 }
 
@@ -2602,7 +2495,6 @@ sub MSwitch_Set_DelHistory($@) {
 sub MSwitch_Set_switching_once($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     delete( $hash->{helper}{lastexecute} );
-    ##### MSwitch_LOG( $name, 6, "Blockierung von gleichen Befehlsketten zurückgesetzt L:" . __LINE__ );
     return;
 }
 ################################
@@ -2706,16 +2598,8 @@ sub MSwitch_Set_SetTrigger($@) {
 	readingsSingleUpdate( $hash, ".Trigger_device", $args[0], 0 );
     my $oldtrigger = ReadingsVal( $name, '.Trigger_device', '' );
     if ( $args[6] eq 'NoCondition' ) { $args[6] = ""; }
-
     # bulk
-
     MSwitch_LOG( $name, 6,"settrigger".__LINE__);
-	#MSwitch_LOG( $name, 6,"@args".__LINE__);
-	
-	#return;
-	
-	
-	
 	readingsBeginUpdate($hash);
     readingsBulkUpdate( $hash, ".Trigger_condition", $args[6], 0 );
     readingsBulkUpdate( $hash, ".Trigger_time_1",    '',       0 );
@@ -2742,7 +2626,7 @@ sub MSwitch_Set_SetTrigger($@) {
         readingsBulkUpdate( $hash, ".Trigger_time_5", $args[5], 0 );
     }
 
-readingsEndUpdate( $hash, 0 );
+	readingsEndUpdate( $hash, 0 );
 
 
     MSwitch_Createtimer($hash);
@@ -2753,10 +2637,6 @@ readingsEndUpdate( $hash, 0 );
     else {
 
         MSwitch_LOG( $name, 6,"Whitelist :   $args[7]".__LINE__);
-
-
-
-
         readingsSingleUpdate( $hash, ".Trigger_Whitelist", $args[7], 0 );
     }
 
@@ -2772,10 +2652,8 @@ readingsEndUpdate( $hash, 0 );
             delete( $hash->{NOTIFYDEV} );
             if ( ReadingsVal( $name, '.Trigger_Whitelist', '' ) ne '' ) {
                 my $argument = ReadingsVal( $name, '.Trigger_Whitelist', '' );
-
-my $resc=0;
-
-$argument =~ s/\$SELF/$name/g;
+				my $resc=0;
+				$argument =~ s/\$SELF/$name/g;
                while ( $argument =~ m/\[(.*)\:(.*)\]/ ) {
 				   $resc++;
 				   last if $resc > 10;
@@ -2793,24 +2671,18 @@ $argument =~ s/\$SELF/$name/g;
             if ( $args[0] ne "MSwitch_Self" ) 
 			{
                 $hash->{NOTIFYDEV} = $args[0];
-                #my $devices = MSwitch_makeAffected($hash);
-                #$hash->{DEF} = $args[0] . ' # ' . $devices;
             }
             else 
 			{
                 $hash->{NOTIFYDEV} = $name;
-                #my $devices = MSwitch_makeAffected($hash);
-               # $hash->{DEF} = $name . ' # ' . $devices;
             }
         }
     }
     else 
 	{
         $hash->{NOTIFYDEV} = 'no_trigger';
-        #delete $hash->{DEF};
     }
 	my $showevents = MSwitch_checkselectedevent( $hash, "EVENT" );
-	
 	
 	MSwitch_assoziation($hash);
     readingsSingleUpdate( $hash, "EVENT", "init", $showevents );
@@ -2849,16 +2721,6 @@ sub MSwitch_Set_SetTrigger1($@) {
     readingsBulkUpdate( $hash, ".Trigger_cmd_off", $triggercmdoff,0 );
     readingsEndUpdate( $hash, 0 );
     return if $hash->{INIT} ne 'define';
-   # my $definition = $hash->{DEF};
-   # $definition =~ s/\n/#[nl]/g;
-   # $definition =~ m/(\(.+?\))(.*)/;
-   # my $part1      = $1;
-   # my $part2      = $2;
-   # my $device     = ReadingsVal( $name, '.Trigger_device', '' );
-   # my $newtrigger = "([" . $device . ":" . $args[3] . "])" . $part2;
-   # $newtrigger =~ s/#\[nl\]/\n/g;
-    #$hash->{DEF} = $newtrigger;
-    #fhem( "modify $name " . $newtrigger );
 	fhem( "modify $name " );
 	MSwitch_assoziation($hash);
     return;
@@ -2871,12 +2733,10 @@ sub MSwitch_Set_OnOff($@) {
     my $oldstate = ReadingsVal( $name, "state", 'undef' );
 
     my $event = $hash->{helper}{aktevent};
-
-    ##### MSwitch_LOG( $name, 6, "EINGANG SETONOFF \n $ic,$showevents,$devicemode,$delaymode,$hash, $name, $cmd, @args " );
+	my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
 
     # test wait attribut
     if ( ReadingsVal( $name, "waiting", '0' ) > time ) {
-        ##### MSwitch_LOG( $name, 6, "Event blockiert - Wait gesetzt " . ReadingsVal( $name, "waiting", '0' ) . " " );
         # teste auf attr waiting verlesse wenn gesetzt
         return "";
     }
@@ -2888,7 +2748,6 @@ sub MSwitch_Set_OnOff($@) {
         $data{MSwitch}{$name}{setdata}{last_cmd}    = "cmd_2" if $cmd eq "off";
         $data{MSwitch}{$name}{setdata}{last_switch} = "on" if $cmd eq "on";
         $data{MSwitch}{$name}{setdata}{last_switch} = "off" if $cmd eq "off";
-
     }
 	$showevents = MSwitch_checkselectedevent( $hash, "state" );
     readingsSingleUpdate( $hash, "state", $cmd, $showevents );
@@ -2905,20 +2764,30 @@ sub MSwitch_Set_OnOff($@) {
     if ( $devicemode eq "Dummy"
         && AttrVal( $name, "MSwitch_Selftrigger_always", 0 ) == 0 )
     {
-
-##### MSwitch_LOG( $name, 6,"dummyfound set data".__LINE__);
-
+		delete $hash->{helper}{deepsave};
         MSwitch_setdata( $hash, $name );
         return;
     }
 
     #deeprecsave
     $hash->{helper}{deepsave} = $cmd;
-    ##### MSwitch_LOG( $name, 6,"### Aufruf SUB_Exec_Notif mit event : $event ". __LINE__ );
+	MSwitch_Set_Statecounter( $name, $oldstate, $cmd );
     MSwitch_Exec_Notif( $hash, $cmd, 'nocheck', $event, 0 );
+
     delete $hash->{helper}{deepsave};
     MSwitch_setdata( $hash, $name );
-    MSwitch_Set_Statecounter( $name, $oldstate, $cmd );
+    
+	if (($cmd eq "on" && $oldstate eq "off" )||( $cmd eq "off" && $oldstate eq "off"))
+    {
+	if (AttrVal( $name, "MSwitch_Mode", "Notify" ) ne "Notify" && AttrVal( $name, "MSwitch_State_Counter", "off" ) eq "after_switch"){
+
+	$showevents=1;
+	$showevents = MSwitch_checkselectedevent( $hash, "off_time" );
+    readingsSingleUpdate( $hash, "off_time", 0, $showevents );
+	$showevents = MSwitch_checkselectedevent( $hash, "on_time" );
+	readingsSingleUpdate( $hash, "on_time", 0, $showevents );
+	}
+	}
     return;
 }
 
@@ -3015,16 +2884,6 @@ sub MSwitch_Set_Devices($@) {
     @sortdevices = sort @sortdevices;
     $devices = join( ',', @sortdevices );
     readingsSingleUpdate( $hash, ".Device_Affected", $devices, 0 );
-    # $devices = MSwitch_makeAffected($hash);
-
-    # if ( defined $hash->{DEF} ) {
-        # my $devhash = $hash->{DEF};
-        # my @dev = split( /#/, $devhash );
-        # $hash->{DEF} = $dev[0] . ' # ' . $devices;
-    # }
-    # else {
-        # $hash->{DEF} = ' # ' . $devices;
-    # }
     MSwitch_Set_DetailsBlanko( $hash, $name );
 	MSwitch_assoziation($hash);
     return;
@@ -3224,25 +3083,7 @@ sub MSwitch_Set_Details($@) {
 
     return if $hash->{INIT} ne 'define';
     my $definition = $hash->{DEF};
-    # $definition =~ m/(\(.+?\))(.*)/;
-    # my $part1 = $1;
-    # my $part2 = $2;
-
-    # $devicecmd =~ s/#\[sp\]/ /g;
-    # $devicecmd =~ s/#\[nl\]/\\n/g;
-    # $devicecmd =~ s/#\[se\]/;/g;
-    # $devicecmd =~ s/#\[dp\]/:/g;
-    # $devicecmd =~ s/#\[st\]/\\'/g;
-    # $devicecmd =~ s/#\[dst\]/\"/g;
-    # $devicecmd =~ s/#\[tab\]/    /g;
-    # $devicecmd =~ s/#\[ko\]/,/g;
-    # $devicecmd =~ s/#\[wa\]/|/g;
-    # $devicecmd =~ s/#\[bs\]/\\\\/g;
-   # my $newdef = $part1 . " ($devicecmd)";
-
-    #$hash->{DEF} = $newdef;
-    #fhem( "modify $name " . $newdef );
-	 fhem( "modify $name " );
+	fhem( "modify $name " );
 	MSwitch_assoziation($hash);
     return;
 }
@@ -3294,20 +3135,12 @@ sub MSwitch_Set($@) {
     my $setwidget = "";
 
     return ""
-      if ( IsDisabled($name) && ( $cmd eq 'on' || $cmd eq 'off' ) )
-      ;    # Return without any further action if the module is disabled
-
-
-
-#MSwitch_LOG( $name, 6,"-> CMD  $cmd @args");
-
-
+    if ( IsDisabled($name) && ( $cmd eq 'on' || $cmd eq 'off' ) );    # Return without any further action if the module is disabled
 
     if ( $cmd ne "?" && $cmd ne "clearlog" && $cmd ne "writelog" ) {
         MSwitch_LOG( $name, 6,"\n ".localtime."\n---------- Moduleinstieg > SUB SET ----------\n- eingehender Setbefehl: $cmd \n- eingehende Argumente: @args   ");
     }
 
-	
     my $ic = 'leer';
     $ic = $hash->{IncommingHandle} if ( $hash->{IncommingHandle} );
 
@@ -3339,53 +3172,9 @@ sub MSwitch_Set($@) {
 
 #################################
     #Systembefehle
-
     ( my $setline, %sets ) = MSwitch_CreateSet( $hash, $name, $devicemode );
 
-
-
-# if ( $cmd ne "?" ){
-    # # teste auf dynamischen trigger und änderung
-    # my $argument = ReadingsVal( $name, '.Trigger_Whitelist', '' );
-	
-	
-# MSwitch_LOG( $name, 6,"-> check dynamic trigger : $argument");
-	
-	# MSwitch_LOG( $name, 6,"-> cmd : $cmd");
-	
-    # if ( $argument =~ m/\[(.*)\:(.*)\]/ ) {
-		
-		
-		
-		
-        # $argument =~ s/\$SELF/$name/g;
-		
-		# MSwitch_LOG( $name, 6,"-> found dynamic trigger: $argument");
-		
-        # my $test1 = "[$name:$cmd]";
-		
-		# MSwitch_LOG( $name, 6,"-> found dynamic trigger: $argument");
-		# MSwitch_LOG( $name, 6,"-> found dynamic test1: $test1");
-		
-        # if ( $test1 eq $argument ) {
-			
-			
-			
-			
-            # $argument = MSwitch_check_setmagic_i( $hash, $argument );
-			
-			
-			# MSwitch_LOG( $name, 6,"-> return from setmagic: $argument");
-            # $hash->{NOTIFYDEV} = $argument;
-        # }
-    # }
-
-
-# }
-
-
-
-if ( $cmd eq 'extractbackup' ) {
+	if ( $cmd eq 'extractbackup' ) {
        my $ret = MSwitch_Set_extractbackup( $hash, $name, $cmd, @args );
         return $ret;
     }
@@ -3394,10 +3183,7 @@ if ( $cmd eq 'extractbackup' ) {
        my $ret = MSwitch_Set_extractbackup1( $hash, $name, $cmd, @args );
         return $ret;
     }
-	
-	
-	
-	
+
     if ( $cmd eq 'wizardcont' ) {
         MSwitch_Set_wizard( $hash, $name, $cmd, @args );
         return;
@@ -3484,10 +3270,8 @@ if ( $cmd eq 'extractbackup' ) {
         my $ret = MSwitch_loadnotify( $hash, $args[0] );
         return $ret;
     }
-	
-	
-	
-	 if ( $cmd eq 'reload_Assoziations' ) {
+
+	if ( $cmd eq 'reload_Assoziations' ) {
         my $ret = MSwitch_assoziation( $hash );
         return $ret;
     }
@@ -3551,7 +3335,7 @@ if ( $cmd eq 'extractbackup' ) {
 
     if ( $cmd eq "off" || $cmd eq "on" ) {
         MSwitch_Set_OnOff( $ic, $showevents, $devicemode, $delaymode, $hash,
-            $name, $cmd, @args );
+            $name, $cmd, @args );	
         return;
     }
 
@@ -3731,8 +3515,59 @@ if ( $cmd eq 'extractbackup' ) {
 		
         return;
     }
+	
+##	
+	
+	if ( $cmd eq "restore_lastStates" ) 
+	{
 
-##
+		my $pfad ="";
+		if ($args[0] eq "cmd1"){$pfad ="on";}
+		if ($args[0] eq "cmd2"){$pfad ="off";}
+		my $statearg = "deviceslaststate".$pfad;
+		my @laststates = split (" ",$data{MSwitch}{$name}{lastStates}{$statearg});
+
+		foreach my $devval (@laststates) {
+			my  @DevState = split ("\:",$devval);
+			my $inhalt  = $data{MSwitch}{$name}{lastStates}{$pfad}{$DevState[0]}{$DevState[1]};
+			my $readingrear = "lastState_".$DevState[0]."_".$DevState[1];
+			my $readingrearval =  ReadingsVal( $name, $readingrear, 'undef' );
+			if ($inhalt eq "noDyn")
+			{
+			next if $readingrearval eq "";
+			my $setting = "set $DevState[0] $DevState[1] $readingrearval";
+			$setting =~ s/state //g;
+			my $errors = AnalyzeCommandChain( undef, $setting );
+				if ( defined($errors)) 
+				{
+					MSwitch_LOG( $name, 6,"LastState-ERROR : $errors -> Comand: $setting" );
+				}	
+				
+			}
+			else{
+				my @Pairs = split ("/",$inhalt);
+				my @mapping = split ("/",$inhalt);
+				my %map ;
+				foreach my $maptmp (@mapping){
+					next if $maptmp eq "";
+					my @maptmp1 = split ("->",$maptmp);
+					$map{$maptmp1[0]}=$maptmp1[1];
+				}
+				
+					my $setter =  $map{$readingrearval};
+					my $setting = "set $DevState[0] $setter";
+					my $errors = AnalyzeCommandChain( undef, $setting );
+					if ( defined($errors)) 
+					{
+						MSwitch_LOG( $name, 6,"LastState-ERROR : $errors -> Comand: $setting" );
+					}
+			}
+		}
+        return;
+    }
+	
+
+## restore_lastStates:saved_from_cmd_1,saved_from_cmd_2
 
 ##########################
     # einlesen der genutzten Mswitch_widgets
@@ -3741,10 +3576,8 @@ if ( $cmd eq 'extractbackup' ) {
             my $checkreading = $data{MSwitch}{Widget}{$a}{reading};
             if ( $checkreading eq $cmd ) {
 				$showevents = MSwitch_checkselectedevent( $hash, $cmd );
-				
                 readingsSingleUpdate( $hash, $cmd, "@args", $showevents );
 				MSwitch_triggerkorrektur($hash, $cmd);
-				
                 return;
             }
         }
@@ -3803,6 +3636,13 @@ if ( $cmd eq 'extractbackup' ) {
         }
 
     }
+	
+############## einsetzen des restore lastStates	
+
+my $lastStates ="";
+if ( AttrVal( $name, 'MSwitch_lastState', 'undef' ) ne "undef" ) { 
+$lastStates="restore_lastStates:cmd1,cmd2"; 
+}
 
 ###########################
 
@@ -3870,17 +3710,13 @@ if ( $cmd eq 'extractbackup' ) {
                 $returnblank = "return";
             }
         }
-
     }
 
 #########################
 
     if ( !exists( $sets{$cmd} ) ) {
         my @cList;
-
         # Overwrite %sets with setList
-        # my $atts = AttrVal( $name, 'setList', "" );
-
         my $atts = $setList;
 
         my @testarray = split( " ", $atts );
@@ -3944,9 +3780,6 @@ if ( $cmd eq 'extractbackup' ) {
             if ( $devicemode eq "Dummy" ) {
                 if ( $cmd eq "on" || $cmd eq "off" ) {
 					$showevents = MSwitch_checkselectedevent( $hash, $cmd );
-					
-					
-					
                     readingsSingleUpdate( $hash, "state", $cmd . " @args", $showevents );
 					MSwitch_triggerkorrektur($hash, $cmd);
                     return;
@@ -3974,9 +3807,6 @@ if ( $cmd eq 'extractbackup' ) {
         my $statistic = "";
         my $alert     = "";
         my $zusatz ="$dynsetlist1 $dynsetentry $alert $dynsetlist $setList $setwidget $statistic";
-        #my $zusatz ="$dynsetlist1 $dynsetentry $alert $dynsetlist $setwidget $statistic";
-
-
         if ( exists $hash->{helper}{config}
             && $hash->{helper}{config} eq "no_config" )
         {
@@ -3985,7 +3815,6 @@ if ( $cmd eq 'extractbackup' ) {
         }
 
         if ( AttrVal( $name, 'MSwitch_Modul_Mode', "0" ) eq '1' ) {
-
             # rückgabe modulmode - no sets
             return "Unknown argument $cmd, choose one of $zusatz";
         }
@@ -3998,40 +3827,24 @@ if ( $cmd eq 'extractbackup' ) {
             || $devicemode eq "Toggle"
             || $devicemode eq "Full" )
         {
-            return "Unknown argument $cmd, choose one of $setline $zusatz";
+            return "Unknown argument $cmd, choose one of $setline $zusatz $lastStates";
         }
 
-
-
+####################################
 
 
         if ( $devicemode eq "Dummy" ) {
-			
-			
-			
-			#MSwitch_LOG( $name, 6, " ->special -$special-");
-			#MSwitch_LOG( $name, 6, " ->setlist -$setList-"); #
-			#MSwitch_LOG( $name, 6, " ->zusatz -$zusatz-"); #
-			#MSwitch_LOG( $name, 6, " ->setline -$setline-");
-			
-			
             $zusatz .= " " . $special;
-			
             if ( AttrVal( $name, 'useSetExtensions', "0" ) eq '1' ) 
 			{
                 return SetExtensions( $hash, $setList, $name, $cmd, @args );
             }
             else 
 			{
-				
 			MSwitch_LOG( $name, 6, "$setline " . $setList. " $zusatz");
-
 			return "Unknown argument $cmd, choose one of $setline" . " " . " $zusatz";
-            #return "Unknown argument $cmd, choose one of $setline " . $setList. " $zusatz";
-
             }
         }
-
         return;
     }
 
@@ -4042,66 +3855,26 @@ if ( $cmd eq 'extractbackup' ) {
 
 ###################################
 
-
-
-
 sub MSwitch_triggerkorrektur($$) {
-
-
 my ( $hash, $cmd ) = @_;
     my $name = $hash->{NAME};
-
-
     # teste auf dynamischen trigger und änderung
     my $argument = ReadingsVal( $name, '.Trigger_Whitelist', '' );
-	
-	
-MSwitch_LOG( $name, 6,"-> check dynamic trigger : $argument");
-	
+	MSwitch_LOG( $name, 6,"-> check dynamic trigger : $argument");
 	MSwitch_LOG( $name, 6,"-> cmd : $cmd");
-	
     if ( $argument =~ m/\[(.*)\:(.*)\]/ ) {
-		
-		
-		
-		
         $argument =~ s/\$SELF/$name/g;
-		
-		MSwitch_LOG( $name, 6,"-> found dynamic trigger: $argument");
-		
+		#MSwitch_LOG( $name, 6,"-> found dynamic trigger: $argument");
         my $test1 = "[$name:$cmd]";
-		
-		MSwitch_LOG( $name, 6,"-> found dynamic trigger: $argument");
-		MSwitch_LOG( $name, 6,"-> found dynamic test1: $test1");
-		
+		#MSwitch_LOG( $name, 6,"-> found dynamic trigger: $argument");
+		#MSwitch_LOG( $name, 6,"-> found dynamic test1: $test1");
         if ( $test1 eq $argument ) {
-			
-			
-			
-			
             $argument = MSwitch_check_setmagic_i( $hash, $argument );
-			
-			
 			MSwitch_LOG( $name, 6,"-> return from setmagic: $argument");
             $hash->{NOTIFYDEV} = $argument;
         }
     }
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ##################################
@@ -4261,41 +4034,31 @@ sub MSwitch_toggle($$) {
     my $showevents = AttrVal( $Name, "MSwitch_generate_Events", 0 );
     if ( AttrVal( $Name, 'MSwitch_Debug', '0' ) ne "0" ) { $showevents = 1 }
 
-MSwitch_LOG( $Name, 6,"\n---------- SUB TOGGLE ----------\n- ausführung Toggle");
-
-
-MSwitch_LOG( $Name, 6,"-> cmds $cmds ");
-
+	MSwitch_LOG( $Name, 6,"\n---------- SUB TOGGLE ----------\n- ausführung Toggle");
+	MSwitch_LOG( $Name, 6,"-> cmds $cmds ");
 
     $cmds =~ s/#\[SR\]/|/g;
     $cmds =~ m/(set) (.*)( )MSwitchtoggle (.*)/;
 
     my $devicename = $2;
     my $newcomand  = $1 . " " . $2 . " ";
-
-
-MSwitch_LOG( $Name, 6,"-> cmds $cmds ");
-MSwitch_LOG( $Name, 6,"-> devicename $devicename ");
-
-
-
-
-MSwitch_LOG( $Name, 6,"-> s4 $4 ");
+	MSwitch_LOG( $Name, 6,"-> cmds $cmds ");
+	MSwitch_LOG( $Name, 6,"-> devicename $devicename ");
+	MSwitch_LOG( $Name, 6,"-> s4 $4 ");
 
     if ( $2 eq "MSwitch_Self" ) {
         $newcomand  = $1 . " " . $Name . " ";
         $devicename = $Name;
     }
 
-
-MSwitch_LOG( $Name, 6,"-> newcomand $newcomand ");
+	MSwitch_LOG( $Name, 6,"-> newcomand $newcomand ");
 
 
     my @togglepart = split( /:/, $4 );
     my $trenner = ",";
 
-MSwitch_LOG( $Name, 6,"-> trenner $trenner ");
-MSwitch_LOG( $Name, 6,"-> togglepart @togglepart ");
+	MSwitch_LOG( $Name, 6,"-> trenner $trenner ");
+	MSwitch_LOG( $Name, 6,"-> togglepart @togglepart ");
 
     if ( $togglepart[0] =~ m/^\[(.)\]/ ) 
 	{
@@ -4345,26 +4108,17 @@ MSwitch_LOG( $Name, 6,"-> togglepart @togglepart ");
         $reading = $togglepart[2];
     }
 
-
     my $aktstate;
-
     if ( $reading eq "MSwitch_Self" or $reading eq "MSwitch_self" ) 
 	{
        $aktstate = ReadingsVal( $Name, 'last_toggle_state', 'undef' );
        MSwitch_LOG( $Name, 6, "-> aktueller state des devices: $aktstate L:" . __LINE__ );
     }
     else {
-		
-		
-		
-		
        $aktstate = ReadingsVal( $devicename, $reading, 'undef' );
-	   
-	MSwitch_LOG( $Name, 6, "-> reading $reading L:" . __LINE__ );
-	MSwitch_LOG( $Name, 6, "-> devicename $devicename L:" . __LINE__ );
-	   
-	   
-       MSwitch_LOG( $Name, 6, "-> aktueller state des devices: $aktstate L:" . __LINE__ );
+		MSwitch_LOG( $Name, 6, "-> reading $reading L:" . __LINE__ );
+		MSwitch_LOG( $Name, 6, "-> devicename $devicename L:" . __LINE__ );
+		MSwitch_LOG( $Name, 6, "-> aktueller state des devices: $aktstate L:" . __LINE__ );
     }
 
     my $foundmuster;
@@ -4540,6 +4294,34 @@ sub MSwitch_Attr(@) {
         return;
     }
 
+## LastState
+    if ( $cmd eq 'set' && $aName eq 'MSwitch_lastState' ) {
+		my $showevents=0;
+		delete $data{MSwitch}{$name}{lastStates};
+		fhem("deletereading $name lastState_.*");
+		my @Deviceslaststateon;
+		my @Deviceslaststateoff;
+		my @gset = split( /,/, $aVal );	
+        foreach my $line (@gset) {
+			my @lineset = split( /:/, $line );
+			if ( $lineset[3] eq "" ){$lineset[3] = "noDyn"};
+			if ($lineset[0] == 1){
+			$data{MSwitch}{$name}{lastStates}{on}{$lineset[1]}{$lineset[2]}=$lineset[3];
+			readingsSingleUpdate( $hash, "lastState_".$lineset[1]."_".$lineset[2], 'undef', $showevents );
+			push( @Deviceslaststateon, $lineset[1].":".$lineset[2]  );
+			}
+			
+			if ($lineset[0] == 2){
+			$data{MSwitch}{$name}{lastStates}{off}{$lineset[1]}{$lineset[2]}=$lineset[3];
+			readingsSingleUpdate( $hash, "lastState_".$lineset[1]."_".$lineset[2], 'undef', $showevents );
+			push( @Deviceslaststateoff, $lineset[1].":".$lineset[2]  );
+			}
+		}
+		$data{MSwitch}{$name}{lastStates}{deviceslaststateon}="@Deviceslaststateon";
+		$data{MSwitch}{$name}{lastStates}{deviceslaststateoff}="@Deviceslaststateoff";
+		return;
+	}
+
 ## Readings
 
     if ( $cmd eq 'set' && $aName eq 'MSwitch_Readings' ) {
@@ -4643,21 +4425,13 @@ sub MSwitch_Attr(@) {
         return;
     }
 	
-	
-	
 ### selected events
-
-
-	
    if ( $cmd eq 'set' && $aName eq 'MSwitch_generate_Events_selected' ) {
 
-delete( $hash->{helper}{selectedevents} );
-
+	delete( $hash->{helper}{selectedevents} );
 	my @evlist = split( /,/, $aVal );
 	foreach my $line (@evlist) {
-		
 		$hash->{helper}{selectedevents}{$line}=1;
-		
 	}	
    }
 	
@@ -4714,16 +4488,8 @@ delete( $hash->{helper}{selectedevents} );
 ## Debug
     if ( defined $aVal && $aName eq 'MSwitch_Debug' && $aVal eq '0' ) {
 		 my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
+			unlink($pfad."/MSwitch_debug_$name.log");
 
-		
-		
-        unlink($pfad."/MSwitch_debug_$name.log");
-		
-		
-		#MSwitch_LOG( $name, 6,"unlinked");
-		
-		
-		
     }
 
     if ( defined $aVal
@@ -4897,15 +4663,18 @@ delete( $hash->{helper}{selectedevents} );
 
     if ( $cmd eq 'del' ) {
 		
-		my $testarg = $aName;
+		my $testarg = $aName;	
+		if ( $testarg eq 'MSwitch_lastState' ) {
+			
+		delete $data{MSwitch}{$name}{lastStates};
+		fhem("deletereading $name lastState_.*");
+	}
 	
 	
 		if ( $testarg eq 'MSwitch_generate_Events_selected' ) {
 		delete( $hash->{helper}{selectedevents} );
 		}
-		
-	
-	
+
         if ( $testarg eq 'MSwitch_Device_Groups' ){
             delete $data{MSwitch}{$name}{groups};
             fhem("deletereading $name MSGroup_.*");
@@ -5085,9 +4854,7 @@ sub MSwitch_Check_TEND($@) {
 
             # änderung erkannt
 			
-			
 			$showevents = MSwitch_checkselectedevent( $hash, $reading . "_change" );
-
             readingsSingleUpdate( $hash, $reading . '_change',
                 'changed', $showevents );
 			$showevents = MSwitch_checkselectedevent( $hash, $reading . "_direction_tendenz" );	
@@ -5268,17 +5035,9 @@ sub MSwitch_setdata(@) {
 	
    # readingsBeginUpdate($hash);
     foreach my $key ( keys %{$setdatahash} ) {
-	
 		$showevents = MSwitch_checkselectedevent( $hash, $key, );
-       # readingsBulkUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,$showevents);
-		
-		
 		readingsSingleUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,$showevents);
-
-		
-		
     }
-   # readingsEndUpdate( $hash, 1 );
     delete $data{MSwitch}{$name}{setdata};
     return;
 }
@@ -5304,7 +5063,6 @@ sub MSwitch_Notify($$) {
     {
         return;
     }
-
 
     if ( AttrVal( $ownName, 'MSwitch_Statistic', "0" ) == 1 ) { $statistic = 1 }
 
@@ -5351,10 +5109,7 @@ sub MSwitch_Notify($$) {
             push( @newarray, $event );
         }
         my $eventcopy = join( " ", @newarray );
-		
-		
 		my $showevents = MSwitch_checkselectedevent( $own_hash, "EVENTCONF" );		
-
         readingsSingleUpdate( $own_hash, "EVENTCONF", "$eventcopy", $showevents );
         return;
     }
@@ -5393,11 +5148,10 @@ sub MSwitch_Notify($$) {
     my $anzahl;
     my $mswait = AttrVal( $ownName, "MSwitch_Wait", 0 );
 
-
-if ( $mswait =~ m/\[(.*)\:(.*)\]/ ) 
-{
-    $mswait = MSwitch_check_setmagic_i( $own_hash, $mswait );
-}
+	if ( $mswait =~ m/\[(.*)\:(.*)\]/ ) 
+	{
+		$mswait = MSwitch_check_setmagic_i( $own_hash, $mswait );
+	}
     my $showevents = AttrVal( $ownName, "MSwitch_generate_Events", 0 );
     if ( AttrVal( $ownName, 'MSwitch_Debug', '0' ) ne "0" ) { $showevents = 1 }
 
@@ -5477,27 +5231,14 @@ if ( $mswait =~ m/\[(.*)\:(.*)\]/ )
 # Return without any further action if the module is disabled
 
     return "" if ( IsDisabled($ownName) );
-
     if ( $init_done != 1 ) {
         return;
     }
-
-
-
-    
-
-
-
-
-
-
-
     $own_hash->{helper}{statistics}{starttime} = time
-      if !exists $own_hash->{helper}{statistics}{starttime};
+    if !exists $own_hash->{helper}{statistics}{starttime};
 
     # abbruch wenn selbsttrigger nicht aktiv
     if ( AttrVal( $ownName, "MSwitch_Selftrigger_always", 0 ) == 0 ) {
-
         #abbruch wenn kein trigger angegeben
         return
           if ( ReadingsVal( $ownName, ".Trigger_device", "no_trigger" ) eq
@@ -5648,8 +5389,6 @@ if ( $mswait =~ m/\[(.*)\:(.*)\]/ )
     my ( $tday, $tmonth, $tdate, $tn, $time1 ) = split( / /, $aktsectime );
     my ( $HH, $MM, $SS ) = split( /:/, $tn );
     $aktsectime = timelocal( $SS, $MM, $HH, $tdate, $tmonth, $time1 );
-
-
 	$showevents = MSwitch_checkselectedevent( $own_hash, "last_ID" );		
     readingsSingleUpdate( $own_hash, "last_ID", "ID_0", $showevents );
     $own_hash->{helper}{statistics}{notifyloop_firsttest_passed}++
@@ -5731,16 +5470,8 @@ if ( $mswait =~ m/\[(.*)\:(.*)\]/ )
 # teste auf mswitch-eventmap  -> vor triggercondition
         $eventcopy = MSwitch_Eventmap( $own_hash, $ownName, $eventcopy );
         $eventcopy =~ s/\"/\\"/g;
-
 # temporär
 # setze eingehendes Event :
-
-
-
-        #MSwitch_LOG( $ownName, 6, "-> eingehendes Event: $eventcopy ");
-
-
-
         delete $own_hash->{helper}{evtparts};
         delete $own_hash->{helper}{evtparts}{event};
         delete $own_hash->{helper}{aktevent};
@@ -5787,8 +5518,6 @@ if ( $mswait =~ m/\[(.*)\:(.*)\]/ )
             }
         }
 
-
-
 MSwitch_LOG( $ownName, 6, "\n-> eingehendes Event:\n$eventcopy:" );
 MSwitch_LOG( $ownName, 6, "\n");
 
@@ -5825,7 +5554,6 @@ MSwitch_LOG( $ownName, 6, "\n");
             my $newdiff = $lastincomming + $eventsollwaitwild - time;
             if ( $newdiff > 0 ) {
                 my $lasttime = time + $eventsollwaitwild - $lastincomming;
-                ##### MSwitch_LOG($ownName,6,"Event $checklast wird noch $newdiff sekunden blockiert");
                 next EVENT;
             }
             else {
@@ -5898,30 +5626,8 @@ MSwitch_LOG( $ownName, 6, "\n");
         my $x    = 0;
         my $zeit = time;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       SEQ: foreach my $sequenz (@sequenzall) {
             $x++;
-			
-			
-			
-#MSwitch_LOG($ownName,6,"Sequenz -> $sequenz");
-
-			
-			
             if ( $sequenz ne "undef" ) 
 			{
                 foreach my $test (@sequenzarrayfull) 
@@ -5934,29 +5640,19 @@ MSwitch_LOG( $ownName, 6, "\n");
                         $own_hash->{helper}{sequenz}{$x}{$zeit} = $eventcopy;
                     }
                 }
-
-
-
                 my $seqhash    = $own_hash->{helper}{sequenz}{$x};
                 my $aktsequenz = "";
                 foreach my $seq ( sort keys %{$seqhash} )
 				{
 					MSwitch_LOG($ownName,6,"seq -> $seq");
-					
                     $aktsequenz .= $own_hash->{helper}{sequenz}{$x}{$seq} . " ";
-					
 					MSwitch_LOG($ownName,6,"aktsequenz -> $aktsequenz");
 
                 }
-
-
 					MSwitch_LOG($ownName,6,"aktsequenzready -> $aktsequenz");
-
 
                 if ( $aktsequenz =~ /$sequenz/ ) 
 				{
-					
-					
 					MSwitch_LOG($ownName,6,"FOUND SEQUENZ -> $aktsequenz - $sequenz");
 					MSwitch_LOG($ownName,6,"----------------------------------------\n");
 					
@@ -6169,7 +5865,6 @@ MSwitch_LOG( $ownName, 6, "\n");
 						  
                 }
             }
-
             MSwitch_setdata( $own_hash, $ownName );
             return;
         }
@@ -6234,21 +5929,11 @@ MSwitch_LOG( $ownName, 6, "\n");
     if ( $anzahl && $anzahl != 0 ) {
 
         MSwitch_LOG( $ownName, 6, "-> $anzahl auszuführende Befehle gefunden");
-
-
-
-
-        ##### MSwitch_LOG( $ownName, 6, "Befehlsarray: @cmdarray ");
         #aberabeite aller befehlssätze in cmdarray
 
       LOOP31: foreach (@cmdarray) {
-		  
             my $test = $_;
-			
-			
 		    MSwitch_LOG( $ownName, 6, "    - $test");
-
-
             if ( $_ eq 'undef' ) { next LOOP31; }
             my ( $ar1, $ar2, $ar3, $ar4 ) = split( /,/, $test );
             if ( !defined $ar2 ) { $ar2 = ''; }
@@ -6581,14 +6266,8 @@ MSwitch_LOG( $name, 6,"->> teste Eventhandler(Bridge): $a " );
         $foundcond      = "0";
         $eventbedingung = "";
 
-
-
-
-$a =~ s/\$SELF/$name/g;
-
-$a = MSwitch_check_setmagic_i( $hash, $a );
-
-
+		$a =~ s/\$SELF/$name/g;
+		$a = MSwitch_check_setmagic_i( $hash, $a );
 
         if ( $a =~ m/(.*)\[(.*)\]/ ) {
 
@@ -6599,39 +6278,22 @@ $a = MSwitch_check_setmagic_i( $hash, $a );
             $a = $eventpart;
         }
 
-
-
-#  MSwitch_LOG( $name, 6,"-> Zusatzbedingung gefunden: $a " );
-#return;
-
-
         my $re = qr/$a/;
         $foundkey = $a if ( $event =~ /$re/ );
         next if $foundkey eq "undef";
-		
-		
-		
-		
-		
-		
+
 		my $oldkey;
         if ( $foundkey ne "undef" ) { 
 		$oldkey = $foundkey;
 		$foundkey = $orgkey; 
-		
 		}
 		
-		
 		MSwitch_LOG( $name, 6, "\n-> SUB BRIDGE foundkey " );
-		
 		MSwitch_LOG( $name, 6, "ORGKEY: $orgkey "  );
 		MSwitch_LOG( $name, 6, "KEY: $oldkey "  );
 		MSwitch_LOG( $name, 6, "VERGL 1: $re"  );
 		MSwitch_LOG( $name, 6, "VERGL 2: $event"  );
 		
-		
-		
-
         ##########################
         #	ausführen des gefundenen keys
         #
@@ -6643,12 +6305,8 @@ $a = MSwitch_check_setmagic_i( $hash, $a );
         $zweig = "on"  if $bridge[0] eq "cmd1";
         $zweig = "off" if $bridge[0] eq "cmd2";
 
-
-
-		
         MSwitch_LOG( $name, 6,"\n->> ID Bridge gefunden: zweig: $bridge[0] , ID:$bridge[2] ");
 		MSwitch_LOG( $name, 6, "      - BEDINGUNG: $re\n      - EVENT: $event");
-		
 		
 		$showevents = MSwitch_checkselectedevent( $hash, "last_ID" );
         readingsSingleUpdate( $hash, "last_ID", "ID_" . $bridge[2], $showevents );
@@ -7121,25 +6779,6 @@ sub MSwitch_fhemwebFn($$$$) {
 
         ###############################
 
-        #my $limit = undef;
-        # if ( $system =~ m/\[Limit:(.*?)\]/s ) {
-
-            # my $argumente;
-            # my $orgwidget = $1;
-            # my @args = ( split /:/, $1 );
-			
-			# #MSwitch_LOG( $Name, 0,"args ".@args);
-			# #MSwitch_LOG( $Name, 0,"args @args");
-			
-            # if ( @args == 1 ) {
-				
-                # $limit = $args[0];
-                # $system =~ s/\[Limit:$orgwidget\]//g;
-            # }
-        # }
-		
-		#$limit=3;
-
         if ( $system =~ m/\[Reading:(.*?)\]/s ) {
             my $count = 0;
             while ( $system =~ m/\[Reading:(.*?)\]/s ) {
@@ -7152,18 +6791,7 @@ sub MSwitch_fhemwebFn($$$$) {
                     my $reading = $args[0];
                     my $current = ReadingsVal( $Name, $reading, 'undef' );
                     my $widget  = "";
-
-                    # if ( $limit ne undef ) {
-                        # $current = sprintf( "%." . $limit . "f", $current );
-
-                        # $widget ="<span class=\"dval\" informid=\"$Name-$reading\">$current</span>";
-
-                    # }
-                    # else {
-
-                        $widget ="<span class=\"dval\" informid=\"$Name-$reading\">$current</span>";
-                    #}
-
+                    $widget ="<span class=\"dval\" informid=\"$Name-$reading\">$current</span>";
                     $system =~ s/\[Reading:$orgwidget\]/$widget/g;
                 }
             }
@@ -7171,34 +6799,18 @@ sub MSwitch_fhemwebFn($$$$) {
 
 ################
 
-
-   my $tmswitchsetlist = AttrVal( $Name, 'MSwitch_setList', "undef" );
- 
- 
-  if ($tmswitchsetlist ne "undef"){
+	my $tmswitchsetlist = AttrVal( $Name, 'MSwitch_setList', "undef" );
+	if ($tmswitchsetlist ne "undef"){
             my @testdynsetlist = split( / /, $tmswitchsetlist );
-			
-			#MSwitch_LOG( $Name, 0,"dynsetlist @testdynsetlist"); 
-			
+
             foreach my $test (@testdynsetlist) {
-                #if ( $test =~ m/(.*)\[(.*)\]:?(.*)/ ) {
-					
-					
 					# Anwenden_auf:[TYPE=MSwitch]
-if ( $test =~ m/(.*):\[(.*)\](.*)/ ) {
+					if ( $test =~ m/(.*):\[(.*)\](.*)/ ) {
                     my @tfound_devices = devspec2array($2);
 					
 					my $testreadingarg = join( ',', @tfound_devices );
                     my $tsetreading            = $1;
-                  
-#MSwitch_LOG( $Name, 0,"testreadingarg $testreadingarg"); 
-#MSwitch_LOG( $Name, 0,"tsetreading $tsetreading"); 
-
-$data{MSwitch}{mssetlist}{$tsetreading} = $testreadingarg;
-
-#MSwitch_LOG( $Name, 0,"data{MSwitch}{mssetlist}{$tsetreading} = $testreadingarg");
-
-#if ( $data{MSwitch}{mssetlist}{$tsetreading}) delete
+					$data{MSwitch}{mssetlist}{$tsetreading} = $testreadingarg;
                 }
 			}      
 		}
@@ -7247,15 +6859,11 @@ $data{MSwitch}{mssetlist}{$tsetreading} = $testreadingarg;
                 else {
                     $argumente = $data{MSwitch}{$Name}{setlist}{$reading};
                 }
-
-
-   
+				
 				if (exists $data{MSwitch}{mssetlist}{$reading}) 
 				{
 				$argumente=	$data{MSwitch}{mssetlist}{$reading};
 				}
-
-
                 my $widget =
                     "<div class='fhemWidget' cmd='"
                   . $reading
@@ -7269,10 +6877,6 @@ $data{MSwitch}{mssetlist}{$tsetreading} = $testreadingarg;
                   . $current
                   . "'></div>";
                 $system =~ s/\[Widget:$orgwidget\]/$widget/g;
-				
-				
-				#MSwitch_LOG( $Name, 0,"$widget"); 
-				
             }
         }
 delete $data{MSwitch}{mssetlist};
@@ -7934,17 +7538,6 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
   LOOP9: for my $name ( sort @found_devices ) {
         next if ( $name eq "no_device" );
         my @gefischt = grep( /$name/, @affectedklartext );
@@ -7970,11 +7563,6 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
 
         # filter auf argumente on oder off ;
         if ( $name eq '' ) { next LOOP9; }
-
-
-
-
-
 
         # abfrage und auswertung befehlssatz
         if (    $MSwitchIncludeDevicecmds eq '1' and $hash->{INIT} ne "define" and @gefischt > 0 )
@@ -8004,9 +7592,6 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
             $errors = '';
         }
 
-
-
-
         if ( !defined $errors ) {
             $errors = '';
         }
@@ -8014,23 +7599,6 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
         $errors = '|' . $errors;
         $errors =~ s/\| //g;
         $errors =~ s/\|//g;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -8055,25 +7623,6 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
             $errors .= ' ' . $devicewebcmd;
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         if ( $MSwitchIncludeMSwitchcmds eq '1' and $hash->{INIT} ne "define" ) {
             my $usercmds = AttrVal( $name, 'MSwitchcmd', '' );
             if ( $usercmds ne '' ) {
@@ -8081,24 +7630,6 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
                 $errors .= ' ' . $usercmds;
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         if ( $extensions eq '1' ) {
             $errors .= ' ' . 'MSwitchtoggle:textfieldLong';
@@ -8111,19 +7642,8 @@ s/\[MSwitch_Widget:$a$lastpart\]/$data{MSwitch}{Widget}{$a}{script}$html/g;
                 push( @alldevicesselected, $name );
             }
 
-
-
-			#MSwitch_LOG( $Name, 6,"-> SELECT $name errors\n$errors");
-
-
-
-
             # befehlssatz fuer device in scalar speichern
             $cmdsatz{$name} = $errors;
-			
-			
-			
-			
             $devicealias =~ s/\'//g;
             push( @alldevicesalias, $devicealias );
             push( @alldevices,      $name );
@@ -8621,22 +8141,12 @@ MS-NAMESATZ
                 $add         = "MSwitch_Self";
             }
 
-
-
-
-
-
-
             if ( grep( /$re/, @msgruppen ) > 0 ) {
 
                 my $gruppencmd = MSwitch_makegroupcmd( $hash, $devicenamet );
                 $cmdsatz{$devicenamet} =
                   $gruppencmd . ' [FREECMD]:textfieldLong';
             }
-
-
-
-
 
             my $devicenumber = $devicesplit[1];
             my @befehlssatz  = '';
@@ -8820,15 +8330,6 @@ MS-NAMESATZ
                   . "</textarea></td><td>&nbsp</td></tr></table><br>";
             }
 
-            #   $aktdevice
-			
-			
-			
-			
-			# MSwitch_LOG( $Name, 6,"-> SELECT $devicenamet\n$cmdsatz{$devicenamet}");
-
-			
-
             if ( $devicenamet ne 'FreeCmd' ) {
 
                 $SET1PLAIN = "<table border=0>";
@@ -8979,8 +8480,6 @@ MS-NAMESATZ
                   . $_
                   . "_on_sel'>	</span>			  ";
             }
-
-            #			$SET1PLAIN="test";
 
 ########################
 ## block off #$devicename
@@ -9542,9 +9041,7 @@ MS-NAMESATZ
 			</table><br>
 			";
 
-        #     $detailhtml .= $modify;
         $detailhtml = $modify . $detailhtml . $saveline;
-
     }
 
     #textersetzung
@@ -10257,9 +9754,7 @@ end:textersetzung:eng
         $selectedcheck3 = "checked=\"checked\"";
     }
 
-    $MSSAVEEVENT =
-"<input id ='eventsave'  $selectedcheck3 name=\"aw_save\" type=\"checkbox\" $disable>";
-
+    $MSSAVEEVENT ="<input id ='eventsave'  $selectedcheck3 name=\"aw_save\" type=\"checkbox\" $disable>";
     if ( AttrVal( $Name, 'MSwitch_Help', "0" ) eq '1' ) {
         $MSHELP5 =
 "<input name='info' type='button' value='?' onclick=\"hilfe('saveevent')\">&nbsp;";
@@ -10288,7 +9783,6 @@ end:textersetzung:eng
             "<select id = \"eventtest\" name=\"eventtest\">"
           . $optiongeneral
           . "</select><input type=\"button\" id=\"aw_md2\" value=\"test event\"$disable onclick=\"javascript: checkevent(document.querySelector('#eventtest').value)\">";
-
     }
 
     $eventhtml =~ s/MS-SAVEEVENT/$MSSAVEEVENT/g;
@@ -11478,7 +10972,7 @@ sub MSwitch_Exec_Notif($$$$$) {
 	
 	#ACHTUNG
 	if (!defined $event ) { $event = "";}
-MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $event\n-> comand: $comand");
+	MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $event\n-> comand: $comand");
 
     my $protokoll = '';
     my $satz;
@@ -11492,11 +10986,37 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
     my $delaymode      = AttrVal( $name, 'MSwitch_Delete_Delays', '0' );
     my $attrrandomtime = AttrVal( $name, 'MSwitch_RandomTime',    '' );
     my $exittest       = '';
-    $exittest = "1" if $comand eq "on";
-    $exittest = "2" if $comand eq "off";
+	
+	if ($comand eq "on")
+	{
+		$exittest = "1";
+	}
+	
+	if ($comand eq "off")
+	{
+		$exittest = "2";
+	}
+
+###########
+
+	if ( AttrVal( $name, 'MSwitch_lastState', 'undef' ) ne "undef" ) { 
+	my $statearg = "deviceslaststate".$comand;
+	
+	#### check laststate 
+		my @laststates = split (" ",$data{MSwitch}{$name}{lastStates}{$statearg});
+		foreach (@laststates) {
+		my @devargs = split ("\:",$_);
+		my $val =ReadingsVal( $devargs[0], $devargs[1], 'undef' );
+		readingsSingleUpdate( $hash, "lastState_".$devargs[0]."_".$devargs[1], $val, $showevents );
+		readingsSingleUpdate( $hash, "lastState_cmd".$exittest."_time", int(time), $showevents );
+		}
+	}
+	
+#########################	
+	
     my $ekey = '';
     my $out  = '0';
-
+	
     my $format = AttrVal( $name, 'MSwitch_Format_Lastdelay', "HH:MM:SS" );
     my $jump   = AttrVal( $name, "MSwitch_Delay_Count",      10 );
 
@@ -11603,6 +11123,22 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
         # antwort $execute 1 oder 0 ;
 
         my $conditionkey = $device . "_condition" . $comand;
+		
+		
+		if ( $devicedetails{$key} eq "no_action" )
+			{
+				$conditionkey = $device . "_condition" . $comand;
+                my $execute =MSwitch_checkcondition( $devicedetails{$conditionkey},$name, $event );
+                if ( $execute eq 'true' ){
+				if ( $out eq '1' ) {
+                        #abbruchbefehl erhalten von $device
+                        MSwitch_LOG( $name, 6, "-> Abbruchbefehl erhalten von ". $device . " ");
+                        $lastdevice = $device;
+                        last LOOP45;
+                    }
+				}
+			}
+		
         if ( $devicedetails{$key} ne "" && $devicedetails{$key} ne "no_action" )
         {
             my $cs = '';
@@ -11726,22 +11262,12 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
 
                     }
                     my $todec = $cs;
-					
-					
-					
-					
-					
-					
-	if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" ) {						
-        $hash->{helper}{aktevent} = $event;
-		#MSwitch_LOG( $name, 6,"cs------- $cs >");
-        $cs = MSwitch_dec( $hash, $cs );
-		delete( $hash->{helper}{aktevent} );
-		#MSwitch_LOG( $name, 6,"-cs------ $cs >")			
-	}             
-					
-		
-					
+									
+					if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" ) {						
+						$hash->{helper}{aktevent} = $event;
+						$cs = MSwitch_dec( $hash, $cs );
+						delete( $hash->{helper}{aktevent} );
+					}             
 					
                     if ( $cs =~ m/(^set.*)(\{.*\}$)/ ) {
                         my $exec = $2;
@@ -11750,22 +11276,16 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                             $exec = eval $exec;
 								if ($exec eq "")
 								{
-								#	MSwitch_LOG( $name, 6,"undef exec >");
 								$exec = $2;
 								}
                         }
                         $cs = $1 . $exec;
                     }
 
-
-# MSwitch_LOG( $name, 6,"-cs------ $cs >");
-
                     ############################
                     if ( $cs =~ m/{.*}/ ) 
 					{
-						#MSwitch_LOG( $name, 6,"-cs  1------ $cs >");
                         $cs =~ s/\[SR\]/\|/g;
-                       # MSwitch_LOG( $name, 6,"-> finaler Befehl auf Ausführungsstapel geschoben:\n$cs");
                         push( @execute, $cs );
                         if ( $out eq '1' ) 
 						{
@@ -11777,7 +11297,6 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                     }
                     else 
 					{
-						#MSwitch_LOG( $name, 6,"-cs  2------ $cs >");
                         MSwitch_LOG( $name, 6,"-> finaler Befehl auf Ausführungsstapel geschoben:\n$cs");
                         push( @execute, $cs );
                         if ( $out eq '1' ) 
@@ -11796,7 +11315,6 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                     MSwitch_LOG( $name, 6, "-> setze zufälligen Timer");
                     $devicedetails{$timerkey} =
                       MSwitch_Execute_randomtimer($hash);
-
                     # ersetzt $devicedetails{$timerkey} gegen randomtimer
                 }
                 elsif ($attrrandomtime eq ''
@@ -11872,8 +11390,6 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                         $format =~ s/SS/$sekunden/g;
                         $format =~ s/ss/$sek/g;
 
-                        #my $field;
-
                         if ( exists $data{MSwitch}{$name}{setdata}{last_cmd}
                             && $data{MSwitch}{$name}{setdata}{last_cmd} eq
                             "cmd_1" )
@@ -11906,12 +11422,7 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                                 last if $counternumber > 20;    # notausstieg
                             }
 
-                           # readingsBeginUpdate($hash);
-							
-						$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_ident" );
-
-							
-                            #readingsBulkUpdate( $hash, "lastsetting_delay_ident", $savename,$showevents );
+							$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_ident" );
 							readingsSingleUpdate( $hash, "lastsetting_delay_ident", $savename,$showevents );
 
 							$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_cmd" );
@@ -11956,13 +11467,10 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                                     my $msg      = "$name|$timecond";
                                     $hash->{helper}{countdownnexttime} =
                                       $timecond;
-
                                     InternalTimer( $timecond,
                                         "MSwitch_Countdown_new", $msg );
-
                                 }
                             }
-                           # readingsEndUpdate( $hash, 1 );
                         }
 
                     }
@@ -11991,15 +11499,7 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
 
     my $fullstring = join( '[|]', @execute );
     my $msg;
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
     MSwitch_LOG( $name, 6, "-> Ausführung Befehlsstapel " );
 
     if (   defined $fullstring
@@ -12026,24 +11526,6 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                 ##### MSwitch_LOG( $name, 6,"-$debugmode- Ausgefuehrte Befehl: -$device-");
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             if ( $device =~ m/\[REPEATER\].*/ ) {
                 MSwitch_LOG( $name, 6, "-> Repeaterhandling: $device");
                 $device =~ m/\[NUMBER(.*?)](.*)/;
@@ -12058,15 +11540,9 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                 next;
             }
 
-
-
-
-
-
             if ( $device =~ m/\[TIMER\].*/ ) {
                 $device =~ m/\[NAME_(.*?)\]/;
                 my $identifier = $1;
-                ##### MSwitch_LOG( $name, 6, "found Identifier: $identifier ");
                 $device =~ m/\[NUMBER_(.*?)](.*)/;
                 my $number = $1;
                 my $string = $2;
@@ -12106,10 +11582,6 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
 ############### achtung evtll ungewollte aktionen 
 ##############################################################
 
-
- # if ( $device =~ m/{.*}/ ) {
-		#MSwitch_LOG( $name, 6,"TESTE AUF KODIERUNG !! ...... " . __LINE__ ); 
-	
 	 # perlcodiert
            if ( $device =~ m/^\{/ ) 
 		   {
@@ -12155,22 +11627,9 @@ MSwitch_LOG( $name, 6,"\n----------  SUB Exec_Notif ----------\n->  event: $even
                 else 
 				{
 					
-		# fhemcodiert			
-					
-		# if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" ) 
-		# {						
-        # $hash->{helper}{aktevent} = $event;
-		# MSwitch_LOG( $name, 6,"cs------- $device >");
-        # $device = MSwitch_dec( $hash, $device );
-		# delete( $hash->{helper}{aktevent} );
-		# MSwitch_LOG( $name, 6,"-cs------ $device >")			
-		# } 
-					
-					
-				
+		# fhemcodiert
 
-
-my $errors;
+			my $errors;
 				
 				
 			if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" )
@@ -12178,8 +11637,6 @@ my $errors;
 					MSwitch_LOG( $name, 6,"execute command BLOCKMODE-> $device " . __LINE__ ."\n");	
                     $errors = AnalyzeCommandChain( undef, $device );
 			}	
-			
-	
 					
 			if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "line" )
 			{		
@@ -12198,12 +11655,7 @@ my $errors;
 				 
 			delete( $hash->{helper}{aktevent} );	  
 			}		
-					
-					
-					
-MSwitch_LOG( $name, 6,"ERRORS -> -$errors- " . __LINE__ );		
-
-					
+	
 			if ( defined($errors) and $errors ne "OK" and $errors ne "" )
 				{
                         if ( $device =~ m/^get.*/ ) 
@@ -12212,7 +11664,6 @@ MSwitch_LOG( $name, 6,"ERRORS -> -$errors- " . __LINE__ );
                         }
                         else 
 						{
-						#MSwitch_LOG( $name, 1,"MSwitch_Exec_Notif $comand: ERROR $device: $errors -> Comand: $device". " ". __LINE__ );
 						MSwitch_LOG( $name, 6,"\n! CommandAnswer $name $device $errors: $@ " . __LINE__ ."\n");	
 						if ($errors eq "Executing the update the background.")
 							{
@@ -12250,14 +11701,10 @@ sub MSwitch_checkcondition($$$) {
     my $futurelevel  = AttrVal( $name, 'MSwitch_Futurelevel', '0' );
     my $answer;
 
-
-
-
-  
     # abbruch bei leerer condition
     if ( !defined($condition) ) { return 'true'; }
     if ( $condition eq '' )     { return 'true'; }
-  MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_checkcondition ----------");
+	MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_checkcondition ----------");
 
     ############# prüfe klammerfehler
 
@@ -12620,8 +12067,6 @@ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/
       "if (" . $change . "){\$answer = 'true';} else {\$answer = 'false';} ";
     $finalstring2 = "if (" . $change . ")";
     $finalstring1 = "if (" . $change1 . ") ";
-
-    #MSwitch_LOG( $name, 6, "-> Bedingungscondition (final): $condition !");
     MSwitch_LOG( $name, 6, "\n-> Bedingungsprüfung (final):\n$finalstring !");
 
     my $ret;
@@ -12711,7 +12156,6 @@ sub MSwitch_Checkcond_state($$) {
 ####################
 sub MSwitch_Checkcond_time($$) {
     my ( $condition, $name ) = @_;
-    ##### MSwitch_LOG( $name, 6, "zeitbezogene Bedingung gefunden: $condition L:" . __LINE__ );
     my $conditionorg = $condition;
 
     $condition =~ s/!//;
@@ -12763,21 +12207,16 @@ sub MSwitch_Checkcond_time($$) {
         return $return;
     }
     $timecond1 = timelocal( '00', $min1, $hour1, $tdate, $tmonth, $time1 );
-
-    ##### MSwitch_LOG( $name, 6,"time1 $timecond1:" . __LINE__ );
-
     $timecond2 = timelocal( '00', $min2, $hour2, $tdate, $tmonth, $time1 );
     my $timeaktuell =
       timelocal( '00', $aktmin, $akthour, $date, $month, $time1 );
 
     if ( $timeaktuell < $timecond2 && $timecond2 < $timecond1 ) {
-        ##### MSwitch_LOG( $name, 6,"found opt 1 L:" . __LINE__ );
         use constant SECONDS_PER_DAY => 60 * 60 * 24;
         $timecond1 = $timecond1 - SECONDS_PER_DAY;
         $adday     = 1;
     }
     if ( $timeaktuell > $timecond1 && $timecond2 < $timecond1 ) {
-        ##### MSwitch_LOG( $name, 6,"found opt 2 L:" . __LINE__ );
         use constant SECONDS_PER_DAY => 60 * 60 * 24;
         $timecond2 = $timecond2 + SECONDS_PER_DAY;
         $adday     = 1;
@@ -12786,7 +12225,6 @@ sub MSwitch_Checkcond_time($$) {
     my $return;
 
     if ( $conditionorg =~ '\[!' ) {
-        ##### MSwitch_LOG( $name, 6,"negierung gefunden: $conditionorg L:" . __LINE__ );
         $condition =~ s/!//;
         $return = "($timeaktuell < $timecond1 || $timeaktuell > $timecond2)";
     }
@@ -12798,8 +12236,6 @@ sub MSwitch_Checkcond_time($$) {
         $daycondition = MSwitch_Checkcond_day( $days, $name, $adday, $day );
         $return = "($return $daycondition)";
     }
-
-    ##### MSwitch_LOG( $name, 6,"Ergebniss zeitbezogene Bedingung: $return L:" . __LINE__ );
     return $return;
 }
 ####################
@@ -12808,8 +12244,6 @@ sub MSwitch_Checkcond_history($$) {
     $condition =~ s/\[//;
     $condition =~ s/\]//;
     my $hash = $defs{$name};
-    ##### MSwitch_LOG( $name, 6,"historybezogene Bedingung gefunden: $condition L:" . __LINE__ );
-
     my $return;
     my $seq;
     my $x   = 0;
@@ -12840,19 +12274,15 @@ sub MSwitch_Checkcond_history($$) {
     my $inhalt =
       $hash->{helper}{history}{event}{$historynumber}{ $historysplit[0] }; #????
     $return = "'" . $inhalt . "'";
-    ##### MSwitch_LOG( $name, 6, "Ergebniss historybezogene Bedingung: $condition L:" . __LINE__ );
     return $return;
 }
 ####################
 sub MSwitch_Checkcond_day($$$$) {
     my ( $days, $name, $adday, $day ) = @_;
-    ##### MSwitch_LOG( $name, 6,"tagesbezogene Bedingung gefunden: $days L:" . __LINE__ );
-
     my $rzeichen = "==";
     my $logik    = "||";
     if ( $days =~ '^!' ) {
         $days =~ s/!//;
-        ##### MSwitch_LOG( $name, 6,"tagesbezogene Bedingung negiert: $days L:" . __LINE__ );
         $rzeichen = "!=";
         $logik    = "&&";
     }
@@ -12879,7 +12309,6 @@ sub MSwitch_Checkcond_day($$$$) {
     chop $daycond;
     chop $daycond;
     $daycond = "&& ($daycond)";
-    ##### MSwitch_LOG( $name, 6,"Ergebniss tagesbezogene Bedingung: $daycond L:" . __LINE__ );
     return $daycond;
 }
 
@@ -12960,13 +12389,9 @@ sub MSwitch_Createtimer($) {
         $timerexist = 1;
         ## timer in felder teilen
         my @alltimers = split( /\[NEXTTIMER\]/, $timer );
-
-        ##### MSwitch_LOG($Name, 6,"alltimers -> @alltimers" );
-
-      EACHTIMER: foreach my $einzeltimer (@alltimers) {
+		EACHTIMER: foreach my $einzeltimer (@alltimers) {
 ######################## ersetzungen
             #ersetze Snippetz
-            #MSwitch_LOG($Name, 0,"einzeltimer -> $einzeltimer" );
             my $x = 0;
             while ( $einzeltimer =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ ) {
                 $x++;    # notausstieg notausstieg
@@ -12989,20 +12414,15 @@ sub MSwitch_Createtimer($) {
                 my $firstpart = $1;
                 my $devname   = $2;
                 my $lastpart  = $3;
-
-                ##### MSwitch_LOG($Name, 6,"FOUND -> $devname" );
-
                 $devname =~ s/\$SELF/$Name/g;
                 my ( $device, $reading ) = split( /:/, $devname );
                 my $setmagic = ReadingsVal( $device, $reading, 'wrongformat' );
                 $einzeltimer = $firstpart . $setmagic . $lastpart;
-                ##### MSwitch_LOG($Name, 6, "einzeltimer -> $einzeltimer" );
             }
 
             #ersetze Perl
             $x = 0;
             while ( $einzeltimer =~ m/(.*)\{(.*)\}(.*)/ ) {
-              #  MSwitch_LOG($Name,0, "einzeltimer perl $Name -> $einzeltimer" );
                 $x++;    # notausstieg
                 last if $x > 20;    # notausstieg
                 if ( defined $2 ) {
@@ -13031,7 +12451,6 @@ sub MSwitch_Createtimer($) {
                     if ( $part2hh > 23 ) { $part2hh = $part2hh - 24 }
                     $part2       = $part2hh . ":" . $part2mm;
                     $einzeltimer = $part1 . $part2 . $part3;
-                  # MSwitch_LOG($Name, 0, "einzeltimer nach perl -> $einzeltimer" );
                 }
             }
 
@@ -13242,7 +12661,6 @@ sub MSwitch_Createtimer($) {
 
                 if ( $timertable{ARG} ne "" ) {
 
-                    #$inhalt.= "-".$timertable{ARG};
                     $hash->{helper}{timer}{$inhalt} =
                       "$inhalt" . "-" . $timertable{ARG};
                 }
@@ -13334,12 +12752,8 @@ sub MSwitch_Createtimer($) {
                     next EACHREPEAT
                       if $sectowait <= 0;    # abbruch wenn timer abgelaufen
                     my $inhalt = $timetoexecuteunix . "-" . $number . $id;
-
-                    #my $zeiger =$timetoexecuteunix;
-
                     if ( $timertable{ARG} ne "" ) {
 
-                        #$inhalt.= "-".$timertable{ARG};
                         $hash->{helper}{timer}{$inhalt} =
                           "$inhalt" . "-" . $timertable{ARG};
                     }
@@ -13372,11 +12786,9 @@ sub MSwitch_Createtimer($) {
         my $nexttime = FmtDateTime( $nexttimer[0] );
         my @nt = split / /, $nexttime;
 		$showevents = MSwitch_checkselectedevent( $hash, "Next_Timer" );
-        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", $showevents  )
-          if scalar(@nexttimer) == 0;
+        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", $showevents  ) if scalar(@nexttimer) == 0;
 		$showevents = MSwitch_checkselectedevent( $hash, "Next_Timer" );
-        readingsSingleUpdate( $hash, "Next_Timer", $nt[1], $showevents  )
-          if scalar(@nexttimer) > 0;
+        readingsSingleUpdate( $hash, "Next_Timer", $nt[1], $showevents  ) if scalar(@nexttimer) > 0;
 
         my $timehash = $hash->{helper}{timer};
         my $timername = ( my @timerkeys = ( sort keys %{$timehash} ) )[0];
@@ -13509,7 +12921,7 @@ sub MSwitch_Execute_Timer($) {
        MSwitch_LOG( "MSwitch_Error", 5,"eingehender Name: $Name ");
        MSwitch_LOG( "MSwitch_Error", 5,"Routine abgebrochen");
        MSwitch_LOG( "MSwitch_Error", 5,"##################################"  );
-	  
+	 
 	   MSwitch_LOG( "MSwitch_Error", 6,"##################################"  );
        MSwitch_LOG( "MSwitch_Error", 6,"MSwitch_Error in exec_timer " );
        MSwitch_LOG( "MSwitch_Error", 6,"eingehende daten: $input " );
@@ -13517,10 +12929,7 @@ sub MSwitch_Execute_Timer($) {
        MSwitch_LOG( "MSwitch_Error", 6,"eingehender Name: $Name ");
        MSwitch_LOG( "MSwitch_Error", 6,"Routine abgebrochen");
        MSwitch_LOG( "MSwitch_Error", 6,"##################################"  );
-	  
-	  
-	  
-        return;
+       return;
     }
 
     MSwitch_LOG( $Name, 6,"---- ausführung Timer $timecond, $param L:" . __LINE__ );
@@ -13573,34 +12982,21 @@ sub MSwitch_Execute_Timer($) {
     }
 
     my $extime = POSIX::strftime( "%H:%M", localtime );
-    # readingsBeginUpdate($hash);
-	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
-    # readingsBulkUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
-	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
-    # readingsBulkUpdate( $hash, "EVTFULL",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
-	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
-    # readingsBulkUpdate( $hash, "EVTPART1", $Name, $showevents );
-	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
-    # readingsBulkUpdate( $hash, "EVTPART2", "execute_timer_P" . $param, $showevents );
-	# #$showevents = MSwitch_checkselectedevent( $hash, $savename );
-    # readingsBulkUpdate( $hash, "EVTPART3", $extime, $showevents );
-    # readingsEndUpdate( $hash, $showevents );
 
-$showevents = MSwitch_checkselectedevent( $hash, "EVENT" );
-readingsSingleUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
+	$showevents = MSwitch_checkselectedevent( $hash, "EVENT" );
+	readingsSingleUpdate( $hash, "EVENT",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
 
-$showevents = MSwitch_checkselectedevent( $hash, "EVTFULL" );
-readingsSingleUpdate( $hash, "EVTFULL",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTFULL" );
+	readingsSingleUpdate( $hash, "EVTFULL",$Name . ":execute_timer_P" . $param . ":" . $extime, $showevents );
 
-$showevents = MSwitch_checkselectedevent( $hash, "EVTPART1" );
-readingsSingleUpdate( $hash, "EVTPART1", $Name, $showevents );
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART1" );
+	readingsSingleUpdate( $hash, "EVTPART1", $Name, $showevents );
 
-$showevents = MSwitch_checkselectedevent( $hash, "EVTPART2" );
-readingsSingleUpdate( $hash, "EVTPART2", "execute_timer_P" . $param, $showevents );
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART2" );
+	readingsSingleUpdate( $hash, "EVTPART2", "execute_timer_P" . $param, $showevents );
 
-$showevents = MSwitch_checkselectedevent( $hash, "EVTPART3" );
-readingsSingleUpdate( $hash, "EVTPART3", $extime, $showevents );
-
+	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART3" );
+	readingsSingleUpdate( $hash, "EVTPART3", $extime, $showevents );
 
     $hash->{helper}{evtparts}{evtfull} =
       $Name . ":execute_timer_P" . $param . ":" . $extime;
@@ -13648,17 +13044,24 @@ readingsSingleUpdate( $hash, "EVTPART3", $extime, $showevents );
     @nexttimer = sort @nexttimer;
 	my @nt;
 	
-	
-	
-	
+
 	
     if ( exists $nexttimer[0] ) {
-MSwitch_LOG( $Name, 6,"-> next timer  : $nexttimer[0]\n L:" . __LINE__ );
+	MSwitch_LOG( $Name, 6,"-> next timer  : $nexttimer[0]\n L:" . __LINE__ );
         my @aktset   = split( /-/, $nexttimer[0] );
+
+		if ($aktset[1] eq "5" )
+		{
+		$showevents = MSwitch_checkselectedevent( $hash, "Next_Timer" );
+        readingsSingleUpdate( $hash, "Next_Timer", "no_timer_today", $showevents );	
+		}
+		else
+		{
         my $nexttime = FmtDateTime( $aktset[0] );
         @nt       = split / /, $nexttime;
 		$showevents = MSwitch_checkselectedevent( $hash, "Next_Timer" );
         readingsSingleUpdate( $hash, "Next_Timer", $nt[1], $showevents );
+		}
     }
     else {
 		$showevents = MSwitch_checkselectedevent( $hash, "Next_Timer" );
@@ -13691,68 +13094,39 @@ MSwitch_LOG( $Name, 6,"-> next timer  : $nexttimer[0]\n L:" . __LINE__ );
         #return;
     }
 	
-	
 	$showevents = MSwitch_checkselectedevent( $hash, "last_cmd" );
-	
-	
-	
 	MSwitch_LOG( $Name, 6,"-> load next nt : $nt[2]\n L:" . __LINE__ );
-	
-	
+
     if ( $param eq '3' ) {
         readingsSingleUpdate( $hash, "last_cmd", "cmd_1", $showevents );
         MSwitch_Exec_Notif( $hash, 'on', 'nocheck', '', 0 );
-		
-		
-		
-		
-       # return;
+
     }
     if ( $param eq '4' ) {
         readingsSingleUpdate( $hash, "last_cmd", "cmd_2", $showevents );
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', 0 );
 		
-		
-		
-		
-        #return;
     }
     if ( $param eq '6' ) {
         readingsSingleUpdate( $hash, "last_cmd", "cmd_1", $showevents );
         MSwitch_Exec_Notif( $hash, 'on', 'nocheck', '', $execid );
-		
-		
-		
-		
-		
-        #return;
+
     }
     if ( $param eq '7' ) {
         readingsSingleUpdate( $hash, "last_cmd", "cmd_2 ", $showevents );
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', $execid );
-		
-		
-		
-		
-        #return;
+
     }
-	
 	
     if ( $param eq '9' ) {
         MSwitch_Exec_Notif( $hash, 'on',  'nocheck', '', 0 );
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', 0 );
 		
-		
-		
-       # return;
     }
     if ( $param eq '10' ) {
         MSwitch_Exec_Notif( $hash, 'on',  'nocheck', '', $execid );
         MSwitch_Exec_Notif( $hash, 'off', 'nocheck', '', $execid );
 		
-		
-		
-        #return;
     }
 	
 	
@@ -13765,23 +13139,12 @@ MSwitch_LOG( $Name, 6,"-> next timer  : $nexttimer[0]\n L:" . __LINE__ );
 		my $select = $aktset[0]."-".$aktset[1];
 
     my @arg = split( /-/, $hash->{helper}{timer}{ $select } );
-
-#MSwitch_LOG( $Name, 6,"---- DATA Next Timer: $nexttimer[0]  select: $select -  @arg L:" . __LINE__ );
-		
-	
 	if ( $arg[2] eq ""){ $arg[2] = "noArg"}
-	
-	 readingsSingleUpdate( $hash, "Next_Timer_ARG", $arg[2], $showevents  );
-	 
-	 
-	 
+	readingsSingleUpdate( $hash, "Next_Timer_ARG", $arg[2], $showevents  );
 	}
 	 else {
-		#$showevents = MSwitch_checkselectedevent( $hash, "Next_Timer" );
         readingsSingleUpdate( $hash, "Next_Timer_ARG", "noArg", $showevents );
     }
-	
-	
     return;
 }
 ####################
@@ -13888,11 +13251,6 @@ sub MSwitch_Del_Device($$) {
     readingsBulkUpdate( $hash, ".Device_Affected",         $newaffected );
     readingsBulkUpdate( $hash, ".Device_Affected_Details", $newaffecteddet );
     readingsEndUpdate( $hash, 0 );
-    #my $devices = MSwitch_makeAffected($hash);
-    #my $devhash = $hash->{DEF};
-    #my @dev     = split( /#/, $devhash );
-    #$hash->{DEF} = $dev[0] . ' # ' . $devices;
-	
 	MSwitch_assoziation($hash);
     return;
 }
@@ -13905,11 +13263,6 @@ sub MSwitch_Debug($) {
     my $debug3 = ReadingsVal( $Name, '.Device_Events',           0 );
     $debug2 =~ s/:/ /ig;
     $debug3 =~ s/,/, /ig;
-   # readingsBeginUpdate($hash);
-  #  readingsBulkUpdate( $hash, "Device_Affected",         $debug1 );
-   # readingsBulkUpdate( $hash, "Device_Affected_Details", $debug2 );
-   # readingsBulkUpdate( $hash, "Device_Events",           $debug3 );
-   # readingsEndUpdate( $hash, 0 );
    return;
 }
 ###################################
@@ -14128,15 +13481,8 @@ sub MSwitch_checktrigger_new(@) {
 
     return if !defined $eventcopy;
 
+	MSwitch_LOG( $ownName, 6, "-> checktrigger $triggerfield, $zweig  L:" . __LINE__ );
 
-
-MSwitch_LOG( $ownName, 6, "-> checktrigger $triggerfield, $zweig  L:" . __LINE__ );
-
-
-
-#	if ( $triggerfield =~ m/^\[(.*)\:(.*)\]$/ ) {
-	
-	
 	if ( $triggerfield =~ m/\[(.*)\:(.*)\]/ ) {
         $triggerfield = MSwitch_check_setmagic_i( $own_hash, $triggerfield );
     }
@@ -14222,22 +13568,13 @@ MSwitch_LOG( $ownName, 6, "-> checktrigger $triggerfield, $zweig  L:" . __LINE__
 
         my $ret = MSwitch_checkcondition( $newcondition, $ownName, $eventcopy );
 		
-		
-		
-		
 		if ($ret ne "true"){
-			
-			
 		MSwitch_LOG( $ownName, 6, "-> checktrigger answer = nicht wahr  L:" . __LINE__ );	
-	MSwitch_LOG( $ownName, 6, "-> event: $eventcopy - condition: $newcondition  L:" . __LINE__ );	
+		MSwitch_LOG( $ownName, 6, "-> event: $eventcopy - condition: $newcondition  L:" . __LINE__ );	
         return 'undef' ;
 		
 		}
-		
-		
-		
-		
-		
+	
         $answer = "wahr";
     }
 
@@ -14261,10 +13598,8 @@ MSwitch_LOG( $ownName, 6, "-> checktrigger $triggerfield, $zweig  L:" . __LINE__
     if ( $eventcopy =~ m/^$triggerfield/ ) {
         $answer = "wahr";
 		
-		
 	MSwitch_LOG( $ownName, 6, "-> checktrigger answer = wahr  L:" . __LINE__ );	
 	MSwitch_LOG( $ownName, 6, "-> event: $eventcopy - triggerfeld: $triggerfield  L:" . __LINE__ );		
-		
 		
     }
 
@@ -14509,12 +13844,7 @@ sub MSwitch_restore_this($$) {
 
 
 	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
-$pfad.="/MSwitch/";
-
-
-	#	MSwitch_LOG( $Name, 0, "PFAD  >" . $pfad . "MSwitch_Save.txt" );
-
-
+	$pfad.="/MSwitch/";
 
     if ( $arg eq "backupfile" ) {
         open( BACKUPDATEI,
@@ -14692,22 +14022,15 @@ sub MSwitch_backup_this($$) {
         return $BD;
     }
 #############
-    # modus backup
+# modus backup
 	
-
 my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 $pfad.="/MSwitch/";
 
 
-if(-d $pfad) {  
-               # nichtvorhanden  
-        }  
-        else {  
-             mkdir($pfad ,0777);
-        }
-		
-		
-   # mkdir( $restoredir, 0777 );
+if(-d $pfad) {
+	# nichtvorhanden 
+	} else { mkdir($pfad ,0777);}
     open( BACKUPDATEI, ">" . $pfad . "MSwitch_Device_" . $Name . ".txt" );
     print BACKUPDATEI "$BD";
     close(BACKUPDATEI);
@@ -14768,11 +14091,8 @@ sub MSwitch_FullBackup(@) {
     my $time = localtime;
     $time =~ s/\s+/ /g;
     my @time = split( / /, $time );
-
     my $newtime;    # = $time[2].".".$time[1].".".$time[4]."_".$time[3];
-
     if ( !defined $arg ) { $arg = ""; }
-
     my $ans = @time;
     if ( $ans == 6 ) {
         $newtime = $time[3] . "" . $time[1] . "" . $time[5] . "_" . $time[4];
@@ -14799,20 +14119,8 @@ sub MSwitch_FullBackup(@) {
     my $MONKEYS = join( "|", keys(%MONATE) );
     FW_directNotify( "FILTER=$Name", "#FHEMWEB:WEB",
         "information('- $newtime')", "" );
-
-
-#MSwitch_LOG( $Name, 0, "newtime1 $newtime " );
-
-
-
     $newtime =~ s/($MONKEYS)/$MONATE{$1}/g;
-	
 	$newtime =~ s/://g;
-#MSwitch_LOG( $Name, 0, "newtime2 $newtime " );
-    #return;
-
-   # mkdir( $restoredir, 0777 );
-
     $BD .= "#T -> Fullrestore\n";
     foreach my $testdevice ( keys %{ $modules{MSwitch}{defptr} } )    #
     {
@@ -14865,19 +14173,6 @@ sub MSwitch_FullBackup(@) {
     ($BD) =~ s/(.|\n)/sprintf("%02lx ", ord $1)/eg;
     $BD =~ s/ //g;
 
-
-
-
-#my $backupfile   = "restoreDir/MSwitch/";
-#my $restoredir   = "restoreDir/MSwitch/";
-# MSwitch_LOG( $name, 6,"-> UNLINK");
-# open( BACKUPDATEI, ">./log/MSwitch_debug_$name.log" );
-# open( BACKUPDATEI,  ">".$pfad."/MSwitch_debug_$name.log" );
-##  /opt/fhem/USBSTICK/Backups_Fhem
-# mkdir( $restoredir, 0777 );
-
-
-
 my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 $pfad.="/MSwitch/";
 
@@ -14891,12 +14186,7 @@ if(-d $pfad) {
 
     if ( $arg eq "save" ) {
         open( BACKUPDATEI, ">" . $pfad . "MSwitch_Save.txt" );
-		
-		#MSwitch_LOG( $Name, 0, ">" . $pfad . "MSwitch_Save.txt" );
-
-
-
-        print BACKUPDATEI "$BD";
+		print BACKUPDATEI "$BD";
         close(BACKUPDATEI);
         MSwitch_LOG( $Name, 1,
                 "$Name delayed Shutdown: "
@@ -14905,14 +14195,7 @@ if(-d $pfad) {
         return;
     }
     else {
-		
-		#$newtime = "test";
-        open( BACKUPDATEI, ">" . $pfad . "MSwitch_Full_" . $newtime . ".txt" );
-		
-		
-		 # MSwitch_LOG( $Name, 0, ">" . $pfad . "MSwitch_Full_" . $newtime . ".txt" );
-		
-		
+		open( BACKUPDATEI, ">" . $pfad . "MSwitch_Full_" . $newtime . ".txt" );
         print BACKUPDATEI "$BD";
         close(BACKUPDATEI);
 
@@ -14955,13 +14238,7 @@ sub MSwitch_Get_Backup_inhalt(@) {
 	
 	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 $pfad.="/MSwitch/";
-
-	
-		#	MSwitch_LOG( $Name, 0, "<" . $pfad . $string );
-
-	
     open( BACKUPDATEI, "<" . $pfad . $string )
-   # open( BACKUPDATEI, "<./" . $pfad . $string )
       || return "no Backupfile found!";
     while (<BACKUPDATEI>) {
         $Zeilen = $Zeilen . $_;
@@ -14971,27 +14248,6 @@ $pfad.="/MSwitch/";
 }
 
 ####################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 sub MSwitch_fullrestorelocal(@) {
     my ( $hash, $arg1 ) = @_;
@@ -15006,12 +14262,8 @@ sub MSwitch_fullrestorelocal(@) {
             "information('Datei wird auf Server angelegt.')", ""
         );
 		
-		
-my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
-$pfad.="/MSwitch/";
-		
-		
-		
+		my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+		$pfad.="/MSwitch/";
         open( BACKUPDATEI, ">" . $pfad . "MSwitch_Local_Backup.txt" );
         print BACKUPDATEI $data{MSwitch}{localbackup};
         close(BACKUPDATEI);
@@ -15033,28 +14285,12 @@ sub MSwitch_fullrestore(@) {
     my @devicenames;
     my $encoded;
     my $mode = "";
-	
-	
-	
 	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
-$pfad.="/MSwitch/";
+	$pfad.="/MSwitch/";
 
-	
 	if ($arg1 eq "extract")
 	{
-	
 	$Zeilen = $arg2;
-	
-	#MSwitch_LOG( $Name, 6, "FOUND EXTRACT" );
-		# FW_directNotify(
-            # "FILTER=$Name",                        "#FHEMWEB:WEB",
-            # "information('modus: Einzelrestore $arg1 $arg2')", ""
-        # );
-			
-			
-			
-			# return;
-	
 	}
 	else
 	{
@@ -15066,18 +14302,8 @@ $pfad.="/MSwitch/";
     }
     close(BACKUPDATEI);
 }
-	
-	
-	
-	
-	
+
     ($Zeilen) =~ s/([a-fA-F0-9]{2})?/chr(hex $1)/eg;
-
-
-
-#MSwitch_LOG( $Name, 6, "$Zeilen" );
-
-
     $data{MSwitch}{$Name}{backupdatei} = $Zeilen;
     my @found = split( /\n/, $Zeilen );
 
@@ -15773,14 +14999,7 @@ sub MSwitch_Restartcmdnew($) {
     my $cs = $hash->{helper}{delaydetails}{$timecondition}{cmd};
     $cs =~ s/##/,/g;
 
-
-
-
- MSwitch_LOG( $name, 6, "-> restarted CMD  -> " . $cs );
-
-
-
-
+	MSwitch_LOG( $name, 6, "-> restarted CMD  -> " . $cs );
 
     my $conditionkey = $hash->{helper}{delaydetails}{$timecondition}{check};
     my $event        = $hash->{helper}{delaydetails}{$timecondition}{Indikator};
@@ -15910,9 +15129,6 @@ sub MSwitch_Restartcmdnew($) {
 				
 				my $errors;
                 MSwitch_LOG( $name, 6, "-> finale verzögerte Befehlsausführung auf Fhemebene:\n\n$cs\n\n");
-               # $errors = AnalyzeCommandChain( undef, $cs );
-               
-
 				if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" )
 							{			
 									MSwitch_LOG( $name, 6,"execute command BLOCKMODE-> $cs " . __LINE__ ."\n");	
@@ -15976,7 +15192,6 @@ sub MSwitch_Restartcmdnew($) {
             delete( $hash->{helper}{delaynames}{$a} );
         }
     }
-
     return;
 }
 
@@ -16103,8 +15318,6 @@ sub MSwitch_EventBulk($$$$) {
     FW_directNotify( "FILTER=$name", "#FHEMWEB:WEB", "writeevent('$encoded')",
         "" );
 
-    #readingsBeginUpdate($hash);
-	
 	$showevents = MSwitch_checkselectedevent( $hash, "EVTFULL" );
     readingsSingleUpdate( $hash, "EVTFULL",  $evtfull,$showevents );
 	
@@ -16119,9 +15332,7 @@ sub MSwitch_EventBulk($$$$) {
 	
 	$showevents = MSwitch_checkselectedevent( $hash, "EVTPART3" );	
     readingsSingleUpdate( $hash, "EVTPART3", $evtparts3 ,$showevents);
-	
-	
-    #readingsEndUpdate( $hash, 1 );
+
     return;
 }
 ##########################################################
@@ -16200,22 +15411,13 @@ sub MSwitch_set_dev($) {
     my ($hash) = @_;
     my $name = $hash->{NAME};
     my $not = ReadingsVal( $name, '.Trigger_device', '' );
-
     if ( $not ne 'no_trigger' ) {
-		
 		MSwitch_LOG( $name, 6,"-> not $not");
-		
-		 
         if ( $not eq "all_events" ) 
 		{
             delete( $hash->{NOTIFYDEV} );
-
             my $argument = ReadingsVal( $name, '.Trigger_Whitelist', '' );
-
-		MSwitch_LOG( $name, 6,"-> argument $argument");
-
-
-
+			MSwitch_LOG( $name, 6,"-> argument $argument");
             if ( $argument ne '' ) 
 			{
                 if ( $argument =~ m/\[(.*)\:(.*)\]/ ) 
@@ -16235,13 +15437,10 @@ sub MSwitch_set_dev($) {
         }
         else {
             $hash->{NOTIFYDEV} = $not;
-           #my $devices = MSwitch_makeAffected($hash);
-            #$hash->{DEF} = $not . ' # ' . $devices;
         }
     }
     else {
         $hash->{NOTIFYDEV} = 'no_trigger';
-        #delete $hash->{DEF};
     }
 }
 ################################################################
@@ -16249,10 +15448,7 @@ sub MSwitch_clearlog($) {
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
 	my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
-
-# MSwitch_LOG( $name, 6,"-> UNLINK");
-# open( BACKUPDATEI, ">./log/MSwitch_debug_$name.log" );
-  open( BACKUPDATEI,  ">".$pfad."/MSwitch_debug_$name.log" );
+	open( BACKUPDATEI,  ">".$pfad."/MSwitch_debug_$name.log" );
     print BACKUPDATEI "Starte Log\n";    #
     close(BACKUPDATEI);
     return;
@@ -16292,17 +15488,11 @@ sub MSwitch_debug2($$) {
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
     return if $cs eq '';
-
- my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
-
-open( my $fh, ">>".$pfad."/MSwitch_debug_$name.log" )|| Log3( $name, 0, "ERROR" );
-	  print $fh  "$cs\n";
-	  
-	  
+	my $pfad =  AttrVal( 'global', 'logdir', './log/' ) ;
+	open( my $fh, ">>".$pfad."/MSwitch_debug_$name.log" )|| Log3( $name, 0, "ERROR" );
+	print $fh  "$cs\n";
     close $fh;
-
 	my $write =  $cs;
-
     if ( exists $hash->{helper}{aktivelog}
         && $hash->{helper}{aktivelog} eq 'on' )
     {
@@ -16323,18 +15513,15 @@ sub MSwitch_LOG($$$) {
         $showlevel = $data{MSwitch}{perlteste}{loglevel};
     }
 
-
     my $logname = $data{MSwitch}{Log};
     if ( $logname eq "all" ) { $logname = $name; }
 
-   if ( $logname ne $name ) {
+	if ( $logname ne $name ) {
         return;
     }
 
-
     if ((AttrVal( $name, 'MSwitch_Debug', "0" ) eq '2' || AttrVal( $name, 'MSwitch_Debug', "0" ) eq '3')&& ( $level eq $showlevel ) )
     {
-       
 		 MSwitch_debug2( $hash, $cs );
         return if $level eq $showlevel;
     }
@@ -16356,20 +15543,10 @@ sub MSwitch_LOG($$$) {
     
 ##############################################################
 sub MSwitch_dec($$) {
-
-
-
     my ( $hash, $todec ) = @_;
     my $name    = $hash->{NAME};
     my $evtfull = "";
     my $event   = "";
-
-
-
-#MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_dec ----------\n- $todec >");
-
-
-
 
     if ( exists $hash->{helper}{aktevent} ) {
 
@@ -16379,8 +15556,6 @@ sub MSwitch_dec($$) {
 
 #ACHTUNG
     if (!defined $event ) { $event = "";}
-	
-	
     my @eventteile = split( /:/, $event, 3 );
 
 #next EVENT if @eventteile > 3;	# keine 4 stelligen events zulassen
@@ -16395,13 +15570,6 @@ sub MSwitch_dec($$) {
     my $evtparts3 = $eventteile[2];
 
     my $alias = AttrVal( $evtparts1, 'alias', $evtparts1 );
-
-
-
-
-
-
-
 
     if ( $todec =~ m/^(\{)(.*)(\})/s ) {
 
@@ -16427,11 +15595,6 @@ sub MSwitch_dec($$) {
         $todec =~ s/\$ALIAS/$alias/g;
     }
 
-
-
-
-
-
     # ersetzung für beide codes
     # setmagic ersetzung
 	
@@ -16456,44 +15619,8 @@ sub MSwitch_dec($$) {
             }
         }
     }
-	
 
-	
-	#if ( AttrVal( $name, 'MSwitch_CMD_processing', $cmdprocessing ) eq "block" ) {
-	
 	$todec = MSwitch_check_setmagic_i($hash,$todec);
-	
-	#}
-	
-	
-	
-	
-	
-	#MSwitch_LOG( $name, 6,"setmagic ------- $todec >");
-	
-    # my $x = 0;
-    # while ( $todec =~
-        # m/(.*)\[([a-zA-Z0-9._\$]{1,50})\:([a-zA-Z0-9._]{1,50})\](.*)/ )
-    # {
-        # $x++;    # notausstieg notausstieg
-        # last if $x > 20;    # notausstieg notausstieg
-        # my $firstpart   = $1;
-        # my $lastpart    = $4;
-        # my $readingname = $3;
-        # my $devname     = $2;
-        # $devname =~ s/\$SELF/$name/;
-        # my $setmagic = ReadingsVal( $devname, $readingname, 0 );
-        # $todec = $firstpart . $setmagic . $lastpart;
-    # }
-
-#MSwitch_LOG( $name, 6,"------- $todec >");
-
-
-
-
-
-#MSwitch_LOG( $name, 6,"----xx--- $todec >");
-
 
     if ( $todec =~ m/^\{.*\}$/ )
 	{
@@ -16517,10 +15644,6 @@ sub MSwitch_dec($$) {
                 my $part3 = $3;
                 my $exec  = "my \$return = " . $part2 . ";return \$return;";
                 $exec =~ s/#\[nl\]/\n/g;
-				
-			#	MSwitch_LOG( $name, 6,"FOUND RECHENOPERATION >  $part2");
-				
-				
                 {
                     no warnings;
                     $part2 = eval $exec;
@@ -16530,9 +15653,6 @@ sub MSwitch_dec($$) {
         }
 
     }
-
-#MSwitch_LOG( $name, 6,"------- $todec >");
-
 
     #variablen etc.
     # $we / !$we 	 - 	nur an Wochenenden / Wochentagen
@@ -16565,15 +15685,6 @@ sub MSwitch_dec($$) {
     $todec =~ s/\$wday/$wday/g;
     $todec =~ s/\$yday/$yday/g;
     $todec =~ s/\$hms/$hms/g;
-
-
-#MSwitch_LOG( $name, 6,"- $todec >");
-
-
-#MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_dec end ----------\n");
-
-
-
     return $todec;
 }
 
@@ -16604,9 +15715,7 @@ sub MSwitch_makefreecmdonly($$) {
 
         my $firstpart = $1;
         ## variablendeklaration für perlcode / wird anfangs eingefügt
-
         my $newcode = "";
-
         if ( exists $hash->{helper}{evtparts}{device} ) {
             $newcode .=
               "my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";";
@@ -16714,21 +15823,11 @@ sub MSwitch_check_setmagic_i($$) {
 	my $incomming = $msg;
     # setmagic ersetzung
 
-# MSwitch_LOG( $name, 6,"----------  SUB MSwitch_check_setmagic_i ----------".__LINE__);
+	my $org = $msg;
 
-my $org = $msg;
+	my $x = 0;
+	while ( $org =~ m/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/ ) {
 
-#$org =~ s/\$SELF/$name/g;
-
-
-
-my $x = 0;
-while ( $org =~ m/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/ ) {
-	
-	
-#	MSwitch_LOG( $name, 6,"FOUND".__LINE__);
-	
-	
 	$x++;    # notausstieg notausstieg
     last if $x > 20;    # notausstieg notausstieg
 			
@@ -16772,7 +15871,6 @@ while ( $org =~ m/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\
 	$org =~s/(\[([ari]:)?([a-zA-Z\d._]+):([a-zA-Z\d._\/-]+)(:(t|sec|i|[dr]\d?))?\])/$val/;
 	}
 
-# MSwitch_LOG( $name, 6,"-> return: $org".__LINE__);
 return $org;
 }
 
@@ -17293,7 +16391,6 @@ sub MSwitch_PerformHttpRequest($$) {
                   . " .....";
             }
             readingsBulkUpdate( $hash, $reading, $arg,1 );
-
         }
         else {
             MSwitch_LOG $name, 5, "no match found for regex $reg";
@@ -17509,26 +16606,18 @@ sub MSwitch_Get_Devices(@) {
 
 sub MSwitch_checkselectedevent($$) {
 my ( $hash, $tocheck ) = @_;
-
 return 1 if $tocheck eq "state";
 my $name     = $hash->{NAME};
 my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
 return 1 if $showevents == 1;
-
 if ( exists  $hash->{helper}{selectedevents}{$tocheck} ){
 $showevents = $hash->{helper}{selectedevents}{$tocheck} == 1? 1:0 ;
-
-#MSwitch_LOG( $name, 6, "---> test $tocheck $showevents L:" . __LINE__ );
-
 }
-
 return $showevents ;
 }
 
 
 ########################
-
-
 
 sub MSwitch_assoziation($){
 	my ( $hash ) = @_;
@@ -17539,11 +16628,8 @@ sub MSwitch_assoziation($){
 	my @affecteddevices = split( /#\[ND\]/, ReadingsVal( $Name, '.Device_Affected_Details', 'no_device' ) );
 	my $conditions;
 	my $assos;
-	
-	
 	MSwitch_LOG( $Name, 6, "--- Execute sub MSwitch_assoziation --- L:" . __LINE__ );
 
-	
 	if ($triggercond ne "undef")
 	{
 		$conditions.=$triggercond;
@@ -17635,28 +16721,14 @@ sub MSwitch_assoziation($){
 	return;
 	}
 
-
-
 ########################
-
 
 sub MSwitch_Set_extractbackup($@){
 	my ( $hash, $name, $cmd, $arg1 ) = @_;
-	
-	
-	
-	
-	
-	#my ( $hash, $arg1 ) = @_;
-   # my $Name    = $hash->{NAME};
-   
+
     my $string  = $arg1;
     my $Zeilen  = "";
-	
     my @devicenames;
-    #my $encoded;
-    #my $mode = "";
-
 	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 	$pfad.="/MSwitch/";
 
@@ -17677,47 +16749,28 @@ sub MSwitch_Set_extractbackup($@){
             $Zeilen = $1;
             $Zeilen =~ s/#\[nl\]/\n/g;
             $names.= $Zeilen." ";
-          
         }
     }
-	#MSwitch_LOG( $name, 6, "--- $cmd, $names L:" . __LINE__ );  
 	return "$names";
 }
-
-
 
 ########################
 ########################
 sub MSwitch_Set_extractbackup1($@){
 	my ( $hash, $name, $cmd, $arg1 ,$arg2 ) = @_;
-	
     my $string  = $arg1;
-    #my $Zeilen  = "#T -> Einzelrestore\n";
-	
-	
 	my $Zeilen  = "";
     my @devicenames;
-
-
 	my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 	$pfad.="/MSwitch/";
-
     open( BACKUPDATEI, "<" . $pfad . $string )
       || return "no Backupfile found!\n";
 
     while (<BACKUPDATEI>) {
         $Zeilen.= $_;
     }
-	
-	
-	
 	($Zeilen) =~ s/([a-fA-F0-9]{2})?/chr(hex $1)/eg;
-	
 	my @found = split( /\n/, $Zeilen );
-	
-	#unshift(@found, "#T -> Einzelrestore");
-	
-	
 	my $found =0;
 	my $result ="";
 	
@@ -17734,38 +16787,14 @@ sub MSwitch_Set_extractbackup1($@){
 		{
 			$found = 0;
 		}
-		
 		next if ($found ==0);
-		
 		$result.= $_."\n";
-		
-		
     }
 	
-	
 	($result) =~ s/(.|\n)/sprintf("%02lx ", ord $1)/eg;
-	
-	
-	
-	
-	
-	
     $result =~ s/ //g;
-	
-	
-	#T -> Einzelrestore
-	
-	
-	
-	
 	return "$result";
-	
-	
-	
-	
-	
 }
-
 
 1;
 
