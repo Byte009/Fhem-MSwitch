@@ -1,4 +1,8 @@
 Version
+7.1
+Change: cmd verarbeitung , new ATTR MSwitch_lastState
+
+Version
 7.05
 Change: change MSwitch_Web.js
 
