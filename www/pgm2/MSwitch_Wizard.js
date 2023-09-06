@@ -41,7 +41,7 @@
 //var o =[];
 	var configstart = [
 	'#V Version',
-	'#VS V6.2',
+	'#VS V6.3',
 	'#S .First_init -> done',
 	'#S .Trigger_off -> no_trigger',
 	'#S .Trigger_cmd_off -> no_trigger',
@@ -50,7 +50,7 @@
 	'#S .Trigger_on -> no_trigger',
 	'#S .Trigger_cmd_on -> no_trigger',
 	'#S .Trigger_condition -> ',
-	'#S .V_Check -> V6.2',
+	'#S .V_Check -> V6.3',
 	'#S .Device_Events -> no_trigger',
 	'#S .Device_Affected -> no_device',
 	'#S .Trigger_time_1 -> ',
@@ -76,7 +76,7 @@
 
 	var configtemplate = [
 	'#V Version',
-	'#VS V6.0',
+	'#VS V6.3',
 	'#S .First_init -> done',
 	'#S .Trigger_off -> no_trigger',
 	'#S .Trigger_cmd_off -> no_trigger',
@@ -93,7 +93,7 @@
 	'#S .Trigger_time_3 -> ',
 	'#S .Trigger_time_4 -> ',
 	'#S .Trigger_time_5 -> ',
-	'#S .Device_Affected_Details -> '];
+	'#S .Device_Affected_Details_new -> '];
 
 	var emptydevice = [
 	'',
@@ -344,6 +344,9 @@ function reset() {
 	return;
 	}
 	
+	
+	
+	/*
 function XXXmakeconfig(){
 	if (document.getElementById('first').value == 'time'){
 		// ändere config für timeevent
@@ -389,6 +392,9 @@ function XXXmakeconfig(){
 	fillconfig('rawconfig')
 	return;
 } 
+
+
+*/
 
 function fillconfig(name){
 	
@@ -752,24 +758,27 @@ atarray= name.split("\[TRENNER\]");
 function saveat(){
 	var cmdstring = document.getElementById('defcmd').value;
 	cmdstring = cmdstring.replace(/\n/g,'#[nl]');
-	cmdstring = cmdstring.replace(/:/g,'#[dp]');
-	cmdstring = cmdstring.replace(/;/g,'#[se]');
 	cmdstring = cmdstring.replace(/ /g,'#[sp]');
+	
+	/*cmdstring = cmdstring.replace(/:/g,'#[dp]');
+	cmdstring = cmdstring.replace(/;/g,'#[se]');
 	cmdstring = cmdstring.replace(/\t/g,'#[tab]');
 	cmdstring = cmdstring.replace(/\\/g,'#[bs]');
 	cmdstring = cmdstring.replace(/,/g,'#[ko]');
 	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
 	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
 	
+	*/
+	
 	configstart[12] ='#S .Device_Affected -> FreeCmd-AbsCmd1';
-    var newcmdline = '#S .Device_Affected_Details -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
+    var newcmdline = '#S .Device_Affected_Details_new -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
 
 	configstart[29]=newcmdline;
 	
 	if (document.getElementById('defflag').value == "*")
 	{
 		string = document.getElementById('deftspec').value;
-		string = string.replace(/:/gi,"#[dp]");
+		//string = string.replace(/:/gi,"#[dp]");
 		configstart[15] ='#S .Trigger_time_3 -> TIME='+ string;
 	}
 	
@@ -777,7 +786,7 @@ function saveat(){
 	{
 		string = document.getElementById('deftspec').value;
 		string = 'REPEAT='+string+'*00:01-23:59';
-		string = string.replace(/:/gi,"#[dp]");
+		//string = string.replace(/:/gi,"#[dp]");
 		configstart[15] ='#S .Trigger_time_3 ->'+ string;
 	}
 	
@@ -936,14 +945,22 @@ function savenot(){
 	//return;
 	// funktionsfähige ersetzung für detailübertragung
 	cmdstring = cmdstring.replace(/\n/g,'#[nl]');
+	cmdstring = cmdstring.replace(/ /g,'#[sp]');
+	
+	
+	
+	/*
 	cmdstring = cmdstring.replace(/:/g,'#[dp]');
 	cmdstring = cmdstring.replace(/;/g,'#[se]');
-	cmdstring = cmdstring.replace(/ /g,'#[sp]');
 	cmdstring = cmdstring.replace(/\t/g,'#[tab]');
 	cmdstring = cmdstring.replace(/\\/g,'#[bs]');
 	cmdstring = cmdstring.replace(/,/g,'#[ko]');
 	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
 	cmdstring = cmdstring.replace(/\|/g,'#[wa]');
+	*/
+	
+	
+	
 	// hier notify to mswitch mappen
 	// EVENT - EVTPART3
 	// NAME
@@ -953,7 +970,7 @@ function savenot(){
 	
 	document.getElementById('notifytest').value=cmdstring;
 	configstart[12] ='#S .Device_Affected -> FreeCmd-AbsCmd1';
-    var newcmdline = '#S .Device_Affected_Details -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
+    var newcmdline = '#S .Device_Affected_Details_new -> FreeCmd-AbsCmd1'+'#[NF]undefined#[NF]cmd#[NF]'+cmdstring+'#[NF]#[NF]delay1#[NF]delay1#[NF]00:00:00#[NF]00:00:00#[NF]#[NF]#[NF]undefined#[NF]undefined#[NF]1#[NF]0#[NF]#[NF]0#[NF]0#[NF]1#[NF]0';
 	configstart[29]=newcmdline;
 	configstart[5] ='#S .Trigger_device -> '+ document.getElementById('trigdev').value;
 	
@@ -976,6 +993,8 @@ function savenot(){
 	fillconfig('rawconfig2');
 	// hexumwandlung
 	inhalt=document.getElementById('rawconfig2').value;
+	
+	
 	//alert(inhalt);
 	inhalthex= str2hex(inhalt);
 	document.getElementById('rawconfig2').value=inhalthex;
@@ -992,17 +1011,41 @@ function startimportpreconf(){
 
 function startimportpreconf1(data){
 	preconf = data;
+	
 	preconfparts = preconf.split("#-NEXT-");
+	
+	
+	
+	
 	var anzahl = preconfparts.length;
 	var count =0;
 	for (i=count; i<anzahl; i++)
 		{
+			
+		//alert(i);	
+			
 		treffer = preconfparts[i].match(/#NAME.(.*?)(#\[NEWL\])/);
 		help = preconfparts[i].match(/#HELP.(.*?)(#\[NEWL\])/);
+		//alert(treffer);
+		
+		
+		if (treffer == null) { 
+		
+	
+		continue;
+		}
+		
 		preconfparts[i] = (preconfparts[i].split(treffer[0]).join(''));
+		
+		
 		preconfparts[i] = (preconfparts[i].split(help[0]).join(''));
+		
+		
 		preconfparts[i] = preconfparts[i].replace(/#\[NEWL\]/gi,"\n");
+		
+		
 		preconfpartsname.push(treffer[1]);
+		
 		preconfpartshelp.push(help[1]); 
 		}
 
@@ -1337,6 +1380,10 @@ function schreibespeicher(aktline)
 // #################
 
 function saveempty(){
+	
+	
+	alert("saveempty");
+	
 	conf = document.getElementById('rawconfig10').value;
 	conf = conf.replace(/\n/g,'#[EOL]');
 	conf = conf.replace(/#\[REGEXN\]/g,'\\n');
@@ -1456,10 +1503,50 @@ function starttemplate(template){
 	}
 
 	if (nosave =="0"){
-		conf= str2hex(changevar(conf));
+		
+		
+		
+	/* 		
+	$test =~ s/#\[dp\]/:/g;
+	$test =~ s/#\[pt\]/./g;
+    $test =~ s/#\[ti\]/~/g;
+    $test =~ s/#\[se\]/;/g;
+    $test =~ s/#\[dp\]/:/g;
+    $test =~ s/\(DAYS\)/|/g;
+    $test =~ s/#\[ko\]/,/g;     #neu
+    $test =~ s/#\[bs\]/\\/g; 
+		
+		 */
+		
+/* 		
+ 	conf = conf.replace(/#\[nl\]/g,'\n');
+	
+	conf = conf.replace(/#\[tab\]/g,'\t'); */
+	conf = conf.replace(/#\[sp\]/g,' ');
+	conf = conf.replace(/#\[se\]/g,';');	
+	conf = conf.replace(/#\[dp\]/g,':');
+	conf = conf.replace(/#\[bs\]/g,'\\');
+	conf = conf.replace(/#\[ko\]/g,',');
+	conf = conf.replace(/#\[wa\]/g,'|');
+	conf = conf.replace(/#\[st\]/g,'\'');
+		 
+		
+		
+		
+		//alert("change");
+		
+		
+		
+		
 		document.getElementById('rawconfig10').value=conf;
+		conf= str2hex(changevar(conf));
 		var nm = devicename;
-		var def = nm+' saveconfig '+encodeURIComponent(conf);
+		var def = nm+' saveconfig '+conf;
+		
+		
+		//alert("save");
+		//return;
+		
 		location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
 		}
 	}
@@ -2599,7 +2686,7 @@ function makedevicenew(configuration){
 
 	
 	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
-	configuration[18] = "#S .Device_Affected_Details -> "+newmasterline;
+	configuration[18] = "#S .Device_Affected_Details_new -> "+newmasterline;
 	return configuration;
 }
 
@@ -2634,7 +2721,7 @@ function makedevice(configuration){
     }
 	
 	newmasterline=newmasterline.substr(0,newmasterline.length - 5);
-	configuration[18] = "#S .Device_Affected_Details -> "+newmasterline;
+	configuration[18] = "#S .Device_Affected_Details_new -> "+newmasterline;
 	return configuration;
 }
 
