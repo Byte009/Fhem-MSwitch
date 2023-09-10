@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.5';                               # version
+my $version      = '7.51';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -13196,7 +13196,7 @@ my @arg;
 		if (!defined $hash->{helper}{timer}{ $select } )
 		{
 			
-		MSwitch_LOG( $Name, 0,"$Name -> evtl error in exec timer" . __LINE__ );	
+		#MSwitch_LOG( $Name, 0,"$Name -> evtl error in exec timer" . __LINE__ );	
 		}
 		else{
 			
