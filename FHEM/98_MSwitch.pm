@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.51';                               # version
+my $version      = '7.53';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -2949,6 +2949,24 @@ sub MSwitch_Set_DetailsBlanko($$) {
     return;
 }
 ################################
+
+sub MSwitch_Set_Detailsraw($@) {
+    my ( $hash, $name, $cmd, @args ) = @_;
+	
+	$args[0] = urlDecode($args[0]);
+	
+	$args[0] = MSwitch_Hex($args[0]);
+	
+	
+	
+	
+	MSwitch_Set_Details( $hash, $name, $cmd, @args );
+	
+	return;
+}
+
+
+
 sub MSwitch_Set_Details($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     MSwitch_Make_Undo($hash);
@@ -3375,6 +3393,13 @@ sub MSwitch_Set($@) {
         MSwitch_Set_Details( $hash, $name, $cmd, @args );
         return;
     }
+	
+	
+	 if ( $cmd eq "detailsraw" ) {
+        MSwitch_Set_Detailsraw( $hash, $name, $cmd, @args );
+        return;
+    }
+	
 
     if ( $cmd eq "off" || $cmd eq "on" ) {
         MSwitch_Set_OnOff( $ic, $showevents, $devicemode, $delaymode, $hash,
@@ -8998,7 +9023,19 @@ MS-NAMESATZ
 			devices += '#[DN]'; 
 			devices += \$(\"[name=cmdon$nopoint]\").val()+'#[NF]';
 			devices += \$(\"[name=cmdoff$nopoint]\").val()+'#[NF]';
+	
 			change = \$(\"[name=cmdonopt$nopoint]\").val();
+	
+			//alert(change);
+			//test = change;
+			//test1=str2hex(test);
+			//alert(test1);
+			//test2 =hext2str(test1);
+			//alert(test2);
+			//test1=str2hex(test2);
+			//alert(test1);
+			//return;
+			
 			devices += change+'#[NF]';;
 			change = \$(\"[name=cmdoffopt$nopoint]\").val();
 			devices += change+'#[NF]';;
@@ -10526,8 +10563,11 @@ end:textersetzung:eng
 	devices = '';
 	$javaform
 	devices = devices.replace(/ /g,'#[sp]');
-	devices=str2hex(devices);
-	var  def = nm+\" details \"+devices+\" \";
+	
+	//devices=str2hex(devices);
+	devices =  encodeURIComponent(devices);
+	
+	var  def = nm+\" detailsraw \"+devices+\" \";
 	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
 	}
 	";
@@ -11962,7 +12002,8 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
     ### ersetze setmagic ###
     $x = 0;
     my %setmarray;
-    while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_]+\])/ ) {
+       while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
+
 
         my $treffer = $1;
         my $aktarg  = "SETMAGIC_" . $x;
