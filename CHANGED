@@ -1,4 +1,12 @@
 Version
+7.53
+Change: Fix utf8 fix conditionregex
+
+Version
+7.52
+Change: nicht oeffentlich
+
+Version
 7.51
 Change: Fix Log ( timer error 13199 )
 
