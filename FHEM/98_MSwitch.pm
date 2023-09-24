@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.53';                               # version
+my $version      = '7.54';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -10563,6 +10563,8 @@ end:textersetzung:eng
 	devices = '';
 	$javaform
 	devices = devices.replace(/ /g,'#[sp]');
+	devices = devices.replace(/;/g,'#[se]');
+	
 	
 	//devices=str2hex(devices);
 	devices =  encodeURIComponent(devices);
@@ -17050,6 +17052,14 @@ sub MSwitch_Asc($){
     foreach (@test) {
         $savedetails  .=  chr( hex $_ );
     }
+	
+	
+	# MSwitch_LOG( "test", 0,"savedetails $savedetails" );
+	
+	$savedetails =~ s/#\[se\]/;/g;
+	 #MSwitch_LOG( "test", 0,"savedetails1 $savedetails" );
+	
+	
 	return $savedetails;
 }
 
@@ -17064,7 +17074,19 @@ sub MSwitch_Load_Details($){
 my ($hash)=@_;
 my $Name     			= $hash->{NAME};
 my $test = ReadingsVal( $Name, '.Device_Affected_Details_new', 'no_device' );
+
+
+
+
 return if $test eq "no_device";
+
+
+
+
+
+
+
+
 
 if (exists $data{MSwitch}{$Name}{Device_Affected_Details} )
 	{
@@ -17077,6 +17099,8 @@ else
 	my $data = 	MSwitch_Asc($test);
 	$data{MSwitch}{$Name}{Device_Affected_Details}=$data;
 	my @testidsdev = split( /#\[ND\]/, $data  );
+	
+	
 	return @testidsdev;
 	}
 return;
