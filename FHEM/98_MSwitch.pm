@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.54';                               # version
+my $version      = '7.55';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -107,7 +107,7 @@ my @doignore =
   qw(notify allowed at watchdog doif fhem2fhem telnet FileLog readingsGroup FHEMWEB autocreate eventtypes readingsproxy SVG cul);
 my $startmode               = "Notify";    # Startmodus des Devices nach Define
 my $wizardreset             = 3600;        #Timeout für Wizzard
-my $MSwitch_generate_Events = "0";
+my $MSwitch_generate_Events = "1";
 my $statistic;
 my $debugging    = "0";
 my $configdevice = "";
@@ -2953,15 +2953,13 @@ sub MSwitch_Set_DetailsBlanko($$) {
 sub MSwitch_Set_Detailsraw($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
 	
+	
+	MSwitch_LOG( "test", 0,"startraw 1" );
+	
 	$args[0] = urlDecode($args[0]);
-	
 	$args[0] = MSwitch_Hex($args[0]);
-	
-	
-	
-	
 	MSwitch_Set_Details( $hash, $name, $cmd, @args );
-	
+	MSwitch_LOG( "test", 0,"rawende 1" );
 	return;
 }
 
@@ -3120,6 +3118,8 @@ sub MSwitch_Set_Details($@) {
 	delete $data{MSwitch}{$name}{Device_Affected_Details};
 	delete $data{MSwitch}{$name}{TCond};
 	MSwitch_Save_Details($hash,$savedetails);
+	
+MSwitch_LOG( "test", 0,"test 1" );
 
 	MSwitch_assoziation($hash);
 
@@ -9023,22 +9023,35 @@ MS-NAMESATZ
 			devices += '#[DN]'; 
 			devices += \$(\"[name=cmdon$nopoint]\").val()+'#[NF]';
 			devices += \$(\"[name=cmdoff$nopoint]\").val()+'#[NF]';
-	
-			change = \$(\"[name=cmdonopt$nopoint]\").val();
-	
-			//alert(change);
-			//test = change;
-			//test1=str2hex(test);
-			//alert(test1);
-			//test2 =hext2str(test1);
-			//alert(test2);
-			//test1=str2hex(test2);
-			//alert(test1);
-			//return;
 			
-			devices += change+'#[NF]';;
+			
+// ersetzung um setmagic zu umgehen 
+			
+			change = \$(\"[name=cmdonopt$nopoint]\").val();
+			change = change.replace(/\\[/g,'#[EK1]');
+			change = change.replace(/]/g,'#[EK2]');
+			
+			
+			change = change.replace(/\\(/g,'#[EK3]');
+	change = change.replace(/\\)/g,'#[EK4]');
+			
+			
+			
+			devices += change+'#[NF]';
+			
+	//		alert(change);
+			
+			
 			change = \$(\"[name=cmdoffopt$nopoint]\").val();
-			devices += change+'#[NF]';;
+			change = change.replace(/\\[/g,'#[EK1]');
+			change = change.replace(/]/g,'#[EK2]');
+			change = change.replace(/\\(/g,'#[EK3]');
+	change = change.replace(/\\)/g,'#[EK4]');
+	
+			devices += change+'#[NF]';
+			
+// ende			
+			
 			devices = devices.replace(/\\|/g,'#[SR]');
 			devices += \$(\"[name=onatdelay$nopoint]\").val();
 			devices += '#[NF]';
@@ -10562,9 +10575,20 @@ end:textersetzung:eng
 	var nm = \$(t).attr(\"nm\");
 	devices = '';
 	$javaform
+	
+
+	
+	
+	
+	
+	
+	
+	
 	devices = devices.replace(/ /g,'#[sp]');
 	devices = devices.replace(/;/g,'#[se]');
 	
+	
+	// alert(devices);
 	
 	//devices=str2hex(devices);
 	devices =  encodeURIComponent(devices);
@@ -11198,6 +11222,12 @@ sub MSwitch_Exec_Notif($$$$$) {
 				}
 			}
 		
+		
+		
+		
+		
+		
+		
         if ( $devicedetails{$key} ne "" && $devicedetails{$key} ne "no_action" )
         {
             my $cs = '';
@@ -11205,6 +11235,10 @@ sub MSwitch_Exec_Notif($$$$$) {
                 $cs = "$devicedetails{$device.'_'.$comand.'arg'}";
                 $cs = MSwitch_change_snippet( $hash, $cs );
                 $hash->{helper}{aktevent} = $event;
+				
+				
+	##### ACHTUNG ######			
+				#MSwitch_LOG( $name,6,"aufruf freecmd: > ".__LINE__);
                 $cs = MSwitch_makefreecmd( $hash, $cs );
                 delete( $hash->{helper}{aktevent} );
                 #variableersetzung erfolgt in freecmd
@@ -11217,6 +11251,7 @@ sub MSwitch_Exec_Notif($$$$$) {
                 my $pos = index( $cs, "[FREECMD]" );
                 if ( $pos >= 0 ) {
                     $hash->{helper}{aktevent} = $event;
+				MSwitch_LOG( $name, 6,"aufruf freecmdonly: > ".__LINE__);
 
                     $cs = MSwitch_makefreecmdonly( $hash, $cs );
                     delete( $hash->{helper}{aktevent} );
@@ -11225,6 +11260,13 @@ sub MSwitch_Exec_Notif($$$$$) {
                     $cs = "set $devicenamet " . $cs;
                 }
             }
+
+
+
+
+
+
+
 
             #Variabelersetzung
             if (   $devicedetails{$timerkey} eq "0" || $devicedetails{$timerkey} eq "" )
@@ -11655,9 +11697,11 @@ sub MSwitch_Exec_Notif($$$$$) {
 	 # perlcodiert
 	# my $errors ="";	
            if ( $device =~ m/^\{/ ) 
-		   {
+		{
 			   
 			   $device = MSwitch_dec( $hash, $device );
+			   MSwitch_LOG( $name, 6,"aufruf freecmd: > ".__LINE__);
+
                $device = MSwitch_makefreecmd( $hash, $device );
 				
 			MSwitch_LOG( $name, 6,"Perlcodierung erkannt " . __LINE__ );		
@@ -15931,9 +15975,16 @@ sub MSwitch_makefreecmd($$) {
     my ( $hash, $cs ) = @_;
     my $name = $hash->{NAME};
 
+
+
+
+#MSwitch_LOG( $name, 6,"FOUNDSTARTfreecmd > $cs");
+
+
+my $newcode = "";
     if ( $cs =~ m/^(\{)(.*)(\})/s ) {
         my $oldpart = $2;
-        my $newcode = "";
+        
 
         my $event   = $hash->{helper}{aktevent};
 		if (!defined $event ){$event ="";}
@@ -15953,23 +16004,44 @@ sub MSwitch_makefreecmd($$) {
         my $evtparts3 = $eventteile[2];
 
         if ( exists $hash->{helper}{evtparts}{device} ) {
-            $newcode .=
-              "my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";\n";
-        }
-        else {
+			
+			if ( $cs !~ m/my \$NAME = \"\"/ ){
+			
+            $newcode .="my \$NAME = \"" . $hash->{helper}{evtparts}{device} . "\";\n";
+			}
+	  }
+        else 
+		{
+			
+			if ( $cs !~ m/my \$NAME = \"\"/ ){
+			
             $newcode .= "my \$NAME = \"\";\n";
+			}
         }
-        $newcode .= "my \$SELF = \"" . $name . "\";\n";
-        $newcode .= "my \$EVTPART1 = \"" . $evtparts1 . "\";\n";
-        $newcode .= "my \$EVTPART2 = \"" . $evtparts2 . "\";\n";
-        $newcode .= "my \$EVTPART3 = \"" . $evtparts3 . "\";\n";
-        $newcode .= "my \$EVENT = \"" . $event . "\";\n";
-        $newcode .= "my \$EVTFULL = \"" . $evtfull . "\";\n";
+		
+		
+		
+		
+		
+       if ( $cs !~ m/my \$SELF =/ ){ $newcode .= "my \$SELF = \"" . $name . "\";\n";}
+	if ( $cs !~ m/my \$EVTPART1 =/ ){$newcode .= "my \$EVTPART1 = \"" . $evtparts1 . "\";\n";}
+if ( $cs !~ m/my \$EVTPART2 =/ ){$newcode .= "my \$EVTPART2 = \"" . $evtparts2 . "\";\n";}
+if ( $cs !~ m/my \$EVTPART3 =/ ){$newcode .= "my \$EVTPART3 = \"" . $evtparts3 . "\";\n";}
+if ( $cs !~ m/my \$EVENT =/ ){$newcode .= "my \$EVENT = \"" . $event . "\";\n";}
+        if ( $cs !~ m/my \$EVTFULL =/ ){$newcode .= "my \$EVTFULL = \"" . $evtfull . "\";\n";}
         $newcode .= $oldpart;
+		
+		
+		
         $cs = "{\n$newcode}";
 
         # entferne kommntarzeilen
         $cs =~ s/#\[SR\]/[SR]/g;
+
+
+#MSwitch_LOG( $name, 6,"FOUNDendefreecmd > $cs");
+
+
 
         my $newcs = "";
         my @lines = split( /\n/, $cs );
@@ -17057,7 +17129,20 @@ sub MSwitch_Asc($){
 	# MSwitch_LOG( "test", 0,"savedetails $savedetails" );
 	
 	$savedetails =~ s/#\[se\]/;/g;
-	 #MSwitch_LOG( "test", 0,"savedetails1 $savedetails" );
+	
+	$savedetails =~ s/#\[ti\]/~/g;
+	
+	
+
+	
+	
+	$savedetails =~ s/#\[EK1\]/[/g;
+	$savedetails =~ s/#\[EK2\]/]/g;
+	
+	$savedetails =~ s/#\[EK3\]/(/g;
+	$savedetails =~ s/#\[EK4\]/)/g;
+	
+	#MSwitch_LOG( "test", 6,"savedetails1 $savedetails" );
 	
 	
 	return $savedetails;
@@ -17066,6 +17151,10 @@ sub MSwitch_Asc($){
 ######################################################
 sub MSwitch_Save_Details($$){
 my ($hash,$savedetails)=@_;
+
+MSwitch_LOG( "test", 0,"savedetails $savedetails" );
+
+
 readingsSingleUpdate( $hash, ".Device_Affected_Details_new", MSwitch_Hex($savedetails), 1 );
 return;
 }
