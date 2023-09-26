@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.55';                               # version
+my $version      = '7.56';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -14014,6 +14014,11 @@ sub MSwitch_backup_this($$) {
     if ( $arg eq "cleanup" ) {
         $modus = "cleanup";
     }
+	
+	 if ( $arg eq "support" ) {
+        $modus = "support";
+    }
+	
 
     if ( $arg eq "rename" ) {
         $modus = "rename";
@@ -14064,7 +14069,8 @@ sub MSwitch_backup_this($$) {
         $BD .= "#S $key -> $tmp\n";
     }
 
-    if ( $modus ne "undo" and $modus ne "getraw" and $modus ne "cleanup" )
+    if ( $modus ne "undo" and $modus ne "getraw" and $modus ne "cleanup"  and $modus ne "support" 
+)
 	{
         foreach my $attrdevice ( keys %{ $attr{$Name} } ) 
 		{
@@ -14076,6 +14082,28 @@ sub MSwitch_backup_this($$) {
 #MSwitch_LOG( "test", 0,"ALL MSHEX ".__LINE__ );
 		$BD = MSwitch_Hex($BD);	
     }
+	
+	
+	
+	
+	    if ( $modus eq "support" 
+)
+	{
+        foreach my $attrdevice ( keys %{ $attr{$Name} } ) 
+		{
+            my $attr = AttrVal( $Name, $attrdevice, '' );
+            my $inhalt = "#A $attrdevice -> " . $attr;
+            $inhalt =~ s/\n/#[nl]/g;
+            $BD .= $inhalt . "\n";
+        }
+#MSwitch_LOG( "test", 0,"ALL MSHEX ".__LINE__ );
+		#$BD = MSwitch_Hex($BD);	
+    }
+	
+	
+	
+	
+	
 
     if ( $modus eq "rename" ) 
 	{
@@ -14106,7 +14134,7 @@ sub MSwitch_backup_this($$) {
         return $BD;
     }
 
-    if ( $modus eq "cleanup" ) 
+    if ( $modus eq "cleanup"||$modus eq "support"  ) 
 	{
         ($BD) =~ s/(.|\n)/sprintf("%02lx ", ord $1)/eg;
         $BD =~ s/ //g;
@@ -14782,82 +14810,90 @@ sub MSwitch_Getsupport($) {
     my $out    = '';
     my $startmessage = $data{MSwitch}{startmessage};
 	
-	$out .= "Modulversion: $version\n";
-    $out .= "Datenstruktur: $vupdate\n";
-    $out .= "\n----- Systemstart -----\n";
+	$startmessage =~ s/\n/\\n/g;
+	
+	
+	
+	#
+	$out .= "Modulversion: $version\\n";
+    $out .= "Datenstruktur: $vupdate\\n";
+    $out .= "\\n----- Systemstart -----\\n";
+	
+	
     $out .= $startmessage;
 
-    $out .= "\n----- Devicename -----\n";
-    $out .= "$Name\n";
+    $out .= "\\n----- Devicename -----\\n";
+    $out .= "$Name\\n";
 	
-    $out .= "\n----- Attribute -----\n";
-    my %keys;
+    $out .= "\\n----- Attribute -----\\n";
+     my %keys;
 
-    foreach my $attrdevice ( keys %{ $attr{$Name} } )    #geht
-    {
-        my $tmp = AttrVal( $Name, $attrdevice, '' );
-        $out .= "Attribut $attrdevice: " . $tmp . "\n";
-    }
+     # foreach my $attrdevice ( keys %{ $attr{$Name} } )    #geht
+     # {
+         # my $tmp = AttrVal( $Name, $attrdevice, '' );
+         # $out .= "Attribut $attrdevice: " . $tmp . "\\n";
+     # }
 	
 
-    $out .= "\n----- Trigger -----\n";
+     $out .= "\\n----- Trigger -----\\n";
 	
-    $out .= "Trigger device:  ";
-    my $tmp = ReadingsVal( $Name, '.Trigger_device', 'nicht definiert' );
-	$tmp = "kein Trigger definiert " if $tmp eq "no_trigger";
-    $out .= "$tmp\n";
+     $out .= "Trigger device:  ";
+     my $tmp = ReadingsVal( $Name, '.Trigger_device', 'nicht definiert' );
+	 $tmp = "kein Trigger definiert " if $tmp eq "no_trigger";
+     $out .= "$tmp\\n";
 	
-    $out .= "Trigger time: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_time', 'kein Timer definiert' );
-	$tmp = "kein Timer definiert " if $tmp eq "no_trigger";
-    $tmp =~ s/~/ /g;
-    $out .= "$tmp\n";
+     $out .= "Trigger time: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_time', 'kein Timer definiert' );
+	 $tmp = "kein Timer definiert " if $tmp eq "no_trigger";
+     $tmp =~ s/~/ /g;
+     $out .= "$tmp\\n";
 	
-    $out .= "Trigger condition: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_condition', 'undef' );
+     $out .= "Trigger condition: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_condition', 'undef' );
 	
-	$tmp = MSwitch_Load_Tcond($hash);
+	 $tmp = MSwitch_Load_Tcond($hash);
 	
-	$tmp = "keine Triggercondition definiert " if $tmp eq "undef";
-    $out .= "$tmp\n";
+	 $tmp = "keine Triggercondition definiert " if $tmp eq "undef";
+     $out .= "$tmp\\n";
 	
-    $out .= "Trigger Device Global Whitelist: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_Whitelist', 'undef' );
-	$tmp = "keine Trigger_Whitelist definiert " if $tmp eq "undef";
-    $out .= "$tmp\n";
+     $out .= "Trigger Device Global Whitelist: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_Whitelist', 'undef' );
+	 $tmp = "keine Trigger_Whitelist definiert " if $tmp eq "undef";
+     $out .= "$tmp\\n";
 	
-    $out .= "\n----- Trigger Details -----\n";
-    $out .= "Trigger cmd1: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_on', 'no_trigger' );
-	$tmp = "nicht definiert " if $tmp eq "no_trigger";
-    $out .= "$tmp\n";
+     $out .= "\\n----- Trigger Details -----\\n";
+     $out .= "Trigger cmd1: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_on', 'no_trigger' );
+	 $tmp = "nicht definiert " if $tmp eq "no_trigger";
+     $out .= "$tmp\\n";
 	
-    $out .= "Trigger cmd2: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_off', 'no_trigger' );
-	$tmp = "nicht definiert " if $tmp eq "no_trigger";
-    $out .= "$tmp\n";
+     $out .= "Trigger cmd2: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_off', 'no_trigger' );
+	 $tmp = "nicht definiert " if $tmp eq "no_trigger";
+     $out .= "$tmp\\n";
 	
-    $out .= "Trigger cmd3: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_cmd_on', 'no_trigger' );
-	$tmp = "nicht definiert " if $tmp eq "no_trigger";
-    $out .= "$tmp\n";
+     $out .= "Trigger cmd3: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_cmd_on', 'no_trigger' );
+	 $tmp = "nicht definiert " if $tmp eq "no_trigger";
+     $out .= "$tmp\\n";
 	
-    $out .= "Trigger cmd4: ";
-    $tmp = ReadingsVal( $Name, '.Trigger_cmd_off', 'no_trigger' );
-	$tmp = "nicht definiert " if $tmp eq "no_trigger";
-    $out .= "$tmp\n";
+     $out .= "Trigger cmd4: ";
+     $tmp = ReadingsVal( $Name, '.Trigger_cmd_off', 'no_trigger' );
+	 $tmp = "nicht definiert " if $tmp eq "no_trigger";
+     $out .= "$tmp\\n";
 	
-    $out .= "\n----- Bridge Details -----\n";
-    $tmp = ReadingsVal( $Name, '.Distributor', 'undef' );
-	$tmp = "keine Bridge definiert " if $tmp eq "undef";
-    $tmp =~ s/\n/#[nl]/g;
+     $out .= "\\n----- Bridge Details -----\\n";
+     $tmp = ReadingsVal( $Name, '.Distributor', 'undef' );
+	 $tmp = "keine Bridge definiert " if $tmp eq "undef";
+     #$tmp =~ s/\n/#[nl]/g;
+	 $tmp =~ s/\n/\\n/g;
 
-    $out .= "$tmp\n";
+     $out .= "$tmp\\n";
 
-    my %savedetails = MSwitch_makeCmdHash($Name);
-    $out .= "\n----- Device Actions -----\n";
-	my @affecteddevices =MSwitch_Load_Details($hash);
-	$out .= "keine Deviceactions definiert " if @affecteddevices < 1;
+     my %savedetails = MSwitch_makeCmdHash($Name);
+     $out .= "\\n----- Device Actions -----\\n";
+	 my @affecteddevices =MSwitch_Load_Details($hash);
+	 $out .= "keine Deviceactions definiert " if @affecteddevices < 1;
     foreach (@affecteddevices) {
         my @devicesplit = split( /#\[NF\]/, $_ );
 		
@@ -14865,23 +14901,23 @@ sub MSwitch_Getsupport($) {
         $devicesplit[5] =~ s/'/\\'/g;
         $devicesplit[1] =~ s/'/\\'/g;
         $devicesplit[3] =~ s/'/\\'/g;
-        $out .= "\nDevice: " . $devicesplit[0] . "\n";
-		$out .= "--------------------------------\n";
-		$out .= "cmd1:\n " . $devicesplit[1] . " " . $devicesplit[3] . "\n";
-		$out .= "cmd2:\n " . $devicesplit[2] . " " . $devicesplit[4] . "\n";
-        $out .= "cmd1 delay: " . $devicesplit[7] . "\n";
-        $out .= "cmd2 delay: " . $devicesplit[8] . "\n";
-        $out .= "repeats: " . $devicesplit[11] . "\n";
-        $out .= "repeats delay: " . $devicesplit[12] . "\n";
-        $out .= "priority: " . $devicesplit[13] . "\n";
-        $out .= "id: " . $devicesplit[14] . "\n";
-        $out .= "comment: " . $devicesplit[15] . "\n";
-		$out .= "cmd1 exit: " . $devicesplit[16] . "\n";
-        $out .= "cmd2 exit: " . $devicesplit[17] . "\n";
+        $out .= "\\nDevice: " . $devicesplit[0] . "\\n";
+		$out .= "--------------------------------\\n";
+		$out .= "cmd1:\\n " . $devicesplit[1] . " " . $devicesplit[3] . "\\n";
+		$out .= "cmd2:\\n " . $devicesplit[2] . " " . $devicesplit[4] . "\\n";
+        $out .= "cmd1 delay: " . $devicesplit[7] . "\\n";
+        $out .= "cmd2 delay: " . $devicesplit[8] . "\\n";
+        $out .= "repeats: " . $devicesplit[11] . "\\n";
+        $out .= "repeats delay: " . $devicesplit[12] . "\\n";
+        $out .= "priority: " . $devicesplit[13] . "\\n";
+        $out .= "id: " . $devicesplit[14] . "\\n";
+        $out .= "comment: " . $devicesplit[15] . "\\n";
+		$out .= "cmd1 exit: " . $devicesplit[16] . "\\n";
+        $out .= "cmd2 exit: " . $devicesplit[17] . "\\n";
     }
 
     $out =~ s/#\[sp\]/ /g;
-    $out =~ s/#\[nl\]/\n/g;
+  #  #$out =~ s/#\[nl\]/\n/g;
 	$out =~ s/\(DAYS\)/|/g;
 
 	   
@@ -14891,11 +14927,13 @@ sub MSwitch_Getsupport($) {
 	$out =~ s/-AbsCmd1//g;
 
 
-	$out .= "--------------------------------\n\n";
-	$out .=  MSwitch_backup_this( $hash, "cleanup" );
+	$out .= "--------------------------------\\n\\n";
+	$out .="define ".$Name." mswitch HEX ".MSwitch_backup_this( $hash, "support" );
 	
-	
-	$out=MSwitch_htmlcode($out);
+	 $out =~ s/\[NEWLINWE\]/\\n/g;
+	 $out =~ s/'/&#39;/g;
+	 $out =~ s/"/&#34;/g;
+     $out =~ s/&#160/&#38;nbsp;/g;
 
     asyncOutput( $hash->{CL},
 			"<html><center>Bei Supportanfragen bitte untenstehene Datei anhängen.<br>"
@@ -14936,7 +14974,13 @@ sub MSwitch_Sysextension($) {
     my $count  = 30;
 	my $out = MSwitch_Asc(ReadingsVal( $Name, '.sysconf', '' ));
 
-	$out=MSwitch_htmlcode($out);
+	 $out =~ s/\n/[NEWLINWE]/g;
+	 $out =~ s/\[NEWLINWE\]/\\n/g;
+	 $out =~ s/'/&#39;/g;
+	 $out =~ s/"/&#34;/g;
+	 $out =~ s/\//&#47/g;
+     $out =~ s/&#160/&#38;nbsp;/g;
+	
 
 	asyncOutput( $hash->{CL},
 			"<html><center>Code (Html/Javascript) wird unmittelbar unter DeviceOverview eingebettet<br>"
@@ -17214,20 +17258,6 @@ else
 	}
 return $data;
 }
-######################################################
-
-sub MSwitch_htmlcode($) {
-	
-	my $transfer = @_;
-	#	$transfer =~ s/[^\\*\^\$\|&+-?!{}\s%A-Za-z0-9#\.\-_\t\n<>'"\/;=();:öÖäÄüÜ,\]\[]/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/g;
-	$transfer =~ s/\n/[NEWLINWE]/g;
-	$transfer =~ s/\[NEWLINWE\]/\\n/g;
-	$transfer =~ s/\\/&#92;/g;
-	$transfer =~ s/'/&#39;/g;
-	$transfer =~ s/"/&#34;/g;
-	$transfer =~ s/\//&#47/g;
-    $transfer =~ s/&#160/&#38;nbsp;/g;
-	return $transfer;
-}
+####################################################
 
 1;
