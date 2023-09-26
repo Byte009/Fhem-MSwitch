@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.56';                               # version
+my $version      = '7.57';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -9030,24 +9030,15 @@ MS-NAMESATZ
 			change = \$(\"[name=cmdonopt$nopoint]\").val();
 			change = change.replace(/\\[/g,'#[EK1]');
 			change = change.replace(/]/g,'#[EK2]');
-			
-			
 			change = change.replace(/\\(/g,'#[EK3]');
-	change = change.replace(/\\)/g,'#[EK4]');
-			
-			
-			
+			change = change.replace(/\\)/g,'#[EK4]');
 			devices += change+'#[NF]';
-			
-	//		alert(change);
-			
-			
+
 			change = \$(\"[name=cmdoffopt$nopoint]\").val();
 			change = change.replace(/\\[/g,'#[EK1]');
 			change = change.replace(/]/g,'#[EK2]');
 			change = change.replace(/\\(/g,'#[EK3]');
-	change = change.replace(/\\)/g,'#[EK4]');
-	
+			change = change.replace(/\\)/g,'#[EK4]');
 			devices += change+'#[NF]';
 			
 // ende			
@@ -9057,15 +9048,36 @@ MS-NAMESATZ
 			devices += '#[NF]';
 			devices += \$(\"[name=offatdelay$nopoint]\").val();
 			devices += '#[NF]';
+			
+			
+			
 			delay1 = \$(\"[name=timesetoff$nopoint]\").val();
 			devices += delay1+'#[NF]';
 			delay2 = \$(\"[name=timeseton$nopoint]\").val();
 			devices += delay2+'#[NF]';
-			devices1 = \$(\"[name=conditionon$nopoint]\").val();
-			devices1 = devices1.replace(/\\|/g,'(DAYS)');
-			devices2 = \$(\"[name=conditionoff$nopoint]\").val();
+			
+			
+			
+			change = \$(\"[name=conditionon$nopoint]\").val();
+			change = change.replace(/\\|/g,'(DAYS)');
+			change = change.replace(/\\[/g,'#[EK1]');
+			change = change.replace(/]/g,'#[EK2]');
+			change = change.replace(/\\(/g,'#[EK3]');
+			change = change.replace(/\\)/g,'#[EK4]');
+			devices1 = change;
+			
+			
+			change = \$(\"[name=conditionoff$nopoint]\").val();
+			change = change.replace(/\\|/g,'(DAYS)');
+			change = change.replace(/\\[/g,'#[EK1]');
+			change = change.replace(/]/g,'#[EK2]');
+			change = change.replace(/\\(/g,'#[EK3]');
+			change = change.replace(/\\)/g,'#[EK4]');
+			devices2 = change;
+			
+			
 			if(typeof(devices2)==\"undefined\"){devices2=\"\"}
-			devices2 = devices2.replace(/\\|/g,'(DAYS)');
+			
 			devices += devices1+'#[NF]';
 			devices += devices2;
 			devices += '#[NF]';
@@ -9098,6 +9110,11 @@ MS-NAMESATZ
 			devices += testfeld2;
 			devices += '#[DN]';
 			//return;
+			
+		
+			
+			
+			
 			";
         }
 
