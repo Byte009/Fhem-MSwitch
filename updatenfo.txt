@@ -1,3 +1,3 @@
 Version
-7.56
-Change: change supportinfo fix sysextension
+7.57
+Change: fix setmagic conditions
