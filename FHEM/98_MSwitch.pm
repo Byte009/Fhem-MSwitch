@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.57';                               # version
+my $version      = '7.58';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -9023,59 +9023,30 @@ MS-NAMESATZ
 			devices += '#[DN]'; 
 			devices += \$(\"[name=cmdon$nopoint]\").val()+'#[NF]';
 			devices += \$(\"[name=cmdoff$nopoint]\").val()+'#[NF]';
-			
-			
-// ersetzung um setmagic zu umgehen 
-			
 			change = \$(\"[name=cmdonopt$nopoint]\").val();
-			change = change.replace(/\\[/g,'#[EK1]');
-			change = change.replace(/]/g,'#[EK2]');
-			change = change.replace(/\\(/g,'#[EK3]');
-			change = change.replace(/\\)/g,'#[EK4]');
+			devices += change+'#[NF]';
+			change = \$(\"[name=cmdoffopt$nopoint]\").val();
 			devices += change+'#[NF]';
 
-			change = \$(\"[name=cmdoffopt$nopoint]\").val();
-			change = change.replace(/\\[/g,'#[EK1]');
-			change = change.replace(/]/g,'#[EK2]');
-			change = change.replace(/\\(/g,'#[EK3]');
-			change = change.replace(/\\)/g,'#[EK4]');
-			devices += change+'#[NF]';
-			
-// ende			
-			
 			devices = devices.replace(/\\|/g,'#[SR]');
 			devices += \$(\"[name=onatdelay$nopoint]\").val();
 			devices += '#[NF]';
 			devices += \$(\"[name=offatdelay$nopoint]\").val();
 			devices += '#[NF]';
-			
-			
-			
+
 			delay1 = \$(\"[name=timesetoff$nopoint]\").val();
 			devices += delay1+'#[NF]';
 			delay2 = \$(\"[name=timeseton$nopoint]\").val();
 			devices += delay2+'#[NF]';
 			
-			
-			
 			change = \$(\"[name=conditionon$nopoint]\").val();
 			change = change.replace(/\\|/g,'(DAYS)');
-			change = change.replace(/\\[/g,'#[EK1]');
-			change = change.replace(/]/g,'#[EK2]');
-			change = change.replace(/\\(/g,'#[EK3]');
-			change = change.replace(/\\)/g,'#[EK4]');
 			devices1 = change;
-			
 			
 			change = \$(\"[name=conditionoff$nopoint]\").val();
 			change = change.replace(/\\|/g,'(DAYS)');
-			change = change.replace(/\\[/g,'#[EK1]');
-			change = change.replace(/]/g,'#[EK2]');
-			change = change.replace(/\\(/g,'#[EK3]');
-			change = change.replace(/\\)/g,'#[EK4]');
 			devices2 = change;
-			
-			
+
 			if(typeof(devices2)==\"undefined\"){devices2=\"\"}
 			
 			devices += devices1+'#[NF]';
@@ -10593,21 +10564,9 @@ end:textersetzung:eng
 	devices = '';
 	$javaform
 	
-
-	
-	
-	
-	
-	
-	
-	
 	devices = devices.replace(/ /g,'#[sp]');
 	devices = devices.replace(/;/g,'#[se]');
-	
-	
-	// alert(devices);
-	
-	//devices=str2hex(devices);
+	devices = devices.replace(/:/g,'#[dp]');
 	devices =  encodeURIComponent(devices);
 	
 	var  def = nm+\" detailsraw \"+devices+\" \";
@@ -17048,25 +17007,7 @@ sub MSwitch_Set_extractbackup($@){
     }
     close(BACKUPDATEI);
 	
-	
-	#MSwitch_LOG( "test", 0,"ALL MSHEX ".__LINE__ );
-
-	
 	$Zeilen=MSwitch_Asc($Zeilen);
-	
-	#my @output = ();
-	#while ($Zeilen =~ /(.{2})/g) {
-	#  push @output, $1;
-	#}
-	#my $newstring;
-	#foreach (@output) {
-	#	$newstring.=chr(hex $_)	
-	#}
-	#$Zeilen = $newstring;
-    #($Zeilen) =~ s/([a-fA-F0-9]{2})?/chr(hex $1)/eg;
-	
-	
-	
 	
 	my @found = split( /\n/, $Zeilen );
 	my $names;
@@ -17129,46 +17070,6 @@ sub MSwitch_Hex($){
 	($savedetaills) =~ s/(.|\n)/sprintf("%02lx", ord $1)/eg;
 	return $savedetaills;
 	
-	
-	
-	
-	
-	# MSwitch_LOG( "test", 0,"$savedetaills\n\n\n\n\n" );
-	
-	# my @output = ();
-	# while ($savedetaills =~ /(.{2})/g) {
-	  # push @output, $1;
-	# }
-	# my $newstring;
-	
-	
-	
-	 
-	
-	# foreach (@output) {
-		# next if $_ eq " ";
-		# next if length($_) != 2;
-		
-		
-		 
-		
-		
-		
-		# $newstring.=chr(hex $_)	
-	# }
-	# $savedetaills = $newstring;
-	
-	
-	# return $savedetaills;
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
  
 ######################################################
@@ -17186,36 +17087,16 @@ sub MSwitch_Asc($){
         $savedetails  .=  chr( hex $_ );
     }
 	
-	
-	# MSwitch_LOG( "test", 0,"savedetails $savedetails" );
-	
 	$savedetails =~ s/#\[se\]/;/g;
-	
 	$savedetails =~ s/#\[ti\]/~/g;
-	
-	
+	$savedetails =~ s/#\[dp\]/:/g;
 
-	
-	
-	$savedetails =~ s/#\[EK1\]/[/g;
-	$savedetails =~ s/#\[EK2\]/]/g;
-	
-	$savedetails =~ s/#\[EK3\]/(/g;
-	$savedetails =~ s/#\[EK4\]/)/g;
-	
-	#MSwitch_LOG( "test", 6,"savedetails1 $savedetails" );
-	
-	
 	return $savedetails;
 }
 
 ######################################################
 sub MSwitch_Save_Details($$){
 my ($hash,$savedetails)=@_;
-
-MSwitch_LOG( "test", 0,"savedetails $savedetails" );
-
-
 readingsSingleUpdate( $hash, ".Device_Affected_Details_new", MSwitch_Hex($savedetails), 1 );
 return;
 }
@@ -17225,18 +17106,7 @@ my ($hash)=@_;
 my $Name     			= $hash->{NAME};
 my $test = ReadingsVal( $Name, '.Device_Affected_Details_new', 'no_device' );
 
-
-
-
 return if $test eq "no_device";
-
-
-
-
-
-
-
-
 
 if (exists $data{MSwitch}{$Name}{Device_Affected_Details} )
 	{
@@ -17258,7 +17128,7 @@ return;
 ######################################################
 sub MSwitch_Load_Tcond($){
 my ($hash)=@_;
-my $Name     			= $hash->{NAME};
+my $Name = $hash->{NAME};
 my $data;
 
 	if (exists $data{MSwitch}{$Name}{TCond} )
