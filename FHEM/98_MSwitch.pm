@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.58';                               # version
+my $version      = '7.59';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -10576,7 +10576,7 @@ end:textersetzung:eng
         $j1 .=
 "FW_cmd(FW_root+'?cmd=get $Name Eventlog timeline&XHR=1', function(data){FW_okDialog(data)});";
     }
-
+ 
     if ( defined $hash->{helper}{tmp}{reset}
         && $hash->{helper}{tmp}{reset} eq "on" )
     {
