@@ -1996,7 +1996,15 @@ if (debug == 'on'){ alert('checkcondition') }
 	var Verfall = 1000 * 60 * 60 *12;
 	var Auszeit = new Date(jetzt.getTime() + Verfall);
 	document.cookie = "Mswitch_ids_"+devicename + "=" + showids + "; expires=" + Auszeit.toGMTString() + ";";
-	if (showids == ""){return;}
+	if (showids == "")
+	{
+		$("[name=noshow]").css("display","block");
+		return;
+	}
+	
+	
+	
+	
 	$("[name=noshow]").css("display","none");
 	allids = showids.split(",");
 	for (i = 0; i < allids.length; i++) {
