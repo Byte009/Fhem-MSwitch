@@ -9021,10 +9021,40 @@ MS-NAMESATZ
             $javaform = $javaform . "
 			devices += \$(\"[name=devicename$nopoint]\").val();
 			devices += '#[DN]'; 
-			devices += \$(\"[name=cmdon$nopoint]\").val()+'#[NF]';
-			devices += \$(\"[name=cmdoff$nopoint]\").val()+'#[NF]';
-			change = \$(\"[name=cmdonopt$nopoint]\").val();
+			
+			
+			
+			
+			change = \$(\"[name=cmdon$nopoint]\").val();
+			
+			
+			
+			//change = change.replace(/\\[/g,'#[EK1]');
 			devices += change+'#[NF]';
+			
+			
+			
+			change= \$(\"[name=cmdoff$nopoint]\").val();
+			//change = change.replace(/\\[/g,'#[EK1]');
+			devices += change+'#[NF]';
+			
+			
+			
+		
+			
+			
+			
+			
+			
+			change = \$(\"[name=cmdonopt$nopoint]\").val();
+			
+			
+			//change = change.replace(/\\(/g,'#[EK1]');
+			//(alert(change);
+			devices += change+'#[NF]';
+			
+			
+			
 			change = \$(\"[name=cmdoffopt$nopoint]\").val();
 			devices += change+'#[NF]';
 
@@ -10564,9 +10594,23 @@ end:textersetzung:eng
 	devices = '';
 	$javaform
 	
+	 
+	
+	devices = devices.replace(/\\(/g,'#[EK1]');
+	devices = devices.replace(/\\)/g,'#[EK2]');
+	
 	devices = devices.replace(/ /g,'#[sp]');
 	devices = devices.replace(/;/g,'#[se]');
 	devices = devices.replace(/:/g,'#[dp]');
+	
+	
+	
+	
+	
+	//alert(devices);
+	
+	
+	
 	devices =  encodeURIComponent(devices);
 	
 	var  def = nm+\" detailsraw \"+devices+\" \";
@@ -14788,7 +14832,7 @@ sub MSwitch_Getsupport($) {
 	
 	$startmessage =~ s/\n/\\n/g;
 	
-	
+	 
 	
 	#
 	$out .= "Modulversion: $version\\n";
@@ -14804,12 +14848,23 @@ sub MSwitch_Getsupport($) {
     $out .= "\\n----- Attribute -----\\n";
      my %keys;
 
-     # foreach my $attrdevice ( keys %{ $attr{$Name} } )    #geht
-     # {
-         # my $tmp = AttrVal( $Name, $attrdevice, '' );
-         # $out .= "Attribut $attrdevice: " . $tmp . "\\n";
-     # }
-	
+       foreach my $attrdevice ( keys %{ $attr{$Name} } )    #geht
+      {
+		  
+		  
+		  
+		  
+           my $tmp = AttrVal( $Name, $attrdevice, '' );
+		   
+		   $tmp =~ s/\n/\\n/g;
+		   
+           $out .= "Attribut $attrdevice: " . $tmp . "\\n";
+		   
+		   
+		   #MSwitch_LOG( $Name, 0,"FOUNDLOG > $tmp")
+		   
+      }
+	;
 
      $out .= "\\n----- Trigger -----\\n";
 	
@@ -14823,6 +14878,12 @@ sub MSwitch_Getsupport($) {
 	 $tmp = "kein Timer definiert " if $tmp eq "no_trigger";
      $tmp =~ s/~/ /g;
      $out .= "$tmp\\n";
+	
+	
+	
+	
+	
+	
 	
      $out .= "Trigger condition: ";
      $tmp = ReadingsVal( $Name, '.Trigger_condition', 'undef' );
@@ -14848,6 +14909,11 @@ sub MSwitch_Getsupport($) {
 	 $tmp = "nicht definiert " if $tmp eq "no_trigger";
      $out .= "$tmp\\n";
 	
+	
+	
+	
+	
+	
      $out .= "Trigger cmd3: ";
      $tmp = ReadingsVal( $Name, '.Trigger_cmd_on', 'no_trigger' );
 	 $tmp = "nicht definiert " if $tmp eq "no_trigger";
@@ -14866,11 +14932,18 @@ sub MSwitch_Getsupport($) {
 
      $out .= "$tmp\\n";
 
+
+
+
      my %savedetails = MSwitch_makeCmdHash($Name);
      $out .= "\\n----- Device Actions -----\\n";
 	 my @affecteddevices =MSwitch_Load_Details($hash);
 	 $out .= "keine Deviceactions definiert " if @affecteddevices < 1;
     foreach (@affecteddevices) {
+		
+		
+		$_ =~ s/\n/\\n/g;
+		
         my @devicesplit = split( /#\[NF\]/, $_ );
 		
         $devicesplit[4] =~ s/'/\\'/g;
@@ -14906,7 +14979,7 @@ sub MSwitch_Getsupport($) {
 	$out .= "--------------------------------\\n\\n";
 	$out .="define ".$Name." mswitch HEX ".MSwitch_backup_this( $hash, "support" );
 	
-	 $out =~ s/\[NEWLINWE\]/\\n/g;
+	 # $out =~ s/\[NEWLINWE\]/\\n/g;
 	 $out =~ s/'/&#39;/g;
 	 $out =~ s/"/&#34;/g;
      $out =~ s/&#160/&#38;nbsp;/g;
@@ -17090,6 +17163,11 @@ sub MSwitch_Asc($){
 	$savedetails =~ s/#\[se\]/;/g;
 	$savedetails =~ s/#\[ti\]/~/g;
 	$savedetails =~ s/#\[dp\]/:/g;
+	
+	
+	$savedetails =~ s/#\[EK1\]/(/g;
+	$savedetails =~ s/#\[EK2\]/)/g;
+	
 
 	return $savedetails;
 }
