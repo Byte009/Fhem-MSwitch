@@ -1,3 +1,3 @@
 Version
-7.59
-Change: setmagic again fix frontend ShowIDs
+7.60
+Change: delete some internals, fix groups, change configdevice, etc
