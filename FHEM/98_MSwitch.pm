@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.6';                               # version
+my $version      = '7.61';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -11287,19 +11287,6 @@ sub MSwitch_change_snippet($$) {
     my $aktsnippetnumber = "";
 
 
-#eturn $cs;
-
- # if ($name eq "snipp")
- # {
-	
-	
- # MSwitch_LOG( $name, 0,"incomming cs\n $cs");
- # }
-
-
-
-
-
    # if ( $cs =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/s ) 
 	
 	my $stop =0;
@@ -11314,8 +11301,8 @@ $stop++;
 
 last if $stop > 20;
 
-MSwitch_LOG( $name, 6,"\n- Snippet $cs");
-MSwitch_LOG( $name, 6,"\n- Snippet $snipppetnumber");
+#MSwitch_LOG( $name, 6,"\n- Snippet $cs");
+#MSwitch_LOG( $name, 6,"\n- Snippet $snipppetnumber");
 
 
 
@@ -12224,7 +12211,33 @@ sub MSwitch_checkcondition($$$) {
 
     # ersetzung snippet
 
-   
+            my $x = 0;
+           # while ( $condition =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ ) {
+				
+			while ( $condition =~ m/(.*)\[Snippet:(.*?)\](.*)/ ) 	{
+				
+                $x++;    # notausstieg notausstieg
+                last if $x > 20;    # notausstieg notausstieg
+                my $firstpart      = $1;
+                my $snipppetnumber = $2;
+                my $lastpart       = $3;
+                my $ret = $data{MSwitch}{$name}{snippet}{$snipppetnumber};
+                #$ret =~ s/\n/ /g;
+                #$condition = $firstpart . $ret . $lastpart;
+				
+				if (exists $data{MSwitch}{$name}{snippet}{$snipppetnumber})
+				{
+					my $snippet = $data{MSwitch}{$name}{snippet}{$snipppetnumber};
+					$snippet =~ s/\n//g;
+					$condition = $firstpart . $snippet . $lastpart;
+				}
+				else 
+				{
+				my $snippet="[undefSnippet:$snipppetnumber]";
+					
+						$condition = $firstpart . $snippet . $lastpart;
+				}
+            }
 
     # ersetzungen
 
@@ -12835,7 +12848,10 @@ sub MSwitch_Createtimer($) {
 ######################## ersetzungen
             #ersetze Snippetz
             my $x = 0;
-            while ( $einzeltimer =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ ) {
+           # while ( $einzeltimer =~ m/(.*)\[Snippet:([\d]{1,3})\](.*)/ ) {
+			while ( $einzeltimer =~ m/^\[Snippet:(.*?)\]$/ ) {		
+			
+				
                 $x++;    # notausstieg notausstieg
                 last if $x > 20;    # notausstieg notausstieg
                 my $firstpart      = $1;
@@ -16215,50 +16231,21 @@ sub MSwitch_dec($$) {
 	my ( $hash, $todec ) = @_;
     my $name    = $hash->{NAME};
 	my $org = $todec;
-	
-	
-	#if ($name eq "snipp"){
-	#MSwitch_LOG( $name, 0, "DEC Start: $todec" );
-	#}
-	
-	
+
 	$todec = MSwitch_dec1( $hash, $todec );
-	
-	
-	#if ($name eq "snipp"){
-	#MSwitch_LOG( $name, 0, "DEC End: $todec" );
-	#MSwitch_LOG( $name, 0, "DEC Start: $todec" );
-	#}
-	
-	
-	#####################
-	
-	
+
 	if ( $todec =~ m/(.*)\[Snippet:(.*?)\](.*)/s )
 	{
 	$todec = MSwitch_change_snippet( $hash, $todec );
-	
-	#####################
-	
-	if ($org ne $todec){
-		
-	#if ($name eq "snipp"){
-	#MSwitch_LOG( $name, 0, "DEC org: $org" );
-	#MSwitch_LOG( $name, 0, "DEC todec: $todec" );
-	#}
-		
+
+	if ($org ne $todec){	
 	$todec = MSwitch_dec1( $hash, $todec );	
 	}
 	
 }
-	
 	return $todec;
 	
 }
-	
-	
-	
-	
 	
 ##############################################################
 sub MSwitch_dec1($$) {
@@ -16582,7 +16569,7 @@ sub MSwitch_check_setmagic_i($$) {
 
 
 
-$msg =~ s/\[Snippet:/[Snippet/g;
+	$msg =~ s/\[Snippet:/[Snippet/g;
 
 	my $org = $msg;
 
@@ -16592,17 +16579,7 @@ $msg =~ s/\[Snippet:/[Snippet/g;
 
 	$x++;    # notausstieg notausstieg
     last if $x > 20;    # notausstieg notausstieg
-		
-
-# if ($name eq "snipp")
-# {
 	
-	
-# MSwitch_LOG( $name, 0,"\n- Snippet $org");
-# }
-
-
-		
 	my $all = $1;
 	my $praefix = $2;
 	my $targdevice = $3;
