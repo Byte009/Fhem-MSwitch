@@ -1,4 +1,8 @@
 Version
+7.63
+Bugfix: Type Full noArgs fuer Setfelt wait behoben - Echtzeittimer bei exec_cmd_X nicht gestartet
+
+Version
 7.62
 Codestraffung
 
