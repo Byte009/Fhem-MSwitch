@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.62';                               # version
+my $version      = '7.63';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -545,7 +545,7 @@ my %setsfull = (
     "del_delays"           => "",
     "backup_MSwitch"       => "noArg",
     "fakeevent"            => "noArg",
-    "wait"                 => "noArg",
+    "wait"                 => "",
     "reload_timer"         => "noArg",
     "del_repeats"          => "noArg",
     "change_renamed"       => "",
@@ -2485,6 +2485,9 @@ sub MSwitch_Set_ExecCmd($@) {
     my $execids = "0";
     $comand = "on"  if $cmd eq 'exec_cmd_1';
     $comand = "off" if $cmd eq 'exec_cmd_2';
+
+    $data{MSwitch}{$name}{setdata}{last_cmd}    = "cmd_1" if $comand eq "on";
+    $data{MSwitch}{$name}{setdata}{last_cmd}    = "cmd_2" if $comand eq "off";
 
     if ( !defined $args[0] ) { $args[0] = ""; }
 
@@ -11583,7 +11586,7 @@ sub MSwitch_Exec_Notif($$$$$) {
                 if ( $execute eq "true" ) {
                     if ( $delayinhalt eq 'at0' || $delayinhalt eq 'at1' ) {
 
-                        MSwitch_LOG( $name, 6,  "-> setze Verzögerung $teststateorg" );
+                        MSwitch_LOG( $name, 6,  "-> setze Verzögerung1 $teststateorg" );
 
                         $timecond =
                           MSwitch_replace_delay( $hash, $teststateorg );
@@ -11607,7 +11610,7 @@ sub MSwitch_Exec_Notif($$$$$) {
                       . $comand;
 
                     $testtoggle = 'undef';
-                    MSwitch_LOG( $name, 6,  "-> setze Verzögerung $timecond" );
+                    MSwitch_LOG( $name, 6,  "-> setze Verzögerung2 $timecond" );
 
 #################################################################
 
@@ -11628,6 +11631,11 @@ sub MSwitch_Exec_Notif($$$$$) {
                         $format =~ s/SS/$sekunden/g;
                         $format =~ s/ss/$sek/g;
 
+
+
+
+
+
                         if ( exists $data{MSwitch}{$name}{setdata}{last_cmd}
                             && $data{MSwitch}{$name}{setdata}{last_cmd} eq
                             "cmd_1" )
@@ -11640,6 +11648,20 @@ sub MSwitch_Exec_Notif($$$$$) {
                         {
                             $field = "_countdownoff";
                         }
+
+
+
+
+# MSwitch_LOG( $name, 6,"jump1: $jump");
+# MSwitch_LOG( $name, 6,"devicedetails: $devicedetails{ $device . $field }");
+# MSwitch_LOG( $name, 6,"device: $device");
+# MSwitch_LOG( $name, 6,"field: $field");
+# MSwitch_LOG( $name, 6,"jump1: $jump");
+# MSwitch_LOG( $name, 6,"data: $data{MSwitch}{$name}{setdata}{last_cmd}");
+# MSwitch_LOG( $name, 6,"jump1: $jump");
+
+
+
 
                         if ( defined $devicedetails{ $device . $field }
                             && $devicedetails{ $device . $field } ne "" )
@@ -11667,6 +11689,15 @@ sub MSwitch_Exec_Notif($$$$$) {
                             readingsSingleUpdate( $hash, "lastsetting_delay_cmd",$data{MSwitch}{$name}{setdata}{last_cmd},$showevents );
 							$showevents = MSwitch_checkselectedevent( $hash, "lastsetting_delay_time" );
                             readingsSingleUpdate( $hash, "lastsetting_delay_time", $format,$showevents );
+
+						#}
+
+
+#	MSwitch_LOG( $name, 6,"jump2: $jump");
+
+
+
+
 
                             if ( $jump > 0 ) {
                                 $hash->{helper}{countdown}{$savename} = $sek;
@@ -11710,6 +11741,20 @@ sub MSwitch_Exec_Notif($$$$$) {
                                 }
                             }
                         }
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
 
                     }
 
