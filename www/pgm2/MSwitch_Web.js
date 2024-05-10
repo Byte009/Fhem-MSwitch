@@ -165,6 +165,25 @@ if ($('#disp').length > 0) {
 
 
 
+var confdevice = devicename+"-MSwitch_Experimental_mode";
+var confinhalt = $('div[informid="'+confdevice+'"]').html();
+
+if (confinhalt == "on backup exists"){
+		
+var cn ="<input onClick='javascript:restoreexperimental();' style='text-align: center; background-color: Transparent; border-color: green; font-size: 0.6em; height: 18px; width: 150px;' type='input' value='on -> restore last save' />";
+
+confinhalt = confinhalt+" "+cn;
+$('div[informid="'+confdevice+'"]').html(cn);
+
+}
+
+
+
+
+
+
+
+
 var confdevice = devicename+"-MSwitch_Configdevice";
 var confinhalt = $('div[informid="'+confdevice+'"]').html();
 
@@ -2303,23 +2322,24 @@ return;
 
 function openconf()
 {
-	//alert(CONFIGD);
-	
 	var nm = CONFIGD;
-	
-	
 	var co = location.pathname+'?detail='+nm;
-	
-
-//alert(co);
-
-window.open(co);
-  
+    window.open(co);
 return;
 
-
-
 }
+
+
+
+
+function restoreexperimental()
+{
+	//alert (devicename);
+	cmd ='get '+devicename+' restore_exp ';
+	FW_cmd(FW_root+'?cmd='+cmd+'&XHR=1', function(resp){FW_okDialog(resp);});
+	return;
+}
+
 
 
 
