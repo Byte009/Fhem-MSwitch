@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.63';                               # version
+my $version      = '7.64';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -551,6 +551,7 @@ my %setsfull = (
     "change_renamed"       => "",
     "on"                   => "noArg",
     "off"                  => "noArg",
+	"toggle"               => "noArg",
     "reset_status_counter" => "noArg",
     "loadHTTP"             => "",
     "del_history_data"     => "noArg",
@@ -1189,10 +1190,25 @@ sub MSwitch_LoadHelper($) {
         if ( @found_devices > 0)
 		{
 		$hash->{MSwitch_Configdevice} = 'installed';
+		
+		
+		
+		if ( ReadingsVal( $found_devices[0], 'MSwitch_Experimental', 'off' ) eq "on" )
+		{
+		
+		$hash->{MSwitch_Experimental_mode} = 'on';
+		}
+		else{
+			$hash->{MSwitch_Experimental_mode} = 'off';
+		}
+		
+		
+		
 		}
 	 else
 		{
 			 $hash->{MSwitch_Configdevice} = 'not installed';
+			 $hash->{MSwitch_Experimental_mode} = 'off';
 		}
     return;
 }
@@ -1329,6 +1345,32 @@ sub MSwitch_Make_Undo($) {
     $data{MSwitch}{$hash}{undotime} = time;
     return;
 }
+
+
+
+
+####################
+sub MSwitch_Make_Experimental($) {
+    my ($hash) = @_;
+	
+	my @found_devices = devspec2array("TYPE=MSwitch:FILTER=.msconfig=1");
+    if ( @found_devices > 0 ) 
+	{
+        return if ( ReadingsVal( $found_devices[0], 'MSwitch_Experimental', 'off' ) eq "off" );
+    }
+    else 
+	{
+        return;
+    }
+	
+	MSwitch_backup_this( $hash, 'experimental' );
+	
+	
+	
+    return;
+}
+
+
 #####################################
 sub MSwitch_Get($$@) {
     my ( $hash, $name, $opt, @args ) = @_;
@@ -1550,6 +1592,17 @@ sub MSwitch_Get($$@) {
         $ret = MSwitch_restore_this( $hash, "backupfile" );
         return $ret;
     }
+	
+	
+	
+	if ( $opt eq 'restore_exp' ) {
+        $ret = MSwitch_restore_this( $hash, "experimental" );
+        return $ret;
+    }
+
+####################
+
+
 
 ####################
     if ( $opt eq 'checkevent' ) {
@@ -2518,6 +2571,7 @@ sub MSwitch_Set_ExecCmd($@) {
 sub MSwitch_Set_AddEvent($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     MSwitch_Make_Undo($hash);
+	MSwitch_Make_Experimental($hash);
     delete( $hash->{helper}{config} );
 
     # event manuell zufügen
@@ -2753,6 +2807,7 @@ sub MSwitch_Set_SetTrigger($@) {
 	$args[6]=MSwitch_Hex($args[6]);
 
     MSwitch_Make_Undo($hash);
+	MSwitch_Make_Experimental($hash);
     MSwitch_Clear_timer($hash);
     delete( $hash->{helper}{config} );
     delete( $hash->{helper}{wrongtimespeccond} );
@@ -2854,6 +2909,7 @@ sub MSwitch_Set_SetTrigger($@) {
 sub MSwitch_Set_SetTrigger1($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     MSwitch_Make_Undo($hash);
+	MSwitch_Make_Experimental($hash);
     delete( $hash->{helper}{config} );
 
     # setze trigger events
@@ -3013,6 +3069,7 @@ sub MSwitch_Set_Statecounter($@) {
 sub MSwitch_Set_Devices($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     MSwitch_Make_Undo($hash);
+	MSwitch_Make_Experimental($hash);
     delete( $hash->{helper}{config} );
 
     # setze devices
@@ -3105,6 +3162,7 @@ sub MSwitch_Set_Detailsraw($@) {
 sub MSwitch_Set_Details($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     MSwitch_Make_Undo($hash);
+	MSwitch_Make_Experimental($hash);
     delete( $hash->{helper}{config} );
 
     # setze devices details
@@ -3547,6 +3605,10 @@ my $showevents = MSwitch_checkselectedevent( $hash, "Parameter" );
     }
 	
 
+if ( $cmd eq "toggle" && ReadingsVal( $name, "state", 'undef' ) eq "on" ) {$cmd = "off"}
+if ( $cmd eq "toggle" && ReadingsVal( $name, "state", 'undef' ) eq "off" ) {$cmd = "on"}
+
+
     if ( $cmd eq "off" || $cmd eq "on" ) {
         MSwitch_Set_OnOff( $ic, $showevents, $devicemode, $delaymode, $hash,
             $name, $cmd, @args );	
@@ -3666,6 +3728,7 @@ my $showevents = MSwitch_checkselectedevent( $hash, "Parameter" );
 ##
     if ( $cmd eq "add_device" ) {
         MSwitch_Make_Undo($hash);
+	MSwitch_Make_Experimental($hash);
         delete( $hash->{helper}{config} );
         MSwitch_Add_Device( $hash, $args[0] );
         return;
@@ -3673,12 +3736,14 @@ my $showevents = MSwitch_checkselectedevent( $hash, "Parameter" );
 ##
     if ( $cmd eq "del_device" ) {
         MSwitch_Make_Undo($hash);
+		MSwitch_Make_Experimental($hash);
         MSwitch_Del_Device( $hash, $args[0] );
         return;
     }
 ##
     if ( $cmd eq "del_trigger" ) {
         MSwitch_Make_Undo($hash);
+		MSwitch_Make_Experimental($hash);
         MSwitch_Delete_Triggermemory($hash);
         return;
     }
@@ -6921,11 +6986,48 @@ sub MSwitch_fhemwebFn($$$$) {
         $showcom = ReadingsVal( $found_devices[0], 'MSwitch_Komment', 'off' );
         $confdevice = $found_devices[0];
 		$hash->{MSwitch_Configdevice}                          = 'installed';
+		
+		
+		if ( ReadingsVal( $found_devices[0], 'MSwitch_Experimental', 'off' ) eq "on" )
+		{
+		
+		
+		$hash->{MSwitch_Experimental_mode} = 'on';
+		
+		# on backup exists
+		
+		my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
+		$pfad.="/MSwitch/";
+
+		my $dateiname=$pfad."MSwitch_Experimental_".$Name.".txt";
+
+		if (-e $dateiname)
+		{
+			$hash->{MSwitch_Experimental_mode} = 'on backup exists';
+			
+			}
+
+		
+		
+		}
+		else{
+			$hash->{MSwitch_Experimental_mode} = 'off';
+			
+			delete $hash->{MSwitch_Experimental_mode};
+			
+		}
+		
+		
+		
+		
+		
+		
     }
     else {
         $rename  = "off";
         $showcom = "off";
 		$hash->{MSwitch_Configdevice}                          = 'not installed';
+		$hash->{MSwitch_Experimental_mode} = 'off';
     }
 
     if ( exists $data{MSwitch}{runningbackup}
@@ -10631,9 +10733,17 @@ end:textersetzung:eng
     }
 
     my $javachange = $javaform;
+	
+	
+#	Log3( $Name, 0,  $javachange );
     $javachange =~ s/\n//g;
     $javachange =~ s/\t//g;
     $javachange =~ s/'/\\'/g;
+
+
+
+# Log3( $Name, 0,  $javachange );
+
 
     my $alldevices                = join( '\',\'', @alldevices );
     my $alldevicesalias           = join( '\',\'', @alldevicesalias );
@@ -10720,6 +10830,9 @@ end:textersetzung:eng
 	devices = devices.replace(/;/g,'#[se]');
 	devices = devices.replace(/:/g,'#[dp]');
 	devices = devices.replace(/%/g,'#[pr]');
+	
+	devices = devices.replace(/\t/g,'#[sp]#[sp]#[sp]#[sp]');
+	
 	devices =  encodeURIComponent(devices);
 	var  def = nm+\" detailsraw \"+devices+\" \";
 	location = location.pathname+\"?detail=" . $Name . "&cmd=set \"+addcsrf(def);
@@ -14129,6 +14242,24 @@ sub MSwitch_restore_this($$) {
         }
         close(BACKUPDATEI);
     }
+	
+	
+	if ( $arg eq "experimental" ) {
+        open( BACKUPDATEI,
+            "<" . $pfad . "MSwitch_Experimental_" . $Name . ".txt" )
+          || return "no Backupfile found!";
+        while (<BACKUPDATEI>) {
+            $Zeilen = $Zeilen . $_;
+        }
+        close(BACKUPDATEI);
+		
+		unlink($pfad."MSwitch_Experimental_" . $Name . ".txt");
+		
+		
+    }
+	
+	
+	
 
 	$Zeilen=MSwitch_Asc($Zeilen);
     my $backupdatei = $Zeilen;
@@ -14147,6 +14278,16 @@ sub MSwitch_restore_this($$) {
                 $data{MSwitch}{runningbackuperror} .= "\n - $errors";
             }
         }
+
+
+
+if ( $_ =~ m/#UUID -> (.*)/ )    # setreading
+        {
+            my $aktattr = $1;
+			#MSwitch_LOG( "test", 0,"setze uuid n:$aktattr / I:".__LINE__ );
+			$defs{$aktname}{FUUID} = $aktattr;  
+		} 
+			
 
         if ( $_ =~ m/#S (.*?) -> (.*)/ )    # setreading
         {
@@ -14198,6 +14339,41 @@ sub MSwitch_restore_this($$) {
         return;
     }
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	# FW_directNotify(
+            # "FILTER=$Name",                                   "#FHEMWEB:WEB",
+            # "information('TEST')", ""
+        # );
+	
+	
+	# ###
+	
+	# my $bridge = ReadingsVal( $aktname, '.Distributor', 'undef' );
+	# my $dhash  = $defs{$aktname};
+    # if ( $bridge ne "undef" ) {
+        # my @test = split( /\n/, $bridge );
+        # foreach my $testdevices (@test) {
+            # my ( $key, $val ) = split( /=>/, $testdevices );
+            # $dhash->{helper}{eventtoid}{$key} = $val;
+        # }
+	# }
+	
+	
+	
+	# ##########
+	
+	
+	
+	
     MSwitch_LoadHelper($hash);
     return $ret;
 }
@@ -14211,6 +14387,12 @@ sub MSwitch_backup_this($$) {
     if ( $arg eq "cleanup" ) {
         $modus = "cleanup";
     }
+	
+	
+	if ( $arg eq "experimental" ) {
+        $modus = "experimental";
+    }
+	
 	
 	 if ( $arg eq "support" ) {
         $modus = "support";
@@ -14237,6 +14419,16 @@ sub MSwitch_backup_this($$) {
     my $INFO = "";
     my $BD   = "#T -> Einzelrestore\n";
     $BD .= "#N -> $Name\n";
+	
+	my $uuid = $defs{$Name}{FUUID};
+	$BD .= "#UUID -> $uuid\n";
+
+
+
+
+
+
+
 
     my $testreading = $hash->{READINGS};
     my @areadings   = ( keys %{$testreading} );
@@ -14352,7 +14544,13 @@ sub MSwitch_backup_this($$) {
         return $BD;
     }
 #############
-# modus backup
+# modus backup und experimental
+my $nzusatz="MSwitch_Device_";
+	if ( $modus eq "experimental" )
+	{
+	$nzusatz="MSwitch_Experimental_";	
+	}
+
 	
 my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 $pfad.="/MSwitch/";
@@ -14361,7 +14559,9 @@ $pfad.="/MSwitch/";
 if(-d $pfad) {
 	# nichtvorhanden 
 	} else { mkdir($pfad ,0777);}
-    open( BACKUPDATEI, ">" . $pfad . "MSwitch_Device_" . $Name . ".txt" );
+#    open( BACKUPDATEI, ">" . $pfad . "MSwitch_Device_" . $Name . ".txt" );
+open( BACKUPDATEI, ">" . $pfad . $nzusatz . $Name . ".txt" );
+
     print BACKUPDATEI "$BD";
     close(BACKUPDATEI);
     return "ready";
@@ -14388,10 +14588,15 @@ sub MSwitch_Get_Backup($) {
     opendir( DIR, "$pfad" ) || MSwitch_fileerror($hash);
     my @files2 = grep { /MSwitch_Device_.*/ } readdir DIR;
     closedir(DIR);
-
-    if ( @files == 0 && @files1 == 0 && @files2 == 0 ) { return "leer"; }
 	
-    return "@files @files1 DEVICES @files2";
+	opendir( DIR, "$pfad" ) || MSwitch_fileerror($hash);
+    my @files3 = grep { /MSwitch_Experimental_.*/ } readdir DIR;
+    closedir(DIR);
+	
+
+    if ( @files == 0 && @files1 == 0 && @files2 == 0 && @files2 == 0) { return "leer"; }
+	
+    return "@files @files1 DEVICES @files2 EXPERIMENTAL @files3";
 }
 ####################################################
 sub MSwitch_fileerror($) {
@@ -14468,6 +14673,10 @@ sub MSwitch_FullBackup(@) {
         my @areadings   = ( keys %{$testreading} );
 
         $BD .= "#N -> $testdevice\n";
+
+my $uuid = $defs{$testdevice}{FUUID};
+	$BD .= "#UUID -> $uuid\n";
+
 
         foreach my $key (@areadings) {
             next if $key eq "last_exec_cmd";
@@ -14690,15 +14899,6 @@ $Zeilen=MSwitch_Asc($Zeilen);
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
     $data{MSwitch}{$Name}{backupdatei} = $Zeilen;
     my @found = split( /\n/, $Zeilen );
 
@@ -14758,7 +14958,8 @@ $Zeilen=MSwitch_Asc($Zeilen);
 
     $data{MSwitch}{runningbackuperror} = "";
 
-    foreach (@found) {
+    foreach (@found) 
+	{
         if ( $_ =~ m/#N -> (.*)/ )    # setreading
         {
             $Zeilen = $1;
@@ -14848,6 +15049,11 @@ sub MSwitch_fullrestore1($) {
     my @found = split( /\n/, $backupdatei );
 
     foreach (@found) {
+		
+		
+		
+		
+		
         if ( $_ =~ m/#N -> (.*)/ )    # setreading
         {
             $Zeilen = $1;
@@ -14856,10 +15062,22 @@ sub MSwitch_fullrestore1($) {
 			delete $data{MSwitch}{$aktname}{Device_Affected_Details};
 			delete $data{MSwitch}{$aktname}{TCond};
         }
+		
+
 
         if ( $aktnametorestore ne $aktname ) {
             next;
         }
+
+
+if ( $_ =~ m/#UUID -> (.*)/ )    # setreading
+        {
+            my $aktattr = $1;
+			#MSwitch_LOG( "test", 0,"setze uuid n:$aktname / I:$aktattr".__LINE__ );
+			$defs{$aktname}{FUUID} = $aktattr;
+	
+        }
+
 
         if ( $_ =~ m/#A (.*) -> (.*)/ )    # setattr
         {
@@ -14996,7 +15214,41 @@ sub MSwitch_fullrestore_end($) {
         "information('###################################################')",
         "" );
 
+ FW_directNotify( "FILTER=$Name", "#FHEMWEB:WEB",
+        "information('   ')",
+        "" );
+		
+		
+		
     unlink( $restoredir . "MSwitch_Local_Backup.txt" );
+	
+	
+	
+	  FW_directNotify( "FILTER=$Name", "#FHEMWEB:WEB",
+        "information('Neuinitialisierung aller Mswitches:')",
+        "" );
+
+	
+	my @found_devices = devspec2array("TYPE=MSwitch");
+	
+	foreach (@found_devices) {
+		
+		FW_directNotify( "FILTER=$Name", "#FHEMWEB:WEB",
+        "information('Initialisiere $_:')",
+        "" );
+			
+	my $bridge = ReadingsVal( $_, '.Distributor', 'undef' );
+	my $dhash  = $defs{$_};
+    if ( $bridge ne "undef" ) {
+        my @test = split( /\n/, $bridge );
+         foreach my $testdevices (@test) {
+             my ( $key, $val ) = split( /=>/, $testdevices );
+             $dhash->{helper}{eventtoid}{$key} = $val;
+         }
+	 }	
+	}
+	
+	
     return;
 }
 ################################
