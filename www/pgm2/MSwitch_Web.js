@@ -165,17 +165,53 @@ if ($('#disp').length > 0) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 var confdevice = devicename+"-MSwitch_Experimental_mode";
 var confinhalt = $('div[informid="'+confdevice+'"]').html();
 
 if (confinhalt == "on backup exists"){
 		
-var cn ="<input onClick='javascript:restoreexperimental();' style='text-align: center; background-color: Transparent; border-color: green; font-size: 0.6em; height: 18px; width: 150px;' type='input' value='on -> restore last save' />";
+var cn ="<input title ='doubleclick to execute' ondblclick='javascript:restoreexperimental();' style='text-align: center; background-color: Transparent; border-color: green; font-size: 0.6em; height: 18px; width: 150px;' type='input' value='on -> restore last save' />";
 
 confinhalt = confinhalt+" "+cn;
 $('div[informid="'+confdevice+'"]').html(cn);
 
 }
+
+
+
+
+
+
+
+var confdevice = devicename+"-MSwitch_Undo_mode";
+var confinhalt = $('div[informid="'+confdevice+'"]').html();
+
+if (confinhalt == "on backup exists"){
+		
+var cn ="<input title='doubleclick to execute' ondblclick='javascript:undo();' style='text-align: center; background-color: Transparent; border-color: green; font-size: 0.6em; height: 18px; width: 150px;' type='input' value='on -> undo last change' />";
+
+confinhalt = confinhalt+" "+cn;
+$('div[informid="'+confdevice+'"]').html(cn);
+
+}
+
+
+
+
+
+
+
 
 
 
@@ -2133,15 +2169,7 @@ if (debug == 'on'){ alert('checkcondition') }
 	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	});
 	
-	
-	
-	
-	
-	$("#undo").click(function(){
-	var nm = $(t).attr("nm");
-	var  def = nm+" undo ";
-	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
-	});
+
 
 function checklines(name)
 {
@@ -2293,8 +2321,6 @@ if( result == null )
 	var inhalt = generatesaved(data);
 	var testfeld=data+"-SAVE";
 	var testinhalt =$("#"+testfeld).val();
-//testinhalt = testinhalt.replace(/[^0-9a-zA-Z]/g, "");
-//FW_okDialog(testinhalt+'<br>&nbsp;<br>'+inhalt);
 	if( testinhalt != inhalt ) {
 	field10=data+"-SAVE-BUTTON";
 	$("#"+field10).css("display","block");
@@ -2305,20 +2331,11 @@ return;
 
 function instconf()
 {
-//alert("conf");
-
 	var nm = devicename;
 	var def = nm+' createconf ';
 	location = location.pathname+'?detail='+devicename+'&cmd=set '+addcsrf(def);
 	return;
-
-
-
-return;
-
 }
-
-
 
 function openconf()
 {
@@ -2326,21 +2343,25 @@ function openconf()
 	var co = location.pathname+'?detail='+nm;
     window.open(co);
 return;
-
 }
 
 
-
-
-function restoreexperimental()
+function undo()
 {
-	//alert (devicename);
-	cmd ='get '+devicename+' restore_exp ';
-	FW_cmd(FW_root+'?cmd='+cmd+'&XHR=1', function(resp){FW_okDialog(resp);});
+	var nm = $(t).attr("nm");
+	var  def = nm+" undo ";
+	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
 	return;
 }
 
 
+function restoreexperimental()
+{
+	var nm = $(t).attr("nm");
+	var  def = nm+" restore_exp ";
+	location = location.pathname+"?detail="+devicename+"&cmd=set "+addcsrf(def);
+	return;
+}
 
 
 function Fullinf(data)
