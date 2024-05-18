@@ -80,13 +80,13 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.64';                               # version
+my $version      = '7.65';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
 my $vupdate      = 'V6.3'
   ; # versionsnummer der datenstruktur . änderung der nummer löst MSwitch_VersionUpdate aus .
-my $undotime      = 60;    # Standarzeit in der ein Undo angeboten wird
+my $undotime      = 3000;    # Standarzeit in der ein Undo angeboten wird
 my $startsafemode = 1;
 my $savecount     = 60
   ; # anzahl der zugriff im zeitraum zur auslösung des safemodes. kann durch attribut überschrieben werden .
@@ -1465,8 +1465,6 @@ sub MSwitch_Get($$@) {
 
         if ( $typ ne "FreeCmd" ) 
 		{
-			
-			
             my $cs = $args[1];
             $cs =~ s/#\[sp\]/ /g;
             my $exec = "set " . $args[0] . " " . $cs;
@@ -1590,13 +1588,6 @@ sub MSwitch_Get($$@) {
 
     if ( $opt eq 'restore_MSwitch_Data' ) {
         $ret = MSwitch_restore_this( $hash, "backupfile" );
-        return $ret;
-    }
-	
-	
-	
-	if ( $opt eq 'restore_exp' ) {
-        $ret = MSwitch_restore_this( $hash, "experimental" );
         return $ret;
     }
 
@@ -2604,71 +2595,6 @@ sub MSwitch_Set_AddEvent($@) {
 }
 
 ##################################
-#timer undo
-sub MSwitch_Set_Undo($) {
-
-    #my ($hash)      = @_;
-    my ( $hash, $name, $cmd, @args ) = @_;
-    my $Name    = $hash->{NAME};
-    my $aktname = $Name;
-    my %keys;
-    my $testreading = $hash->{READINGS};
-    my @areadings   = ( keys %{$testreading} );
-    foreach my $key (@areadings) {
-        fhem("deletereading $name $key ");
-    }
-    my $Zeilen = $data{MSwitch}{$hash}{undo};
-    my @found = split( /\n/, $Zeilen );
-    foreach (@found) {
-        if ( $_ =~ m/#S (.*?) -> (.*)/ )    # setreading
-        {
-            next if $1 eq "last_exec_cmd";
-            next if $1 eq "EVTPART1";
-            next if $1 eq "EVTPART2";
-            next if $1 eq "EVTPART3";
-            next if $1 eq "EVENT";
-            next if $1 eq "last_activation_by";
-            next if $1 eq "waiting";
-            next if $1 eq "Next_Timer";
-            next if $1 eq "last_event";
-
-            if ( $2 eq 'undef' || $2 eq '' || $2 eq ' ' ) {
-            }
-            else {
-                my $Zeilen1 = $2;
-                my $reading = $1;
-                $Zeilen1 =~ s/#\[nl\]/\n/g;
-				if ($reading eq ".Device_Affected_Details_new" || $reading eq ".sysconf" || $reading eq ".Trigger_condition")
-				{
-					$Zeilen1=MSwitch_Hex($Zeilen1);
-				}
-                my $cs = "setreading $aktname $reading $Zeilen1";
-                my $errors = AnalyzeCommandChain( undef, $cs );
-            }
-        }
-    }
-
-    # timrer berechnen
-    MSwitch_Createtimer($hash);
-
-    # eventtoid einlesen
-    delete( $hash->{helper}{eventtoid} );
-    my $bridge = ReadingsVal( $name, '.Distributor', 'undef' );
-    if ( $bridge ne "undef" ) {
-        my @test = split( /\n/, $bridge );
-        foreach my $testdevices (@test) {
-            my ( $key, $val ) = split( /=>/, $testdevices );
-            $hash->{helper}{eventtoid}{$key} = $val;
-        }
-    }
-    delete $data{MSwitch}{$hash}{undotime};
-    delete $data{MSwitch}{$hash}{undo};
-	delete $data{MSwitch}{$Name}{Device_Affected_Details};
-	delete $data{MSwitch}{$name}{TCond};
-    return;
-}
-
-##################################
 sub MSwitch_Set_DelRepeats($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
     my $inhalt = $hash->{helper}{repeats};
@@ -3430,13 +3356,10 @@ my $showevents = MSwitch_checkselectedevent( $hash, "Parameter" );
         return $ret;
     }
 	
-	
-	
 	if ( $cmd eq 'createconf' ) {
        my $ret = MSwitch_restore_this( $hash,"configdevice" );
         return $ret;
     }
-	
 	
 	if ( $cmd eq 'extractbackup1' ) {
        my $ret = MSwitch_Set_extractbackup1( $hash, $name, $cmd, @args );
@@ -3467,7 +3390,16 @@ my $showevents = MSwitch_checkselectedevent( $hash, "Parameter" );
         MSwitch_makegroupcmdout( $hash, $args[0] );
         return;
     }
-    if ( $cmd eq 'undo' ) { MSwitch_Set_Undo($hash); return; }
+   if ( $cmd eq 'undo' ) {
+	   MSwitch_restore_this( $hash, "undo" ); 
+	   return; 
+	   }
+
+	if ( $cmd eq 'restore_exp' ) {
+		   MSwitch_restore_this( $hash, "experimental" ); 
+	   return; 
+	   }
+
     if ( $cmd eq 'savetemplate' ) {
         MSwitch_savetemplate( $hash, $args[0], $args[1] );
         return;
@@ -6979,49 +6911,55 @@ sub MSwitch_fhemwebFn($$$$) {
     my $comsystem   = "";
     my $confdevice  = "";
     my $offlinemsg  = "";
-
+	my $undomode="off";
+	my $experimentalmode="off";
+	
+	
     my @found_devices = devspec2array("TYPE=MSwitch:FILTER=.msconfig=1");
     if ( @found_devices > 0 ) {
         $rename  = ReadingsVal( $found_devices[0], 'MSwitch_rename',  'off' );
         $showcom = ReadingsVal( $found_devices[0], 'MSwitch_Komment', 'off' );
+		
+		$undomode = ReadingsVal( $found_devices[0], 'MSwitch_Undo', 'off' );
+		
+		$experimentalmode = ReadingsVal( $found_devices[0], 'MSwitch_Experimental', 'off' );
+		
         $confdevice = $found_devices[0];
 		$hash->{MSwitch_Configdevice}                          = 'installed';
 		
 		
-		if ( ReadingsVal( $found_devices[0], 'MSwitch_Experimental', 'off' ) eq "on" )
+		#if ( ReadingsVal( $found_devices[0], 'MSwitch_Experimental', 'off' ) eq "on" )
+		
+		
+		
+		if ( $undomode eq "on" )
 		{
+			$hash->{MSwitch_Undo_mode} = 'on';
+			
 		
-		
+			
+		}
+		else{
+			delete $hash->{MSwitch_Undo_mode};
+		}
+
+		if ( $experimentalmode eq "on" )
+		{
 		$hash->{MSwitch_Experimental_mode} = 'on';
-		
 		# on backup exists
-		
 		my $pfad =  AttrVal( 'global', 'backupdir', $restoredirn ) ;
 		$pfad.="/MSwitch/";
-
 		my $dateiname=$pfad."MSwitch_Experimental_".$Name.".txt";
-
 		if (-e $dateiname)
 		{
 			$hash->{MSwitch_Experimental_mode} = 'on backup exists';
-			
 			}
-
-		
-		
 		}
 		else{
 			$hash->{MSwitch_Experimental_mode} = 'off';
-			
 			delete $hash->{MSwitch_Experimental_mode};
-			
 		}
-		
-		
-		
-		
-		
-		
+	
     }
     else {
         $rename  = "off";
@@ -10997,33 +10935,57 @@ treffer='<table>'+treffer+'</table>';
         return "$info$comsystem$offlinemsg$system$table";
     }
 
-    my $undo = "";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   # my $undo = "";
 
     if ( exists $data{MSwitch}{$hash}{undo} ) {
         if ( $data{MSwitch}{$hash}{undotime} > ( time - $undotime ) ) {
-            if ( $language eq "EN" ) {
-                $undo =
-"<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
-					<tr>
-					<td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
-					<center><input id=\"undo\" style='BACKGROUND-COLOR: red;' name='undo last change' type='button' value='undo last change'>
-					</td>
-					</tr>
-				</table><br>";
-            }
-            else {
-                $undo =
-"<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
-					<tr>
-					<td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
-					<center><input id=\"undo\" style='BACKGROUND-COLOR: red;' name='undo last change' type='button' value='letzte Aenderung rueckgaengig machen'>
-					</td>
-					</tr>
-				</table><br>";
+			
+			
+			
+			$hash->{MSwitch_Undo_mode} = 'on backup exists';
+			
+			
+            # if ( $language eq "EN" ) {
+                # $undo =
+# "<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
+					# <tr>
+					# <td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
+					# <center><input id=\"undo\" style='BACKGROUND-COLOR: red;' name='undo last change' type='button' value='undo last change'>
+					# </td>
+					# </tr>
+				# </table><br>";
+            # }
+            # else {
+                # $undo =
+# "<table border='0' class='block wide' id='MSwitchWebTR' nm='$hash->{NAME}' cellpadding='4' style='border-spacing:0px;'>
+					# <tr>
+					# <td style='height: MS-cellhighstandart;width: 100%;' colspan='3'>
+					# <center><input id=\"undo\" style='BACKGROUND-COLOR: red;' name='undo last change' type='button' value='letzte Aenderung rueckgaengig machen'>
+					# </td>
+					# </tr>
+				# </table><br>";
 
-            }
+            # }
         }
     }
+	
+	#$undo = "";
+	
 
     # aktualisiere statecounter
     if ( $devicemode ne "Notify" ) {
@@ -11043,7 +11005,7 @@ treffer='<table>'+treffer+'</table>';
     else {
         $modmode .= "$ret<br>$detailhtml";
     }
-    return "$debughtml$undo$offlinemsg$system$modmode$helpfile<br>$j1$hidecode";
+    return "$debughtml$offlinemsg$system$modmode$helpfile<br>$j1$hidecode";
 }
 
 ####################
@@ -14181,7 +14143,7 @@ sub MSwitch_VersionUpdate($) {
 		
 	$message.="     -> Loesche .Device_Events fuer $Name \n";
 	readingsSingleUpdate( $hash, ".Device_Events", "no_trigger", 0 );
-	
+	 
 	
 	my @found_devices = devspec2array("TYPE=MSwitch:FILTER=.msconfig=1");
     if ( @found_devices > 0){
@@ -14233,6 +14195,8 @@ sub MSwitch_restore_this($$) {
         $data{MSwitch}{$Name}{backupdatei} = "";
     }
 
+
+
     if ( $arg eq "backupfile" ) {
         open( BACKUPDATEI,
             "<" . $pfad . "MSwitch_Device_" . $Name . ".txt" )
@@ -14243,6 +14207,7 @@ sub MSwitch_restore_this($$) {
         close(BACKUPDATEI);
     }
 	
+
 	
 	if ( $arg eq "experimental" ) {
         open( BACKUPDATEI,
@@ -14254,13 +14219,18 @@ sub MSwitch_restore_this($$) {
         close(BACKUPDATEI);
 		
 		unlink($pfad."MSwitch_Experimental_" . $Name . ".txt");
-		
-		
     }
 	
 	
-	
+	if ( $arg eq "undo" ) {
 
+	    my $Zeilen = $data{MSwitch}{$hash}{undo};
+		delete $data{MSwitch}{$hash}{undotime};
+		delete $data{MSwitch}{$hash}{undo};
+	
+	}
+	
+	
 	$Zeilen=MSwitch_Asc($Zeilen);
     my $backupdatei = $Zeilen;
     my @found = split( /\n/, $backupdatei );
@@ -14339,42 +14309,8 @@ if ( $_ =~ m/#UUID -> (.*)/ )    # setreading
         return;
     }
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	# FW_directNotify(
-            # "FILTER=$Name",                                   "#FHEMWEB:WEB",
-            # "information('TEST')", ""
-        # );
-	
-	
-	# ###
-	
-	# my $bridge = ReadingsVal( $aktname, '.Distributor', 'undef' );
-	# my $dhash  = $defs{$aktname};
-    # if ( $bridge ne "undef" ) {
-        # my @test = split( /\n/, $bridge );
-        # foreach my $testdevices (@test) {
-            # my ( $key, $val ) = split( /=>/, $testdevices );
-            # $dhash->{helper}{eventtoid}{$key} = $val;
-        # }
-	# }
-	
-	
-	
-	# ##########
-	
-	
-	
-	
     MSwitch_LoadHelper($hash);
+	MSwitch_Createtimer($hash);
     return $ret;
 }
 
