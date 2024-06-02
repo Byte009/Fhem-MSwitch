@@ -2,5 +2,5 @@ UPD 2023-09-02_07:00:00 80407 www/pgm2/MSwitch_Wizard.js
 UPD 2024-05-18_07:00:00 68185 www/pgm2/MSwitch_Web.js
 UPD 2023-09-02_07:00:00 70198 www/MSwitch/MSwitch_Help.txt
 UPD 2023-09-02_07:00:00 58453 www/MSwitch/MSwitch_Help_eng.txt
-UPD 2024-05-18_07:00:00 588223 FHEM/98_MSwitch.pm
+UPD 2024-06-02_07:00:00 589934 FHEM/98_MSwitch.pm
 UPD 2024-05-10_07:00:00 131090 www/MSwitch/MSwitch_Conf.txt
