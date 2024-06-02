@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.65';                               # version
+my $version      = '7.66';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -3083,7 +3083,7 @@ sub MSwitch_Set_Detailsraw($@) {
 	return;
 }
 
-
+################################
 
 sub MSwitch_Set_Details($@) {
     my ( $hash, $name, $cmd, @args ) = @_;
@@ -11041,18 +11041,41 @@ my $hash         = $modules{MSwitch}{defptr}{$Name};
         $key               = $detailarray[0] . "_off";
         $savedetails{$key} = $detailarray[2];
         $key               = $detailarray[0] . "_onarg";
+		
+		
+
+		
+		
+		
+		#FreeCmd-AbsCmd1_delayatonarg
+		
         if ( defined $detailarray[3] && $detailarray[3] ne "" ) {
             $savedetails{$key} = $detailarray[3];
         }
         else {
             $savedetails{$key} = "";
         }
+		
         $key               = $detailarray[0] . "_offarg";
         $savedetails{$key} = $detailarray[4];
         $key               = $detailarray[0] . "_delayaton";
         $savedetails{$key} = $detailarray[5];
         $key               = $detailarray[0] . "_delayatoff";
         $savedetails{$key} = $detailarray[6];
+		
+		
+		$key               = $detailarray[0] . "_delayatonarg";
+		$savedetails{$key} = $detailarray[7];
+		
+		#MSwitch_LOG( $Name,6,"abgelgter key > ".$key." ".__LINE__);
+		#MSwitch_LOG( $Name,6,"abgelgter key inhalt> ".$detailarray[7]." ".__LINE__);
+		
+        $key               = $detailarray[0] . "_delayatoffarg";
+        $savedetails{$key} = $detailarray[8];
+		
+		
+		
+		
         $key               = $detailarray[0] . "_timeon";
         $savedetails{$key} = $detailarray[7];
         $key               = $detailarray[0] . "_timeoff";
@@ -11399,9 +11422,24 @@ sub MSwitch_Exec_Notif($$$$$) {
             $devicedetails{$timerkey} = $firstpart . $setmagic . $lastpart;
         }
 
+MSwitch_LOG( $name,6,"firsttimerkeyorg > ".$devicedetails{$timerkey}.__LINE__);
+
+#my $orgtimer =$devicedetails{$timerkey};
+
 
         $devicedetails{$timerkey} =
           timetoseconds( $name, $devicedetails{$timerkey} );
+		  
+		
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+		  
         if ( !defined $devicedetails{$timerkey} ) {
             $devicedetails{$timerkey} = 0;
         }
@@ -11479,6 +11517,11 @@ sub MSwitch_Exec_Notif($$$$$) {
             #Variabelersetzung
             if (   $devicedetails{$timerkey} eq "0" || $devicedetails{$timerkey} eq "" )
             {
+				
+				
+				
+				
+				
                 # teste auf condition
                 # antwort $execute 1 oder 0 ;
                 $conditionkey = $device . "_condition" . $comand;
@@ -11626,6 +11669,11 @@ sub MSwitch_Exec_Notif($$$$$) {
                 }
             }
             else {
+				
+				
+				#MSwitch_LOG( $name, 6,  "-> STARTKEY1: ".$devicedetails{$timerkey} );
+				
+				
                 if (   $attrrandomtime ne ''
                     && $devicedetails{$timerkey} eq '[random]' )
                 {
@@ -11646,8 +11694,20 @@ sub MSwitch_Exec_Notif($$$$$) {
                 my $timecond     = gettimeofday() + $devicedetails{$timerkey};
                 my $delaykey     = $device . "_delayat" . $comand;
                 my $delayinhalt  = $devicedetails{$delaykey};
-                my $delaykey1    = $device . "_delayat" . $comand . "org";
+                my $delaykey1    = $device . "_delayat" . $comand . "arg";
+				
+				
+#MSwitch_LOG( $name, 6,  "->gesuchter key delaykey1: ".$delaykey1 );
+#MSwitch_LOG( $name, 6,  "-> Inhalt: ".$devicedetails{$delaykey1});
+
+				
                 my $teststateorg = $devicedetails{$delaykey1};
+
+
+#MSwitch_LOG( $name, 6,  "-> teststateorg: ".$teststateorg );
+#MSwitch_LOG( $name, 6,  "-> delayinhalt: ".$delayinhalt );
+#MSwitch_LOG( $name, 6,  "-> delaykey1: ".$delaykey1 );
+
 
                 $conditionkey = $device . "_condition" . $comand;
                 my $execute = "true";
@@ -11658,18 +11718,29 @@ sub MSwitch_Exec_Notif($$$$$) {
                         $name, $event );
                 }
 
-                if ( $execute eq "true" ) {
-                    if ( $delayinhalt eq 'at0' || $delayinhalt eq 'at1' ) {
+#MSwitch_LOG( $name, 6,  "-> STARTKEY2: ".$devicedetails{$timerkey} );
 
-                        MSwitch_LOG( $name, 6,  "-> setze Verzögerung1 $teststateorg" );
+                if ( $execute eq "true" ) 
+				{
+				#MSwitch_LOG( $name, 6,  "" );	
+				#MSwitch_LOG( $name, 6,  "-> delayinhalt: ".$delayinhalt );
+				#MSwitch_LOG( $name, 6,  "-> STARTKEY3: ".$devicedetails{$timerkey} );	
+					
+					
+                    if ( $delayinhalt eq 'at0' || $delayinhalt eq 'at1' ) 
+					{
 
-                        $timecond =
-                          MSwitch_replace_delay( $hash, $teststateorg );
+                         MSwitch_LOG( $name, 6,  "-> setze Verzögerung1 $teststateorg" );
+
+						# teststateorg muss time im zeitformat xx:xx:xx enzhalten !
+					
+                        $timecond =MSwitch_replace_delay( $hash, $teststateorg );
                         $devicedetails{$timerkey} = $timecond;
                         $timecond = gettimeofday() + $timecond;
                     }
 
-                    if ( $delayinhalt eq 'at1' || $delayinhalt eq 'delay0' ) {
+                    if ( $delayinhalt eq 'at1' || $delayinhalt eq 'delay0' ) 
+					{
                         $conditionkey = "nocheck";
                     }
 
@@ -11686,6 +11757,13 @@ sub MSwitch_Exec_Notif($$$$$) {
 
                     $testtoggle = 'undef';
                     MSwitch_LOG( $name, 6,  "-> setze Verzögerung2 $timecond" );
+					
+					MSwitch_LOG( $name, 6,  "-> KEY2: ".$devicedetails{$timerkey} );
+					
+					
+					
+					
+					
 
 #################################################################
 
@@ -12435,10 +12513,23 @@ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/
         last if $x > 20;    # notausstieg notausstieg
     }
 
+
+
+$change =~ s/@/\\@/g;
+$change =~ s/$//g;
+
+
     $finalstring =
       "if (" . $change . "){\$answer = 'true';} else {\$answer = 'false';} ";
     $finalstring2 = "if (" . $change . ")";
     $finalstring1 = "if (" . $change1 . ") ";
+	
+	
+	
+	
+	
+	
+	
     MSwitch_LOG( $name, 6, "\n-> Bedingungsprüfung (final):\n$finalstring !");
 
     my $ret;
@@ -15523,6 +15614,11 @@ sub MSwitch_Execute_randomtimer($) {
 ############################################
 sub MSwitch_replace_delay($$) {
     my ( $hash, $timerkey ) = @_;
+	
+	
+	#$timerkey = "16:00:00";
+	
+	
     my $name  = $hash->{NAME};
     my $time  = time;
     my $ltime = TimeNow();
