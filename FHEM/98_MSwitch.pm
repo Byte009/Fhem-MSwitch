@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.66';                               # version
+my $version      = '7.67';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -5602,8 +5602,18 @@ sub MSwitch_Notify($$) {
     my ( $tday, $tmonth, $tdate, $tn, $time1 ) = split( / /, $aktsectime );
     my ( $HH, $MM, $SS ) = split( /:/, $tn );
     $aktsectime = timelocal( $SS, $MM, $HH, $tdate, $tmonth, $time1 );
-	$showevents = MSwitch_checkselectedevent( $own_hash, "last_ID" );		
-    readingsSingleUpdate( $own_hash, "last_ID", "ID_0", $showevents );
+	$showevents = MSwitch_checkselectedevent( $own_hash, "last_ID" );	
+
+
+	readingsBeginUpdate($own_hash);
+    readingsBulkUpdate( $own_hash, "last_ID","ID_0",$showevents );
+    readingsEndUpdate( $own_hash, $showevents);
+	
+	
+	
+	
+	
+	
     $own_hash->{helper}{statistics}{notifyloop_firsttest_passed}++
       if $statistic == 1;    #statistik
 
@@ -6528,8 +6538,20 @@ sub MSwitch_checkbridge($$$) {
 		MSwitch_LOG( $name, 6, "      - BEDINGUNG: $re\n      - EVENT: $event");
 		
 		$showevents = MSwitch_checkselectedevent( $hash, "last_ID" );
-        readingsSingleUpdate( $hash, "last_ID", "ID_" . $bridge[2], $showevents );
+		
+		
+		
+		 MSwitch_LOG( $name, 6,"Showevents ID Update-> : ".$showevents);
+       # readingsSingleUpdate( $hash, "last_ID", "ID_" . $bridge[2], $showevents );
 
+
+
+	readingsBeginUpdate($hash);
+    readingsBulkUpdate( $hash, "last_ID", "ID_" . $bridge[2], $showevents );
+    readingsEndUpdate( $hash, $showevents);
+	
+	
+	
         if ( $foundcond eq "1" ) {
           
             my $eventparts = $hash->{helper}{evtparts};
@@ -16890,21 +16912,51 @@ sub MSwitch_makegroupcmd($$) {
     # suche alle geräte
     my @alldevices    = ();
     my $anzahldevices = 0;    # anzahl der geräte
-    foreach my $dev (@inhalt) {
-		
-		
-		if (defined($defs{$dev})){
-        my @tmpdevices = devspec2array($dev);
-        push( @alldevices, @tmpdevices );
-		}
-		
-      # my @tmpdevices = devspec2array($dev);
-      # push( @alldevices, @tmpdevices );
 	
-    }
+	    foreach my $dev (@inhalt) 
+	{
+		my @tmpdevices = devspec2array($dev);
+        push( @alldevices, @tmpdevices );
+	}
+	
+	
+	
+	my @finaldevices = ();
+		
+	foreach my $dev (@alldevices) 
+		{
+			if (defined($defs{$dev})) 
+				{
+				push( @finaldevices, $dev );
+				}
+			else
+				{
+				push( @finaldevices, "$dev - (Device not defined !)");		
+				}
+	
+		}
+	
+	
+    # foreach my $dev (@inhalt) 
+	# {
+		
+		
+		# if (defined($defs{$dev}))
+		# {
+        # my @tmpdevices = devspec2array($dev);
+        # push( @alldevices, @tmpdevices );
+		# }
+		
+      # # my @tmpdevices = devspec2array($dev);
+      # # push( @alldevices, @tmpdevices );
+	
+    # }
+
+
+
 
     my @unfilter = ();
-    foreach my $aktdevice (@alldevices) {
+    foreach my $aktdevice (@finaldevices) {
         my $test = getAllSets($aktdevice);
         $anzahldevices++;
         my @cmdsatz = split( / /, $test );
@@ -16949,24 +17001,31 @@ sub MSwitch_makegroupcmd($$) {
 sub MSwitch_makegroupcmdout($$) {
     my ( $hash, $gruppe ) = @_;
     my $Name = $hash->{NAME};
-
     my @inhalt = split( /,/, $data{MSwitch}{$Name}{groups}{$gruppe} );
 
     # suche alle geräte
     my @alldevices = ();
-    foreach my $dev (@inhalt) {
-		
-		if (defined($defs{$dev})){
-        my @tmpdevices = devspec2array($dev);
+    foreach my $dev (@inhalt) 
+	{
+		my @tmpdevices = devspec2array($dev);
         push( @alldevices, @tmpdevices );
-		}
-		else{
-		push( @alldevices, "$dev - (Device not defined)");		
-		}
+	}
 		
+	my @finaldevices = ();
 		
-    }
-    my $outfile = join( '\n', @alldevices );
+	foreach my $dev (@alldevices) 
+		{
+			if (defined($defs{$dev})) 
+				{
+				push( @finaldevices, $dev );
+				}
+			else
+				{
+				push( @finaldevices, "$dev - (Device not defined !)");		
+				}
+	
+		}
+    my $outfile = join( '\n', @finaldevices );
     asyncOutput( $hash->{CL},
             "<html><center><br><textarea name=\"edit1\" id=\"edit1\"  rows=\""
           . "20\" cols=\"100\" STYLE=\"font-family:Arial;font-size:9pt;\">"
@@ -17490,8 +17549,11 @@ return 1 if $tocheck eq "state";
 my $name     = $hash->{NAME};
 my $showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
 return 1 if $showevents == 1;
+
+
 if ( exists  $hash->{helper}{selectedevents}{$tocheck} ){
 $showevents = $hash->{helper}{selectedevents}{$tocheck} == 1? 1:0 ;
+
 }
 return $showevents ;
 }
