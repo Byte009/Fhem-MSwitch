@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.67';                               # version
+my $version      = '7.68';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -341,7 +341,7 @@ sub MSwitch_Asc($);
 
 ##############################
 
-my $FLevel="6.75,6.76,6.77";
+my $FLevel="7.67,7.68";
 my $attrdummy =
     "  disable:0,1"
   . "  MSwitch_CMD_processing:block,line"
@@ -2869,6 +2869,9 @@ sub MSwitch_Set_SetTrigger1($@) {
     return;
 }
 
+
+
+
 ################################
 sub MSwitch_Set_OnOff($@) {
     my ( $ic, $showevents, $devicemode, $delaymode, $hash, $name, $cmd, @args )
@@ -5247,11 +5250,15 @@ sub MSwitch_setdata(@) {
 	
 	
 	
-   # readingsBeginUpdate($hash);
+	# updateänderung
+	
+    readingsBeginUpdate($hash);
     foreach my $key ( keys %{$setdatahash} ) {
 		$showevents = MSwitch_checkselectedevent( $hash, $key, );
-		readingsSingleUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,$showevents);
+		readingsBulkUpdate( $hash, $key, $data{MSwitch}{$name}{setdata}{$key} ,$showevents);
     }
+	
+	readingsEndUpdate( $hash, 1 );
     delete $data{MSwitch}{$name}{setdata};
     return;
 }
@@ -12184,6 +12191,11 @@ sub MSwitch_checkcondition($$$) {
     if ( $condition eq '' )     { return 'true'; }
 	MSwitch_LOG( $name, 6,"\n----------  SUB MSwitch_checkcondition ----------");
 	
+	
+	
+	MSwitch_LOG( $name, 6,"condition: $condition ");
+	
+	
 	$condition =~ s/#\[dp\]/:/g;
 	$condition =~ s/#\[sp\]/ /g;
 
@@ -12273,16 +12285,30 @@ sub MSwitch_checkcondition($$$) {
     $condition =~ s/\$time/$time/g;
     $condition =~ s/\$NAME/$name/ig;
     $condition =~ s/\$SELF/$name/ig;
+	
+	
+	
+	
     $condition =~ s/\:\$EVENT/:$event/ig;
     $condition =~ s/\:\$EVTFULL/:$evtfull/ig;
     $condition =~ s/\:\$EVTPART1/:$evtparts1/ig;
     $condition =~ s/\:\$EVTPART2/:$evtparts2/ig;
     $condition =~ s/\:\$EVTPART3/:$evtparts3/ig;
-    $condition =~ s/\$EVENT/"$event"/ig;
-    $condition =~ s/\$EVTFULL/"$evtfull"/ig;
-    $condition =~ s/\$EVTPART1/"$evtparts1"/ig;
-    $condition =~ s/\$EVTPART2/"$evtparts2"/ig;
-    $condition =~ s/\$EVTPART3/"$evtparts3"/ig;
+	
+	
+	
+	#if ($futurelevel ne "6.78")
+	#{
+     $condition =~ s/\$EVENT/"$event"/ig;
+     $condition =~ s/\$EVTFULL/"$evtfull"/ig;
+     $condition =~ s/\$EVTPART1/"$evtparts1"/ig;
+     $condition =~ s/\$EVTPART2/"$evtparts2"/ig;
+     $condition =~ s/\$EVTPART3/"$evtparts3"/ig;
+	#}
+	
+	
+	
+	
     $condition =~ s/\$ARG/$hash->{helper}{timerarag}/g;
 
     if ( defined $evtparts3 ) {
@@ -12293,6 +12319,11 @@ sub MSwitch_checkcondition($$$) {
             $condition =~ s/\$EVTPART3/"$evtparts3"/ig;
         }
     }
+
+
+	MSwitch_LOG( $name, 6,"condition3: $condition ");
+
+
 
 ## ersetze multicondition Format [NAME:READING_h0::10]
 
@@ -12375,6 +12406,11 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
     $x = 0;
     my $change = $condition;
 
+
+
+MSwitch_LOG( $name, 6,"condition: $condition ");
+MSwitch_LOG( $name, 6,"change: $change ");
+
     # perlersetzung
     while ( $change =~ m/\{(.*?)\}/ )    #z.b $WE
     {
@@ -12389,10 +12425,21 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
         #notausstieg
     }
 
+MSwitch_LOG( $name, 6,"change1: $change ");
+
+
+
+
+my %setmarray;
+
+		MSwitch_LOG( $name, 6,"futurelevel: $futurelevel ");
+
+if ($futurelevel eq "7.68"){
     ### ersetze setmagic ###
     $x = 0;
-    my %setmarray;
-       while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
+    #my %setmarray;
+      while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\]:\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
+#while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
 
         my $treffer = $1;
         my $aktarg  = "SETMAGIC_" . $x;
@@ -12402,11 +12449,48 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
         # ersetze alle metazeichen
 
         $convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+		
+		MSwitch_LOG( $name, 6,"FUTaktarg: $aktarg ");
+		MSwitch_LOG( $name, 6,"FUTconvertreffer: $convertreffer ");
+		
+		
         $change =~ s/$convertreffer/ $aktarg /ig;
         $x++;    # notausstieg notausstieg
         last if $x > 100;    # notausstieg notausstieg
     }
+	}
+	
+	
+	if ($futurelevel ne "7.68"){
+    ### ersetze setmagic ###
+    $x = 0;
+    #my %setmarray;
+      # while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\]:\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
+while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
 
+        my $treffer = $1;
+        my $aktarg  = "SETMAGIC_" . $x;
+        $setmarray{$aktarg} = $treffer;
+        my $convertreffer = $treffer;
+
+        # ersetze alle metazeichen
+
+        $convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+		
+		MSwitch_LOG( $name, 6,"aktarg: $aktarg ");
+		MSwitch_LOG( $name, 6,"convertreffer: $convertreffer ");
+		
+		
+        $change =~ s/$convertreffer/ $aktarg /ig;
+        $x++;    # notausstieg notausstieg
+        last if $x > 100;    # notausstieg notausstieg
+    }
+	}
+	
+	
+	
+
+MSwitch_LOG( $name, 6,"change2: $change ");
 #############
 
     my %setnewmarray;
@@ -12418,11 +12502,19 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
 
         $testarg =~ s/[0-9]+//gs;
 
+
+MSwitch_LOG( $name, 6,"testarg: $testarg ");
+
+
+
         ##########
         if ( $arg =~
 '\[(ReadingsVal|ReadingsNum|ReadingsAge|AttrVal|InternalVal):(.*?):(.*?):(.*?)\]'
           )
         {
+			
+		MSwitch_LOG( $name, 6,"auslöser: 1 ");	
+			
             my $evalstring = "$1('$2','$3','$4')";
             my $inhalt     = eval($evalstring);
             $setnewmarray{$key}       = $evalstring;
@@ -12430,9 +12522,18 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
             next;
         }
 
+
+
+
+
         ###########
         if ( $testarg =~ '\[.*?:h\]' )    #history
         {
+			
+			
+			MSwitch_LOG( $name, 6,"auslöser: 2 ");	
+			
+			
             $setnewmarray{$key} = MSwitch_Checkcond_history( $arg, $name );
             if ( $setnewmarray{$key} eq "''" ) {
                 $setnewmarray{$key}       = "undef";
@@ -12444,9 +12545,21 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
             }
             next;
         }
+		
+		
+		
+		
+		
 
         if ( $testarg =~ '\[.*[a-zA-Z0-9_]{1}.:.*\]' )    #reading
         {
+			
+			
+			
+			MSwitch_LOG( $name, 6,"auslöser: 3 ");	
+			
+			
+			
             $arg =~ s/"//gs;
             $arg =~ s/'//gs;
             $setnewmarray{$key} = MSwitch_Checkcond_state( $arg, $name );
@@ -12457,7 +12570,15 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
         $setnewminhaltarray{$key} = $setmarray{$key};
     }
 
+
+
+
+
+
     my $change1 = $change;
+
+MSwitch_LOG( $name, 6,"changeX: $change ");
+
 
     foreach my $key ( ( keys %setmarray ) ) {
         my $log =
@@ -12467,23 +12588,62 @@ m/(.*[START|AND|OR|\&\&|\|\|\s|\(|\)]?)(\[.*::\d{1,}_time\])(.*?[\d|"|\]])(\s[EN
         my $aktkey = $key;
 
         if ( $setnewminhaltarray{$key} =~ '^[\d\.]+$' ) {
+						MSwitch_LOG( $name, 6,"auslöser: 4 ");	
+
             $change =~ s/ $key /$setnewminhaltarray{$key}/g;
             $change1 =~ s/ $key /$setnewminhaltarray{$key}/g;
         }
         elsif ( $setnewminhaltarray{$key} =~ '\d\d:\d\d' ) {
+						MSwitch_LOG( $name, 6,"auslöser: 5 ");	
+
             $change =~ s/ $key /$setnewminhaltarray{$key}/g;
             $change1 =~ s/ $key /$setnewminhaltarray{$key}/g;
         }
         else {
-            $change =~ s/ $key /"$setnewminhaltarray{$key}"/g;
+			
+			
+MSwitch_LOG( $name, 6,"auslöser: 6 ");	
+MSwitch_LOG( $name, 6,"auslöser: 6 -> key $key");
+MSwitch_LOG( $name, 6,"auslöser: 6 ->".$setnewminhaltarray{$key}."-");
+
+# auslöser: 6 ->[test]-
+
+
+		if ( $setnewminhaltarray{$key} =~ '[test]' ) 
+			{
+				
+				MSwitch_LOG( $name, 6,"OPTION: 1 ");
+				
+			$change =~ s/ $key /"$setnewminhaltarray{$key}"/g;
             $change1 =~ s/ $key /$setnewmarray{$key}/g;
+			}
+			else
+			{
+				
+				MSwitch_LOG( $name, 6,"OPTION: 2 ");
+				
+			$change =~ s/ $key /"$setnewminhaltarray{$key}"/g;
+            $change1 =~ s/ $key /$setnewmarray{$key}/g;
+			}
+			
+			
+
+
+
+
+
+            
         }
     }
 
+
+MSwitch_LOG( $name, 6,"changeX: $change ");
+
+
+
+
     ##### timererkennung
-
     $x = 0;
-
     while ( $change =~
 m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[!0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/
       )
@@ -12498,6 +12658,11 @@ m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[!0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
     }
+
+
+
+
+
 
     # zeiterkennung
     $x = 0;
@@ -12515,6 +12680,11 @@ m/(\[!?\d{2}:\d{2}-\d{2}:\d{2}\|[!0-7]+?\]|\[!?\d{2}:\d{2}-\d{2}:\d{2}\])/
         $x++;    # notausstieg notausstieg
         last if $x > 20;    # notausstieg notausstieg
     }
+
+
+
+
+
 
     $x = 0;
     while ( $change =~
@@ -12537,6 +12707,25 @@ m/(^\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d\s|\s\d\d:\d\d:\d\d$|^\d\d:\d\d:\d\d$)/
 
 
 
+MSwitch_LOG( $name, 6,"condition8: $condition ");
+MSwitch_LOG( $name, 6,"change: $change ");
+
+
+
+
+# if ($futurelevel eq "6.78")
+	# {
+     # $condition =~ s/\$EVENT/"$event"/ig;
+     # $condition =~ s/\$EVTFULL/"$evtfull"/ig;
+     # $condition =~ s/\$EVTPART1/"$evtparts1"/ig;
+     # $condition =~ s/\$EVTPART2/"$evtparts2"/ig;
+     # $condition =~ s/\$EVTPART3/"$evtparts3"/ig;
+	# }
+
+
+
+
+
 $change =~ s/@/\\@/g;
 $change =~ s/$//g;
 
@@ -12548,9 +12737,9 @@ $change =~ s/$//g;
 	
 	
 	
+	# MSwitch_LOG( $name, 6, "\n-> Bedingungsprüfung (final):\n$finalstring !");
 	
-	
-	
+	MSwitch_LOG( $name, 6,"condition9: $condition ");
 	
     MSwitch_LOG( $name, 6, "\n-> Bedingungsprüfung (final):\n$finalstring !");
 
