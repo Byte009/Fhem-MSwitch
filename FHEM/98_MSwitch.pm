@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.68';                               # version
+my $version      = '7.69';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -8089,7 +8089,7 @@ MS-NAMESATZ
 <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx -->
 
 <tr style='display: none;'>
-	<td colspan='3'><input type='text' id='MS-AKTDEVICE-SAVE' value='empty'></td>
+	<td colspan='3'><input type='text' size ='100'  id='MS-AKTDEVICE-SAVE' value='empty'></td>
 	</tr>
 
 <tr style='display: none;' id='MS-AKTDEVICE-SAVE-BUTTON'  >
@@ -8371,9 +8371,19 @@ MS-NAMESATZ
             $EXECset2   = "";
             $COMMENTset = "";
 
+
+
+#$_ =~ s/\./\\./g;
+
+
             my $aktdevice = $_;
+			#$aktdevice =~ s/\./point/g;
+			
+			
             my $nopoint   = $_;
-            $nopoint =~ s/\./point/g;
+           # 
+			 my $nopointx   = $_;
+			#$nopointx =~ s/\./\\./g;
             $alert = '';
             my @devicesplit = split( /-AbsCmd/, $_ );
             my $devicenamet = $devicesplit[0];
@@ -9239,36 +9249,42 @@ MS-NAMESATZ
 
             # javazeile fuer uebergabe erzeugen
             $javaform = $javaform . "
-			devices += \$(\"[name=devicename$nopoint]\").val();
+			
+			
+			akd = '$nopoint';
+			akd = akd.replace(/\\./,'\\\\.');
+			
+			devices += \$(\"[name=devicename\"+akd+\"]\").val();
 			devices += '#[DN]'; 
-	
-			change = \$(\"[name=cmdon$nopoint]\").val();
+
+			change = \$(\"[name=cmdon\"+akd+\"]\").val();
 			devices += change+'#[NF]';
-			change= \$(\"[name=cmdoff$nopoint]\").val();
+
+			change= \$(\"[name=cmdoff\"+akd+\"]\").val();
 			devices += change+'#[NF]';
-			change = \$(\"[name=cmdonopt$nopoint]\").val();
+			change = \$(\"[name=cmdonopt\"+akd+\"]\").val();
 
 			devices += change+'#[NF]';
 			
-			change = \$(\"[name=cmdoffopt$nopoint]\").val();
+			change = \$(\"[name=cmdoffopt\"+akd+\"]\").val();
 			devices += change+'#[NF]';
 
 			devices = devices.replace(/\\|/g,'#[SR]');
-			devices += \$(\"[name=onatdelay$nopoint]\").val();
+			devices += \$(\"[name=onatdelay\"+akd+\"]\").val();
 			devices += '#[NF]';
-			devices += \$(\"[name=offatdelay$nopoint]\").val();
+			devices += \$(\"[name=offatdelay\"+akd+\"]\").val();
 			devices += '#[NF]';
 
-			delay1 = \$(\"[name=timesetoff$nopoint]\").val();
+			delay1 = \$(\"[name=timesetoff\"+akd+\"]\").val();
 			devices += delay1+'#[NF]';
-			delay2 = \$(\"[name=timeseton$nopoint]\").val();
+			delay2 = \$(\"[name=timeseton\"+akd+\"]\").val();
 			devices += delay2+'#[NF]';
 			
-			change = \$(\"[name=conditionon$nopoint]\").val();
+			change = \$(\"[name=conditionon\"+akd+\"]\").val();
 			change = change.replace(/\\|/g,'(DAYS)');
 			devices1 = change;
 			
-			change = \$(\"[name=conditionoff$nopoint]\").val();
+			change = \$(\"[name=conditionoff\"+akd+\"]\").val();
 			change = change.replace(/\\|/g,'(DAYS)');
 			devices2 = change;
 
@@ -9277,31 +9293,31 @@ MS-NAMESATZ
 			devices += devices1+'#[NF]';
 			devices += devices2;
 			devices += '#[NF]';
-			devices3 = \$(\"[name=repeatcount$nopoint]\").val();
+			devices3 = \$(\"[name=repeatcount\"+akd+\"]\").val();
 			devices += devices3;
 			devices += '#[NF]';
-			devices += \$(\"[name=repeattime$nopoint]\").val();
+			devices += \$(\"[name=repeattime\"+akd+\"]\").val();
 			devices += '#[NF]';
-			devices += \$(\"[name=reihe$nopoint]\").val();
+			devices += \$(\"[name=reihe\"+akd+\"]\").val();
 			devices += '#[NF]';
-			devices += \$(\"[name=idreihe$nopoint]\").val();
+			devices += \$(\"[name=idreihe\"+akd+\"]\").val();
 			devices += '#[NF]';
-			devices += \$(\"[name=cmdcomment$nopoint]\").val();
+			devices += \$(\"[name=cmdcomment\"+akd+\"]\").val();
 			devices += '#[NF]';
-			devices += \$(\"[name=exit1$nopoint]\").prop(\"checked\") ? \"1\":\"0\";
+			devices += \$(\"[name=exit1\"+akd+\"]\").prop(\"checked\") ? \"1\":\"0\";
 			devices += '#[NF]';
-			devices += \$(\"[name=exit2$nopoint]\").prop(\"checked\") ? \"1\":\"0\";
+			devices += \$(\"[name=exit2\"+akd+\"]\").prop(\"checked\") ? \"1\":\"0\";
 			devices += '#[NF]';
-			devices += \$(\"[name=showreihe$nopoint]\").val();
+			devices += \$(\"[name=showreihe\"+akd+\"]\").val();
 			devices += '#[NF]';
-			devices += \$(\"[name=hidecmd$nopoint]\").val();
+			devices += \$(\"[name=hidecmd\"+akd+\"]\").val();
 			devices += '#[NF]';
-			testfeld = \$(\"[name=repeatcond$nopoint]\").prop(\"checked\") ? \"1\":\"0\";
+			testfeld = \$(\"[name=repeatcond\"+akd+\"]\").prop(\"checked\") ? \"1\":\"0\";
 			devices += testfeld;
-			testfeld1=\$(\"[name=countdownon$nopoint]\").val();
+			testfeld1=\$(\"[name=countdownon\"+akd+\"]\").val();
 			devices += '#[NF]';
 			devices += testfeld1;
-			testfeld2=\$(\"[name=countdownoff$nopoint]\").val();
+			testfeld2=\$(\"[name=countdownoff\"+akd+\"]\").val();
 			devices += '#[NF]';
 			devices += testfeld2;
 			devices += '#[DN]';
