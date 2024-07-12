@@ -2232,27 +2232,35 @@ function raw1(data)
 
 function showedit(data)
 {
-	//alert(data);
+
 	field=data+"-EDIT";
 	field1=data+"-PLAIN";
 	field2=data+"-BUTTON";
 	field3=data+"-SAVE";
 
-	if( $("#"+field3).val() =="empty" ) {
+fieldx = field.replace(/\./,'\\.');
+field1x = field1.replace(/\./,'\\.');
+field2x = field2.replace(/\./,'\\.');
+field3x = field3.replace(/\./,'\\.');
+
+if( $("#"+field3x).val() =="empty" ) {
 	inhalt = generatesaved(data);
-	$("#"+field3).val(inhalt);
+	$("#"+field3x).val(inhalt);
 	}
 
-	$("[name="+field+"]").css("display","");
-	$("[name="+field1+"]").css("display","none");
+	$("[name="+fieldx+"]").css("display","");
+	$("[name="+field1x+"]").css("display","none");
+	 
+	newname  = $("#"+field2x).attr('text1');
 	
-	newname  = $("#"+field2).attr('text1');
-	//alert(newname);
 	document.getElementById(field2).value=newname;
 	
 	check = "javascript: hideedit(\""+data+"\") ";
-	$("[name="+field2+"]").attr('onClick', check);
+	$("[name="+field2x+"]").attr('onClick', check);
+	
 	field10=data+"-SAVE-BUTTON";
+	field10 = field10.replace(/\./,'\\.');
+	
 	$("#"+field10).css("display","none");
 	return;
 
@@ -2261,68 +2269,75 @@ function showedit(data)
 function hideedit(data)
 {
 	
-	field=data+"-EDIT";
-	field1=data+"-PLAIN";
-	field2=data+"-BUTTON";
-	field3=data+"_plain1";
-	field6=data+"_plain2";
+	datax = data.replace(/\./,'\\.');
 
-	$("[name="+field+"]").css("display","none");
-	$("[name="+field1+"]").css("display","block");
+	fieldx=datax+"-EDIT";
+	field1x=datax+"-PLAIN";
+	field2x=datax+"-BUTTON";
+	field3x=datax+"_plain1";
+	field6x=datax+"_plain2";
+	
+	$("[name="+fieldx+"]").css("display","none");
+	$("[name="+field1x+"]").css("display","block");
 
-	newname  = $("#"+field2).attr('text2');
+	newname  = $("#"+field2x).attr('text2');
 	document.getElementById(field2).value=newname;
 	
 	check = "javascript: showedit(\""+data+"\") ";
-	$("[name="+field2+"]").attr('onClick', check);
-	field4=data+"_on";
-	inhalt1 = "CMD1: "+$('#'+field4+'').val();
-	field5="cmdonopt"+data+"1";
-    inhalt2 = $('#'+field5+'').val();
+	$("[name="+field2x+"]").attr('onClick', check);
+
+	field4x=datax+"_on";
+	inhalt1 = "CMD1: "+$('#'+field4x+'').val();
+
+	field5x="cmdonopt"+datax+"1";
+    inhalt2 = $('#'+field5x+'').val();
+
 	newinhalt = inhalt1+" "+inhalt2;
-	field4=data+"_off";
-	inhalt1 = "CMD2: "+$('#'+field4+'').val();
-	field5="cmdoffopt"+data+"1";
-    inhalt2 = $('#'+field5+'').val();
+
+	field4x=datax+"_off";
+	inhalt1 = "CMD2: "+$('#'+field4x+'').val();
+	field5x="cmdoffopt"+datax+"1";
+    inhalt2 = $('#'+field5x+'').val();
 	newinhalt1 = inhalt1+" "+inhalt2;
-	
-	
-devicetypetest = $("[name=devicename"+data+"]").val();
+devicetypetest = $("[name=devicename"+datax+"]").val();
 let result = devicetypetest.match(/FreeCmd-AbsCmd.*/ig);
 
 if( result == null ) 
 	{	
-		$("#"+field3+"").text(newinhalt);
-		$("#"+field6+"").text(newinhalt1);
+
+	$("#"+field3x+"").text(newinhalt);
+	$("#"+field6x+"").text(newinhalt1);
+		
 	}
 	else
 	{
-		cmdonopt=$("[name=cmdonopt"+data+"]").val();	
-		cmdoffopt=$("[name=cmdoffopt"+data+"]").val();
-		textbreak = $("#"+field3+"").attr('cut');
+		cmdonopt=$("[name=cmdonopt"+datax+"]").val();	
+		cmdoffopt=$("[name=cmdoffopt"+datax+"]").val();
+		textbreak = $("#"+field3x+"").attr('cut');
 
 		if ( cmdonopt.length > textbreak)
 		{
-			$("#"+field3+"").text(""+$("#"+field3+"").attr('text'));
+			$("#"+field3x+"").text(""+$("#"+field3x+"").attr('text'));
 		}
 		else{
-			$("#"+field3+"").text("CMD1: cmd "+cmdonopt);
+			$("#"+field3x+"").text("CMD1: cmd "+cmdonopt);
 		}
 		
 		if ( cmdoffopt.length > textbreak)
 		{
-			$("#"+field6+"").text(""+$("#"+field3+"").attr('text'));
+			$("#"+field6x+"").text(""+$("#"+field3x+"").attr('text'));
 		}
 		else{
-			$("#"+field6+"").text("CMD2: cmd "+cmdoffopt);
+			$("#"+field6x+"").text("CMD2: cmd "+cmdoffopt);
 		}
 	}
 	
 	var inhalt = generatesaved(data);
-	var testfeld=data+"-SAVE";
+	var testfeld=datax+"-SAVE";
 	var testinhalt =$("#"+testfeld).val();
+	
 	if( testinhalt != inhalt ) {
-	field10=data+"-SAVE-BUTTON";
+	field10=datax+"-SAVE-BUTTON";
 	$("#"+field10).css("display","block");
 	}
 return;
@@ -2366,6 +2381,9 @@ function restoreexperimental()
 
 function Fullinf(data)
 {
+	
+data = data.replace(/\./,'\\.');
+	
 condon=$("#conditionon"+data+"").val();
 condoff=$("#conditionoff"+data+"").val();
 cmd1=$("#"+data+"_plain1").text();
@@ -2422,42 +2440,53 @@ FW_okDialog(text);
 return;	
 }
 
+
+
+
+
 function generatesaved(data)
 {
-	
-devicetypetest = $("[name=devicename"+data+"]").val();
+datax = data.replace(/\./,'\\.');
+
+devicetypetest = $("[name=devicename"+datax+"]").val();
 let result = devicetypetest.match(/FreeCmd-AbsCmd.*/ig);
+
+//return;
 if( result == null ) 
 	{
-	condon=$("#conditionon"+data+"").val();
-	condoff=$("#conditionoff"+data+"").val();
-	cmd1=$("#"+data+"_plain1").text();
-	cmd2=$("#"+data+"_plain2").text();
-	showreihe=$("[name=showreihe"+data+"] option:selected").text();
-	idreihe=$("[name=idreihe"+data+"] option:selected").text();
-	prioreihe=$("[name=reihe"+data+"] option:selected").text();
-	onatdelay1=$("[name=onatdelay"+data+"] option:selected").text();
-	onatdelay2=$("#timeseton"+data).val();
-	offatdelay1=$("[name=offatdelay"+data+"] option:selected").text();
+	condon=$("#conditionon"+datax+"").val();
+	condoff=$("#conditionoff"+datax+"").val();
+
+	cmd1=$("#"+datax+"_plain1").text();
+	cmd2=$("#"+datax+"_plain2").text();
+
+	showreihe=$("[name=showreihe"+datax+"] option:selected").text();
+	idreihe=$("[name=idreihe"+datax+"] option:selected").text();
+	prioreihe=$("[name=reihe"+datax+"] option:selected").text();
+	onatdelay1=$("[name=onatdelay"+datax+"] option:selected").text();
+	onatdelay2=$("#timeseton"+datax).val();
+	offatdelay1=$("[name=offatdelay"+datax+"] option:selected").text();
 	offatdelay2=$("#timesetoff"+data).val();
-	repeatcount=$("[name=repeatcount"+data+"]").val();
-	repeattime=$("[name=repeattime"+data+"]").val();
+	
+	repeatcount=$("[name=repeatcount"+datax+"]").val();
+	repeattime=$("[name=repeattime"+datax+"]").val();
 	//cmdonopt=$("[name=cmdonopt"+data+"]").text();
 	data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+condon+condoff+cmd1+cmd2+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
+
 	}
 	else
 	{
-	cmdonopt=$("[name=cmdonopt"+data+"]").val();
-	cmdoffopt=$("[name=cmdoffopt"+data+"]").val();
-	showreihe=$("[name=showreihe"+data+"] option:selected").text();
-	idreihe=$("[name=idreihe"+data+"] option:selected").text();
-	prioreihe=$("[name=reihe"+data+"] option:selected").text();
-	onatdelay1=$("[name=onatdelay"+data+"] option:selected").text();
+	cmdonopt=$("[name=cmdonopt"+datax+"]").val();
+	cmdoffopt=$("[name=cmdoffopt"+datax+"]").val();
+	showreihe=$("[name=showreihe"+datax+"] option:selected").text();
+	idreihe=$("[name=idreihe"+datax+"] option:selected").text();
+	prioreihe=$("[name=reihe"+datax+"] option:selected").text();
+	onatdelay1=$("[name=onatdelay"+datax+"] option:selected").text();
 	onatdelay2=$("#timeseton"+data).val();
-	offatdelay1=$("[name=offatdelay"+data+"] option:selected").text();
+	offatdelay1=$("[name=offatdelay"+datax+"] option:selected").text();
 	offatdelay2=$("#timesetoff"+data).val();
-	repeatcount=$("[name=repeatcount"+data+"]").val();
-	repeattime=$("[name=repeattime"+data+"]").val();
+	repeatcount=$("[name=repeatcount"+datax+"]").val();
+	repeattime=$("[name=repeattime"+datax+"]").val();
 	data1 = "ID:"+idreihe+"_Anzeige:"+showreihe+"_Prio"+prioreihe+"_"+cmdonopt+cmdoffopt+onatdelay1+offatdelay1+onatdelay2+offatdelay2+repeatcount+repeattime;
 	}
 	data1 = data1.replace(/[^0-9a-zA-Z]/g, "");
@@ -2490,10 +2519,14 @@ function closeall()
 {
  $.each( $("[name$='-BUTTON']"), function (key) {
   var feld = this.id;
-  var tfeld = feld.replace(/-BUTTON/g, "");
+  feldx = feld.replace(/\./,'\\.');
+  //alert(feld);
+  var tfeld = feldx.replace(/-BUTTON/g, "");
   var field1=tfeld+"-PLAIN";
   var css =$("[name="+field1+"]").css('display');
+  
   if (css == 'none'){
+  tfeld = tfeld.replace(/\\\./,'.');
   hideedit(tfeld);
   }
   return;
