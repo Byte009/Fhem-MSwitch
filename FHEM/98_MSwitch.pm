@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.69';                               # version
+my $version      = '7.70';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -12450,59 +12450,61 @@ my %setmarray;
 
 		MSwitch_LOG( $name, 6,"futurelevel: $futurelevel ");
 
-if ($futurelevel eq "7.68"){
-    ### ersetze setmagic ###
-    $x = 0;
-    #my %setmarray;
-      while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\]:\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
-#while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
 
-        my $treffer = $1;
-        my $aktarg  = "SETMAGIC_" . $x;
-        $setmarray{$aktarg} = $treffer;
-        my $convertreffer = $treffer;
 
-        # ersetze alle metazeichen
 
-        $convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+
+
+#    [ECHO_SZ:musicwecker_01]
+
+if ($futurelevel eq "7.68")
+	{
 		
-		MSwitch_LOG( $name, 6,"FUTaktarg: $aktarg ");
-		MSwitch_LOG( $name, 6,"FUTconvertreffer: $convertreffer ");
+		MSwitch_LOG( $name, 6,"SCHLEIFE Futurelevel");
+			
+		$x = 0;
+	    #while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) 
+		#while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\]:\[["a-zA-Z0-9:\.\|_-]+\])/ ) 
+		 
+		  while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+:["a-zA-Z0-9:\.\|_-]+\])/ ) 
+		 
 		
-		
-        $change =~ s/$convertreffer/ $aktarg /ig;
-        $x++;    # notausstieg notausstieg
-        last if $x > 100;    # notausstieg notausstieg
-    }
+		 
+			{
+				my $treffer = $1;
+				my $aktarg  = "SETMAGIC_" . $x;
+				$setmarray{$aktarg} = $treffer;
+				my $convertreffer = $treffer;
+				$convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+				MSwitch_LOG( $name, 6,"FUTaktarg: $aktarg ");
+				MSwitch_LOG( $name, 6,"FUTconvertreffer: $convertreffer ");
+				$change =~ s/$convertreffer/ $aktarg /ig;
+				$x++;    # notausstieg notausstieg
+				last if $x > 100;    # notausstieg notausstieg
+			}
 	}
+
+
 	
-	
-	if ($futurelevel ne "7.68"){
-    ### ersetze setmagic ###
+	if ($futurelevel ne "7.68")
+	{
     $x = 0;
-    #my %setmarray;
-      # while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\]:\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
-while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) {
-
-        my $treffer = $1;
-        my $aktarg  = "SETMAGIC_" . $x;
-        $setmarray{$aktarg} = $treffer;
-        my $convertreffer = $treffer;
-
-        # ersetze alle metazeichen
-
-        $convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
-		
-		MSwitch_LOG( $name, 6,"aktarg: $aktarg ");
-		MSwitch_LOG( $name, 6,"convertreffer: $convertreffer ");
-		
-		
-        $change =~ s/$convertreffer/ $aktarg /ig;
-        $x++;    # notausstieg notausstieg
-        last if $x > 100;    # notausstieg notausstieg
-    }
+		while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) 
+			{
+				my $treffer = $1;
+				my $aktarg  = "SETMAGIC_" . $x;
+				$setmarray{$aktarg} = $treffer;
+				my $convertreffer = $treffer;
+				$convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+				MSwitch_LOG( $name, 6,"aktarg: $aktarg ");
+				MSwitch_LOG( $name, 6,"convertreffer: $convertreffer ");
+				
+				
+				$change =~ s/$convertreffer/ $aktarg /ig;
+				$x++;    # notausstieg notausstieg
+				last if $x > 100;    # notausstieg notausstieg
+			}
 	}
-	
 	
 	
 
