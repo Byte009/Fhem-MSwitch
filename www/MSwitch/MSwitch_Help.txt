@@ -256,7 +256,7 @@ Verzögerung mit Bedingungsprüfung sofort:
 Verzögerung mit Bedingungsprüfung vor Ausführung:
  - die ggf. angegebene Bedingung wird nur vor Ausführung geprüft
  
-Das Fekd readingname(ident)steht nur im Expertenmodus zur Verfügung.
+Das Feld readingname(ident)steht nur im Expertenmodus zur Verfügung.
 Hiier kann für entprechendes Delay ein Name angelegt werden . Dieser wird bei aktivem Delay
 alsReading genutzt , um verschiedene Informationen zu generieren.
 
@@ -267,7 +267,7 @@ lastsetting_delay_ident - Name des Delays ( entspricht dem angegebenen Namen )
 lastsetting_delay_time - Laufzeit des Delays
 
 In Abhängigkeit mit dem Attribut MSwitch_Delay_Count kann ein Reading angelegt haben , welches in Echtzeit
-die Restlaufzeit des Delays anzeigt.Doeses Reading trägt den Namen des Delays.
+die Restlaufzeit des Delays anzeigt.Dieses Reading trägt den Namen des Delays.
 
 Die Ausgabeformatierung kann mit dem Attribut MSwitch_Format_Lastdelay beeinflusst werden.
  
@@ -706,16 +706,13 @@ Dazu gehoert:
 
 
 <strong>MSwitch_Delete_Delays</strong>
-Option '1' bewirkt das Löschen aller anstehende Delays (Verögerungen) bei dem Auftreten eines erneuten passenden Events.
-Es werden nur die Delays geloescht, die in dem cmd-zweig erzeugt wurden , der erneut ausgefüehrt wird.
+- Option '0' bleiben bereits gesetzte Delays immer bis zur Ausführung erhalten
 
-Option '2' bewirkt das löschen aller Delays, die Aufgrund des eingehenden Events angelegt wurden. Dazu werden alle Events mit dem 
-auslösenden Trigger markiert. Bei erneutem Auftreten dieses Triggers werden alle zugehörigen Delays gelöscht.
+-Option '1' bewirkt das Löschen eines anstehende Delays (Verögerungen), wenn der entsprechende Schaltzweig erneut ausgeführt wird. Delay aus anderen Schaltzweigen bleiben erhalten
 
-Option '3' ... folgt
-Option '4' ... folgt
+Option '2' bewirkt das löschen aller Delays, die Aufgrund des definierten Events angelegt wurden. Dazu werden alle Events mit dem 
+auslösenden Trigger (Event) markiert. Bei erneutem Auftreten dieses Events werden alle zugehörigen Delays gelöscht.
 
-Bei der Option '0' bleiben bereits gesetzte Delays aus einem vorher getriggerten Event erhalten und werden ausgeführt.
 
 Empfohlene Einstellung: 1 
 
