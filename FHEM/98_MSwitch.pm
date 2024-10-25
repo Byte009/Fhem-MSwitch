@@ -3,7 +3,7 @@
 # copyright Thomas Pause ########################################
 #
 # 98_MSwitch.pm
-#
+#  
 #################################################################
 #
 # MSwitchtoggle Suchmuster ab V3 [Befehl 1,Befehl 2,Befehl 3]:[1,2,3]:[reading]
@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.70';                               # version
+my $version      = '7.71';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -2880,6 +2880,12 @@ sub MSwitch_Set_OnOff($@) {
 
     my $event = $hash->{helper}{aktevent};
 	$showevents = AttrVal( $name, "MSwitch_generate_Events", 0 );
+  my $attrrandomnumber = AttrVal( $name, 'MSwitch_RandomNumber', '' );
+if ( $attrrandomnumber ne '' ) {
+        MSwitch_Createnumber($hash);
+    }
+
+
 
     # test wait attribut
     if ( ReadingsVal( $name, "waiting", '0' ) > time ) {
@@ -8738,7 +8744,7 @@ MS-NAMESATZ
                 }
                 $SET1PLAIN .= "</table>";
 
-                $savedetails{ $aktdevice . '_onarg' } =~ s/'/&#039/g;
+               # $savedetails{ $aktdevice . '_onarg' } =~ s/'/&#039/g;
                 $SET1 =
 "<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdonopt' style=\"width:97%;\" "
                   . $_
@@ -8849,7 +8855,7 @@ MS-NAMESATZ
                 }
             }
             else {
-                $savedetails{ $aktdevice . '_offarg' } =~ s/'/&#039/g;
+               # $savedetails{ $aktdevice . '_offarg' } =~ s/'/&#039/g;
 
                 $SET2 =
 "<textarea onclick=\"javascript: checklines(id+'$_')\" rows='10' id='cmdoffopt' style=\"width:97%;\""
@@ -12034,23 +12040,25 @@ MSwitch_LOG( $name,6,"firsttimerkeyorg > ".$devicedetails{$timerkey}.__LINE__);
 
                 my @delaydetails = split( /#\[tr\]/, $string );
 
-                $hash->{helper}{delaydetails}{$timecondition}{name} =
-                  $identifier;
-                $hash->{helper}{delaydetails}{$timecondition}{cmd} =
-                  $delaydetails[0];
-                $hash->{helper}{delaydetails}{$timecondition}{device} =
-                  $delaydetails[1];
+                $hash->{helper}{delaydetails}{$timecondition}{name} =$identifier;
+                $hash->{helper}{delaydetails}{$timecondition}{cmd} =$delaydetails[0];
+                $hash->{helper}{delaydetails}{$timecondition}{device} =$delaydetails[1];
                 $hash->{helper}{delaydetails}{$timecondition}{number} = $number;
-                $hash->{helper}{delaydetails}{$timecondition}{check} =
-                  $delaydetails[2];
-                $hash->{helper}{delaydetails}{$timecondition}{Indikator} =
-                  $delaydetails[3];
-                $hash->{helper}{delaydetails}{$timecondition}{cmdzweig} =
-                  $delaydetails[5];
-                $hash->{helper}{delaydetails}{$timecondition}{state} =
-                  $delaydetails[6];
+                $hash->{helper}{delaydetails}{$timecondition}{check} =$delaydetails[2];
+                $hash->{helper}{delaydetails}{$timecondition}{Indikator} =$delaydetails[3];
+                $hash->{helper}{delaydetails}{$timecondition}{cmdzweig} =$delaydetails[5];
+                $hash->{helper}{delaydetails}{$timecondition}{state} =$delaydetails[6];
 
+$hash->{helper}{delaydetails}{$timecondition}{arg} =$timecondition . "-" . $delaydetails[1];
                 ####################
+				
+				MSwitch_LOG( $name, 6, "-> setze delay: $timecondition L:");
+				
+				MSwitch_LOG( $name, 6, "-> $timecondition - $delaydetails[1]");
+				
+				
+				
+				
                 InternalTimer( $timecondition, "MSwitch_Restartcmdnew",
                     $timecondition . "-" . $delaydetails[1] );
                 next;
@@ -12457,8 +12465,8 @@ my %setmarray;
 
 #    [ECHO_SZ:musicwecker_01]
 
-if ($futurelevel eq "7.68")
-	{
+# if ($futurelevel eq "7.68")
+	# {
 		
 		MSwitch_LOG( $name, 6,"SCHLEIFE Futurelevel");
 			
@@ -12482,29 +12490,29 @@ if ($futurelevel eq "7.68")
 				$x++;    # notausstieg notausstieg
 				last if $x > 100;    # notausstieg notausstieg
 			}
-	}
+	#}
 
 
 	
-	if ($futurelevel ne "7.68")
-	{
-    $x = 0;
-		while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) 
-			{
-				my $treffer = $1;
-				my $aktarg  = "SETMAGIC_" . $x;
-				$setmarray{$aktarg} = $treffer;
-				my $convertreffer = $treffer;
-				$convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
-				MSwitch_LOG( $name, 6,"aktarg: $aktarg ");
-				MSwitch_LOG( $name, 6,"convertreffer: $convertreffer ");
+	# if ($futurelevel ne "7.68")
+	# {
+    # $x = 0;
+		# while ( $change =~ m/(\[["a-zA-Z0-9:\.\|_-]+\])/ ) 
+			# {
+				# my $treffer = $1;
+				# my $aktarg  = "SETMAGIC_" . $x;
+				# $setmarray{$aktarg} = $treffer;
+				# my $convertreffer = $treffer;
+				# $convertreffer =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
+				# MSwitch_LOG( $name, 6,"aktarg: $aktarg ");
+				# MSwitch_LOG( $name, 6,"convertreffer: $convertreffer ");
 				
 				
-				$change =~ s/$convertreffer/ $aktarg /ig;
-				$x++;    # notausstieg notausstieg
-				last if $x > 100;    # notausstieg notausstieg
-			}
-	}
+				# $change =~ s/$convertreffer/ $aktarg /ig;
+				# $x++;    # notausstieg notausstieg
+				# last if $x > 100;    # notausstieg notausstieg
+			# }
+	# }
 	
 	
 
@@ -14031,31 +14039,113 @@ sub MSwitch_Debug($) {
 sub MSwitch_Delete_Delay($$) {
     my ( $hash, $device ) = @_;
     my $Name     = $hash->{NAME};
-    my $timehash = $hash->{helper}{delays};
-    if ( $device eq 'all' ) {
-        foreach my $a ( keys %{$timehash} ) {
-            my $inhalt = $hash->{helper}{delays}{$a};
-            RemoveInternalTimer($a);
-            RemoveInternalTimer($inhalt);
-            delete( $hash->{helper}{delays}{$a} );
+	#return;
+	
+	#MSwitch_LOG( $Name, 6, "   ---------------------------------" . __LINE__ );
+	MSwitch_LOG( $Name, 6, "-> Aufruf Delete_Delay  L:" . __LINE__ );
+	#MSwitch_LOG( $Name, 6, "device $device" . __LINE__ );
+	
+	
+   # my $timehash = $hash->{helper}{delays};
+	
+	my $timehash = $hash->{helper}{delaydetails};
+	
+    if ( $device eq 'all' )
+	{
+		
+		MSwitch_LOG( $Name, 6, "starte timehashloop ALL ...... " . __LINE__ );
+        foreach my $a ( keys %{$timehash} ) 
+		{
+			
+			my $targ = $hash->{helper}{delaydetails}{$a}{arg};
+			RemoveInternalTimer($targ);
+			delete( $hash->{helper}{delaydetails}{$a} );
+			delete( $hash->{helper}{delaydetails} );
+			
+            # my $inhalt = $hash->{helper}{delays}{$a};
+            # RemoveInternalTimer($a);
+            # RemoveInternalTimer($inhalt);
+            # delete( $hash->{helper}{delays}{$a} );
         }
     }
-    else {
-        foreach my $a ( keys %{$timehash} ) {
-            my $pos = index( $a, "$device", 0 );
-            if ( $pos != -1 ) {
-                RemoveInternalTimer($a);
-                my $inhalt = $hash->{helper}{delays}{$a};
-                RemoveInternalTimer($a);
-                RemoveInternalTimer($inhalt);
-                delete( $hash->{helper}{delays}{$a} );
-            }
+    else 
+	{
+		
+		
+		
+		# MSwitch_LOG( $Name, 6, "starte timehashloop ...... " . __LINE__ );
+        # foreach my $a ( keys %{$timehash} ) 
+		# {
+			# MSwitch_LOG( $Name, 6, "timehash $a" . __LINE__ );
+			
+            # my $pos = index( $a, "$device", 0 );
+			# MSwitch_LOG( $Name, 6, "device $device" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "pos $pos" . __LINE__ );
+			
+			
+            # if ( $pos != -1 )
+			# {
+				
+				
+				 # MSwitch_LOG( $Name, 6, "remove $a" . __LINE__ );
+                 # RemoveInternalTimer($a);
+                 # my $inhalt = $hash->{helper}{delays}{$a};
+                 # RemoveInternalTimer($a);
+                 # RemoveInternalTimer($inhalt);
+                 # delete( $hash->{helper}{delays}{$a} );
+            # }
+			
+			#my $timehash = $hash->{helper}{delaydetails};
+			
+		#MSwitch_LOG( $Name, 6, "starte timehashloop ...... " . __LINE__ );
+        foreach my $a ( keys %{$timehash} ) 
+		{
+			
+			#MSwitch_LOG( $Name, 6, "timehash $a" . __LINE__ );
+			#my $identifier=$hash->{helper}{delaydetails}{$a}{name};
+			#my $tcmd = $hash->{helper}{delaydetails}{$a}{cmd};
+			#my $tdevice = $hash->{helper}{delaydetails}{$a}{device};
+			#my $tnumber = $hash->{helper}{delaydetails}{$a}{number};
+			#my $tcheck = $hash->{helper}{delaydetails}{$a}{check};
+			#my $tindikator = $hash->{helper}{delaydetails}{$a}{Indikator};
+			my $tcmdzweig = $hash->{helper}{delaydetails}{$a}{cmdzweig};
+			#my $tstate = $hash->{helper}{delaydetails}{$a}{state};
+			my $targ = $hash->{helper}{delaydetails}{$a}{arg};
+			
+			
+			# MSwitch_LOG( $Name, 6, "identifier $identifier" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "tcmd $tcmd" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "tdevice $tdevice" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "tnumber $tnumber" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "tcheck $tcheck" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "tcmdzweig $tcmdzweig" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "tstate $tstate" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "identifier $identifier" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "targ $targ" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "----- >$device --- $tcmdzweig " . __LINE__ );
+			
+			
+			if ($device eq $tcmdzweig)
+			{
+				MSwitch_LOG( $Name, 6, "----- > Delay deleted" . __LINE__ );
+				RemoveInternalTimer($targ);
+				delete( $hash->{helper}{delaydetails}{$a} );
+			}
+            # my $pos = index( $a, "$device", 0 );
+			# MSwitch_LOG( $Name, 6, "device $device" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "pos $pos" . __LINE__ );
+			# my $ti = "$a-".$Name;
+			# MSwitch_LOG( $Name, 6, "ti $ti" . __LINE__ );
+			# MSwitch_LOG( $Name, 6, "remove $a" . __LINE__ );
+            # 
         }
 
-        foreach my $countdown ( keys %{ $hash->{helper}{countdown} } ) {
+        foreach my $countdown ( keys %{ $hash->{helper}{countdown} } ) 
+		{
+			
+			MSwitch_LOG( $Name, 6, "countdown $countdown" . __LINE__ );
             delete( $hash->{helper}{countdown}{$countdown} );
-            my $format =
-              AttrVal( $Name, 'MSwitch_Format_Lastdelay', "HH:MM:SS" );
+            my $format =AttrVal( $Name, 'MSwitch_Format_Lastdelay', "HH:MM:SS" );
             $format =~ s/HH/00/g;
             $format =~ s/MM/00/g;
             $format =~ s/SS/00/g;
@@ -14065,7 +14155,7 @@ sub MSwitch_Delete_Delay($$) {
             readingsSingleUpdate( $hash, $countdown, $format, $showevents );
 
         }
-        delete( $hash->{helper}{delaydetails} );
+       # delete( $hash->{helper}{delaydetails} );
     }
     return;
 }
@@ -14076,15 +14166,44 @@ sub MSwitch_Delete_specific_Delay($$$) {
     my $timehash = $hash->{helper}{delays};
     my $expertmode = AttrVal( $name, 'MSwitch_Expert', "0" );
 	my $showevents;
+	
+	
+	MSwitch_LOG( $name, 6, "Aufruf MSwitch_Delete_specific_Delay -------------------------" . __LINE__ );
+	
     if ( $indikator =~ m/.*:.*:.*/ ) {
         my $delaydindikatorhash = $hash->{helper}{delaydetails};
         foreach my $a ( sort keys %{$delaydindikatorhash} ) {
+			
+			MSwitch_LOG( $name, 6, "- $a" . __LINE__ );
+			
             my $checkname    = $hash->{helper}{delaydetails}{$a}{Indikator};
             my $checkcounter = $hash->{helper}{delaydetails}{$a}{name};
+			
+				MSwitch_LOG( $name, 6, "- checkname $checkname" . __LINE__ );
+				MSwitch_LOG( $name, 6, "- checkcounter $checkcounter" . __LINE__ );
+			MSwitch_LOG( $name, 6, "- indikator $indikator" . __LINE__ );
+			
             if ( $checkname eq $indikator ) {
+				
+				
+				
+				MSwitch_LOG( $name, 6, "---" . __LINE__ );
+				MSwitch_LOG( $name, 6, "---" . __LINE__ );
+				MSwitch_LOG( $name, 6, "Foind delay to delete" . __LINE__ );
+				
                 my $delete = $a . "-" . $name;
+				MSwitch_LOG( $name, 6, "Foind delay to delete TIMER $delete" . __LINE__ );
+				MSwitch_LOG( $name, 6, "Foind delay to delete HASH $a" . __LINE__ );
                 RemoveInternalTimer($delete);
                 delete( $hash->{helper}{delaydetails}{$a} );
+MSwitch_LOG( $name, 6, "---" . __LINE__ );
+MSwitch_LOG( $name, 6, "---" . __LINE__ );
+
+
+
+
+
+
 
                 if ( $expertmode eq '1' ) {
                     $hash->{helper}{countdown}{$checkcounter} = 0;
@@ -16194,20 +16313,23 @@ sub MSwitch_Restartcmdnew($) {
         readingsSingleUpdate( $hash, "last_exec_cmd", $msg, $showevents )if $cs ne '';
     }
 
-    RemoveInternalTimer($delaytime);
+
+MSwitch_LOG( $name, 6, "-> Remove Delyadetails");
+
+    #RemoveInternalTimer($delaytime);
     delete( $hash->{helper}{delaydetails}{$delaytime} );
 
-    foreach my $a ( keys %{ $hash->{helper}{delaydindikator} } ) {
-        if ( $hash->{helper}{delaydindikator}{$a} eq $delaytime ) {
-            delete( $hash->{helper}{delaydindikator}{$a} );
-        }
-    }
+    # foreach my $a ( keys %{ $hash->{helper}{delaydindikator} } ) {
+        # if ( $hash->{helper}{delaydindikator}{$a} eq $delaytime ) {
+            # delete( $hash->{helper}{delaydindikator}{$a} );
+        # }
+    # }
 
-    foreach my $a ( keys %{ $hash->{helper}{delaynames} } ) {
-        if ( $hash->{helper}{delaynames}{$a} eq $delaytime ) {
-            delete( $hash->{helper}{delaynames}{$a} );
-        }
-    }
+    # foreach my $a ( keys %{ $hash->{helper}{delaynames} } ) {
+        # if ( $hash->{helper}{delaynames}{$a} eq $delaytime ) {
+            # delete( $hash->{helper}{delaynames}{$a} );
+        # }
+    #}
     return;
 }
 
