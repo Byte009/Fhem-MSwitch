@@ -80,7 +80,7 @@ my $restoredirn= "restoreDir";
 
 my $support      = "Support Mail: Byte009\@web.de";
 my $autoupdate   = 'on';                                 # off/on
-my $version      = '7.71';                               # version
+my $version      = '7.72';                               # version
 my $wizard       = 'on';                                 # on/off   - not in use
 my $importnotify = 'on';                                 # on/off   - not in use
 my $importat     = 'on';                                 # on/off   - not in use
@@ -12440,7 +12440,26 @@ MSwitch_LOG( $name, 6,"change: $change ");
     {
         my $orgstring = $1;
         my $tochange  = "\$field = " . $1;
+		
+		
+		#MSwitch_LOG( $name, 6,"orgstring: $orgstring ");
+		#MSwitch_LOG( $name, 6,"tochange: $tochange ");
         eval($tochange);
+		
+		#MSwitch_LOG( $name, 6,"tochange: $tochange ");
+		#MSwitch_LOG( $name, 6,"field: $field ");
+		
+		
+		if (( $field =~ m/\d\d:\d\d:\d\d?/ ) && ($orgstring =~ m/sunset||sunrise/ )){
+			#MSwitch_LOG( $name, 6,"found wrong timespec ");
+			chop($field);
+			chop($field);
+			chop($field);
+			#MSwitch_LOG( $name, 6,"field: $field ");
+		}
+		
+		
+		
         # ersetze alle metazeichen
         $orgstring =~ s/(\\|\||\(|\)|\[|\]|\^|\$|\*|\+|\?|\.|\<|\>)/\\$1/ig;
         $change =~ s/\{$orgstring\}/$field/ig;
